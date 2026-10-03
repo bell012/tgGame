@@ -22,6 +22,7 @@
         display-mode="pc"
         :conversations="conversations"
         :loading="loadingConversations"
+        @refresh="loadConversations({ silent: true })"
         @select="handleConversationSelect"
       />
     </section>

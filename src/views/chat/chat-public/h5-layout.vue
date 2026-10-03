@@ -23,6 +23,7 @@
       <ConversationList
         :conversations="conversations"
         :loading="loadingConversations"
+        @refresh="loadConversations({ silent: true })"
         @select="handleConversationSelect"
       />
     </template>

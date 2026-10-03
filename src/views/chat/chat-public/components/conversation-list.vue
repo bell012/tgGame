@@ -58,6 +58,7 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted } from 'vue'
 import type { ConversationItem as ConversationItemType } from '../types'
 import ConversationItem from './conversation-item.vue'
 import EmptyState from './empty-state.vue'
@@ -70,5 +71,26 @@ const props = withDefaults(
   }>(),
   { loading: false, displayMode: 'h5' }
 )
-defineEmits<{ select: [conversation: ConversationItemType] }>()
+const emit = defineEmits<{
+  refresh: []
+  select: [conversation: ConversationItemType]
+}>()
+
+let refreshTimer: ReturnType<typeof setInterval> | undefined
+
+/** 停留在客服列表期间，每两秒刷新一次在线客服列表。 */
+onMounted(() => {
+  refreshTimer = setInterval(() => {
+    if (!props.loading) {
+      emit('refresh')
+    }
+  }, 3_000)
+})
+
+/** 切换至会话详情或离开客服页面时停止轮询。 */
+onBeforeUnmount(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+  }
+})
 </script>
