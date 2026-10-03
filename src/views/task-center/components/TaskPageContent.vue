@@ -707,9 +707,20 @@ const isActivityNodeScrollable = computed(() => {
   return props.mode === 'pc' ? nodeCount > 7 : nodeCount > 5
 })
 
+/** 任务节点中的按钮必须优先响应点击，不参与横向拖拽手势。 */
+const isActivityNodeInteractiveTarget = (target: EventTarget | null) => {
+  return target instanceof Element && Boolean(target.closest('button, a, input, select, textarea'))
+}
+
 /** 鼠标按下时记录横向滚动起点；触摸设备继续交给浏览器原生手势处理。 */
 const handleActivityNodesPointerDown = (event: PointerEvent) => {
   if (event.pointerType !== 'mouse' || !isActivityNodeScrollable.value) {
+    return
+  }
+
+  // 先清除上一次拖拽留下的拦截状态；宝箱和领取按钮不应被拖拽逻辑抢走点击。
+  shouldSuppressActivityNodeClick = false
+  if (isActivityNodeInteractiveTarget(event.target)) {
     return
   }
 
@@ -717,7 +728,6 @@ const handleActivityNodesPointerDown = (event: PointerEvent) => {
   activityNodesPointerId = event.pointerId
   activityNodesStartX = event.clientX
   activityNodesStartScrollLeft = viewport.scrollLeft
-  shouldSuppressActivityNodeClick = false
   viewport.setPointerCapture(event.pointerId)
 }
 

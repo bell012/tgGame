@@ -25,7 +25,7 @@
       </button>
     </div>
 
-    <!-- H5 端由系统相机或相册处理文件选择；桌面端不支持时也会回退到此入口。 -->
+    <!-- 相册允许选择多张图片或视频；相机回退入口仅接收单张照片。 -->
     <input
       ref="photoInputRef"
       class="hidden"
@@ -38,14 +38,13 @@
       ref="cameraInputRef"
       class="hidden"
       type="file"
-      accept="image/*,video/*"
+      accept="image/*"
       capture="environment"
-      multiple
       @change="handleCameraChange"
     />
   </section>
 
-  <!-- PC 端通过浏览器媒体设备接口展示实时相机画面并拍照。 -->
+  <!-- 所有端优先通过浏览器媒体设备接口展示实时相机画面并拍照。 -->
   <Teleport to="body">
     <div
       v-if="cameraPreviewVisible"
@@ -53,7 +52,10 @@
       @click.self="closeCameraPreview"
     >
       <section
-        class="flex h-[420px] w-[640px] max-w-full flex-col overflow-hidden rounded-[8px] bg-bg-1"
+        class="flex max-w-full flex-col overflow-hidden rounded-[8px] bg-bg-1"
+        :class="
+          props.displayMode === 'pc' ? 'h-[420px] w-[640px]' : 'h-[420px] w-full max-w-[640px]'
+        "
         role="dialog"
         aria-modal="true"
         :aria-label="t('chatPublic.takePhoto')"
@@ -185,7 +187,7 @@ const openPhotoPicker = () => {
   photoInputRef.value?.click()
 }
 
-/** 在无法使用桌面摄像头接口时，使用浏览器原生拍照文件入口作为回退。 */
+/** 在浏览器无法使用摄像头时，使用原生拍照文件入口作为回退。 */
 const openNativeCameraPicker = () => {
   cameraInputRef.value?.click()
 }
@@ -200,7 +202,7 @@ const stopCameraStream = () => {
   }
 }
 
-/** 关闭 PC 摄像头预览并释放浏览器媒体设备。 */
+/** 关闭摄像头预览并释放浏览器媒体设备。 */
 const closeCameraPreview = () => {
   cameraSession += 1
   cameraPreviewVisible.value = false
@@ -209,15 +211,10 @@ const closeCameraPreview = () => {
 }
 
 /**
- * H5 端交给系统相机拍摄；PC 端则通过 getUserMedia 打开实时预览。
- * 不支持 getUserMedia 的浏览器会退回原生文件选择器，以保证两个端都可继续上传图片或视频。
+ * 点击相机入口即优先调用 getUserMedia 打开真实摄像头。
+ * 仅在浏览器不支持、权限被拒绝或没有摄像头时才回退到原生拍照文件入口。
  */
 const openCamera = async () => {
-  if (props.displayMode !== 'pc') {
-    openNativeCameraPicker()
-    return
-  }
-
   if (!navigator.mediaDevices?.getUserMedia) {
     openNativeCameraPicker()
     return
@@ -263,7 +260,7 @@ const openCamera = async () => {
   }
 }
 
-/** 将 PC 摄像头当前帧转换为图片文件，并沿用既有的媒体大小校验与上传预览流程。 */
+/** 将摄像头当前帧转换为图片文件，并沿用既有的媒体大小校验与上传预览流程。 */
 const capturePhoto = async () => {
   const video = cameraVideoRef.value
   if (!video || !video.videoWidth || !video.videoHeight || cameraCapturing.value) return
