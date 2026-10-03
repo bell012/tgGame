@@ -24,6 +24,54 @@
   transform: translateX(0);
 }
 
+/* 淡入淡出风琴动画  展开/收起 */
+.fade-accordion-enter-active {
+  max-height: var(--fade-accordion-max-height);
+  opacity: 1;
+  overflow: hidden;
+  transform: translateY(0);
+  transform-origin: top center;
+  transition:
+    max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s ease,
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: max-height, opacity, transform;
+}
+
+.fade-accordion-leave-active {
+  max-height: var(--fade-accordion-max-height);
+  opacity: 1;
+  overflow: hidden;
+  transform: translateY(0);
+  transform-origin: top center;
+  transition:
+    max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.18s ease 0.14s,
+    transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: max-height, opacity, transform;
+}
+
+.fade-accordion-enter-from,
+.fade-accordion-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.fade-accordion-enter-to,
+.fade-accordion-leave-from {
+  max-height: var(--fade-accordion-max-height);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-accordion-enter-active,
+  .fade-accordion-leave-active {
+    transition-duration: 0.01ms;
+  }
+}
+
 /* 登录/注册/忘记密码输入框统一样式 */
 .auth-input-placeholder::placeholder {
   opacity: 0.6;

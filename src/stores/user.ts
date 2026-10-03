@@ -21,6 +21,7 @@ import {
 const ACCT_INFO_STORAGE_KEY = 'acctInfo'
 const REMEMBERED_ACCOUNT_STORAGE_KEY = 'rememberedAccount'
 const REMEMBERED_PASSWORD_STORAGE_KEY = 'rememberedPassword'
+const REMEMBERED_SIGNIN_CREDENTIALS_STORAGE_KEY = 'rememberedSigninCredentials'
 const TRADE_MESSAGE_SYNC_STORAGE_KEY = 'memberTradeMessageSync'
 
 export const useUserStore = defineStore('user', () => {
@@ -192,6 +193,7 @@ export const useUserStore = defineStore('user', () => {
         SITE_CONFIG_STORAGE_KEY,
         REMEMBERED_ACCOUNT_STORAGE_KEY,
         REMEMBERED_PASSWORD_STORAGE_KEY,
+        REMEMBERED_SIGNIN_CREDENTIALS_STORAGE_KEY,
         TRADE_MESSAGE_SYNC_STORAGE_KEY
       ],
       [

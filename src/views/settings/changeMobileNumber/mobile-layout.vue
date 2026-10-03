@@ -94,9 +94,17 @@
         <div
           class="flex h-[48px] items-center rounded-[10px] border border-input-2 bg-input-1 px-3.5"
         >
-          <span class="mr-2 text-base font-[700] text-theme-primary">{{
-            defaultAreaCodeDisplay
-          }}</span>
+          <button
+            type="button"
+            class="mr-2 flex items-center gap-1 text-base font-[700] text-theme-primary"
+            @click.stop="toggleNewAreaCodePopup"
+          >
+            <span>{{ newAreaCodeDisplay }}</span>
+            <XiaIcon
+              class="h-3 w-3 transition-transform duration-200"
+              :class="isNewAreaCodePopupOpen ? 'rotate-180' : ''"
+            />
+          </button>
           <input
             :value="newTelephone"
             type="tel"
@@ -107,6 +115,12 @@
             @input="handleNewTelephoneChange"
           />
         </div>
+        <PhoneAreaCodePopup
+          v-model="isNewAreaCodePopupOpen"
+          variant="mobile"
+          :selected-code="newAreaCode"
+          @select="setNewAreaCode"
+        />
       </div>
 
       <div class="mt-5">
@@ -186,7 +200,7 @@
         <div
           class="flex h-[44px] w-full items-center justify-center rounded-[10px] border border-input-2 bg-input-1 px-3.5"
         >
-          <span class="mr-2 text-lg font-[700] text-text-1">{{ defaultAreaCodeDisplay }}</span>
+          <span class="mr-2 text-lg font-[700] text-text-1">{{ updatedAreaCodeDisplay }}</span>
           <span class="text-lg font-[700] text-text-1">{{ updatedTelephone || '--' }}</span>
         </div>
       </div>
@@ -203,16 +217,23 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import ButtonLoadingSpinner from '@/components/common/ButtonLoadingSpinner.vue'
 import SmsCodeHelpPopup from '@/components/common/SmsCodeHelpPopup.vue'
+import PhoneAreaCodePopup from '@/components/login_register/PhoneAreaCodePopup.vue'
 import SetIcon from '@/static/svg/set.svg?component'
+import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
 import Mobile_success from '@/static/svg/mobile_success.svg?skipsvgo'
 import { useChangeMobileNumber } from './shared'
+
+const isNewAreaCodePopupOpen = ref(false)
 
 const {
   t,
   currentStep,
-  defaultAreaCodeDisplay,
+  newAreaCode,
+  newAreaCodeDisplay,
+  updatedAreaCodeDisplay,
   currentVerificationCode,
   newTelephone,
   newVerificationCode,
@@ -238,6 +259,7 @@ const {
   openSmsCodeHelpPopup,
   handleCurrentVerificationCodeChange,
   handleNewTelephoneChange,
+  setNewAreaCode,
   handleNewVerificationCodeChange,
   handleSendOrResendCurrentCode,
   handleConfirmCurrentStep,
@@ -245,6 +267,13 @@ const {
   handleConfirmNewMobileNumber,
   handleAcknowledgeSuccess
 } = useChangeMobileNumber()
+
+/**
+ * 展开或收起新手机号区号底部弹窗。
+ */
+const toggleNewAreaCodePopup = () => {
+  isNewAreaCodePopupOpen.value = !isNewAreaCodePopupOpen.value
+}
 </script>
 
 <style scoped lang="scss"></style>
