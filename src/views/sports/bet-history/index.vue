@@ -297,7 +297,12 @@ import {
 
 type SportsBetHistoryStatus = 'settled' | 'unsettled'
 type SportsBetHistoryTime =
-  'all' | 'today' | 'yesterday' | 'last3days' | 'last15days' | 'last30days'
+  | 'all'
+  | 'today'
+  | 'yesterday'
+  | 'last3days'
+  | 'last15days'
+  | 'last30days'
 type SportsBetHistoryFilterValues = {
   status: SportsBetHistoryStatus
   time: SportsBetHistoryTime

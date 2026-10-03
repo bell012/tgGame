@@ -292,7 +292,7 @@
                 "
               >
                 <span
-                  class="h-3 animate-pulse rounded-full bg-common-100/10"
+                  class="h-3 animate-pulse rounded-full bg-opacity-10"
                   :class="props.mode === 'pc' ? 'w-20' : 'w-14'"
                 ></span>
               </div>

@@ -80,7 +80,7 @@
                 :class="
                   bannerActiveIndex === index
                     ? 'h-[5px] w-6 bg-theme-primary'
-                    : 'h-[5px] w-[5px] bg-common-100/30'
+                    : 'h-[5px] w-[5px] bg-opacity-30'
                 "
               ></span>
             </div> -->

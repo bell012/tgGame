@@ -61,4 +61,6 @@ export interface ScorePickerMarketCard extends ScoreDetailsMarketBase {
 }
 
 export type ScoreDetailsMarketCard =
-  DualColumnMarketCard | OneXTwoMarketCard | ScorePickerMarketCard
+  | DualColumnMarketCard
+  | OneXTwoMarketCard
+  | ScorePickerMarketCard

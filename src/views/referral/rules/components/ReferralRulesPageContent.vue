@@ -78,7 +78,7 @@
                   <div class="flex flex-col items-center gap-[16px]">
                     <!-- 步骤图标容器 -->
                     <div
-                      class="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full bg-common-100/10"
+                      class="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full bg-opacity-10"
                     >
                       <!-- 步骤图片图标 -->
                       <img

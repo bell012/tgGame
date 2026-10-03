@@ -80,13 +80,12 @@
     />
 
     <!-- 活动度宝箱领取成功后复用意见反馈的成功弹窗视觉。 -->
-    <FeedbackClaimSuccessPopup
-      :show="showActivityClaimSuccessPopup"
-      :claim-success-amount="activityClaimSuccessAmount"
-      :feedback-star-icon="feedbackStarIcon"
-      :feedback-ellipse-icon="feedbackEllipseIcon"
-      :feedback-bow-icon="feedbackBowIcon"
-      @close="handleCloseActivityClaimSuccessPopup"
+
+    <!-- 佣金领取确认弹窗 -->
+    <ClaimSuccessPopup
+      v-model:visible="showActivityClaimSuccessPopup"
+      :amount="activityClaimSuccessAmount"
+      @confirm="handleCloseActivityClaimSuccessPopup"
     />
   </div>
 </template>
@@ -101,24 +100,22 @@ import type {
   MemberTaskItem,
   TaskScheduleItem
 } from '@/api/interface/task-center'
+import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
-import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
-import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
 import { useLocaleStore } from '@/stores/locale'
-import { getCurrencySymbol, getLanguageCode } from '@/utils/locale'
+import { getLanguageCode } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import FeedbackClaimSuccessPopup from '../personalCenter/feedback/components/feedback-claim-success-popup.vue'
 import TaskClaimSuccessToast from './components/TaskClaimSuccessToast.vue'
 import TaskInfoPopup from './components/TaskInfoPopup.vue'
 import TaskPageContent from './components/TaskPageContent.vue'
 import TaskTierClaimReminderPopup from './components/TaskTierClaimReminderPopup.vue'
 import PcLayout from './pc-layout.vue'
+
 import {
   createEntrantTaskViewItems,
   createGeneralTaskViewItems,
@@ -216,9 +213,6 @@ let isInitialTaskPageActivation = true
 
 /** 获取当前页面语言对应的后台任务语言代码。 */
 const currentTaskLanguageCode = computed(() => getLanguageCode(localeStore.currentLanguage))
-
-/** 获取当前账户币种对应的项目统一符号。 */
-const currentCurrencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
 
 /** 将 Set 转为数组后传给子组件，使任务卡可响应领取 loading 的变化。 */
 const claimingTaskIdList = computed(() => [...claimingTaskIds.value])
@@ -529,10 +523,6 @@ const handleClaimAll = async () => {
   }
 }
 
-/** 格式化活动度宝箱奖励金额，保留后台原始金额精度并拼接当前币种符号。 */
-const formatActivityGiftBoxBonusAmount = (node: TaskActivityNode) =>
-  `${currentCurrencySymbol.value}${String(node.bonusAmount ?? '0').trim() || '0'}`
-
 /** 领取当前可领取的活动度宝箱，并在成功后重新查询后端领取状态。 */
 const handleActivityChestClaim = async (node: TaskActivityNode) => {
   if (node.state !== 'claimable' || activityClaimingValue.value) {
@@ -552,7 +542,7 @@ const handleActivityChestClaim = async (node: TaskActivityNode) => {
       return
     }
 
-    activityClaimSuccessAmount.value = formatActivityGiftBoxBonusAmount(node)
+    activityClaimSuccessAmount.value = String(node.bonusAmount ?? '0').trim()
     showActivityClaimSuccessPopup.value = true
     await fetchMemberActiveValue()
   } catch (error) {
