@@ -68,11 +68,15 @@
               <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
                 <div class="w-10 h-10 flex items-center justify-center text-text-2">
                   <img
-                    v-if="typeof item.icon === 'string'"
-                    :src="item.icon"
+                    v-if="isStringMenuIcon(item)"
+                    :src="getMenuImageIcon(item)"
                     class="pc-menu-icon w-6 h-6 object-contain"
                   />
-                  <component v-else :is="item.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
+                  <component
+                    v-else
+                    :is="getMenuIcon(item)"
+                    class="pc-menu-icon w-6 h-6 text-icon-2"
+                  />
                 </div>
                 <span
                   v-if="!isCollapsed"
@@ -100,11 +104,15 @@
               <div class="flex items-center w-full justify-center">
                 <div class="w-10 h-10 flex items-center justify-center text-text-2">
                   <img
-                    v-if="typeof menu.icon === 'string'"
-                    :src="menu.icon"
+                    v-if="isStringMenuIcon(menu)"
+                    :src="getMenuImageIcon(menu)"
                     class="pc-menu-icon w-6 h-6 object-contain"
                   />
-                  <component v-else :is="menu.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
+                  <component
+                    v-else
+                    :is="getMenuIcon(menu)"
+                    class="pc-menu-icon w-6 h-6 text-icon-2"
+                  />
                 </div>
               </div>
             </div>
@@ -122,11 +130,15 @@
                   <div class="flex items-center w-full justify-center">
                     <div class="w-10 h-10 flex items-center justify-center">
                       <img
-                        v-if="typeof item.icon === 'string'"
-                        :src="item.icon"
+                        v-if="isStringMenuIcon(item)"
+                        :src="getMenuImageIcon(item)"
                         class="pc-menu-icon w-6 h-6 object-contain"
                       />
-                      <component v-else :is="item.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
+                      <component
+                        v-else
+                        :is="getMenuIcon(item)"
+                        class="pc-menu-icon w-6 h-6 text-icon-2"
+                      />
                     </div>
                   </div>
                 </div>
@@ -154,11 +166,15 @@
             <div class="flex items-center w-full justify-center">
               <div class="w-10 h-10 flex items-center justify-center">
                 <img
-                  v-if="typeof menu.icon === 'string'"
-                  :src="menu.icon"
+                  v-if="isStringMenuIcon(menu)"
+                  :src="getMenuImageIcon(menu)"
                   class="pc-menu-icon w-6 h-6 object-contain"
                 />
-                <component v-else :is="menu.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
+                <component
+                  v-else
+                  :is="getMenuIcon(menu)"
+                  class="pc-menu-icon w-6 h-6 text-icon-2"
+                />
               </div>
             </div>
           </div>
@@ -182,11 +198,15 @@
               <div class="flex items-center">
                 <div class="w-10 h-10 flex items-center justify-center text-text-2">
                   <img
-                    v-if="typeof menu.icon === 'string'"
-                    :src="menu.icon"
+                    v-if="isStringMenuIcon(menu)"
+                    :src="getMenuImageIcon(menu)"
                     class="pc-menu-icon w-6 h-6 object-contain"
                   />
-                  <component v-else :is="menu.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
+                  <component
+                    v-else
+                    :is="getMenuIcon(menu)"
+                    class="pc-menu-icon w-6 h-6 text-icon-2"
+                  />
                 </div>
                 <span v-if="menu.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
                   menu.name2
@@ -230,11 +250,15 @@
                   <div class="flex items-center">
                     <div class="w-10 h-10 flex items-center justify-center text-text-2">
                       <img
-                        v-if="typeof item.icon === 'string'"
-                        :src="item.icon"
+                        v-if="isStringMenuIcon(item)"
+                        :src="getMenuImageIcon(item)"
                         class="pc-menu-icon w-6 h-6 object-contain"
                       />
-                      <component v-else :is="item.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
+                      <component
+                        v-else
+                        :is="getMenuIcon(item)"
+                        class="pc-menu-icon w-6 h-6 text-icon-2"
+                      />
                     </div>
                     <span
                       class="pc-menu-label text-sm font-[600]"
@@ -525,13 +549,14 @@ const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
 const promotionsStore = usePromotionsStore()
 const { groups: promotionGroups } = storeToRefs(promotionsStore)
-const { tabButtons: casinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
+const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
 
 const { side } = sideIcons
 type SidebarSubmenuItem = {
   id: string
   name: string
   icon: string | Component
+  iconSelect?: string | Component
   handler?: () => void
   children?: SidebarSubmenuItem[]
   external?: boolean
@@ -543,6 +568,7 @@ type SidebarMenuGroup = {
   id: string
   name: string
   icon: string | Component
+  iconSelect?: string | Component
   handler?: () => void
   children?: SidebarSubmenuItem[]
   renderAsGroup?: boolean
@@ -551,6 +577,8 @@ type SidebarMenuGroup = {
   section?: 'expandable' | 'normal' | 'bottom'
   groupKey?: string
 }
+
+type SidebarMenuEntry = SidebarSubmenuItem | SidebarMenuGroup
 
 const { expandedMenus, activeMenuId, activeThirdLevelMenuId } = useSidebarMenuState()
 const showLeaveFeedbackModal = ref(false)
@@ -592,6 +620,31 @@ const hasChildren = (menu: SidebarMenuGroup): boolean => {
 
 const hasGroupedChildren = (menu: SidebarMenuGroup): boolean => {
   return Boolean(menu.renderAsGroup && menu.children && menu.children.length > 0)
+}
+
+/** 判断菜单项当前是否处于选中分支，用于切换选中态图标 */
+const isSidebarMenuEntryActive = (entry: SidebarMenuEntry): boolean => {
+  if ('groupKey' in entry || 'renderAsGroup' in entry) {
+    return isMenuGroupActive(entry)
+  }
+
+  return isSubmenuBranchActive(entry)
+}
+
+/** 根据菜单选中状态返回当前应展示的图标 */
+const getMenuIcon = (entry: SidebarMenuEntry) => {
+  return isSidebarMenuEntryActive(entry) && entry.iconSelect ? entry.iconSelect : entry.icon
+}
+
+/** 判断当前菜单图标是否是图片地址 */
+const isStringMenuIcon = (entry: SidebarMenuEntry): boolean => {
+  return typeof getMenuIcon(entry) === 'string'
+}
+
+/** 返回图片类型菜单图标地址 */
+const getMenuImageIcon = (entry: SidebarMenuEntry): string => {
+  const icon = getMenuIcon(entry)
+  return typeof icon === 'string' ? icon : ''
 }
 
 // 当前悬浮的子菜单
@@ -741,14 +794,17 @@ const handleThirdLevelClick = (item: any) => {
   }
   hoveredSubmenu.value = null
 }
-/** 浅色模式下使用logo图片*/
+/** 返回娱乐城分类未选中态图标 */
 const gameCategorySubmenuIcon = (item: CasinoTabButtonItem) => {
-  if (themeStore.theme === 'light' && item.logo?.trim()) {
-    return item.logo
-  }
   return item.icon
 }
 
+/** 返回娱乐城分类选中态图标 */
+const gameCategorySubmenuIconSelect = (item: CasinoTabButtonItem) => {
+  return item.iconSelect
+}
+
+/** 组装娱乐城子菜单：热门游戏和厂商为固定项，其余分类来自 gc/getGameType */
 const buildCasinoMenuChildren = (): SidebarSubmenuItem[] => {
   return casinoTabButtons.value
     .filter(item => item.sysGameTypeCode !== '')
@@ -756,6 +812,7 @@ const buildCasinoMenuChildren = (): SidebarSubmenuItem[] => {
       id: `casino_${item.sysGameTypeCode}`,
       name: item.sysGameTypeName,
       icon: gameCategorySubmenuIcon(item),
+      iconSelect: gameCategorySubmenuIconSelect(item),
       handler: () => {
         navigateTo(`/casino/${item.sysGameTypeCode}`)
       }
@@ -821,6 +878,8 @@ const voucherSubmenuChildren = computed<SidebarSubmenuItem[]>(() => {
 })
 
 onMounted(() => {
+  void loadCasinoTabButtons()
+
   if (isLoggedIn.value) {
     void refreshUserTicketInventory()
   }
