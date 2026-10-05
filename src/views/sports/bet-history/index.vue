@@ -279,6 +279,7 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { useSportsAuthStore } from '@/stores/sportsAuth'
+import type { SportsCredentials } from '@/stores/sportsAuth'
 import { useUserStore } from '@/stores/user'
 import { globalShowToast } from '@/utils/toast'
 import { navigateTo } from '@/utils/router'
@@ -296,7 +297,12 @@ import {
 
 type SportsBetHistoryStatus = 'settled' | 'unsettled'
 type SportsBetHistoryTime =
-  'all' | 'today' | 'yesterday' | 'last3days' | 'last15days' | 'last30days'
+  | 'all'
+  | 'today'
+  | 'yesterday'
+  | 'last3days'
+  | 'last15days'
+  | 'last30days'
 type SportsBetHistoryFilterValues = {
   status: SportsBetHistoryStatus
   time: SportsBetHistoryTime
@@ -318,6 +324,68 @@ const getCredentialOwner = () =>
     currentCurrencyCode.value,
     languageCode.value
   ])
+
+// 判断体育网关是否返回登录凭据失效状态，102 为令牌失效，202 为用户名无效。
+const isSportsAuthExpiredCode = (code: unknown) => [102, 202].includes(Number(code))
+
+// 使用指定凭据请求当前投注历史分类，重试时会重新生成时间戳和鉴权参数。
+const requestSportsBetHistory = (
+  baseUrl: string,
+  settled: boolean,
+  credentials: SportsCredentials
+): Promise<SportsBetHistoryResponse> => {
+  const authParams = {
+    LanguageCode: languageCode.value,
+    MemberCode: credentials.memberCode,
+    Token: credentials.token,
+    TimeStamp: createSportsGatewayTimeStamp()
+  }
+  if (settled) {
+    const params = {
+      ...resolveStatementDateRange(filterValues.value.time),
+      DateType: 2 as const,
+      StartTime: '12:00:00' as const,
+      EndTime: '11:59:59' as const,
+      ...authParams
+    }
+    console.log('已结算携带参数', params)
+    return Api.sport.getStatement(baseUrl, params)
+  }
+  const params = {
+    BetConfirmationStatus: [1, 2, 3, 4] as [1, 2, 3, 4],
+    ...authParams
+  }
+  console.log('未结算携带参数', params)
+  return Api.sport.getBetList(baseUrl, params)
+}
+
+// 体育历史接口遇到 102/202 时，清掉旧凭据并用 ensureCredentials 重新获取后只重试当前接口一次。
+const requestSportsBetHistoryWithCredentialRetry = async (
+  baseUrl: string,
+  settled: boolean,
+  isCurrent: () => boolean
+): Promise<SportsBetHistoryResponse | null> => {
+  let credentials = await sportsAuth.ensureCredentials()
+  if (!isCurrent()) return null
+  if (!credentials) {
+    console.warn('[sportsBetHistoryMissingParams]', { baseUrl, authParams: null })
+    return null
+  }
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (!sportsAuth.isCredentialsCurrent(credentials)) return null
+    const response = await requestSportsBetHistory(baseUrl, settled, credentials)
+    if (!isCurrent()) return null
+    if (!isSportsAuthExpiredCode(response.stc)) return response
+    sportsAuth.clearCredentials(credentials)
+    if (attempt === 1) return response
+    credentials = await sportsAuth.ensureCredentials()
+    if (!isCurrent()) return null
+    if (!credentials) return response
+  }
+
+  return null
+}
 
 usePageScrollLock(() => isMobile.value)
 
@@ -526,20 +594,15 @@ const fetchSportsBetHistory = async () => {
       return
     }
     context = sportsAuth.contextVersion
-    const credentials = await sportsAuth.ensureCredentials()
-    if (!isCurrent()) return
-    if (!credentials) {
-      console.warn('[sportsBetHistoryMissingParams]', { baseUrl, authParams: null })
+    const settled = filterValues.value.status === 'settled'
+    const response = await requestSportsBetHistoryWithCredentialRetry(baseUrl, settled, isCurrent)
+    if (!isCurrent() || !response) return
+    console.log(settled ? '已结算响应数据' : '未结算响应数据', response)
+    if (isSportsAuthExpiredCode(response.stc)) {
+      globalShowToast({ type: 'fail', message: t('sports.betLoginFailed') })
       return
     }
-    if (!sportsAuth.isCredentialsCurrent(credentials)) return
-    const authParams = {
-      LanguageCode: languageCode.value,
-      MemberCode: credentials.memberCode,
-      Token: credentials.token,
-      TimeStamp: createSportsGatewayTimeStamp()
-    }
-    const settled = filterValues.value.status === 'settled'
+    /*
     let response: SportsBetHistoryResponse
     if (settled) {
       const params = {
@@ -566,6 +629,7 @@ const fetchSportsBetHistory = async () => {
       globalShowToast({ type: 'fail', message: t('sports.betLoginFailed') })
       return
     }
+    */
     sportsBetHistoryList.value = Array.isArray(response?.wl) ? response.wl : []
   } catch (error) {
     if (isCurrent()) {

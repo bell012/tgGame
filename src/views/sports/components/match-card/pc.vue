@@ -5,7 +5,7 @@
     :data-sports-match="match.id"
     :data-expanded="expanded"
     data-testid="sports-pc-match-card"
-    @click="goToEventDetails"
+    @click="goToEventDetails(match)"
     @transitionend="onOddsTransitionEnd"
   >
     <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
@@ -143,8 +143,7 @@ import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
-import { navigateTo } from '@/utils/router'
-import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
+import { goToEventDetails } from '../../shared/event-details-navigation'
 import { pickHomepageMarketLines } from '../match-odds/display'
 import MatchOdds from '../match-odds/index.vue'
 import MatchTime from './time.vue'
@@ -200,14 +199,4 @@ const emit = defineEmits<{
   select: [payload: OddsSelectPayload]
   favorite: []
 }>()
-
-const goToEventDetails = () => {
-  persistEventDetailsMatch(props.match)
-  navigateTo('/sports/event-details', {
-    query: {
-      sportId: props.match.sportId,
-      eventId: props.match.EventId
-    }
-  })
-}
 </script>

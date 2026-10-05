@@ -201,6 +201,7 @@ export function useChatRuntime() {
   const autoReplyItemsByIssue = new Map<string, AutoReplyItem[]>()
   const activeConversation = ref<ConversationItem | null>(null)
   const loadingConversations = ref(true)
+  let isLoadingConversations = false
   const loadingAutoReplies = ref(false)
   const uploadingImage = ref(false)
   const redPacketClaimingMessageIds = ref<string[]>([])
@@ -524,8 +525,13 @@ export function useChatRuntime() {
   }
 
   /** 请求在线客服列表并按后端排序字段稳定展示。 */
-  const loadConversations = async () => {
-    loadingConversations.value = true
+  const loadConversations = async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (isLoadingConversations) return
+
+    isLoadingConversations = true
+    if (!silent) {
+      loadingConversations.value = true
+    }
 
     try {
       const response = await Api.chat.queryOnlineCustomer(
@@ -542,13 +548,18 @@ export function useChatRuntime() {
         .map(item => ({ ...item, id: String(item.id) }))
       conversations.value = await Promise.all(customerConversations.map(hydrateConversationPreview))
     } catch (error) {
-      conversations.value = []
-      globalShowToast({
-        message: error instanceof Error ? error.message : 'Failed to load customer service list',
-        type: 'fail'
-      })
+      if (!silent) {
+        conversations.value = []
+        globalShowToast({
+          message: error instanceof Error ? error.message : 'Failed to load customer service list',
+          type: 'fail'
+        })
+      }
     } finally {
-      loadingConversations.value = false
+      isLoadingConversations = false
+      if (!silent) {
+        loadingConversations.value = false
+      }
     }
   }
 

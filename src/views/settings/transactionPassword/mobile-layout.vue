@@ -3,7 +3,17 @@
     <SmsCodeHelpPopup v-model="showSmsCodeHelpPopup" />
 
     <!-- 第一步 -->
-    <template v-if="currentStep === 'verification'">
+    <template v-if="!hasLoginMobile">
+      <button
+        type="button"
+        class="relative mt-[60px] flex h-[40px] w-full items-center justify-center overflow-hidden rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
+        @click="handleGoSetMobileNumber"
+      >
+        <span>{{ t('common.setMobileNumber') }}</span>
+      </button>
+    </template>
+
+    <template v-else-if="currentStep === 'verification'">
       <div class="flex flex-col items-center mt-[30px]">
         <SetIcon class="h-[30px] w-[30px] text-text-2" />
         <h2 class="mt-2.5 text-center text-base font-[700] text-text-1">
@@ -12,9 +22,23 @@
         <p class="mt-2.5 text-center text-xs font-[400] text-text-2">
           {{ t('common.verificationCodeSentTo') }}
         </p>
-        <p class="mt-2.5 text-center text-sm font-[700] text-text-1">
-          {{ phoneNumberDisplay }}
-        </p>
+        <div
+          class="mt-4 flex h-[48px] w-full items-center rounded-[8px] border border-input-2 bg-input-3 px-3.5"
+        >
+          <button
+            type="button"
+            class="mr-2 flex cursor-default items-center gap-1 text-base font-[700] text-theme-primary"
+          >
+            <span>{{ currentAreaCodeDisplay }}</span>
+            <XiaIcon class="h-3 w-3 opacity-40" />
+          </button>
+          <input
+            :value="resolvedTelephone"
+            type="tel"
+            readonly
+            class="h-full w-full cursor-default bg-transparent text-base font-[700] text-text-1 outline-none"
+          />
+        </div>
       </div>
 
       <div class="mt-5">
@@ -181,6 +205,7 @@
 import ButtonLoadingSpinner from '@/components/common/ButtonLoadingSpinner.vue'
 import SmsCodeHelpPopup from '@/components/common/SmsCodeHelpPopup.vue'
 import SetIcon from '@/static/svg/set.svg?component'
+import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
 import { useTransactionPassword } from './shared'
 
 const {
@@ -197,12 +222,15 @@ const {
   transactionPasswordInputRef,
   confirmTransactionPasswordInputRef,
   isResendCountdownRunning,
-  phoneNumberDisplay,
+  hasLoginMobile,
+  currentAreaCodeDisplay,
+  resolvedTelephone,
   resendActionText,
   resendActionClass,
   isConfirmButtonDisabled,
   isUpdatePasswordButtonDisabled,
   focusVerificationInput,
+  handleGoSetMobileNumber,
   focusTransactionPasswordInput,
   focusConfirmTransactionPasswordInput,
   openSmsCodeHelpPopup,

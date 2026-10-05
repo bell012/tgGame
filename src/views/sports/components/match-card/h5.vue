@@ -4,7 +4,7 @@
     :data-sports-match="match.id"
     :data-live="match.live"
     data-testid="sports-h5-match-card"
-    @click="goToEventDetails"
+    @click="goToEventDetails(match)"
   >
     <div class="grid min-w-0 grid-cols-[minmax(0,430fr)_minmax(0,522fr)] gap-2.5">
       <div class="flex min-w-0 flex-col">
@@ -110,8 +110,7 @@ import { Loading } from 'vant'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
-import { navigateTo } from '@/utils/router'
-import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
+import { goToEventDetails } from '../../shared/event-details-navigation'
 import MatchOdds from '../match-odds/index.vue'
 import MatchTime from './time.vue'
 import MatchScores from './scores.vue'
@@ -141,14 +140,4 @@ const totalScore = computed(() =>
     ? `${props.match.HomeScore}-${props.match.AwayScore}`
     : ''
 )
-
-const goToEventDetails = () => {
-  persistEventDetailsMatch(props.match)
-  navigateTo('/sports/event-details', {
-    query: {
-      sportId: props.match.sportId,
-      eventId: props.match.EventId
-    }
-  })
-}
 </script>

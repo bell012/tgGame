@@ -6,18 +6,18 @@
 export interface LoginSetFormField {
   captcha: boolean
   enable: boolean // ture 开启邀请码
-  required: boolean
+  required: boolean // true 必填  false 非必填
 }
 
 export interface LoginSetAccountField {
-  enable: number
-  verifyMethod: number
+  enable: number // 是否开启 0关闭  1启用
+  verifyMethod: number //校验方式 0验证码 1密码 2验证码和密码
 }
 
 export interface LoginSetResult {
   deviceChangeVerifyEnabled: number
   deviceChangeVerifyMethod: number
-  emailAccount: LoginSetAccountField
+  emailAccount: LoginSetAccountField // 显示邮箱  tab
   imageCaptchaEnabled: number // 是否开启自研图片验证码   0关闭 1开启
   invitationCode: LoginSetFormField // 邀请码
   loginAuthType: number[] // 登录验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
@@ -25,8 +25,8 @@ export interface LoginSetResult {
   loginMethod: number[] // 登陆方式1账号密码 2手机号码
   loginWrongLimit: number
   memberName: LoginSetFormField // 会员真实姓名
-  mobileAccount: LoginSetAccountField
-  normalAccount: LoginSetAccountField
+  mobileAccount: LoginSetAccountField // 显示手机 tab
+  normalAccount: LoginSetAccountField // 显示用户名 tab
   phone: LoginSetFormField // 手机号码
   registerAccountType: number[]
   registerAuthType: number[] // 注册验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
@@ -50,17 +50,31 @@ export interface LoginSetResponse {
   success: boolean
 }
 
+// 自研图片验证码 /sy/captcha/image
+export interface CaptchaImageResult {
+  captchaKey: string
+  expireSeconds: number
+  imageBase64: string
+}
+
+export interface CaptchaImageResponse {
+  code: string
+  message: string
+  success?: boolean
+  result: CaptchaImageResult
+}
+
 // 会员登录 /mc/loginMember
 export interface LoginForm {
-  memberId: string // 会员账号(账号还是手机都要传)
-  telephone: string // 手机号码
-  memberPwd: string // 会员密码,
+  memberId: string // 用户名登录传用户账号，手机号登录传手机号码
+  telephone?: string // 手机号码
   areaCode: string // 区号
-  validateCode?: string // 验证码(如果是三方Oauth2授权则传授权token)
+  memberPwd: string // 会员密码
+  smsCode?: string // 手机号登录验证码
   channelId: string // 注册终端  1:竖版  2:横版  3:PC 4:H5  5:其他
   requestMethod: string // 0:账号密码 1:手机号码 2:纸飞机 3:脸书 4:X公司 5:Line 6:谷歌 7:微信
-  captchaCode?: string // 开启自研图片验证码  需要传   用户输入
-  captchaKey?: string // 开启自研图片验证码  需要传   后端给的
+  captchaCode?: string // 开启自研图片验证码时传，用户输入的图形码
+  captchaKey?: string // 开启自研图片验证码时传，CaptchaImageResult 返回的 captchaKey
 }
 
 // 登录响应
@@ -110,14 +124,16 @@ export interface RegisterForm {
   memberId: string // 会员账号(账号还是手机都要传)
   channelId: string // 注册终端  1:竖版  2:横版  3:PC 4:H5  5:其他
   languageCode: string // 语言编码  zh中文  en英文
-  requestMethod: number // 0:账号密码 1:手机号码
+  requestMethod: number // 1:用户注册 2:手机号码注册
   currency: string // 币种
-  smsCode: string // 短信验证码
-  memberPwd?: string // 会员密码,手机注册时可以不传
-  areaCode: string // 区号（手机号注册时需要）
-  telephone: string // 手机号码 手机注册时也要传值
+  smsCode?: string // 短信验证码
+  memberPwd?: string // 会员密码
+  areaCode?: string // 区号（手机号注册时需要）
+  telephone?: string // 手机号码 手机注册时要传值
   nickName: string // 会员姓名
   invitationCode?: string // 邀请码
+  captchaCode?: string // 开启自研图片验证码时传，用户输入的图形码
+  captchaKey?: string // 开启自研图片验证码时传，CaptchaImageResult 返回的 captchaKey
 }
 
 // 注册响应

@@ -24,7 +24,12 @@ export type OrderTypeIconMap = Record<string, OrderTypeMeta>
 export type OrderTab = 'deposits' | 'withdrawals'
 export type OrderStatus = string
 export type OrderTimeFilter =
-  'all' | 'today' | 'yesterday' | 'last3days' | 'last15days' | 'last30days'
+  | 'all'
+  | 'today'
+  | 'yesterday'
+  | 'last3days'
+  | 'last15days'
+  | 'last30days'
 export type OrderTypeFilter = 'all' | 'gcash' | 'maya' | 'grabpay' | 'shopeepay' | 'usdt'
 export type OrderStatusFilter = 'all' | 'success' | 'failed' | 'processing'
 

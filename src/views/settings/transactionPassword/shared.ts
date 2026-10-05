@@ -1,9 +1,13 @@
 import Api from '@/api'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
-import { getDefaultAreaCode, getDefaultAreaCodeDisplay } from '@/utils/locale'
-import { handleVerificationCodeInput } from '@/utils/phone-input'
+import {
+  DEFAULT_PHONE_AREA_CODE,
+  getPhoneAreaCodeOption,
+  handleVerificationCodeInput
+} from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
+import { navigateToName } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast.ts'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, type ComputedRef } from 'vue'
@@ -11,17 +15,13 @@ import { useI18n } from 'vue-i18n'
 
 const SMS_COUNTDOWN_STORAGE_KEY = 'transaction-password-sms-countdown'
 
-type TransactionPasswordMode = 'set' | 'change'
-
 export const useTransactionPassword = () => {
   const { t } = useI18n()
   const userStore = useUserStore()
+  userStore.syncStoredUserData()
   const { userInfo, acctInfo } = storeToRefs(userStore)
-  const defaultAreaCode = getDefaultAreaCode()
-  const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 
   const currentStep = ref<'verification' | 'password'>('verification')
-  const transactionPasswordMode = ref<TransactionPasswordMode>('set')
   const verificationCode = ref('')
   const transactionPassword = ref('')
   const confirmTransactionPassword = ref('')
@@ -42,26 +42,32 @@ export const useTransactionPassword = () => {
   const { remainingSeconds, startCountdown, clearCountdown, syncCountdown } = countdownState
 
   const isResendCountdownRunning: ComputedRef<boolean> = countdownState.isRunning
+  const resolvedAreaCode = computed(() => String(userInfo.value?.areaCode ?? '').trim())
+  const resolvedTelephone = computed(() => String(userInfo.value?.telephone ?? '').trim())
+  const hasLoginMobile = computed(() => {
+    return resolvedAreaCode.value.length > 0 && resolvedTelephone.value.length > 0
+  })
+  const hasTransactionPassword = computed(() => {
+    return String(userInfo.value?.busiPwd ?? '').trim().length > 0
+  })
 
-  /**
-   * 同步交易密码模式。
-   */
-  const syncTransactionPasswordMode = () => {
-    transactionPasswordMode.value = userInfo.value?.busiPwd ? 'change' : 'set'
-  }
+  const pageTitle = computed(() => {
+    if (!hasLoginMobile.value) {
+      return t('common.setTransactionPassword')
+    }
 
-  const pageTitle = computed(() =>
-    transactionPasswordMode.value === 'change'
+    return hasTransactionPassword.value
       ? t('common.changeTransactionPassword')
       : t('common.setTransactionPassword')
-  )
+  })
 
-  const resolvedTelephone = computed(() => String(userInfo.value?.telephone ?? '').trim())
-  const phoneNumberDisplay = computed(() =>
-    resolvedTelephone.value
-      ? `${defaultAreaCodeDisplay} ${resolvedTelephone.value}`
-      : `${defaultAreaCodeDisplay} --`
-  )
+  const currentAreaCode = computed(() => resolvedAreaCode.value || DEFAULT_PHONE_AREA_CODE)
+  const currentAreaCodeDisplay = computed(() => {
+    const areaCode = currentAreaCode.value
+    const option = getPhoneAreaCodeOption(areaCode)
+
+    return option.code === areaCode ? option.display : `+${areaCode}`
+  })
 
   const resendActionText = computed(() => {
     if (isResendCountdownRunning.value) {
@@ -128,6 +134,13 @@ export const useTransactionPassword = () => {
   }
 
   /**
+   * 跳转到设置手机号码页面。
+   */
+  const handleGoSetMobileNumber = () => {
+    void navigateToName('changeMobileNumber')
+  }
+
+  /**
    * 聚焦交易密码输入框。
    */
   const focusTransactionPasswordInput = async () => {
@@ -157,7 +170,6 @@ export const useTransactionPassword = () => {
       await userStore.refreshCurrentUserData()
     }
 
-    syncTransactionPasswordMode()
     syncCountdown()
     hasRequestedSmsCode.value = remainingSeconds.value > 0
   }
@@ -224,7 +236,7 @@ export const useTransactionPassword = () => {
       return
     }
 
-    if (!resolvedTelephone.value) {
+    if (!hasLoginMobile.value) {
       showMessageToast(t('common.phoneNumberUnavailable'), 10001)
       return
     }
@@ -233,7 +245,7 @@ export const useTransactionPassword = () => {
       isSendingCode.value = true
       const response = await Api.auth.sendSms({
         telephone: resolvedTelephone.value,
-        areaCode: defaultAreaCode
+        areaCode: currentAreaCode.value
       })
 
       if (response?.code === 'C2') {
@@ -260,7 +272,7 @@ export const useTransactionPassword = () => {
       isConfirmingCode.value = true
       const response = await Api.auth.checkSms({
         telephone: resolvedTelephone.value,
-        areaCode: defaultAreaCode,
+        areaCode: currentAreaCode.value,
         smsCode: verificationCode.value
       })
 
@@ -315,7 +327,6 @@ export const useTransactionPassword = () => {
       if (response?.code === 'C2') {
         resetTransactionPasswordState({ clearCountdown: true })
         await userStore.refreshCurrentUserData()
-        syncTransactionPasswordMode()
         return
       }
     } catch (error) {
@@ -344,12 +355,15 @@ export const useTransactionPassword = () => {
     transactionPasswordInputRef,
     confirmTransactionPasswordInputRef,
     isResendCountdownRunning,
-    phoneNumberDisplay,
+    hasLoginMobile,
+    currentAreaCodeDisplay,
+    resolvedTelephone,
     resendActionText,
     resendActionClass,
     isConfirmButtonDisabled,
     isUpdatePasswordButtonDisabled,
     focusVerificationInput,
+    handleGoSetMobileNumber,
     focusTransactionPasswordInput,
     focusConfirmTransactionPasswordInput,
     openSmsCodeHelpPopup,

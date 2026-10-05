@@ -83,7 +83,12 @@ type SportsRequestError = {
 }
 
 type SportsFavouriteResult =
-  'success' | 'synced' | 'failed' | 'login-failed' | 'auth-expired' | 'stale'
+  | 'success'
+  | 'synced'
+  | 'failed'
+  | 'login-failed'
+  | 'auth-expired'
+  | 'stale'
 
 type SportsRequestState<Params, Response> = {
   params: Params | null
@@ -155,7 +160,7 @@ const mergeGroupBatches = async (
   let batch: SportCompetitionGroup[] = []
   let count = 0
   for (const group of groups) {
-    for (let offset = 0; offset < Math.max(1, group.Sports.length);) {
+    for (let offset = 0; offset < Math.max(1, group.Sports.length); ) {
       if (!isCurrent()) return false
       const sports = group.Sports.slice(offset, offset + size - count)
       batch.push({ ...group, Sports: sports })

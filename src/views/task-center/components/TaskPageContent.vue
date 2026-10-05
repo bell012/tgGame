@@ -176,7 +176,7 @@
                   @click="handleOpenActivityChestTip(node)"
                 >
                   <img
-                    :src="node.state === 'locked' ? taskChestCloseImage : taskChestOpenImage"
+                    :src="node.state === 'claimed' ? taskChestOpenImage : taskChestCloseImage"
                     alt=""
                     class="h-full w-full object-contain"
                   />
@@ -210,7 +210,7 @@
                       : 'h-[18px] w-[50px] text-[10px] leading-3',
                     node.state === 'claimed'
                       ? 'border border-opacity-15 text-text-3'
-                      : 'bg-common-100/[0.06] text-text-2'
+                      : 'bg-opacity-6 text-text-2'
                   ]"
                 >
                   {{ activityChestActionText[node.action] }}
@@ -333,7 +333,7 @@
             "
           >
             <span
-              class="h-3 rounded-full bg-common-100/10"
+              class="h-3 rounded-full bg-opacity-10"
               :class="props.mode === 'pc' ? 'w-32' : 'w-20'"
             ></span>
           </div>
@@ -359,19 +359,19 @@
                 :class="props.mode === 'pc' ? 'w-[76px] gap-3' : 'h-[73px] w-[50px] gap-[7px]'"
               >
                 <span
-                  class="rounded-full bg-common-100/10"
+                  class="rounded-full bg-opacity-10"
                   :class="props.mode === 'pc' ? 'h-10 w-10' : 'h-[26px] w-[26px]'"
                 ></span>
                 <span
-                  class="rounded-full bg-common-100/10"
+                  class="rounded-full bg-opacity-10"
                   :class="props.mode === 'pc' ? 'h-7 w-[76px]' : 'h-[18px] w-[50px]'"
                 ></span>
-                <span class="h-3 w-9 rounded-full bg-common-100/10"></span>
+                <span class="h-3 w-9 rounded-full bg-opacity-10"></span>
               </div>
             </div>
             <span
               v-if="props.mode === 'mobile'"
-              class="absolute left-3.5 top-[101px] h-3 w-[200px] rounded-full bg-common-100/10"
+              class="absolute left-3.5 top-[101px] h-3 w-[200px] rounded-full bg-opacity-10"
             ></span>
           </div>
 
@@ -382,8 +382,8 @@
                 : 'box-border flex h-[35px] w-[calc(100%-28px)] shrink-0 items-center gap-[5px] border-t-[0.5px] border-opacity-6 py-[10px]'
             "
           >
-            <span class="h-3 w-28 rounded-full bg-common-100/10"></span>
-            <span v-if="props.mode === 'pc'" class="h-3 w-64 rounded-full bg-common-100/10"></span>
+            <span class="h-3 w-28 rounded-full bg-opacity-10"></span>
+            <span v-if="props.mode === 'pc'" class="h-3 w-64 rounded-full bg-opacity-10"></span>
           </div>
         </div>
       </template>
@@ -410,10 +410,10 @@
           "
         >
           <div class="flex flex-1 flex-col" :class="props.mode === 'pc' ? 'gap-3' : 'gap-2'">
-            <span class="h-4 w-2/3 rounded-full bg-common-100/10"></span>
-            <span class="h-3 w-1/2 rounded-full bg-common-100/10"></span>
+            <span class="h-4 w-2/3 rounded-full bg-opacity-10"></span>
+            <span class="h-3 w-1/2 rounded-full bg-opacity-10"></span>
           </div>
-          <span class="h-8 w-20 shrink-0 rounded-[8px] bg-common-100/10"></span>
+          <span class="h-8 w-20 shrink-0 rounded-[8px] bg-opacity-10"></span>
         </article>
       </template>
 
@@ -707,9 +707,20 @@ const isActivityNodeScrollable = computed(() => {
   return props.mode === 'pc' ? nodeCount > 7 : nodeCount > 5
 })
 
+/** 任务节点中的按钮必须优先响应点击，不参与横向拖拽手势。 */
+const isActivityNodeInteractiveTarget = (target: EventTarget | null) => {
+  return target instanceof Element && Boolean(target.closest('button, a, input, select, textarea'))
+}
+
 /** 鼠标按下时记录横向滚动起点；触摸设备继续交给浏览器原生手势处理。 */
 const handleActivityNodesPointerDown = (event: PointerEvent) => {
   if (event.pointerType !== 'mouse' || !isActivityNodeScrollable.value) {
+    return
+  }
+
+  // 先清除上一次拖拽留下的拦截状态；宝箱和领取按钮不应被拖拽逻辑抢走点击。
+  shouldSuppressActivityNodeClick = false
+  if (isActivityNodeInteractiveTarget(event.target)) {
     return
   }
 
@@ -717,7 +728,6 @@ const handleActivityNodesPointerDown = (event: PointerEvent) => {
   activityNodesPointerId = event.pointerId
   activityNodesStartX = event.clientX
   activityNodesStartScrollLeft = viewport.scrollLeft
-  shouldSuppressActivityNodeClick = false
   viewport.setPointerCapture(event.pointerId)
 }
 

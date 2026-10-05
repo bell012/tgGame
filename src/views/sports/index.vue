@@ -22,8 +22,9 @@
           v-for="match in liveMatches"
           :key="match.id"
           v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
-          class="relative flex min-h-[204px] w-[360px] shrink-0 flex-col rounded-xl bg-bg-5 p-3 transition-colors hover:bg-opacity-6"
+          class="relative flex min-h-[204px] w-[360px] shrink-0 cursor-pointer flex-col rounded-xl bg-bg-5 p-3 transition-colors hover:bg-opacity-6"
           :data-sports-match="`live:${match.id}`"
+          @click="goToEventDetails(match)"
         >
           <div class="flex h-5 items-center justify-between gap-3 text-xs text-text-2">
             <div class="flex min-w-0 items-center gap-2">
@@ -62,7 +63,7 @@
             :AwayTeamId="match.AwayTeamId"
           />
 
-          <div class="mt-auto min-w-0 pt-3">
+          <div class="mt-auto min-w-0 pt-3" @click.stop>
             <MatchOdds
               v-if="match.MarketLines.length"
               :MarketLines="match.MarketLines"
@@ -238,6 +239,7 @@ import H5Page from './components/page/h5.vue'
 import BetSlipH5 from './components/bet-slip/h5.vue'
 import { useSportsPage } from './index'
 import { useMatchVisibility } from './composables/useMatchVisibility'
+import { goToEventDetails } from './shared/event-details-navigation'
 
 const isMobile = useIsMobile()
 const { t } = useI18n()
