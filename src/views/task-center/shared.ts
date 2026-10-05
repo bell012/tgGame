@@ -685,6 +685,9 @@ const isRechargeAmountTask = (taskType: MemberTaskItem['taskType']) =>
       .toUpperCase()
   )
 
+/** rechargeNum = 1 表示单笔充值；该模式仅按领取状态展示 0% 或 100%。 */
+const isSingleRechargeTask = (task: MemberTaskItem) => Number(task.rechargeNum) === 1
+
 /** 判断给定时间戳是否与当前浏览器本地日期属于同一天。 */
 const isTaskSameLocalDay = (timestamp: unknown, currentDate: Date) => {
   const date = new Date(Number(timestamp))
@@ -852,8 +855,12 @@ const createMemberTaskProgress = (
     return 100
   }
 
-  // CZ、CZ2 至 CZ5：按累计充值金额计算任务进度。
+  // 单笔充值仅根据后端领取状态判断是否达成；多笔充值才使用累计金额比例。
   if (isRechargeAmountTask(task.taskType)) {
+    if (isSingleRechargeTask(task)) {
+      return createStatusTaskProgress(schedule.claimStatus)
+    }
+
     return createRechargeAmountTaskProgress(task, schedule, currentDate)
   }
 
@@ -1038,11 +1045,20 @@ const createMemberTaskInfoPopupContent = (
 
   // 充值金额型任务使用精简卡，展示当前充值金额与目标充值金额。
   if (isRechargeAmountTask(task.taskType)) {
+    const targetAmount = formatTaskInfoProgressValue(task.rechargeAmount)
+    const isSingleRechargeComplete =
+      isSingleRechargeTask(task) && createStatusTaskProgress(schedule?.claimStatus) === 100
+
     return {
       detailCards: [],
       rechargeProgress: {
-        currentAmount: formatTaskInfoProgressValue(schedule?.rechargeAmount),
-        targetAmount: formatTaskInfoProgressValue(task.rechargeAmount)
+        // 单笔充值不展示接口累计金额，严格与 0% / 100% 状态型进度同步。
+        currentAmount: isSingleRechargeComplete
+          ? targetAmount
+          : isSingleRechargeTask(task)
+            ? '0'
+            : formatTaskInfoProgressValue(schedule?.rechargeAmount),
+        targetAmount
       },
       requiresTierClaimReminder,
       variant: 'compact'
