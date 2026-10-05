@@ -141,6 +141,8 @@ export interface MemberTaskItem {
   rewardMinAmount?: number | string
   rewardMaxAmount?: number | string
   rewardRatio?: number | string
+  /** 奖励模型：2 表示阶梯奖励任务。 */
+  rewardModel?: number | string
   rechargeAmount?: number
   rechargeNum?: number
   acrossDay?: number | string

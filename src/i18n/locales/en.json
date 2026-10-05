@@ -414,6 +414,7 @@
     "general": "General",
     "entrant": "Newcomer Benefits",
     "reward": "Reward",
+    "rewardCap": "Cap",
     "todayDeposit": "Today's Deposit",
     "todayValidBets": "Today's Valid Bets",
     "activity": "Activity :",

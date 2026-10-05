@@ -83,7 +83,7 @@
                     {{ t('taskCenter.rechargeProgress') }}
                     <span class="text-text-1">
                       {{
-                        `${taskData.rechargeProgress.currentAmount} / ${taskData.rechargeProgress.targetAmount}`
+                        `${formatCappedRechargeCurrentAmount(taskData.rechargeProgress.currentAmount, taskData.rechargeProgress.targetAmount)} / ${taskData.rechargeProgress.targetAmount}`
                       }}
                     </span>
                   </p>
@@ -134,15 +134,6 @@
                       {{ getDetailCardActionText(card.action) }}
                     </span>
                   </div>
-
-                  <!-- 阶梯任务每档使用后台返回的 rewardText 展示奖励金额。 -->
-                  <p
-                    v-if="card.rewardText"
-                    class="-mt-2.5 m-0 truncate text-[13px] font-[400] leading-4 text-text-2"
-                  >
-                    {{ t('taskCenter.reward') }}
-                    <span class="text-text-1">{{ card.rewardText }}</span>
-                  </p>
 
                   <!-- H5 指标区：两列布局，条件数量可由后台动态扩展。 -->
                   <div class="grid grid-cols-2 gap-x-2.5 gap-y-5">
@@ -287,7 +278,7 @@
                     {{ t('taskCenter.rechargeProgress') }}
                     <span class="text-text-1">
                       {{
-                        `${taskData.rechargeProgress.currentAmount} / ${taskData.rechargeProgress.targetAmount}`
+                        `${formatCappedRechargeCurrentAmount(taskData.rechargeProgress.currentAmount, taskData.rechargeProgress.targetAmount)} / ${taskData.rechargeProgress.targetAmount}`
                       }}
                     </span>
                   </p>
@@ -324,15 +315,6 @@
                         {{ getDetailCardActionText(card.action) }}
                       </span>
                     </div>
-
-                    <!-- 阶梯任务每档使用后台返回的 rewardText 展示奖励金额。 -->
-                    <p
-                      v-if="card.rewardText"
-                      class="-mt-2.5 m-0 truncate text-[14px] font-[400] leading-5 text-text-2"
-                    >
-                      {{ t('taskCenter.reward') }}
-                      <span class="text-text-1">{{ card.rewardText }}</span>
-                    </p>
 
                     <!-- PC 指标区：两列布局，条件数量可由后台动态扩展。 -->
                     <div class="grid grid-cols-2 gap-x-5 gap-y-5">
@@ -552,6 +534,18 @@ const formatCappedConditionCurrentValue = (condition: TaskConditionProgressItem)
   }
 
   return formatProgressValue(condition.currentValue)
+}
+
+/** 充值金额达到目标后展示目标值，避免“当前 / 上限”出现超过 100% 的数值。 */
+const formatCappedRechargeCurrentAmount = (currentAmount: unknown, targetAmount: unknown) => {
+  const current = Number(currentAmount)
+  const target = Number(targetAmount)
+
+  if (Number.isFinite(current) && Number.isFinite(target) && current > target) {
+    return formatProgressValue(targetAmount)
+  }
+
+  return formatProgressValue(currentAmount)
 }
 
 /** 关闭任务说明弹窗。 */

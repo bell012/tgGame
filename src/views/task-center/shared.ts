@@ -9,6 +9,7 @@ import type {
   TaskScheduleItem,
   TaskTierProgressItem
 } from '@/api/interface/task-center'
+import i18n from '@/i18n'
 
 /** 任务栏目键由后台 columnCode 动态生成。 */
 export type TaskTabKey = string
@@ -503,8 +504,16 @@ const createMemberTaskReward = (task: MemberTaskItem) => {
   }
 }
 
+/** 阶梯奖励配置中单个档位的条件定义。 */
+interface TaskTierRewardConditionConfigItem {
+  code?: unknown
+  target?: unknown
+}
+
 /** 阶梯奖励配置中的单个档位，仅声明当前页面需要使用的字段。 */
 interface TaskTierRewardConfigItem {
+  conditions?: TaskTierRewardConditionConfigItem[]
+  maxAmount?: unknown
   ratio?: unknown
   tierNo?: unknown
 }
@@ -543,6 +552,18 @@ const formatTaskRewardRatio = (ratio: unknown) => {
   }
 
   return ratioText.endsWith('%') ? ratioText : `${ratioText}%`
+}
+
+/** 将无进度阶梯任务中每档后台奖励配置转换为“比例 + 上限”的展示值。 */
+const formatTierRewardValue = (tier: TaskTierRewardConfigItem) => {
+  const rewardRatio = formatTaskRewardRatio(tier.ratio)
+  const maxAmount = getTaskDisplayValue(tier.maxAmount)
+
+  if (rewardRatio && maxAmount) {
+    return `${rewardRatio} ${i18n.global.t('taskCenter.rewardCap')} ${maxAmount}`
+  }
+
+  return rewardRatio ?? maxAmount
 }
 
 /** 按 tierNo 建立阶梯任务各档奖励比例映射。 */
@@ -949,6 +970,43 @@ const createTierTaskInfoDetailCards = (
   })
 }
 
+/**
+ * 当 queryTaskSchedule 缺少阶梯任务记录时，使用 queryMemberTasks 的 rewardConfig
+ * 还原详情档位。该数据只用于说明弹窗：所有条件当前值与各档进度固定为 0%。
+ */
+const createZeroProgressTierTaskInfoDetailCards = (
+  task: MemberTaskItem
+): TaskInfoPopupDetailCard[] => {
+  const tierConfigs = [...parseTaskTierRewardConfigs(task.rewardConfig)].sort(
+    (firstTier, secondTier) => Number(firstTier.tierNo) - Number(secondTier.tierNo)
+  )
+
+  return tierConfigs.map((tier, index) => {
+    const tierNo = formatTaskInfoProgressValue(tier.tierNo ?? index + 1)
+    const conditions = (Array.isArray(tier.conditions) ? tier.conditions : [])
+      .filter(condition => condition && typeof condition === 'object')
+      .map(condition => ({
+        code: String(condition.code ?? '').trim(),
+        completed: false,
+        currentValue: 0,
+        targetValue:
+          typeof condition.target === 'number' || typeof condition.target === 'string'
+            ? condition.target
+            : ''
+      }))
+      .filter(condition => Boolean(condition.code))
+
+    return {
+      action: 'go-to-task',
+      conditions: getValidTaskConditionProgressList(conditions),
+      id: `tier-fallback-${tierNo}-${index}`,
+      progress: 0,
+      // 传入详情条件区的 reward 值，标签仍由 TaskInfoPopup 的 taskCenter.reward 负责展示。
+      reward: formatTierRewardValue(tier)
+    }
+  })
+}
+
 /** 创建普通会员条件型任务的单张详细进度卡。 */
 const createMemberTaskInfoDetailCard = (
   task: MemberTaskItem,
@@ -997,6 +1055,20 @@ const createMemberTaskInfoPopupContent = (
       detailCards: createTierTaskInfoDetailCards(task, schedule.tierProgressList),
       requiresTierClaimReminder,
       variant: 'detailed'
+    }
+  }
+
+  // 仅当接口完全未返回该阶梯任务的进度记录时，才以 rewardConfig 生成全 0% 的说明详情。
+  // 已返回 schedule 的任务继续走上方原有逻辑，绝不使用本地配置覆盖服务端进度。
+  if (!schedule && Number(task.rewardModel) === 2) {
+    const detailCards = createZeroProgressTierTaskInfoDetailCards(task)
+
+    if (detailCards.length > 0) {
+      return {
+        detailCards,
+        requiresTierClaimReminder,
+        variant: 'detailed'
+      }
     }
   }
 

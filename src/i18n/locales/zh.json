@@ -705,6 +705,7 @@
     "general": "General",
     "entrant": "新人福利",
     "reward": "奖励",
+    "rewardCap": "上限",
     "todayDeposit": "今日充值",
     "todayValidBets": "今日有效投注",
     "activity": "活动度：",
