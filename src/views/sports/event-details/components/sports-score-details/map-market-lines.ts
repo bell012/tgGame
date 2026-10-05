@@ -3,7 +3,11 @@ import type {
   SportWagerSelection,
   SportsResponseOddsType
 } from '@/api/interface/sport'
-import { hasFiniteOdds, shouldShowHandicap } from '@/views/sports/components/match-odds/display'
+import {
+  formatHandicap,
+  hasFiniteOdds,
+  shouldShowHandicap
+} from '@/views/sports/components/match-odds/display'
 import type {
   DualColumnMarketCard,
   OneXTwoMarketCard,
@@ -34,7 +38,7 @@ const hasOddsForFormat = (selection: SportWagerSelection, oddsFormat: EventDetai
 
 const formatLine = (line: SportMarketLine, selection: SportWagerSelection) => {
   if (shouldShowHandicap(line, selection)) {
-    return String(selection.Handicap)
+    return formatHandicap(selection.Handicap)
   }
   return selection.SelectionName?.trim() ?? ''
 }
