@@ -41,7 +41,7 @@
               aria-hidden="true"
               muted
               playsinline
-              preload="auto"
+              preload="metadata"
               class="h-[35px] w-[35px] shrink-0 rounded-[3px] bg-common-0 object-cover"
             ></video>
             <div class="min-w-0 flex-1">

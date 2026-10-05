@@ -57,6 +57,7 @@
         @send="handleSend"
         @emoji="toggleEmoji"
         @media="toggleMedia"
+        @composer-focus="handleComposerFocus"
         @cancel-reply="cancelReply"
         @emoji-select="handleEmojiSelect"
         @emoji-delete="handleEmojiDelete"
@@ -280,6 +281,7 @@ const handleSearchLocate = async (messageId: string, keyword: string) => {
 
 /** 打开所选自动回复分类，并请求其对应的后台问题列表。 */
 const handleIssueSelect = async (issue: QuickIssue) => {
+  mode.value = 'idle'
   activeIssue.value = issue
   quickIssueVisible.value = true
   await loadAutoReplies(issue)
@@ -312,6 +314,13 @@ const handleEmojiSelect = (emoji: string) => {
 const handleEmojiDelete = () => {
   setDraft(Array.from(draft.value).slice(0, -1).join(''))
   mode.value = 'emoji'
+}
+
+/** H5 用户点回输入框时，收起与软键盘互斥的图片选择面板。 */
+const handleComposerFocus = () => {
+  if (mode.value === 'media') {
+    mode.value = draft.value.trim() ? 'typing' : 'idle'
+  }
 }
 
 /** 首次进入客服页时并行请求在线客服和自动回复分类。 */

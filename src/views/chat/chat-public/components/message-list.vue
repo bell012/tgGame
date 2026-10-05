@@ -46,7 +46,11 @@
           />
           <!-- 回复消息 -->
           <MessageBubble
-            v-else
+            v-else-if="
+              message.type !== 'auto-reply' ||
+              Boolean(message.text) ||
+              (!message.imageList?.length && !message.autoReplyType?.includes('video'))
+            "
             :display-mode="props.displayMode"
             :highlight-keyword="
               message.id === props.highlightMessageId ? props.highlightKeyword : ''

@@ -5,7 +5,7 @@
     class="z-[100] flex items-end"
     :class="
       props.displayMode === 'pc'
-        ? 'absolute inset-x-0 bottom-0 bg-bg-5'
+        ? 'absolute inset-x-0 bottom-[64px] max-h-[calc(100%-64px)] bg-bg-5'
         : 'fixed inset-0 bg-mask-60-1'
     "
     @click.self="$emit('close')"
@@ -15,7 +15,7 @@
       class="w-full bg-bg-1"
       :class="
         props.displayMode === 'pc'
-          ? 'max-h-[500px] px-[12px] pb-[28px] pt-[12px]'
+          ? 'flex max-h-full flex-col px-[12px] pb-[28px] pt-[12px]'
           : 'rounded-t-[12px] px-[14px] pb-[40px] pt-[14px]'
       "
     >
@@ -45,7 +45,7 @@
         class="flex flex-col overflow-y-auto"
         :class="
           props.displayMode === 'pc'
-            ? 'mt-[20px] max-h-[460px] gap-[20px]'
+            ? 'mt-[20px] min-h-0 max-h-[460px] flex-1 gap-[20px]'
             : 'mt-[16px] max-h-[360px] gap-[18px]'
         "
       >

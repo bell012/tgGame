@@ -32,6 +32,8 @@ import type {
   ChatReplyTarget,
   ChatSocketMessage,
   ConversationItem,
+  MessageDirection,
+  MessageType,
   QuickIssue
 } from '../types'
 import {
@@ -51,6 +53,18 @@ const CHAT_MAX_VIDEO_BYTES = 100 * 1024 * 1024
 
 /** 将未知接口返回值转换为可安全遍历的数组。 */
 const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : [])
+
+/** 解码后端以 URL 编码传输的昵称；非法编码保持原文，避免影响消息正文和媒体地址。 */
+const decodeChatDisplayName = (value: unknown) => {
+  const source = String(value ?? '').trim()
+  if (!source) return ''
+
+  try {
+    return decodeURIComponent(source.replace(/\+/g, '%20'))
+  } catch {
+    return source
+  }
+}
 
 /** 复用首次欢迎语配置请求，避免布局重建时重复请求同一接口。 */
 const requestWelcomeReminderConfig = () => {
@@ -162,6 +176,20 @@ const getReplyPreview = (replyInfo: ChatReplyInfo, replyToType: ChatReplyContent
   if (replyToType === 'video') return i18n.global.t('chatPublic.video')
   return String(replyInfo.replyToContent ?? '')
 }
+
+/** 将自动回复附带的图片统一转换成聊天消息使用的媒体结构。 */
+const getAutoReplyImages = (item: AutoReplyItem) =>
+  toArray<Partial<ChatImageItem>>(item.imageList).map(mapChatImage)
+
+/** 兼容后台后续扩展的视频自动回复字段。 */
+const getAutoReplyVideoUrl = (item: AutoReplyItem) => {
+  const firstVideo = toArray<{ videoUrl?: string; url?: string }>(item.videoList)[0]
+  return String(item.videoUrl ?? firstVideo?.videoUrl ?? firstVideo?.url ?? '').trim()
+}
+
+const getAutoReplyType = (item: AutoReplyItem) => String(item.replyType ?? 'text').toLowerCase()
+
+const isAutoReplyVideo = (item: AutoReplyItem) => getAutoReplyType(item).includes('video')
 
 /** 将当前用户、站点商户编码与当前客服拼成 IndexedDB 会话缓存键。 */
 const getConversationCacheKey = (
@@ -381,6 +409,83 @@ export function useChatRuntime() {
     persistActiveConversationMessage(message)
   }
 
+  /**
+   * 回复协议只提供被回复消息 ID 时，从当前会话或 IndexedDB 还原媒体类型与地址。
+   * 这样历史图片、视频的引用摘要也能在右侧稳定显示 35px 缩略图。
+   */
+  const hydrateReplyMediaFromCache = async (message: ChatMessage) => {
+    const reply = message.reply
+    const conversation = activeConversation.value
+    if (!reply?.id || !conversation) return
+
+    const cacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
+    )
+    const originalMessage =
+      messages.value.find(item => item.id === reply.id) ??
+      (await loadCachedChatMessageById(cacheKey, reply.id))
+
+    if (
+      !originalMessage ||
+      (originalMessage.type !== 'image' && originalMessage.type !== 'video')
+    ) {
+      return
+    }
+
+    // 异步查询结束后，会话可能已切换；此时不能将旧会话的媒体写入当前缓存。
+    if (
+      !activeConversation.value ||
+      getConversationCacheKey(
+        currentChatUserId.value,
+        dealerCode.value,
+        activeConversation.value
+      ) !== cacheKey
+    ) {
+      return
+    }
+
+    const mediaUrl =
+      originalMessage.type === 'image'
+        ? originalMessage.image || originalMessage.imageList?.[0]?.imgUrl
+        : originalMessage.video
+    if (!mediaUrl) return
+
+    const currentMessage = messages.value.find(item => item.id === message.id)
+    if (!currentMessage?.reply) return
+
+    currentMessage.reply = {
+      ...currentMessage.reply,
+      mediaUrl: resolveChatMediaUrl(mediaUrl),
+      photoCount: originalMessage.type === 'image' ? 1 : undefined,
+      replyToType: originalMessage.type
+    }
+    persistActiveConversationMessage(currentMessage)
+  }
+
+  /** 图文自动回复将每张附件拆成独立媒体消息，以复用常规图片气泡渲染与预览。 */
+  const appendAutoReplyImages = (message: ChatMessage) => {
+    message.imageList?.forEach((image, index) => {
+      upsertMessage({
+        id: `${message.id}:image:${index}`,
+        direction: message.direction,
+        type: 'image',
+        image: image.imgUrl,
+        imageList: [image],
+        time: message.time,
+        period: message.period,
+        timestamp: message.timestamp,
+        read: message.read,
+        status: message.status,
+        contentType: 'image',
+        authorId: message.authorId,
+        authorName: message.authorName,
+        authorAvatar: message.authorAvatar
+      })
+    })
+  }
+
   /** 将服务端 Socket 业务消息转换为聊天页面数据模型。 */
   const mapSocketMessage = (payload: ChatSocketMessage): ChatMessage => {
     const timestamp = Number(payload.timestamp) || Date.now()
@@ -423,17 +528,17 @@ export function useChatRuntime() {
       socketContent: String(payload.content ?? ''),
       redPacket: redPacket || undefined,
       authorId: String(payload.mine?.userId ?? ''),
-      authorName: String(payload.mine?.nickName ?? ''),
+      authorName: decodeChatDisplayName(payload.mine?.nickName),
       authorAvatar: resolveChatMediaUrl(payload.mine?.avatar),
       reply: replyInfo
         ? {
             id: String(replyInfo.replyToMsgId ?? ''),
-            author: String(replyInfo.replyToUserName ?? ''),
+            author: decodeChatDisplayName(replyInfo.replyToUserName),
             preview: getReplyPreview(replyInfo, replyToType),
             photoCount: replyToType === 'image' ? 1 : undefined,
             mediaUrl: getReplyMediaUrl(replyInfo, replyToType),
             replyToUserId: String(replyInfo.replyToUserId ?? ''),
-            replyToUserName: String(replyInfo.replyToUserName ?? ''),
+            replyToUserName: decodeChatDisplayName(replyInfo.replyToUserName),
             replyToType
           }
         : undefined
@@ -496,6 +601,7 @@ export function useChatRuntime() {
 
     const message = mapSocketMessage(record as unknown as ChatSocketMessage)
     upsertMessage(message)
+    void hydrateReplyMediaFromCache(message)
 
     if (message.type === 'red-pack') {
       sendRedPacketReadReceipt(message.id)
@@ -503,24 +609,7 @@ export function useChatRuntime() {
 
     // 图文自动回复可能在同一条响应中附带多张图片，按独立图片消息展示。
     if (message.type === 'auto-reply' && message.imageList?.length) {
-      message.imageList.forEach((image, index) => {
-        upsertMessage({
-          id: `${message.id}:image:${index}`,
-          direction: message.direction,
-          type: 'image',
-          image: image.imgUrl,
-          imageList: [image],
-          time: message.time,
-          period: message.period,
-          timestamp: message.timestamp,
-          read: message.read,
-          status: message.status,
-          contentType: 'image',
-          authorId: message.authorId,
-          authorName: message.authorName,
-          authorAvatar: message.authorAvatar
-        })
-      })
+      appendAutoReplyImages(message)
     }
   }
 
@@ -656,7 +745,7 @@ export function useChatRuntime() {
         timestamp,
         contentType: 'welcome-reminder',
         authorId: conversation.id,
-        authorName: conversation.nickName || '',
+        authorName: decodeChatDisplayName(conversation.nickName),
         authorAvatar: resolveChatMediaUrl(conversation.avatar)
       })
     } catch {
@@ -696,14 +785,17 @@ export function useChatRuntime() {
       authorId:
         message.authorId || (message.direction === 'outgoing' ? member.userId : conversation.id),
       authorName:
-        message.authorName ||
-        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || ''),
+        decodeChatDisplayName(message.authorName) ||
+        (message.direction === 'outgoing'
+          ? decodeChatDisplayName(member.nickName)
+          : decodeChatDisplayName(conversation.nickName)),
       authorAvatar:
         message.authorAvatar ||
         (message.direction === 'outgoing'
           ? member.avatar
           : resolveChatMediaUrl(conversation.avatar))
     }))
+    messages.value.forEach(message => void hydrateReplyMediaFromCache(message))
     hasMoreCachedMessages.value = cachedPage.hasMore
     syncClaimedRedPacketIds()
     void loadWelcomeReminder(conversation)
@@ -768,6 +860,7 @@ export function useChatRuntime() {
         message => !currentMessageIds.has(message.id)
       )
       messages.value = [...olderMessages, ...messages.value]
+      olderMessages.forEach(message => void hydrateReplyMediaFromCache(message))
       hasMoreCachedMessages.value = cachedPage.hasMore
     } finally {
       loadingOlderMessages.value = false
@@ -783,8 +876,10 @@ export function useChatRuntime() {
       authorId:
         message.authorId || (message.direction === 'outgoing' ? member.userId : conversation.id),
       authorName:
-        message.authorName ||
-        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || ''),
+        decodeChatDisplayName(message.authorName) ||
+        (message.direction === 'outgoing'
+          ? decodeChatDisplayName(member.nickName)
+          : decodeChatDisplayName(conversation.nickName)),
       authorAvatar:
         message.authorAvatar ||
         (message.direction === 'outgoing'
@@ -847,6 +942,7 @@ export function useChatRuntime() {
       }
 
       messages.value = hydrateCachedMessages(cachedMessages, conversation)
+      messages.value.forEach(message => void hydrateReplyMediaFromCache(message))
       hasMoreCachedMessages.value = false
       syncClaimedRedPacketIds()
     }
@@ -875,7 +971,10 @@ export function useChatRuntime() {
     content: string,
     contentType: ChatSocketMessage['contentType'] = 'text',
     imageList?: ChatImageItem[],
-    replyTarget?: ChatReplyTarget | null
+    replyTarget?: ChatReplyTarget | null,
+    localDirection: MessageDirection = 'outgoing',
+    localType?: MessageType,
+    autoReplyType?: string
   ) => {
     const mine = buildMemberParticipant()
     const to = buildCustomerParticipant()
@@ -897,9 +996,10 @@ export function useChatRuntime() {
     }
     const message: ChatMessage = {
       id: messageId,
-      direction: 'outgoing',
+      direction: localDirection,
       type:
-        contentType === 'image'
+        localType ??
+        (contentType === 'image'
           ? 'image'
           : contentType === 'video'
             ? 'video'
@@ -907,7 +1007,7 @@ export function useChatRuntime() {
               ? 'reply'
               : contentType === 'text'
                 ? 'text'
-                : 'auto-reply',
+                : 'auto-reply'),
       text: getChatPlainText(normalizedContent),
       image: imageList?.[0]?.imgUrl,
       video: contentType === 'video' ? resolveChatMediaUrl(normalizedContent) : undefined,
@@ -915,13 +1015,16 @@ export function useChatRuntime() {
       time: formatChatMessageTime(timestamp),
       period: getChatTimePeriod(timestamp),
       timestamp,
-      read: false,
-      status: 'sending',
+      read: localDirection === 'incoming',
+      status: localDirection === 'outgoing' ? 'sending' : undefined,
       contentType,
       socketContent: normalizedContent,
-      authorId: mine.userId,
-      authorName: mine.nickName,
-      authorAvatar: mine.avatar,
+      autoReplyType,
+      authorId: localDirection === 'outgoing' ? mine.userId : to.userId,
+      authorName: decodeChatDisplayName(
+        localDirection === 'outgoing' ? mine.nickName : to.nickName
+      ),
+      authorAvatar: localDirection === 'outgoing' ? mine.avatar : to.avatar,
       reply: replyTarget || undefined
     }
 
@@ -929,7 +1032,9 @@ export function useChatRuntime() {
 
     if (send(payload)) return true
 
-    message.status = 'failed'
+    if (localDirection === 'outgoing') {
+      message.status = 'failed'
+    }
     persistActiveConversationMessage(message)
     globalShowToast({
       message: i18n.global.t('chatPublic.customerServiceReconnecting'),
@@ -1056,19 +1161,62 @@ export function useChatRuntime() {
     redPacketSuccessAmount.value = null
   }
 
-  /** 发送自动回复问题和接口返回的系统答复，两条消息均立即写入当前会话。 */
+  /**
+   * 保留原 autoReplyReq / autoReplyResp Socket 协议，同时立即在本地插入用户问题与客服答复。
+   * 图文回复的图片继续拆成普通图片消息，保证与后端推送时的展示一致。
+   */
   const sendAutoReplyMessage = (item: AutoReplyItem) => {
     const question = String(item.questionTitle ?? '').trim()
     const answer = String(item.content ?? '').trim()
-    if (!question || !answer) return false
+    const images = getAutoReplyImages(item)
+    const videoUrl = getAutoReplyVideoUrl(item)
+    if (!question || (!answer && !images.length && !videoUrl)) return false
 
     const requestSent = sendMessage(`<div>【系统自动回复】</div>${question}`, 'autoReplyReq')
     if (!requestSent) return false
 
-    return sendMessage(
+    // Socket 载荷沿用既有系统前缀；本地气泡只展示接口给出的 questionTitle。
+    const requestMessage = messages.value[messages.value.length - 1]
+    if (requestMessage?.contentType === 'autoReplyReq') {
+      requestMessage.text = question
+      persistActiveConversationMessage(requestMessage)
+    }
+
+    const responseSent = sendMessage(
       `<div id="h5SysMsg" style="display:none">${question}</div><div>${answer}</div>`,
-      'autoReplyResp'
+      'autoReplyResp',
+      images,
+      undefined,
+      'incoming',
+      'auto-reply',
+      getAutoReplyType(item)
     )
+    if (!responseSent) return false
+
+    const responseMessage = messages.value[messages.value.length - 1]
+    if (responseMessage?.contentType === 'autoReplyResp') {
+      appendAutoReplyImages(responseMessage)
+
+      if (isAutoReplyVideo(item) && videoUrl) {
+        upsertMessage({
+          id: `${responseMessage.id}:video:0`,
+          direction: 'incoming',
+          type: 'video',
+          video: resolveChatMediaUrl(videoUrl),
+          text: '',
+          time: responseMessage.time,
+          period: responseMessage.period,
+          timestamp: responseMessage.timestamp,
+          read: true,
+          contentType: 'video',
+          authorId: responseMessage.authorId,
+          authorName: responseMessage.authorName,
+          authorAvatar: responseMessage.authorAvatar
+        })
+      }
+    }
+
+    return true
   }
 
   /** 上传用户选中的图片，成功后将上传地址作为 image Socket 消息发送。 */

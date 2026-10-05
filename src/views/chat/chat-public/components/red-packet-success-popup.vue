@@ -1,75 +1,98 @@
 <template>
   <!-- 红包领取成功的全屏提示弹窗。 -->
   <Teleport to="body">
-    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-mask-60-1 px-4">
-      <!-- Figma 导出的红包插画作为弹窗主体背景。 -->
-      <section
+    <div class="fixed inset-0 z-[100] bg-mask-60-1">
+      <div
         role="dialog"
         aria-modal="true"
         :aria-label="t('chatPublic.congratulations')"
-        class="relative aspect-[824/1132] font-inter"
-        :class="props.displayMode === 'pc' ? 'w-[400px]' : 'w-[274px]'"
+        class="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center font-inter"
+        :class="
+          props.displayMode === 'pc'
+            ? 'h-[620px] w-[396px] gap-[40px]'
+            : 'w-[274.67px] gap-[13.33px]'
+        "
       >
-        <!-- 仅裁剪红包插画，不能裁掉定位在卡片外的关闭按钮。 -->
-        <div class="absolute inset-0 overflow-hidden rounded-[18px] bg-[#E91D2A]">
+        <!-- Figma 导出的红包插画作为奖励卡片背景。 -->
+        <section
+          class="relative shrink-0 overflow-hidden"
+          :class="
+            props.displayMode === 'pc'
+              ? 'h-[540px] w-[396px] rounded-[30px]'
+              : 'h-[377.33px] w-[274.67px] rounded-[18.67px]'
+          "
+        >
           <img :src="redPacketSuccessImage" alt="" class="size-full object-cover" />
-        </div>
 
-        <!-- 领取成功标题和奖励金额。 -->
-        <div class="absolute inset-x-0 top-[7.5%] text-center text-[#EF1D2B]">
-          <p
-            class="font-[700]"
+          <!-- 领取成功标题和奖励金额。 -->
+          <div
+            class="absolute left-1/2 flex -translate-x-1/2 flex-col items-center text-center text-[#E71727]"
             :class="
               props.displayMode === 'pc'
-                ? 'text-[32px] leading-[38px]'
-                : 'text-[27px] leading-[32px]'
+                ? 'top-[42px] w-[254px] gap-[16px]'
+                : 'top-[28px] w-[182.33px] gap-[11px]'
             "
           >
-            {{ t('chatPublic.congratulations') }}
-          </p>
-          <p
-            class="mt-[3px] font-[700]"
+            <p
+              class="font-[700]"
+              :class="
+                props.displayMode === 'pc'
+                  ? 'h-[39px] text-[32px] leading-[39px]'
+                  : 'h-[28px] text-[23px] leading-[28px]'
+              "
+            >
+              {{ t('chatPublic.congratulations') }}
+            </p>
+            <p
+              class="mt-[3px] font-[700]"
+              :class="
+                props.displayMode === 'pc'
+                  ? 'mt-0 h-[73px] w-[213px] text-[60px] leading-[73px]'
+                  : 'mt-0 h-[52px] w-[152.67px] text-[43px] leading-[52px]'
+              "
+            >
+              {{ displayAmount }}
+            </p>
+          </div>
+
+          <!-- 插画内置按钮区域的领取完成状态。 -->
+          <button
+            type="button"
+            class="absolute left-1/2 -translate-x-1/2 border-0 bg-transparent p-0 text-center font-[700] text-[#CD1825]"
             :class="
               props.displayMode === 'pc'
-                ? 'text-[48px] leading-[58px]'
-                : 'text-[42px] leading-[50px]'
+                ? 'bottom-[90px] h-[53px] w-[280px] text-[32px] leading-[39px] [text-shadow:0_0.954px_0_#FFEEAB]  '
+                : 'bottom-[63.67px] h-[38px] w-[160px] text-[23px] leading-[28px] [text-shadow:0_0.67px_0_#FFEEAB]   '
+            "
+            @click="$emit('close')"
+          >
+            {{ t('chatPublic.claimed') }}
+          </button>
+
+          <!-- 余额到账提示。 -->
+          <p
+            class="absolute left-1/2 -translate-x-1/2 text-center text-[#FFD59E]"
+            :class="
+              props.displayMode === 'pc'
+                ? 'bottom-[24px] h-[38px] w-[247px] text-[16px] leading-[19px]'
+                : 'bottom-[15.33px] h-[29.33px] w-[185.33px] text-[12px] leading-[14.67px]'
             "
           >
-            {{ displayAmount }}
+            {{ t('chatPublic.redPacketCredited') }}
           </p>
-        </div>
-
-        <!-- 插画内置按钮区域的领取完成状态。 -->
-        <p
-          class="absolute inset-x-0 top-[72%] text-center font-[700] text-[#EF1D2B]"
-          :class="
-            props.displayMode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-[22px] leading-[26px]'
-          "
-        >
-          {{ t('chatPublic.claimed') }}
-        </p>
-
-        <!-- 余额到账提示。 -->
-        <p
-          class="absolute inset-x-[15%] top-[85%] text-center text-white"
-          :class="
-            props.displayMode === 'pc' ? 'text-[12px] leading-[15px]' : 'text-[11px] leading-[13px]'
-          "
-        >
-          {{ t('chatPublic.redPacketCredited') }}
-        </p>
+        </section>
 
         <!-- 关闭领取成功弹窗。 -->
         <button
           type="button"
           :aria-label="t('chatPublic.close')"
-          class="absolute left-1/2 flex size-[28px] -translate-x-1/2 items-center justify-center rounded-full border-2 border-common-100 text-[22px] leading-none text-common-100"
-          :class="props.displayMode === 'pc' ? '-bottom-[42px]' : '-bottom-[40px]'"
+          class="flex shrink-0 items-center justify-center"
+          :class="props.displayMode === 'pc' ? 'size-[40px]' : 'size-[25px]'"
           @click="$emit('close')"
         >
-          <redPacketClose aria-hidden="true" />
+          <redPacketClose aria-hidden="true" class="size-full" />
         </button>
-      </section>
+      </div>
     </div>
   </Teleport>
 </template>

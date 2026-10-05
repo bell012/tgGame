@@ -48,12 +48,14 @@
       @send="$emit('send')"
       @emoji="$emit('emoji')"
       @media="$emit('media')"
+      @focus="$emit('composer-focus')"
       @cancel-reply="$emit('cancel-reply')"
     />
 
     <!-- 表情面板。 -->
     <EmojiPanel
       v-if="mode === 'emoji'"
+      :has-emoji="hasEmoji"
       @select="$emit('emoji-select', $event)"
       @delete="$emit('emoji-delete')"
       @send="$emit('send')"
@@ -82,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type {
   ChatComposerMode,
@@ -129,6 +131,11 @@ const props = withDefaults(
 )
 const { t } = useI18n()
 
+/** 表情面板操作区只随当前草稿中是否有 Emoji 显示，普通文字不触发。 */
+const hasEmoji = computed(() =>
+  /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(props.draft)
+)
+
 defineEmits<{
   back: []
   search: []
@@ -141,6 +148,7 @@ defineEmits<{
   send: []
   emoji: []
   media: []
+  'composer-focus': []
   'cancel-reply': []
   'emoji-select': [emoji: string]
   'emoji-delete': []

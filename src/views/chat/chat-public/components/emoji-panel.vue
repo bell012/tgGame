@@ -5,9 +5,13 @@
     <!-- emoji-picker-element 自定义元素。 -->
     <emoji-picker ref="pickerRef" class="chat-emoji-picker mt-[8px]" />
     <!-- 删除与发送操作区。 -->
-    <div class="mt-[14px] flex shrink-0 justify-end gap-[10px]">
-      <button type="button" @click="$emit('delete')">
-        <DeleteKeyIcon class="h-[43px] w-[63px]" />
+    <div v-if="props.hasEmoji" class="mt-[14px] flex shrink-0 justify-end gap-[10px]">
+      <button
+        type="button"
+        @click="$emit('delete')"
+        class="flex h-[42.67px] w-[63px] items-center justify-center rounded-[6px] bg-bg-2 px-[17px] py-[14.33px]"
+      >
+        <DeleteKeyIcon class="h-[13px] w-[19.34px] text-icon-1" />
       </button>
       <button
         type="button"
@@ -75,6 +79,8 @@ onMounted(async () => {
 })
 
 const { t } = useI18n()
+
+const props = defineProps<{ hasEmoji: boolean }>()
 
 const emit = defineEmits<{ select: [emoji: string]; delete: []; send: [] }>()
 const pickerRef = ref<HTMLElement | null>(null)

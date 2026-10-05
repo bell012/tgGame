@@ -20,12 +20,13 @@
           class="min-w-0 flex-1 bg-transparent text-[14px] text-text-1 outline-none placeholder:text-text-3"
           :placeholder="t('chatPublic.inputPlaceholder')"
           @input="handleInput"
+          @focus="handleInputFocus"
           @keyup.enter="$emit('send')"
         />
         <button
           type="button"
           class="flex size-[24px] shrink-0 items-center justify-center"
-          @click="$emit('emoji')"
+          @click="openEmojiPanel"
         >
           <EmojiIcon class="size-[24px]" />
         </button>
@@ -35,7 +36,7 @@
         type="button"
         class="flex size-[44px] shrink-0 items-center justify-center rounded-[10px]"
         :class="hasDraft ? 'bg-theme-primary' : ''"
-        @click="hasDraft ? $emit('send') : $emit('media')"
+        @click="hasDraft ? $emit('send') : openMediaPanel()"
       >
         <img
           v-if="hasDraft"
@@ -57,16 +58,17 @@
         :class="hasDraft ? 'border-theme-primary' : 'border-opacity-6'"
         :placeholder="t('chatPublic.inputPlaceholder')"
         @input="handleInput"
+        @focus="handleInputFocus"
         @keyup.enter="$emit('send')"
       />
-      <button type="button" class="shrink-0" @click="$emit('emoji')">
+      <button type="button" class="shrink-0" @click="openEmojiPanel">
         <EmojiIcon class="size-[24px]" />
       </button>
       <!-- H5 端有内容时显示发送按钮，否则保留图片上传入口。 -->
       <button
         type="button"
         class="flex size-[24px] shrink-0 items-center justify-center"
-        @click="hasDraft ? $emit('send') : $emit('media')"
+        @click="hasDraft ? $emit('send') : openMediaPanel()"
       >
         <img v-if="hasDraft" :src="chatSendButtonImage" alt="" class="size-[24px] object-contain" />
         <chatMoreH5Image v-else :src="chatMoreH5Image" alt="" class="size-[24px] object-contain" />
@@ -106,6 +108,7 @@ const emit = defineEmits<{
   send: []
   emoji: []
   media: []
+  focus: []
   'cancel-reply': []
 }>()
 
@@ -118,6 +121,21 @@ const hasDraft = computed(() => props.modelValue.trim().length > 0)
 /** 将原生输入事件转换为组件的双向绑定值。 */
 const handleInput = (event: Event) => {
   emit('update:modelValue', (event.target as HTMLInputElement).value)
+}
+
+/** 用户重新点回输入框时通知上层关闭与键盘互斥的功能面板。 */
+const handleInputFocus = () => emit('focus')
+
+/** 打开表情面板前收起原生键盘，避免键盘与面板同时占用屏幕。 */
+const openEmojiPanel = () => {
+  inputRef.value?.blur()
+  emit('emoji')
+}
+
+/** 打开图片选择面板前收起原生键盘，避免 H5 两个面板同时展示。 */
+const openMediaPanel = () => {
+  inputRef.value?.blur()
+  emit('media')
 }
 
 /** 草稿由表情面板程序化追加时，主动滚动到末尾以保证光标始终可见。 */

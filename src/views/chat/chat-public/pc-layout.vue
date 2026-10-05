@@ -257,6 +257,8 @@ const scrollToBottom = () => {
 
 /** 打开 PC 端所选自动回复分类并请求其问题列表。 */
 const handleIssueSelect = async (issue: QuickIssue) => {
+  // 快捷问题弹层固定在输入框上方，打开前先收起表情面板。
+  mode.value = 'idle'
   activeIssue.value = issue
   quickIssueVisible.value = true
   await loadAutoReplies(issue)

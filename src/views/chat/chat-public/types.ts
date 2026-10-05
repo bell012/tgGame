@@ -52,6 +52,8 @@ export interface ChatMessage {
   timestamp?: number
   contentType?: string
   socketContent?: string
+  /** 自动回复接口的原始回复类型，用于将非文本内容交给对应消息组件渲染。 */
+  autoReplyType?: string
   imageList?: ChatImageItem[]
   authorId?: string
   authorName?: string

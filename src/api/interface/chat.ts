@@ -74,6 +74,14 @@ export interface AutoReplyImage {
   imageHeight?: number
 }
 
+/** 自动回复附带的视频信息。后端逐步启用视频回复时使用。 */
+export interface AutoReplyVideo {
+  videoUrl?: string
+  url?: string
+  fileName?: string
+  fileFormat?: string
+}
+
 /** 自动回复问题与内容。 */
 export interface AutoReplyItem {
   id: string | number
@@ -82,4 +90,6 @@ export interface AutoReplyItem {
   questionType?: string | number
   content?: string
   imageList?: AutoReplyImage[]
+  videoList?: AutoReplyVideo[]
+  videoUrl?: string
 }
