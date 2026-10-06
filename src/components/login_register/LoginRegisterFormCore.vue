@@ -359,6 +359,7 @@ const resetSignupForm = () => {
   formData.value.signup.captchaCode = ''
   formData.value.signup.captchaKey = ''
   formData.value.signup.invitationCode = getInvitationCode()
+  formData.value.signup.agreementAccepted = false
 }
 
 /**
@@ -417,7 +418,8 @@ const formData = ref({
     confirmPassword: '',
     captchaCode: '',
     captchaKey: '',
-    invitationCode: getInvitationCode()
+    invitationCode: getInvitationCode(),
+    agreementAccepted: false
   }
 })
 
@@ -629,6 +631,7 @@ const isSignupValid = computed(() => {
   const hasCaptcha =
     !showSignupCaptcha.value ||
     (formData.value.signup.captchaCode.length > 0 && formData.value.signup.captchaKey.length > 0)
+  const hasAgreementAccepted = formData.value.signup.agreementAccepted
 
   return (
     isAccountValid &&
@@ -636,12 +639,14 @@ const isSignupValid = computed(() => {
     hasPassword &&
     hasConfirmPassword &&
     isInvitationCodeValid &&
-    hasCaptcha
+    hasCaptcha &&
+    hasAgreementAccepted
   )
 })
 
 const checkboxAnimating = ref({
-  rememberMe: false
+  rememberMe: false,
+  agreementAccepted: false
 })
 
 /**
@@ -749,14 +754,21 @@ const toggleConfirmPassword = () => {
 }
 
 /**
- * 处理记住密码复选框点击。
+ * 处理登录记住密码和注册协议复选框点击。
  */
-const handleCheckboxClick = (field: 'rememberMe') => {
-  const willBeChecked = !formData.value.signin[field]
+const handleCheckboxClick = (field: 'rememberMe' | 'agreementAccepted') => {
+  const willBeChecked =
+    field === 'rememberMe'
+      ? !formData.value.signin.rememberMe
+      : !formData.value.signup.agreementAccepted
 
   if (willBeChecked) {
     checkboxAnimating.value[field] = true
-    formData.value.signin[field] = true
+    if (field === 'rememberMe') {
+      formData.value.signin.rememberMe = true
+    } else {
+      formData.value.signup.agreementAccepted = true
+    }
 
     setTimeout(() => {
       checkboxAnimating.value[field] = false
@@ -764,7 +776,11 @@ const handleCheckboxClick = (field: 'rememberMe') => {
   } else {
     checkboxAnimating.value[field] = true
     setTimeout(() => {
-      formData.value.signin[field] = false
+      if (field === 'rememberMe') {
+        formData.value.signin.rememberMe = false
+      } else {
+        formData.value.signup.agreementAccepted = false
+      }
       checkboxAnimating.value[field] = false
     }, 150)
   }
@@ -1213,6 +1229,10 @@ const handleRegister = async () => {
   syncSignupAccount()
 
   const account = getActiveSignupAccount()
+
+  if (!formData.value.signup.agreementAccepted) {
+    return
+  }
 
   if (activeSignupMethod.value === 'username' && !validateUsername(account)) {
     return

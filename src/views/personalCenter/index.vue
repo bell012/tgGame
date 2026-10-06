@@ -328,6 +328,7 @@ import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
 import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import { useLocaleStore } from '@/stores/locale'
 import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useThemeStore } from '@/stores/theme'
@@ -360,6 +361,7 @@ const themeStore = useThemeStore()
 const tradeMessageSyncStore = useTradeMessageSyncStore()
 const userStore = useUserStore()
 const vipStore = useVipStore()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const { userInfo } = storeToRefs(userStore)
 const { currentCurrencyCode, currentBalanceText, currencyOptions, setDisplayCurrency } =
   useDisplayCurrency()
@@ -664,12 +666,17 @@ const globalSettings = computed(() => [
 ])
 
 // 支持菜单
+/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
+const handleLiveSupportClick = () => {
+  openOnlineCustomer()
+}
+
 const supportMenus = computed(() => [
   {
     id: 'live-support',
     name: t('personalCenter.liveSupport'),
     icon: getIcon(16),
-    handler: () => console.log('Live Support clicked')
+    handler: handleLiveSupportClick
   },
   {
     id: 'leave-feedback',

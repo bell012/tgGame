@@ -114,6 +114,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { formatUsDateTime12h } from '@/utils/date'
 import { globalShowToast } from '@/utils/toast'
@@ -148,6 +149,7 @@ type SportsBetDetailDisplay = {
 const { t } = useI18n()
 const router = useRouter()
 const { currentCurrencyCode } = useDisplayCurrency()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 
 usePageScrollLock(() => true)
 
@@ -260,9 +262,9 @@ const betDetail = computed(() =>
   sourceBetDetail.value ? mapSportsBetDetail(sourceBetDetail.value) : emptyBetDetail.value
 )
 
-// 点击客服图标，当前先按需求预留打印。
+/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
 const openKefuPopup = () => {
-  console.log('点击客服')
+  openOnlineCustomer()
 }
 
 // 点击详情页确认按钮时打开提前结算底部弹窗。

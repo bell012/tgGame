@@ -112,6 +112,7 @@ import type {
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useUserStore } from '@/stores/user'
 import { ApiBusinessError, ensureApiBusinessSuccess } from '@/utils/apiBusiness'
@@ -142,6 +143,7 @@ import {
 const { t, locale } = useI18n()
 const userStore = useUserStore()
 const isMobile = useIsMobile()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const isReady = ref(false)
 const activeTab = ref<ReferralTaskTabKey>('invite-register')
 const rewardTableLoading = ref(false)
@@ -309,10 +311,7 @@ async function fetchTaskPageData() {
  * 处理客服按钮点击。
  */
 const handleCustomerServiceClick = () => {
-  globalShowToast({
-    message: t('referral.customerService'),
-    type: 'success'
-  })
+  openOnlineCustomer()
 }
 
 /**
@@ -356,10 +355,7 @@ const handleOpenProgressReminder = () => {
  * 处理任务页进度提醒主按钮点击。
  */
 const handleProgressReminderPrimaryClick = () => {
-  globalShowToast({
-    message: t('referral.customerService'),
-    type: 'success'
-  })
+  openOnlineCustomer()
 }
 
 /**
