@@ -13,6 +13,7 @@
         <section
           :class="[
             'sports-buy-back-sheet w-full overflow-y-auto overscroll-contain bg-bg-1',
+            'bottom-sheet-panel',
             isMobile
               ? 'max-h-[calc(100dvh-33px)] rounded-t-[12px] px-[14px] pb-[calc(env(safe-area-inset-bottom)+18px)]'
               : 'max-h-[calc(100dvh-64px)] max-w-[520px] rounded-[12px] px-4 pb-5'
@@ -367,30 +368,3 @@ const copyOrderNo = () => {
   globalShowToast(t('betDetails.copy'))
 }
 </script>
-
-<style scoped>
-.bottom-sheet-enter-active,
-.bottom-sheet-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.bottom-sheet-enter-from,
-.bottom-sheet-leave-to {
-  opacity: 0;
-}
-
-.bottom-sheet-enter-active .sports-buy-back-sheet,
-.bottom-sheet-leave-active .sports-buy-back-sheet {
-  transition: transform 0.3s ease;
-}
-
-.bottom-sheet-enter-from .sports-buy-back-sheet,
-.bottom-sheet-leave-to .sports-buy-back-sheet {
-  transform: translateY(100%);
-}
-
-.bottom-sheet-enter-to .sports-buy-back-sheet,
-.bottom-sheet-leave-from .sports-buy-back-sheet {
-  transform: translateY(0);
-}
-</style>
