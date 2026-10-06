@@ -10,6 +10,144 @@
     "invalidUrl": "Invalid support address. Please try again later.",
     "frameFailed": "Unable to load the support page. Please try again."
   },
+  "loginRegister": {
+    "agreementPrefix": "I am at least 18 years old and agree to the",
+    "agreementMiddle": "and",
+    "userAgreement": "User Agreement",
+    "privacyPolicy": "Privacy Policy",
+    "policy": {
+      "title": "Quickly Privacy Policy",
+      "sections": [
+        {
+          "title": "1. Introduction",
+          "paragraphs": [
+            "Thank you for using [Product Name] (referred to as \"this Platform\" below).",
+            "We highly value your personal information and privacy protection.",
+            "This Privacy Policy (referred to as \"this Policy\") is intended to explain how we collect, use, store, protect, and share your personal information.",
+            "Please read this Policy carefully and understand its contents before using our Platform.",
+            "If you do not agree with any part of this Policy, please stop using our Platform."
+          ]
+        },
+        {
+          "title": "2.Information We Collect",
+          "paragraphs": ["When you use our Platform, we may collect the following information:"],
+          "orderedList": [
+            "Basic information",
+            "Phone number, email address, username, avatar, login password (encrypted storage)",
+            "Identity verification information (KYC), collected only when real-name verification is required",
+            "Full name, ID number/ID card information, facial recognition data, ID card photos",
+            "Device and log information",
+            "Device model, operating system version, IP address, login time, operation records, browsing behavior",
+            "Transaction information (including wallet and payment)",
+            "Top-up records, withdrawal records, transaction orders, blockchain addresses (such as USDT, BTC, etc.)",
+            "Location information (optional)",
+            "IP location, GPS information (if permission is enabled)"
+          ]
+        },
+        {
+          "title": "3.How We Use Information",
+          "paragraphs": [
+            "When you use our Platform, we may use the collected information for the following purposes:"
+          ],
+          "bulletList": [
+            "To create and manage your account",
+            "To verify your identity and complete KYC procedures",
+            "To provide platform services and process transactions",
+            "To maintain platform security and prevent fraud and other risks",
+            "To improve product functionality and user experience",
+            "To provide customer support and resolve disputes",
+            "To comply with applicable laws and regulatory requirements"
+          ]
+        },
+        {
+          "title": "4.Storage and Protection of Information",
+          "subsections": [
+            {
+              "title": "1.Storage Methods",
+              "paragraphs": [
+                "Data is stored using encryption (such as AES/HTTPS). Passwords are stored using irreversible encryption (such as hashing)."
+              ]
+            },
+            {
+              "title": "2.Retention Period",
+              "paragraphs": [
+                "Data is retained during the service period or for the period required by applicable laws."
+              ]
+            },
+            {
+              "title": "3.Security Measures",
+              "paragraphs": [
+                "We use encrypted transmission (SSL/TLS), access controls, security audits, and other appropriate measures to protect your information."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "5.Information Sharing and Disclosure",
+          "paragraphs": [
+            "We will not sell your personal information to any third party. However, we may share or disclose your information under the following circumstances:"
+          ],
+          "subsections": [
+            {
+              "title": "1.Legal Requirements",
+              "paragraphs": [
+                "When required by applicable laws, regulations, courts, government agencies, or regulatory authorities."
+              ]
+            },
+            {
+              "title": "2.Business Partners",
+              "paragraphs": ["We may share necessary information with:"],
+              "bulletList": [
+                "Payment service providers",
+                "KYC service providers",
+                "Risk control service providers"
+              ]
+            },
+            {
+              "title": "3.Business Transfers",
+              "paragraphs": [
+                "In the event of a merger, acquisition, restructuring, sale, or other business transfer."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "6.User Rights",
+          "paragraphs": [
+            "You may have the right to access, correct, or delete your personal information, delete your account, withdraw your consent, or submit a complaint or report.",
+            "If you need assistance, please contact our customer service team."
+          ]
+        },
+        {
+          "title": "7.Cookies and Tracking Technologies",
+          "paragraphs": [
+            "We may use Cookies to remember your login status, optimize your user experience, analyze traffic, and understand user behavior.",
+            "You can manage or disable Cookies through your browser settings."
+          ]
+        },
+        {
+          "title": "8.Protection of Minors",
+          "paragraphs": [
+            "This Platform is intended for users aged 18 and above only. If we discover that a minor has used our services, we will delete the relevant data in accordance with applicable laws and regulations."
+          ]
+        },
+        {
+          "title": "9.Cross-border Data Transfer",
+          "paragraphs": [
+            "For business operations and cross-border services, your data may be transferred to other countries or regions.",
+            "We will take appropriate measures to protect your information in accordance with applicable laws and regulations."
+          ]
+        },
+        {
+          "title": "10.Policy Updates",
+          "paragraphs": [
+            "We may update this Policy from time to time. Any updates will be posted on the Platform or otherwise communicated to you.",
+            "Please review this Policy regularly for the latest information."
+          ]
+        }
+      ]
+    }
+  },
   "home": {
     "title": "Welcome to TG Game",
     "home": "Home",

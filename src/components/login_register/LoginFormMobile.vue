@@ -287,7 +287,7 @@
                         @click="handleCheckboxClick('rememberMe')"
                       >
                         <div
-                          class="w-4 h-4 rounded border transition-all duration-200 flex items-center justify-center"
+                          class="w-3.5 h-3.5 rounded border transition-all duration-200 flex items-center justify-center"
                           :class="
                             formData.signin.rememberMe
                               ? 'bg-theme-primary border-theme-primary'
@@ -296,7 +296,7 @@
                         >
                           <CheckIcon
                             v-if="formData.signin.rememberMe"
-                            class="w-4 h-4"
+                            class="h-3.5 w-3.5 text-icon-3"
                             :class="checkboxAnimating.rememberMe ? 'animate-bounce-forward' : ''"
                           />
                         </div>
@@ -534,7 +534,7 @@
                       </div>
                     </template>
 
-                    <div v-if="showSignupInvitationCode" class="mb-[40px]">
+                    <div v-if="showSignupInvitationCode" class="mb-3">
                       <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                         {{ t('common.invitation_code') }}
                       </div> -->
@@ -549,6 +549,48 @@
                           @input="handleSignupInvitationCodeInput"
                         />
                       </div>
+                    </div>
+
+                    <!-- 注册协议 -->
+                    <div
+                      class="mb-[30px] flex cursor-pointer items-start gap-2"
+                      @click="handleCheckboxClick('agreementAccepted')"
+                    >
+                      <div
+                        class="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-all duration-200"
+                        :class="
+                          formData.signup.agreementAccepted
+                            ? 'bg-theme-primary border-theme-primary'
+                            : 'bg-transparent border-text-3'
+                        "
+                      >
+                        <CheckIcon
+                          v-if="formData.signup.agreementAccepted"
+                          class="h-3.5 w-3.5 text-icon-3"
+                          :class="
+                            checkboxAnimating.agreementAccepted ? 'animate-bounce-forward' : ''
+                          "
+                        />
+                      </div>
+                      <p class="min-w-0 flex-1 text-xs font-[400] leading-5 text-text-2">
+                        {{ t('loginRegister.agreementPrefix') }}
+                        <button
+                          type="button"
+                          class="text-theme-primary"
+                          @click.stop="openPolicySheet"
+                        >
+                          {{ t('loginRegister.userAgreement') }}
+                        </button>
+                        {{ t('loginRegister.agreementMiddle') }}
+                        <button
+                          type="button"
+                          class="text-theme-primary"
+                          @click.stop="openPolicySheet"
+                        >
+                          {{ t('loginRegister.privacyPolicy') }}
+                        </button>
+                        .
+                      </p>
                     </div>
 
                     <!-- 注册按钮 -->
@@ -607,6 +649,7 @@
       </teleport>
     </template>
   </LoginRegisterFormCore>
+  <LoginPolicySheet v-model:visible="showPolicySheet" />
 </template>
 
 <script setup lang="ts">
@@ -624,6 +667,7 @@ import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import { getPhoneAreaCodeOption } from '@/utils/phone-input'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
+import LoginPolicySheet from './LoginPolicySheet.vue'
 import PhoneAreaCodePopup from './PhoneAreaCodePopup.vue'
 import { useI18n } from 'vue-i18n'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
@@ -660,6 +704,7 @@ const isSigninAreaCodeDropdownOpen = ref(false)
 const isSignupAreaCodeDropdownOpen = ref(false)
 const signinAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 const signupAreaCodeAnchorRef = ref<HTMLElement | null>(null)
+const showPolicySheet = ref(false)
 
 usePageScrollLock(() => props.visible)
 
@@ -836,6 +881,11 @@ const handleNavigateToMenu = () => {
 const handleGuestContinue = () => {
   closeAllAreaCodeSheets()
   handleClose()
+}
+
+/** 打开注册协议和隐私政策弹窗。 */
+const openPolicySheet = () => {
+  showPolicySheet.value = true
 }
 
 /**
