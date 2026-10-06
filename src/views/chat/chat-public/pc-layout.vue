@@ -102,6 +102,7 @@
       v-if="redPacketSuccessAmount !== null"
       display-mode="pc"
       :amount="redPacketSuccessAmount"
+      :currency="redPacketSuccessCurrency"
       @close="closeRedPacketSuccess"
     />
 
@@ -119,8 +120,8 @@
 </template>
 
 <script setup lang="ts">
-import CloseIcon from '@/static/svg/close.svg?component'
 import type { AutoReplyItem } from '@/api/interface/chat'
+import CloseIcon from '@/static/svg/close.svg?component'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -150,6 +151,7 @@ const {
   redPacketClaimingMessageIds,
   claimedRedPacketIds,
   redPacketSuccessAmount,
+  redPacketSuccessCurrency,
   hasMoreCachedMessages,
   loadingOlderMessages,
   initialize,

@@ -46,8 +46,8 @@ import {
 import { useChatConnection } from './use-chat-connection'
 
 const CHAT_VISITOR_STORAGE_KEY = 'chat_visitor_id'
-let hasRequestedWelcomeReminder = false
-let welcomeReminderConfigRequest: Promise<ChatConfig | null> | null = null
+/** 已读取欢迎语配置的会话；键中包含用户、商户和客服，避免切换账号时误复用。 */
+const requestedWelcomeReminderConversationKeys = new Set<string>()
 const CHAT_MAX_IMAGE_BYTES = 10 * 1024 * 1024
 const CHAT_MAX_VIDEO_BYTES = 100 * 1024 * 1024
 
@@ -66,16 +66,12 @@ const decodeChatDisplayName = (value: unknown) => {
   }
 }
 
-/** 复用首次欢迎语配置请求，避免布局重建时重复请求同一接口。 */
+/** 为首次打开的客服会话读取欢迎语配置。 */
 const requestWelcomeReminderConfig = () => {
-  if (welcomeReminderConfigRequest) return welcomeReminderConfigRequest
-
-  welcomeReminderConfigRequest = Api.chat
+  return Api.chat
     .queryChatConfig({ t: Date.now() }, { showErrorToast: false })
     .then(response => (response.code === 'C2' ? (response.result ?? null) : null))
     .catch(() => null)
-
-  return welcomeReminderConfigRequest
 }
 
 /** 将后台字符串形式的 qaConfig 安全转换为欢迎语配置对象。 */
@@ -98,14 +94,16 @@ const parseChatRedPacket = (value: unknown): ChatRedPacket | null => {
     const id = parsedValue.id
     const status = Number(parsedValue.status)
     const amount = parsedValue.amount
+    const currency = typeof parsedValue.currency === 'string' ? parsedValue.currency.trim() : ''
 
     if ((typeof id !== 'string' && typeof id !== 'number') || (status !== 0 && status !== 1)) {
       return null
     }
 
     if (typeof amount !== 'string' && typeof amount !== 'number') return null
+    if (!currency) return null
 
-    return { id, status, amount }
+    return { id, status, amount, currency }
   } catch {
     return null
   }
@@ -235,6 +233,7 @@ export function useChatRuntime() {
   const redPacketClaimingMessageIds = ref<string[]>([])
   const claimedRedPacketIds = ref<string[]>([])
   const redPacketSuccessAmount = ref<string | number | null>(null)
+  const redPacketSuccessCurrency = ref('')
   const hasMoreCachedMessages = ref(false)
   const loadingOlderMessages = ref(false)
   let pendingMessageCacheWrite = Promise.resolve()
@@ -717,8 +716,13 @@ export function useChatRuntime() {
 
   /** 首次进入会话时读取客服欢迎语，并在启用时写入当前会话消息列表。 */
   const loadWelcomeReminder = async (conversation: ConversationItem) => {
-    if (hasRequestedWelcomeReminder) return
-    hasRequestedWelcomeReminder = true
+    const conversationKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
+    )
+    if (requestedWelcomeReminderConversationKeys.has(conversationKey)) return
+    requestedWelcomeReminderConversationKeys.add(conversationKey)
 
     try {
       const config = await requestWelcomeReminderConfig()
@@ -1141,6 +1145,7 @@ export function useChatRuntime() {
       })
 
       redPacketSuccessAmount.value = redPacket.amount
+      redPacketSuccessCurrency.value = redPacket.currency
       return true
     } catch (error) {
       globalShowToast({
@@ -1159,6 +1164,7 @@ export function useChatRuntime() {
   /** 关闭领取成功弹窗，保留已写入本地会话缓存的领取记录。 */
   const closeRedPacketSuccess = () => {
     redPacketSuccessAmount.value = null
+    redPacketSuccessCurrency.value = ''
   }
 
   /**
@@ -1346,6 +1352,7 @@ export function useChatRuntime() {
     redPacketClaimingMessageIds,
     claimedRedPacketIds,
     redPacketSuccessAmount,
+    redPacketSuccessCurrency,
     hasMoreCachedMessages,
     loadingOlderMessages,
     connectionState,

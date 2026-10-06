@@ -71,6 +71,7 @@
       <RedPacketSuccessPopup
         v-if="redPacketSuccessAmount !== null"
         :amount="redPacketSuccessAmount"
+        :currency="redPacketSuccessCurrency"
         @close="closeRedPacketSuccess"
       />
 
@@ -139,6 +140,7 @@ const {
   redPacketClaimingMessageIds,
   claimedRedPacketIds,
   redPacketSuccessAmount,
+  redPacketSuccessCurrency,
   hasMoreCachedMessages,
   loadingOlderMessages,
   initialize,

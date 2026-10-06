@@ -98,22 +98,19 @@
 </template>
 
 <script setup lang="ts">
-import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import redPacketSuccessImage from '@/static/img/chat/public/red-packet-success.png'
 import redPacketClose from '@/static/svg/chat/public/red-packet-close.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-const props = withDefaults(defineProps<{ amount: string | number; displayMode?: 'h5' | 'pc' }>(), {
-  displayMode: 'h5'
-})
+const props = withDefaults(
+  defineProps<{ amount: string | number; currency: string; displayMode?: 'h5' | 'pc' }>(),
+  { displayMode: 'h5' }
+)
 defineEmits<{ close: [] }>()
 
 const { t } = useI18n()
-const { currentCurrencyCode } = useDisplayCurrency()
 
-/** 使用当前账户币种符号展示领取成功的红包金额。 */
-const displayAmount = computed(
-  () => `${getCurrencySymbol(currentCurrencyCode.value)}${props.amount}`
-)
+/** 使用红包消息携带的币种符号展示领取成功金额。 */
+const displayAmount = computed(() => `${getCurrencySymbol(props.currency)}${props.amount}`)
 </script>

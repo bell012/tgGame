@@ -118,6 +118,7 @@ export interface ChatRedPacket {
   id: string | number
   status: 0 | 1
   amount: string | number
+  currency: string
 }
 
 /** 系统提示消息的页面展示信息。 */
