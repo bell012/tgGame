@@ -199,6 +199,7 @@ import type {
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import { useUserStore } from '@/stores/user'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { buildReferralChartAxisData, normalizeReferralChartSeriesData } from '@/utils/referralDate'
@@ -270,6 +271,7 @@ import {
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 const userStore = useUserStore()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const isReady = ref(false)
 const activeTab = ref<ReferralDetailsTabValue>('friends')
 const showInvitePosterPopup = ref(false)
@@ -781,10 +783,7 @@ async function fetchSelectedFriendDetailStats() {
  * 处理客服按钮点击。
  */
 const handleCustomerServiceClick = () => {
-  globalShowToast({
-    message: t('referral.customerService'),
-    type: 'success'
-  })
+  openOnlineCustomer()
 }
 /**
  * 处理切换标签。

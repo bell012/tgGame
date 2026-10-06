@@ -77,6 +77,7 @@
 import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateTo } from '@/utils/router'
 
@@ -111,6 +112,7 @@ import {
 const { t } = useI18n()
 const route = useRoute()
 const isMobile = useIsMobile()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const isReady = ref(false)
 const activeDateTab = ref<ReferralFriendDetailDateTabValue>('today')
 const activeStatsTab = ref<ReferralFriendDetailStatsTabValue>('game-stats')
@@ -274,10 +276,7 @@ async function fetchReferralFriendDetailStats() {
  * 处理客服按钮点击。
  */
 const handleCustomerServiceClick = () => {
-  globalShowToast({
-    message: t('referral.customerService'),
-    type: 'success'
-  })
+  openOnlineCustomer()
 }
 
 /**

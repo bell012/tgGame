@@ -214,6 +214,7 @@ import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { resolveGameImageUrl } from '@/utils/image'
@@ -256,6 +257,7 @@ const emit = defineEmits<{
 const route = useRoute()
 const { t } = useI18n()
 const { currentCurrencyCode } = useDisplayCurrency()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const feedbackCurrencyRequest = computed(() =>
   buildFeedbackCurrencyRequest(normalizeFeedbackCurrencyCode(currentCurrencyCode.value))
 )
@@ -350,10 +352,9 @@ const handleDetailBack = () => {
   }
 }
 
+/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
 const handleCustomerServiceClick = () => {
-  globalShowToast({
-    message: t('sidebar_menu.customer_service')
-  })
+  openOnlineCustomer()
 }
 
 const fetchFeedbackDetail = async (recordId: string) => {

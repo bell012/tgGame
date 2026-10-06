@@ -22,16 +22,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import type { ActivityListItem } from '@/api/interface/activity'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { usePromotionsStore } from '@/stores/promotions'
 import { navigateTo } from '@/utils/router'
-import { globalShowToast } from '@/utils/toast'
 import PromotionDetailContent from '../components/PromotionDetailContent.vue'
 import PromotionsLayout from '../layout.vue'
 import {
@@ -45,15 +44,13 @@ const ACTIVITY_LIST_PAGE_SIZE = 15
 const MAX_ACTIVITY_LOOKUP_PAGES = 20
 
 const route = useRoute()
-const { t } = useI18n()
 const isMobile = useIsMobile()
 const promotionsStore = usePromotionsStore()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 
+/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
 const handleCustomerServiceClick = () => {
-  globalShowToast({
-    message: t('sidebar_menu.customer_service'),
-    type: 'success'
-  })
+  openOnlineCustomer()
 }
 
 const groups = computed(() => promotionsStore.groups)

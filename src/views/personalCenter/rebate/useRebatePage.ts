@@ -1,5 +1,6 @@
 import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { resolveGameImageUrl } from '@/utils/image'
 import { navigateTo } from '@/utils/router'
@@ -379,6 +380,7 @@ const runMountedLoaders = (loaders: Array<() => Promise<void>>) => {
 export const useRebatePage = () => {
   const { t } = useI18n()
   const isMobile = useIsMobile()
+  const { open: openOnlineCustomer } = useOnlineCustomerService()
   // ============================================================
   // 模块 A：页面级交互状态（RebateActionTabs + 各类弹窗）
   // ============================================================
@@ -783,10 +785,10 @@ export const useRebatePage = () => {
   }
 
   /**
-   * 顶部客服按钮点击（当前仅预留日志）。
+   * 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。
    */
   const handleSupportClick = () => {
-    console.log('open live support')
+    openOnlineCustomer()
   }
 
   // ============================================================

@@ -86,11 +86,11 @@ import H5Header from '@/components/common/H5Header.vue'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useLocaleStore } from '@/stores/locale'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
 import { getCurrentCurrency } from '@/utils/locale'
-import { globalShowToast } from '@/utils/toast'
 import RewardCenterLayout from './layout.vue'
 import RewardCenterTabContent from './components/RewardCenterTabContent.vue'
 import {
@@ -111,6 +111,7 @@ const isMobile = useIsMobile()
 const isReady = ref(false)
 const rewardCenterStore = useRewardCenterStore()
 const localeStore = useLocaleStore()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const { currentCurrency } = storeToRefs(localeStore)
 
 const tabs = REWARD_CENTER_TABS
@@ -198,11 +199,9 @@ const handleClaimedTimeFilterChange = async (time: string) => {
   await runWithTabLoading(() => rewardCenterStore.setClaimedFilterValues({ time }))
 }
 
+/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
 const handleCustomerServiceClick = () => {
-  globalShowToast({
-    message: t('sidebar_menu.customer_service'),
-    type: 'success'
-  })
+  openOnlineCustomer()
 }
 
 const handleClaimSuccess = (amount: string) => {

@@ -66,6 +66,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import H5Header from '@/components/common/H5Header.vue'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import { globalShowToast } from '@/utils/toast'
 import { useI18n } from 'vue-i18n'
@@ -74,6 +75,7 @@ import KefuIcon from '@/static/svg/vip/kefu.svg?component'
 
 const { t } = useI18n()
 const router = useRouter()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 
 const detail = ref<Item>(createEmptyTransactionItem())
 
@@ -98,9 +100,9 @@ const copyOrderNo = () => {
   globalShowToast(t('betDetails.copy'))
 }
 
-// 点击客服
+/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
 const openKefuPopup = () => {
-  console.log('点击客服')
+  openOnlineCustomer()
 }
 </script>
 

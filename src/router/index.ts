@@ -422,6 +422,7 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '聊天',
       // PC 端作为右侧聊天抽屉展示，保留进入聊天前的页面作为背景。
       desktopOverlay: true,
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideTopNav: true
       }
