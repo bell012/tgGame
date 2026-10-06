@@ -65,9 +65,45 @@
   transform: translateY(0);
 }
 
+/* 淡入淡出动画，H5和pc都是底部向上淡入，淡出是上往下淡出 */
+.bottom-sheet-enter-active,
+.bottom-sheet-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.bottom-sheet-enter-from,
+.bottom-sheet-leave-to {
+  opacity: 0;
+}
+
+.bottom-sheet-enter-to,
+.bottom-sheet-leave-from {
+  opacity: 1;
+}
+
+.bottom-sheet-enter-active .bottom-sheet-panel,
+.bottom-sheet-leave-active .bottom-sheet-panel {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.bottom-sheet-enter-from .bottom-sheet-panel,
+.bottom-sheet-leave-to .bottom-sheet-panel {
+  transform: translateY(100%);
+}
+
+.bottom-sheet-enter-to .bottom-sheet-panel,
+.bottom-sheet-leave-from .bottom-sheet-panel {
+  transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fade-accordion-enter-active,
-  .fade-accordion-leave-active {
+  .fade-accordion-leave-active,
+  .bottom-sheet-enter-active,
+  .bottom-sheet-leave-active,
+  .bottom-sheet-enter-active .bottom-sheet-panel,
+  .bottom-sheet-leave-active .bottom-sheet-panel {
     transition-duration: 0.01ms;
   }
 }
