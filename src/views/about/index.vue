@@ -2,7 +2,7 @@
   <div class="min-h-full bg-bg-1">
     <template v-if="isMobile">
       <H5Header :title="t('aboutPage.title')" />
-      <main class="p-3.5">
+      <main class="h-[calc(100dvh-49px)] overflow-y-auto p-3.5">
         <section class="rounded-[10px] bg-bg-2 p-3.5">
           <AboutContent :mobile="true" />
         </section>
