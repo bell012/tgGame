@@ -10,6 +10,22 @@
     "invalidUrl": "客服地址无效，请稍后重试",
     "frameFailed": "客服页面加载失败，请重试"
   },
+  "aboutPage": {
+    "title": "关于我们",
+    "cardTitle": "关于 TG.GAME",
+    "introTitle": "关于 TG.GAME",
+    "introParagraph1": "TG.GAME 是一个综合线上娱乐平台，致力于为用户提供丰富、便捷、流畅的娱乐体验。",
+    "introParagraph2": "平台汇集了多种娱乐选择，包括老虎机、真人荷官游戏、Crash 游戏和体育投注，让用户可以通过一个账号探索不同类型的游戏和活动。",
+    "experienceTitle": "丰富的娱乐体验",
+    "experienceParagraph1": "我们持续引入多元化的游戏内容，并不断优化产品体验，让用户更轻松地发现并享受感兴趣的娱乐选择。",
+    "experienceParagraph2": "无论是经典游戏还是热门内容，我们都希望为用户提供更广泛的选择。",
+    "stabilityTitle": "稳定的平台体验",
+    "stabilityParagraph1": "我们重视平台稳定性、账号安全和顺畅的资金交易。通过持续优化系统性能、支付流程和风控机制，我们为用户提供稳定顺滑的使用环境。",
+    "improvementTitle": "持续改进",
+    "improvementParagraph1": "用户体验是 TG.GAME 持续改进的驱动力。",
+    "improvementParagraph2": "在产品演进和用户需求的指引下，我们不断增强平台功能、游戏内容和服务质量，提供更简单、更便捷的线上娱乐体验。",
+    "closing": "TG.GAME —— 探索无限娱乐可能。"
+  },
   "loginRegister": {
     "agreementPrefix": "我已年满 18 周岁并同意",
     "agreementMiddle": "和",

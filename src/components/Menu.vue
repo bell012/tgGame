@@ -1066,12 +1066,14 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
         {
           id: 'legal',
           name: t('menu.legal'),
-          icon: newSideIcons.legalIcon
+          icon: newSideIcons.legalIcon,
+          handler: () => console.log('法律条款')
         },
         {
           id: 'about',
           name: t('menu.about'),
-          icon: newSideIcons.aboutIcon
+          icon: newSideIcons.aboutIcon,
+          handler: () => navigateTo('/about')
         }
       ]
     }

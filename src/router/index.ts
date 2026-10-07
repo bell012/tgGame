@@ -199,6 +199,19 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'about',
+    name: 'about',
+    component: () => import('@/views/about/index.vue'),
+    meta: {
+      title: 'About Us',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'tasks',
     name: 'tasks',
     component: () => import('@/views/task-center/index.vue'),

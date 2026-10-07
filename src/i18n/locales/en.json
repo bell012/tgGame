@@ -10,6 +10,22 @@
     "invalidUrl": "Invalid support address. Please try again later.",
     "frameFailed": "Unable to load the support page. Please try again."
   },
+  "aboutPage": {
+    "title": "About Us",
+    "cardTitle": "About TG.GAME",
+    "introTitle": "About TG.GAME",
+    "introParagraph1": "TG.GAME is a comprehensive online entertainment platform dedicated to providing users with a rich, convenient, and seamless entertainment experience.",
+    "introParagraph2": "The platform brings together a wide range of entertainment options—including slots, live dealer games, crash games, and sports betting—allowing users to explore various types of games and activities through a single account.",
+    "experienceTitle": "A Rich Entertainment Experience",
+    "experienceParagraph1": "We continuously introduce diverse game content and refine our product experience, making it easier for users to discover and enjoy the entertainment options that interest them.",
+    "experienceParagraph2": "Whether it is classic games or trending titles, we aim to offer our users a wide array of choices.",
+    "stabilityTitle": "A Stable Platform Experience",
+    "stabilityParagraph1": "We prioritize platform stability, account security, and seamless financial transactions. By continuously optimizing system performance, payment processes, and risk control mechanisms, we ensure a stable and smooth environment for our users.",
+    "improvementTitle": "Continuous Improvement",
+    "improvementParagraph1": "User experience is the driving force behind TG.GAME’s ongoing improvements.",
+    "improvementParagraph2": "Guided by product evolution and user needs, we constantly enhance platform features, game content, and service quality to deliver a simpler, more convenient online entertainment experience.",
+    "closing": "TG.GAME — Explore endless entertainment possibilities."
+  },
   "loginRegister": {
     "agreementPrefix": "I am at least 18 years old and agree to the",
     "agreementMiddle": "and",
