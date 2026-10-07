@@ -111,17 +111,7 @@ export interface VipBenefitComparisonColumn {
 }
 
 type VipThemeVariant =
-  | 'vip0'
-  | 'vip1'
-  | 'vip2'
-  | 'vip3'
-  | 'vip4'
-  | 'vip5'
-  | 'vip6'
-  | 'vip7'
-  | 'vip8'
-  | 'vip9'
-  | 'vip10'
+  'vip0' | 'vip1' | 'vip2' | 'vip3' | 'vip4' | 'vip5' | 'vip6' | 'vip7' | 'vip8' | 'vip9' | 'vip10'
 
 type VipCardThemeConfig = {
   vipColor: string
@@ -524,7 +514,7 @@ const resolveVipListRewardAmount = (targetConfig: VipListItem | null, key: VipBe
 }
 
 /**
- * 最高等级不再展示升级奖励，移除 levelUp
+ * 最高等级不再展示晋级奖励，移除 levelUp
  */
 const getAvailableVipBenefitKeys = (
   vipId?: number | null,
@@ -538,7 +528,7 @@ const getAvailableVipBenefitKeys = (
 }
 
 /**
- * 各权益项在年度权益价值中的倍数：晋级礼金 1、周礼金 52、月礼金 12。
+ * 各权益项在年度权益价值中的倍数：晋级奖励 1、周奖励 52、月奖励 12。
  */
 const vipBenefitAnnualMultiplierMap: Record<VipBenefitCardKey, number> = {
   levelUp: 1,
@@ -547,7 +537,7 @@ const vipBenefitAnnualMultiplierMap: Record<VipBenefitCardKey, number> = {
 }
 
 /**
- * 计算单个 VIP 等级的年度权益价值：晋级礼金 + 周礼金 * 52 + 月礼金 * 12。
+ * 计算单个 VIP 等级的年度权益价值：晋级奖励 + 周奖励 * 52 + 月奖励 * 12。
  */
 const getVipBenefitTotalRewards = (
   targetConfig: VipListItem | null,
@@ -862,8 +852,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
       resolvedViewedVipId === highestVipLevel.value
     ) {
       return [
-        createMaxVipProgressItem(t, 'validBet', t('personalCenter.validBet')),
-        createMaxVipProgressItem(t, 'deposit', t('personalCenter.deposit'))
+        createMaxVipProgressItem(t, 'validBet', t('vipPage.progress.validBetRequirement')),
+        createMaxVipProgressItem(t, 'deposit', t('vipPage.progress.depositRequirement'))
       ]
     }
 
@@ -883,13 +873,13 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     return [
       createProgressItem(
         'validBet',
-        t('personalCenter.validBet'),
+        t('vipPage.progress.validBetRequirement'),
         betProgressValues.currentValue,
         betProgressValues.targetValue
       ),
       createProgressItem(
         'deposit',
-        t('personalCenter.deposit'),
+        t('vipPage.progress.depositRequirement'),
         rechargeProgressValues.currentValue,
         rechargeProgressValues.targetValue
       )
@@ -979,7 +969,7 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
   })
 
   /**
-   * 升级奖励确认弹窗的总额、笔数与各 VIP 明细。
+   * 晋级奖励确认弹窗的总额、笔数与各 VIP 明细。
    */
   const levelUpClaimSummary = computed<VipLevelUpClaimSummary>(() => {
     const pendingVipIds = normalizePendingVipLevels(vipInfo.value?.upgradedVipLevels)

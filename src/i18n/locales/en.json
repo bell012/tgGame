@@ -1682,10 +1682,14 @@
   },
   "vipPage": {
     "cards": {
-      "levelUp": "Level-up Bonus",
+      "levelUp": "Upgrade Reward",
       "daily": "Daily Bonus",
-      "weekly": "Weekly Bonus",
-      "monthly": "Monthly Bonus"
+      "weekly": "Weekly Reward",
+      "monthly": "Monthly Reward"
+    },
+    "progress": {
+      "validBetRequirement": "Valid Bet Requirement",
+      "depositRequirement": "Deposit Requirement"
     },
     "ongoing": "Ongoing",
     "claimed": "Claimed",
@@ -1699,7 +1703,7 @@
     "benefitsComparison": {
       "currentLevel": "Current Level: V{vipId}",
       "unlockLevel": "Unlock V{vipId}",
-      "totalRewards": "Annual Benefits"
+      "totalRewards": "Est. Revenue"
     },
     "goalHint": {
       "unlocked": "Upgrade successful. Benefits unlocked",
@@ -1708,9 +1712,9 @@
     },
     "benefitExplainPopup": {
       "title": "VIP Exclusive Benefits",
-      "item1": "1. Each time you level up, you can claim the corresponding level-up bonus on the VIP Benefits page. A 1x turnover requirement applies to the bonus.",
-      "item2": "2. Once you reach the corresponding VIP level, you can claim the weekly bonus on the VIP Benefits page every Monday. A 1x turnover requirement applies to the bonus.",
-      "item3": "3. Once you reach the corresponding VIP level, you can claim the monthly bonus on the VIP Benefits page on the 1st of each month. A 1x turnover requirement applies to the bonus.",
+      "item1": "1. Each time you level up, you can claim the corresponding upgrade reward on the VIP Benefits page. A 1x turnover requirement applies to the reward.",
+      "item2": "2. Once you reach the corresponding VIP level, you can claim the weekly reward on the VIP Benefits page every Monday. A 1x turnover requirement applies to the reward.",
+      "item3": "3. Once you reach the corresponding VIP level, you can claim the monthly reward on the VIP Benefits page on the 1st of each month. A 1x turnover requirement applies to the reward.",
       "confirm": "Confirm",
       "cancel": "Cancel"
     },
@@ -1720,12 +1724,12 @@
       "ok": "OK"
     },
     "levelUpConfirmPopup": {
-      "title": "Level-up Bonus",
+      "title": "Upgrade Reward",
       "rewardCount": "Total {count} rewards",
       "rewardCountPrefix": "Total ",
       "rewardCountSuffix": " rewards",
       "description": "After confirmation, it will be released to the balance in one go.",
-      "rewardItemTitle": "VIP{vipId} Level-up Bonus",
+      "rewardItemTitle": "VIP{vipId} Upgrade Reward",
       "balanceHint": "Once credited, you can check the reward in your balance.",
       "claim": "Claim"
     },
@@ -1739,15 +1743,15 @@
     "rules": {
       "rule1": {
         "title": "1.Promotion Criteria",
-        "description": "Members will be automatically upgraded to the corresponding VIP level after meeting the required deposit or valid turnover conditions, and can claim the matching upgrade bonus. If multiple VIP level requirements are met at the same time, bonuses for all achieved levels will be granted. Upgrade bonuses can be claimed immediately after the level upgrade and remain valid permanently."
+        "description": "Members will be automatically upgraded to the corresponding VIP level after meeting the required deposit or valid turnover conditions, and can claim the matching upgrade reward. If multiple VIP level requirements are met at the same time, rewards for all achieved levels will be granted. Upgrade rewards can be claimed immediately after the level upgrade and remain valid permanently."
       },
       "rule2": {
-        "title": "2. Weekly Bonus",
-        "description": "After reaching the corresponding VIP level, members can claim the Weekly Bonus for their current VIP level. If multiple levels are upgraded at once, only the Weekly Bonus for the current VIP level will be granted. Weekly Bonuses are available every Monday at 00:00, and unclaimed rewards will expire after the claim period."
+        "title": "2. Weekly Reward",
+        "description": "After reaching the corresponding VIP level, members can claim the Weekly Reward for their current VIP level. If multiple levels are upgraded at once, only the Weekly Reward for the current VIP level will be granted. Weekly Rewards are available every Monday at 00:00, and unclaimed rewards will expire after the claim period."
       },
       "rule3": {
-        "title": "3. Monthly Bonus",
-        "description": "After reaching the corresponding VIP level, members can claim the Monthly Bonus for their current VIP level. If multiple levels are upgraded at once, only the Monthly Bonus for the current VIP level will be granted. Monthly Bonuses are available on the 1st of each month at 00:00, and unclaimed rewards will expire after the claim period."
+        "title": "3. Monthly Reward",
+        "description": "After reaching the corresponding VIP level, members can claim the Monthly Reward for their current VIP level. If multiple levels are upgraded at once, only the Monthly Reward for the current VIP level will be granted. Monthly Rewards are available on the 1st of each month at 00:00, and unclaimed rewards will expire after the claim period."
       },
       "rule4": {
         "title": "4. Retention Requirements",

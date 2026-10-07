@@ -1667,10 +1667,14 @@
   },
   "vipPage": {
     "cards": {
-      "levelUp": "晋级礼金",
+      "levelUp": "晋级奖励",
       "daily": "日礼金",
-      "weekly": "周礼金",
-      "monthly": "月礼金"
+      "weekly": "周奖励",
+      "monthly": "月奖励"
+    },
+    "progress": {
+      "validBetRequirement": "有效投注要求",
+      "depositRequirement": "充值要求"
     },
     "ongoing": "进行中",
     "claimed": "已领取",
@@ -1684,7 +1688,7 @@
     "benefitsComparison": {
       "currentLevel": "当前等级：V{vipId}",
       "unlockLevel": "解锁 V{vipId}",
-      "totalRewards": "年度权益价值"
+      "totalRewards": "预计累计收益"
     },
     "goalHint": {
       "unlocked": "升级成功，专属权益已解锁",
@@ -1693,7 +1697,7 @@
     },
     "benefitExplainPopup": {
       "title": "VIP 专属权益",
-      "item1": "1. 每次升级后，您都可以在 VIP 权益页面领取对应的升级奖励。该奖励需完成 1 倍流水。",
+      "item1": "1. 每次升级后，您都可以在 VIP 权益页面领取对应的晋级奖励。该奖励需完成 1 倍流水。",
       "item2": "2. 达到对应 VIP 等级后，您可以在每周一于 VIP 权益页面领取每周奖励。该奖励需完成 1 倍流水。",
       "item3": "3. 达到对应 VIP 等级后，您可以在每月 1 日于 VIP 权益页面领取每月奖励。该奖励需完成 1 倍流水。",
       "confirm": "确认",
@@ -1705,12 +1709,12 @@
       "ok": "确定"
     },
     "levelUpConfirmPopup": {
-      "title": "升级奖励",
+      "title": "晋级奖励",
       "rewardCount": "共 {count} 笔奖励",
       "rewardCountPrefix": "共",
       "rewardCountSuffix": "笔奖励",
       "description": "确认后一次性发放至余额",
-      "rewardItemTitle": "VIP{vipId}晋级礼金",
+      "rewardItemTitle": "VIP{vipId}晋级奖励",
       "balanceHint": "奖励到账后可在余额查看",
       "claim": "领取"
     },
@@ -1724,15 +1728,15 @@
     "rules": {
       "rule1": {
         "title": "1.晋级条件",
-        "description": "会员满足 VIP 晋升所需的存款或有效流水条件后，将自动升级并获得对应等级奖励。若同时满足多个 VIP 等级条件，将发放所有已达成等级的奖励。升级奖励可在升级后立即领取，且长期有效。"
+        "description": "会员满足 VIP 晋升所需的存款或有效流水条件后，将自动升级并获得对应等级奖励。若同时满足多个 VIP 等级条件，将发放所有已达成等级的奖励。晋级奖励可在升级后立即领取，且长期有效。"
       },
       "rule2": {
-        "title": "2. 周礼金",
-        "description": "会员达到对应 VIP 等级后，即可领取当前等级对应的周礼金；若一次性晋升多个等级，仅发放当前 VIP 等级对应的周礼金，每周一 00:00 后开放领取，逾期未领取将在周期结束后失效。"
+        "title": "2. 周奖励",
+        "description": "会员达到对应 VIP 等级后，即可领取当前等级对应的周奖励；若一次性晋升多个等级，仅发放当前 VIP 等级对应的周奖励，每周一 00:00 后开放领取，逾期未领取将在周期结束后失效。"
       },
       "rule3": {
-        "title": "3. 月礼金",
-        "description": "会员达到对应 VIP 等级后，即可领取当前等级对应的月礼金；若一次性晋升多个等级，仅发放当前 VIP 等级对应的月礼金，每月 1 日 00:00 后开放领取，逾期未领取将在周期结束后失效。"
+        "title": "3. 月奖励",
+        "description": "会员达到对应 VIP 等级后，即可领取当前等级对应的月奖励；若一次性晋升多个等级，仅发放当前 VIP 等级对应的月奖励，每月 1 日 00:00 后开放领取，逾期未领取将在周期结束后失效。"
       },
       "rule4": {
         "title": "4. 保级要求",
