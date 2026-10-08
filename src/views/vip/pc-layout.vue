@@ -325,7 +325,7 @@ const closeBenefitExplainPopup = () => {
   showBenefitExplainPopup.value = false
 }
 
-// 打开升级奖励确认弹窗。
+// 打开晋级奖励确认弹窗。
 const openLevelUpConfirmationPopup = (card: VipBenefitCard) => {
   pendingLevelUpCard.value = card
   showLevelUpConfirmationPopup.value = true
@@ -400,7 +400,7 @@ const handleBenefitAction = async (card: VipBenefitCard) => {
   await executeBenefitClaim(card)
 }
 
-// 确认领取升级奖励，先关闭确认弹窗，再发起领取请求。
+// 确认领取晋级奖励，先关闭确认弹窗，再发起领取请求。
 const confirmLevelUpClaim = async () => {
   const targetCard = pendingLevelUpCard.value
 

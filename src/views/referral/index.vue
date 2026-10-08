@@ -165,6 +165,7 @@ import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useGameStore } from '@/stores/game'
@@ -209,6 +210,7 @@ const authModalStore = useAuthModalStore()
 const gameStore = useGameStore()
 const userStore = useUserStore()
 const isMobile = useIsMobile()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const isReady = ref(false)
 const estimatedCommissionAmount = ref('0.00')
 const referralLink = getDefaultReferralLink()
@@ -353,10 +355,7 @@ async function fetchCommissionBoostEstimatedCommission() {
  * 处理客服按钮点击。
  */
 const handleCustomerServiceClick = () => {
-  globalShowToast({
-    message: t('referral.customerService'),
-    type: 'success'
-  })
+  openOnlineCustomer()
 }
 
 /**

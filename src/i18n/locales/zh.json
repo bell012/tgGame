@@ -10,6 +10,189 @@
     "invalidUrl": "客服地址无效，请稍后重试",
     "frameFailed": "客服页面加载失败，请重试"
   },
+  "aboutPage": {
+    "title": "关于我们",
+    "cardTitle": "关于 TG.GAME",
+    "introTitle": "关于 TG.GAME",
+    "introParagraph1": "TG.GAME 是一个综合线上娱乐平台，致力于为用户提供丰富、便捷、流畅的娱乐体验。",
+    "introParagraph2": "平台汇集了多种娱乐选择，包括老虎机、真人荷官游戏、Crash 游戏和体育投注，让用户可以通过一个账号探索不同类型的游戏和活动。",
+    "experienceTitle": "丰富的娱乐体验",
+    "experienceParagraph1": "我们持续引入多元化的游戏内容，并不断优化产品体验，让用户更轻松地发现并享受感兴趣的娱乐选择。",
+    "experienceParagraph2": "无论是经典游戏还是热门内容，我们都希望为用户提供更广泛的选择。",
+    "stabilityTitle": "稳定的平台体验",
+    "stabilityParagraph1": "我们重视平台稳定性、账号安全和顺畅的资金交易。通过持续优化系统性能、支付流程和风控机制，我们为用户提供稳定顺滑的使用环境。",
+    "improvementTitle": "持续改进",
+    "improvementParagraph1": "用户体验是 TG.GAME 持续改进的驱动力。",
+    "improvementParagraph2": "在产品演进和用户需求的指引下，我们不断增强平台功能、游戏内容和服务质量，提供更简单、更便捷的线上娱乐体验。",
+    "closing": "TG.GAME —— 探索无限娱乐可能。"
+  },
+  "legalPage": {
+    "title": "法律条款",
+    "cardTitle": "关于 TG.GAME",
+    "welcome": "欢迎来到 TG.GAME。",
+    "description": "在注册、访问或使用 TG.GAME 提供的服务之前，请仔细阅读本条款。继续使用平台服务即表示您确认并同意遵守本条款以及平台发布的相关规则。",
+    "eligibilityTitle": "1. 资格要求",
+    "eligibilityParagraph1": "用户必须满足其所在国家或地区的法定博彩年龄要求，并且必须年满 18 周岁。",
+    "eligibilityParagraph2": "用户有责任确认访问和使用 TG.GAME 符合当地适用法律法规。如果当地法律禁止使用此类服务，请勿访问或使用本平台。",
+    "accountUsageTitle": "2. 账户使用",
+    "accountUsageParagraph1": "用户必须使用准确且有效的信息进行注册，并妥善保管自己的账户密码和身份验证信息。",
+    "accountUsageParagraph2": "账户仅供个人使用，不得出售、出租、转让、共享或以其他方式提供给第三方使用。",
+    "accountUsageParagraph3": "如果平台检测到异常登录活动、身份信息异常或其他风险行为，平台可根据具体情况采取必要的安全验证和风险控制措施。",
+    "gamesBettingTitle": "3. 游戏与投注",
+    "gamesBettingParagraph1": "投注前，用户应确认投注详情、投注金额以及具体游戏规则。",
+    "gamesBettingParagraph2": "投注一经系统成功确认，通常不可修改或取消。游戏结果和结算以平台系统记录及对应游戏规则为准。",
+    "gamesBettingParagraph3": "如发生系统故障、网络异常、数据错误或其他技术问题，平台保留审核相关记录并根据实际情况采取适当处理措施的权利。",
+    "depositsWithdrawalsTitle": "4. 存款与提款",
+    "depositsWithdrawalsParagraph1": "用户必须使用其合法拥有或被授权使用的支付方式进行存款和提款。",
+    "depositsWithdrawalsParagraph2": "为保障账户和资金安全，平台可能要求用户完成身份验证（KYC）或提供必要的验证文件。",
+    "depositsWithdrawalsParagraph3": "存款和提款的具体规则、限额和处理时间，以平台显示的信息为准。",
+    "promotionsRewardsTitle": "5. 优惠与奖励",
+    "promotionsRewardsParagraph1": "平台可能不定期提供奖金、返利、优惠券及其他促销活动。",
+    "promotionsRewardsParagraph2": "不同活动可能有各自的参与条件、有效期、流水要求和奖励规则；用户参与前应阅读具体活动条款。禁止通过多账号、虚假交易、恶意套利或利用系统漏洞等方式获取奖励。",
+    "fairUseTitle": "6. 公平使用",
+    "fairUseParagraph1": "禁止任何形式的欺诈、恶意套利、洗钱、非法资金转移、系统攻击、游戏操纵或利用平台漏洞获取不当利益的行为。",
+    "fairUseParagraph2": "平台保留审核异常活动或涉嫌违规账户，并采取必要风险控制措施的权利。",
+    "responsibleGamingTitle": "7. 负责任博彩",
+    "responsibleGamingParagraph1": "TG.GAME 倡导健康、理性的娱乐方式。",
+    "responsibleGamingParagraph2": "用户应根据自身经济能力合理管理游戏时间和预算，不应将博彩视为投资、稳定收入来源或解决财务问题的方式。",
+    "responsibleGamingParagraph3": "如果博彩开始对您的个人生活、工作或财务状况造成负面影响，我们建议您立即停止游戏并寻求适当帮助。",
+    "privacyDataTitle": "8. 隐私与数据",
+    "privacyDataParagraph1": "平台可能出于服务提供、身份验证、账户安全、风险控制和法律合规等目的收集和处理必要的用户信息。",
+    "privacyDataParagraph2": "相关数据将依据适用的隐私政策、法律法规进行处理和保护。",
+    "serviceChangesTitle": "9. 服务变更",
+    "serviceChangesParagraph1": "由于系统维护、产品升级、第三方服务变化、法律或监管更新或其他合理原因，平台可能调整部分功能、游戏内容或服务规则。",
+    "serviceChangesParagraph2": "因此，部分服务可能会出现临时暂停、延迟或不可用的情况。",
+    "updatesTitle": "10. 条款更新",
+    "updatesParagraph1": "TG.GAME 可能根据法律法规要求、业务发展或运营需要修改本条款。",
+    "updatesParagraph2": "更新后的条款将在平台发布。继续使用 TG.GAME 即视为接受更新后的条款。",
+    "notice": "请负责任地参与博彩。禁止 18 周岁以下人士参与。"
+  },
+  "loginRegister": {
+    "agreementPrefix": "我已年满 18 周岁并同意",
+    "agreementMiddle": "和",
+    "userAgreement": "用户协议",
+    "privacyPolicy": "隐私政策",
+    "policy": {
+      "title": "快速隐私政策",
+      "sections": [
+        {
+          "title": "1. 简介",
+          "paragraphs": [
+            "感谢您使用 [Product Name]（以下简称“本平台”）。",
+            "我们高度重视您的个人信息和隐私保护。",
+            "本隐私政策（以下简称“本政策”）旨在说明我们如何收集、使用、存储、保护和共享您的个人信息。",
+            "在使用本平台前，请您仔细阅读并理解本政策内容。",
+            "如果您不同意本政策的任何部分，请停止使用本平台。"
+          ]
+        },
+        {
+          "title": "2.我们收集的信息",
+          "paragraphs": ["当您使用本平台时，我们可能会收集以下信息："],
+          "orderedList": [
+            "基本信息",
+            "手机号码、邮箱地址、用户名、头像、登录密码（加密存储）",
+            "身份验证信息（KYC），仅在需要实名验证时收集",
+            "姓名、证件号码/证件信息、人脸识别数据、证件照片",
+            "设备和日志信息",
+            "设备型号、操作系统版本、IP 地址、登录时间、操作记录、浏览行为",
+            "交易信息（包括钱包和支付）",
+            "充值记录、提现记录、交易订单、区块链地址（如 USDT、BTC 等）",
+            "位置信息（可选）",
+            "IP 所在地、GPS 信息（在您授权后）"
+          ]
+        },
+        {
+          "title": "3.我们如何使用信息",
+          "paragraphs": ["当您使用本平台时，我们可能会将收集的信息用于以下目的："],
+          "bulletList": [
+            "创建和管理您的账户",
+            "验证您的身份并完成 KYC 流程",
+            "提供平台服务并处理交易",
+            "维护平台安全，防范欺诈和其他风险",
+            "改进产品功能和用户体验",
+            "提供客户支持并解决争议",
+            "遵守适用法律法规和监管要求"
+          ]
+        },
+        {
+          "title": "4.信息的存储和保护",
+          "subsections": [
+            {
+              "title": "1.存储方式",
+              "paragraphs": [
+                "数据会通过加密方式存储（如 AES/HTTPS）。密码会使用不可逆加密方式存储（如哈希）。"
+              ]
+            },
+            {
+              "title": "2.保留期限",
+              "paragraphs": ["数据会在服务期间或适用法律要求的期限内保留。"]
+            },
+            {
+              "title": "3.安全措施",
+              "paragraphs": [
+                "我们会使用加密传输（SSL/TLS）、访问控制、安全审计和其他适当措施保护您的信息。"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "5.信息共享和披露",
+          "paragraphs": [
+            "我们不会向任何第三方出售您的个人信息。但在以下情况下，我们可能会共享或披露您的信息："
+          ],
+          "subsections": [
+            {
+              "title": "1.法律要求",
+              "paragraphs": ["根据适用法律、法规、法院、政府机构或监管机构要求时。"]
+            },
+            {
+              "title": "2.业务合作伙伴",
+              "paragraphs": ["我们可能会与以下服务商共享必要信息："],
+              "bulletList": ["支付服务商", "KYC 服务商", "风控服务商"]
+            },
+            {
+              "title": "3.业务转让",
+              "paragraphs": ["在合并、收购、重组、出售或其他业务转让情形下。"]
+            }
+          ]
+        },
+        {
+          "title": "6.用户权利",
+          "paragraphs": [
+            "您可能有权访问、更正或删除您的个人信息，删除您的账户，撤回同意，或提交投诉和举报。",
+            "如需协助，请联系我们的客服团队。"
+          ]
+        },
+        {
+          "title": "7.Cookie 和追踪技术",
+          "paragraphs": [
+            "我们可能会使用 Cookie 记住您的登录状态、优化使用体验、分析流量并了解用户行为。",
+            "您可以通过浏览器设置管理或禁用 Cookie。"
+          ]
+        },
+        {
+          "title": "8.未成年人保护",
+          "paragraphs": [
+            "本平台仅面向年满 18 周岁的用户。如果我们发现未成年人使用了我们的服务，我们将依照适用法律法规删除相关数据。"
+          ]
+        },
+        {
+          "title": "9.跨境数据传输",
+          "paragraphs": [
+            "出于业务运营和跨境服务需要，您的数据可能会被传输至其他国家或地区。",
+            "我们将依照适用法律法规采取适当措施保护您的信息。"
+          ]
+        },
+        {
+          "title": "10.政策更新",
+          "paragraphs": [
+            "我们可能会不时更新本政策。任何更新将发布在平台上或通过其他方式通知您。",
+            "请定期查看本政策以获取最新信息。"
+          ]
+        }
+      ]
+    }
+  },
   "home": {
     "title": "欢迎来到 TG 游戏",
     "home": "首页",
@@ -1484,10 +1667,14 @@
   },
   "vipPage": {
     "cards": {
-      "levelUp": "晋级礼金",
+      "levelUp": "晋级奖励",
       "daily": "日礼金",
-      "weekly": "周礼金",
-      "monthly": "月礼金"
+      "weekly": "周奖励",
+      "monthly": "月奖励"
+    },
+    "progress": {
+      "validBetRequirement": "有效投注要求",
+      "depositRequirement": "充值要求"
     },
     "ongoing": "进行中",
     "claimed": "已领取",
@@ -1501,7 +1688,7 @@
     "benefitsComparison": {
       "currentLevel": "当前等级：V{vipId}",
       "unlockLevel": "解锁 V{vipId}",
-      "totalRewards": "年度权益价值"
+      "totalRewards": "预计累计收益"
     },
     "goalHint": {
       "unlocked": "升级成功，专属权益已解锁",
@@ -1510,7 +1697,7 @@
     },
     "benefitExplainPopup": {
       "title": "VIP 专属权益",
-      "item1": "1. 每次升级后，您都可以在 VIP 权益页面领取对应的升级奖励。该奖励需完成 1 倍流水。",
+      "item1": "1. 每次升级后，您都可以在 VIP 权益页面领取对应的晋级奖励。该奖励需完成 1 倍流水。",
       "item2": "2. 达到对应 VIP 等级后，您可以在每周一于 VIP 权益页面领取每周奖励。该奖励需完成 1 倍流水。",
       "item3": "3. 达到对应 VIP 等级后，您可以在每月 1 日于 VIP 权益页面领取每月奖励。该奖励需完成 1 倍流水。",
       "confirm": "确认",
@@ -1522,12 +1709,12 @@
       "ok": "确定"
     },
     "levelUpConfirmPopup": {
-      "title": "升级奖励",
+      "title": "晋级奖励",
       "rewardCount": "共 {count} 笔奖励",
       "rewardCountPrefix": "共",
       "rewardCountSuffix": "笔奖励",
       "description": "确认后一次性发放至余额",
-      "rewardItemTitle": "VIP{vipId}晋级礼金",
+      "rewardItemTitle": "VIP{vipId}晋级奖励",
       "balanceHint": "奖励到账后可在余额查看",
       "claim": "领取"
     },
@@ -1541,15 +1728,15 @@
     "rules": {
       "rule1": {
         "title": "1.晋级条件",
-        "description": "会员满足 VIP 晋升所需的存款或有效流水条件后，将自动升级并获得对应等级奖励。若同时满足多个 VIP 等级条件，将发放所有已达成等级的奖励。升级奖励可在升级后立即领取，且长期有效。"
+        "description": "会员满足 VIP 晋升所需的存款或有效流水条件后，将自动升级并获得对应等级奖励。若同时满足多个 VIP 等级条件，将发放所有已达成等级的奖励。晋级奖励可在升级后立即领取，且长期有效。"
       },
       "rule2": {
-        "title": "2. 周礼金",
-        "description": "会员达到对应 VIP 等级后，即可领取当前等级对应的周礼金；若一次性晋升多个等级，仅发放当前 VIP 等级对应的周礼金，每周一 00:00 后开放领取，逾期未领取将在周期结束后失效。"
+        "title": "2. 周奖励",
+        "description": "会员达到对应 VIP 等级后，即可领取当前等级对应的周奖励；若一次性晋升多个等级，仅发放当前 VIP 等级对应的周奖励，每周一 00:00 后开放领取，逾期未领取将在周期结束后失效。"
       },
       "rule3": {
-        "title": "3. 月礼金",
-        "description": "会员达到对应 VIP 等级后，即可领取当前等级对应的月礼金；若一次性晋升多个等级，仅发放当前 VIP 等级对应的月礼金，每月 1 日 00:00 后开放领取，逾期未领取将在周期结束后失效。"
+        "title": "3. 月奖励",
+        "description": "会员达到对应 VIP 等级后，即可领取当前等级对应的月奖励；若一次性晋升多个等级，仅发放当前 VIP 等级对应的月奖励，每月 1 日 00:00 后开放领取，逾期未领取将在周期结束后失效。"
       },
       "rule4": {
         "title": "4. 保级要求",

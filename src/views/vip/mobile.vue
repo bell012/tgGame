@@ -229,6 +229,7 @@
 import { computed, nextTick, onMounted, ref, watch, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import { useVipStore } from '@/stores/vip'
 import KefuIcon from '@/static/svg/vip/kefu.svg?component'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
@@ -248,6 +249,7 @@ import {
 
 const { t } = useI18n()
 const vipStore = useVipStore()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const showBenefitExplainPopup = ref(false)
 const showLevelUpConfirmationPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
@@ -391,9 +393,9 @@ watch(showLevelUpConfirmationPopup, visible => {
   }
 })
 
-// 点击客服
+/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
 const openKefuPopup = () => {
-  console.log('点击客服')
+  openOnlineCustomer()
 }
 
 const openBenefitExplainPopup = () => {
@@ -404,7 +406,7 @@ const closeBenefitExplainPopup = () => {
   showBenefitExplainPopup.value = false
 }
 
-// 打开升级奖励确认弹窗。
+// 打开晋级奖励确认弹窗。
 const openLevelUpConfirmationPopup = (card: VipBenefitCard) => {
   pendingLevelUpCard.value = card
   showLevelUpConfirmationPopup.value = true
@@ -454,7 +456,7 @@ const handleBenefitAction = async (card: VipBenefitCard) => {
   await executeBenefitClaim(card)
 }
 
-// 确认领取升级奖励，先关闭确认弹窗，再发起领取请求。
+// 确认领取晋级奖励，先关闭确认弹窗，再发起领取请求。
 const confirmLevelUpClaim = async () => {
   const targetCard = pendingLevelUpCard.value
 

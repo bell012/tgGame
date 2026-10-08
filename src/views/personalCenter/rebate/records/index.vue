@@ -19,15 +19,18 @@
 
 <script setup lang="ts">
 import H5Header from '@/components/common/H5Header.vue'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useI18n } from 'vue-i18n'
 import RebateRecordsContent from '../components/records/RebateRecordsContent.vue'
 
 const { t } = useI18n()
 const supportHeaderIcon = CustomerServiceIcon
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 
+/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
 const handleSupportClick = () => {
-  console.log('open live support')
+  openOnlineCustomer()
 }
 </script>
 

@@ -239,6 +239,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
@@ -275,6 +276,7 @@ import {
 
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 const isReady = ref(false)
 
 const activeTopTab = ref<OrderTab>('deposits')
@@ -461,10 +463,7 @@ const handleBackFromDetail = () => {
  * 处理客服按钮点击。
  */
 const handleCustomerServiceClick = () => {
-  // TODO：处理客服按钮点击。
-  globalShowToast({
-    message: t('sidebar_menu.customer_service')
-  })
+  openOnlineCustomer()
 }
 
 /**

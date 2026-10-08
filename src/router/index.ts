@@ -199,6 +199,32 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'about',
+    name: 'about',
+    component: () => import('@/views/about/index.vue'),
+    meta: {
+      title: 'About Us',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'legal',
+    name: 'legal',
+    component: () => import('@/views/legal/index.vue'),
+    meta: {
+      title: 'Legal Terms',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'tasks',
     name: 'tasks',
     component: () => import('@/views/task-center/index.vue'),
@@ -422,6 +448,7 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '聊天',
       // PC 端作为右侧聊天抽屉展示，保留进入聊天前的页面作为背景。
       desktopOverlay: true,
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideTopNav: true
       }

@@ -1,6 +1,6 @@
 <template>
   <footer class="w-full bg-bg-6 py-6">
-    <div class="max-w-[1200px] mx-auto font-['Inter']">
+    <div class="max-w-[1260px] mx-auto font-['Inter']">
       <!-- 第一排 -->
       <div class="border-b border-opacity-10 pb-6">
         <div class="flex items-start justify-between gap-x-8">
