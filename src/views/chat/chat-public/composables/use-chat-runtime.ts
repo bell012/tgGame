@@ -380,6 +380,7 @@ export function useChatRuntime() {
     return {
       ...conversation,
       lastMessage: latestMessage?.text ?? '',
+      lastMessageType: latestMessage?.type,
       // 会话列表时间以本地历史最新消息的展示时间为准。
       lastMessageTime: latestMessage?.time ?? ''
     }
@@ -391,6 +392,7 @@ export function useChatRuntime() {
 
     const latestMessage = getLatestConversationMessage(messages.value)
     activeConversation.value.lastMessage = latestMessage?.text ?? ''
+    activeConversation.value.lastMessageType = latestMessage?.type
     // 当前会话新增消息后，同步更新会话列表使用的本地消息时间。
     activeConversation.value.lastMessageTime = latestMessage?.time ?? ''
   }
@@ -714,8 +716,13 @@ export function useChatRuntime() {
     }
   }
 
-  /** 首次进入会话时读取客服欢迎语，并在启用时写入当前会话消息列表。 */
+  /**
+   * 仅为空会话读取客服欢迎语并写入消息列表。
+   * 已有本地历史的会话不应在刷新浏览器后再次插入欢迎语。
+   */
   const loadWelcomeReminder = async (conversation: ConversationItem) => {
+    if (messages.value.length > 0) return
+
     const conversationKey = getConversationCacheKey(
       currentChatUserId.value,
       dealerCode.value,
@@ -733,6 +740,7 @@ export function useChatRuntime() {
         qaConfig?.isEnabled !== true ||
         !reminderText ||
         activeConversation.value?.id !== conversation.id ||
+        messages.value.length > 0 ||
         messages.value.some(message => message.contentType === 'welcome-reminder')
       ) {
         return

@@ -40,7 +40,7 @@
           <span
             class="absolute inset-x-0 bottom-0 truncate text-[13px] font-[400] leading-4 text-text-2"
           >
-            {{ conversation.lastMessage || '' }}
+            {{ lastMessagePreview }}
           </span>
         </div>
       </div>
@@ -108,7 +108,7 @@
         <p
           class="absolute inset-x-0 bottom-0 truncate text-[12px] font-[400] leading-[14.67px] text-text-2"
         >
-          {{ conversation.lastMessage || '' }}
+          {{ lastMessagePreview }}
         </p>
       </div>
     </div>
@@ -162,6 +162,13 @@ const unreadCount = computed(() => Math.max(0, Number(props.conversation.unreadC
 
 /** 直接展示 IndexedDB 最新消息预先格式化的 time；无本地历史时保持为空。 */
 const lastMessageTime = computed(() => String(props.conversation.lastMessageTime ?? '').trim())
+
+/** 媒体消息在会话列表中使用固定文案，文字消息保留原内容。 */
+const lastMessagePreview = computed(() => {
+  if (props.conversation.lastMessageType === 'image') return '[图片]'
+  if (props.conversation.lastMessageType === 'video') return '[视频]'
+  return props.conversation.lastMessage || ''
+})
 
 /** 将后台头像文件名或绝对地址转换为可显示地址。 */
 const avatarUrl = computed(() => resolveChatMediaUrl(props.conversation.avatar))

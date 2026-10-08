@@ -22,6 +22,8 @@ export interface ConversationItem {
   unreadCount?: number
   lastMessageTime?: string | number
   lastMessage?: string
+  /** 最后一条本地消息的类型，用于会话列表预览。 */
+  lastMessageType?: MessageType
   sort?: number
 }
 
