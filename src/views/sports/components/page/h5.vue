@@ -85,13 +85,11 @@
           <!-- 长队名允许换行，盘口靠底部对齐。 -->
           <div class="mt-auto pt-3" @click.stop>
             <MatchOdds
-              v-if="match.MarketLines.length"
               :MarketLines="match.MarketLines"
               :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
               picker="liveStrip"
               @select="selectOdds(match.id, $event)"
             />
-            <div v-else class="h-9" aria-hidden="true" data-testid="sports-h5-live-odds-slot"></div>
           </div>
         </article>
       </div>

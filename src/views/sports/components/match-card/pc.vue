@@ -122,7 +122,6 @@
 
       <div class="mt-auto min-h-[76px] min-w-0 pt-2" data-testid="sports-card-odds" @click.stop>
         <MatchOdds
-          v-if="MarketLines.length"
           :MarketLines="MarketLines"
           :selected-wager-selection-id="selectedWagerSelectionId"
           :expanded="expanded"

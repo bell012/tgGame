@@ -91,7 +91,6 @@
 
       <div class="min-w-0" data-testid="sports-h5-match-odds" @click.stop>
         <MatchOdds
-          v-if="MarketLines.length"
           :MarketLines="MarketLines"
           :selected-wager-selection-id="selectedWagerSelectionId"
           @select="emit('select', $event)"

@@ -65,7 +65,6 @@
 
           <div class="mt-auto min-w-0 pt-3" @click.stop>
             <MatchOdds
-              v-if="match.MarketLines.length"
               :MarketLines="match.MarketLines"
               :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
               picker="liveStrip"
