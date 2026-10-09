@@ -133,7 +133,7 @@
 <script setup lang="ts">
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import OnlineIcon from '@/static/svg/chat/public/online.svg?component'
-import { computed } from 'vue'
+import { computed, defineEmits, defineProps, withDefaults } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getConversationStatusKey, resolveChatMediaUrl, resolveConversationStatus } from '../shared'
 import type { ConversationItem } from '../types'
@@ -165,8 +165,8 @@ const lastMessageTime = computed(() => String(props.conversation.lastMessageTime
 
 /** 媒体消息在会话列表中使用固定文案，文字消息保留原内容。 */
 const lastMessagePreview = computed(() => {
-  if (props.conversation.lastMessageType === 'image') return '[图片]'
-  if (props.conversation.lastMessageType === 'video') return '[视频]'
+  if (props.conversation.lastMessageType === 'image') return '[图片消息]'
+  if (props.conversation.lastMessageType === 'video') return '[视频消息]'
   return props.conversation.lastMessage || ''
 })
 
