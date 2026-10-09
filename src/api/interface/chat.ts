@@ -20,6 +20,12 @@ export interface OnlineChatCustomer {
   nickName?: string
   onlineStatus?: number
   unreadCount?: number
+  /** 后台返回的最新未读消息，用于优先展示会话列表预览。 */
+  lastUnreadMessage?: {
+    content?: string
+    contentType?: 'text' | 'image' | string
+    messageId?: string
+  }
   lastMessageTime?: number
   sort?: number
 }

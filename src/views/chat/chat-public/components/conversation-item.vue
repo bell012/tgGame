@@ -163,8 +163,14 @@ const unreadCount = computed(() => Math.max(0, Number(props.conversation.unreadC
 /** 直接展示 IndexedDB 最新消息预先格式化的 time；无本地历史时保持为空。 */
 const lastMessageTime = computed(() => String(props.conversation.lastMessageTime ?? '').trim())
 
-/** 媒体消息在会话列表中使用固定文案，文字消息保留原内容。 */
+/** 优先展示接口返回的最新未读消息；未返回时保持本地消息预览逻辑。 */
 const lastMessagePreview = computed(() => {
+  const lastUnreadMessage = props.conversation.lastUnreadMessage
+  if (lastUnreadMessage) {
+    if (lastUnreadMessage.contentType === 'image') return '[图片消息]'
+    return lastUnreadMessage.content || ''
+  }
+
   if (props.conversation.lastMessageType === 'image') return '[图片消息]'
   if (props.conversation.lastMessageType === 'video') return '[视频消息]'
   return props.conversation.lastMessage || ''

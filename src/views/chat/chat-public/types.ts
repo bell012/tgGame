@@ -20,6 +20,12 @@ export interface ConversationItem {
   nickName?: string
   onlineStatus?: number
   unreadCount?: number
+  /** 接口返回的最新未读消息；存在时优先作为会话列表预览。 */
+  lastUnreadMessage?: {
+    content?: string
+    contentType?: 'text' | 'image' | string
+    messageId?: string
+  }
   lastMessageTime?: string | number
   lastMessage?: string
   /** 最后一条本地消息的类型，用于会话列表预览。 */
