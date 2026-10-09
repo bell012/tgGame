@@ -37,7 +37,7 @@ export const parseBetInfoItems = (
   return { quotes: [...quotes.values()], replacedIds: [...replacedIds] }
 }
 
-// 只用于比较赔率改善，不用于计算派彩；派彩读取接口 epa。
+// 用于赔率显示和比较赔率改善，不用于计算派彩；派彩读取接口 epa。
 export const decimalOdds = (odds: number, type: number): number | null => {
   if (!Number.isFinite(odds)) return null
   if (type === 3) return odds > 1 ? odds : null

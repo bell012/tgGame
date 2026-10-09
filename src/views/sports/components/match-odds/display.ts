@@ -1,4 +1,5 @@
 import type { SportMarketLine, SportWagerSelection } from '@/api/interface/sport'
+import { decimalOdds } from '../bet-slip/bet-info'
 
 /** PC 优先独赢 → 让球 → 大小，其余玩法按接口顺序补齐。 */
 const HOME_BET_TYPE_ORDER = [3, 1, 2] as const
@@ -7,12 +8,39 @@ const H5_LIST_BET_TYPE_ORDER = [1, 2, 3] as const
 /** 热门条优先展示的大小盘。 */
 const OVER_UNDER_BET_TYPE_ID = 2
 
+/** 卡片每种盘口最多三项：PC 横排三列，H5 列表竖排三行。 */
+export const MAX_CARD_SELECTIONS = 3
+
 export const hasFiniteOdds = (selection: SportWagerSelection) => Number.isFinite(selection.Odds)
+
+/** 仅转换卡片显示值，保留原始 Odds / OddsType 供投注流程使用。 */
+export const formatEuropeanOdds = (
+  selection: Pick<SportWagerSelection, 'Odds' | 'OddsType'>
+): string => {
+  const { Odds: odds, OddsType: type } = selection
+  if (!Number.isFinite(odds)) return ''
+
+  let converted = odds
+  if (type === 6) {
+    const europeanOdds = decimalOdds(odds, type)
+    if (europeanOdds === null) return ''
+    converted = europeanOdds
+  } else if (type !== 3) {
+    if (odds > 0) converted = odds + 1
+    else if ((type === 1 || type === 4) && odds !== 0) converted = 1 - 1 / odds
+  }
+  // 最多两位小数，避免除法尾数；不强制补零，沿用卡片原有数字展示方式。
+  return Number.isFinite(converted) ? String(Number(converted.toFixed(2))) : ''
+}
+
+/** 卡片按转换后的显示值筛选，不改变详情页对原始赔率的校验。 */
+export const hasDisplayableCardOdds = (selection: SportWagerSelection) =>
+  formatEuropeanOdds(selection) !== ''
 
 const isDisplayableLine = (line: SportMarketLine) =>
   Number.isSafeInteger(line.MarketlineId) &&
   Array.isArray(line.WagerSelections) &&
-  line.WagerSelections.some(hasFiniteOdds)
+  line.WagerSelections.some(hasDisplayableCardOdds)
 
 /** 列表在没有有效赔率时仍保留锁盘盘口，用来画锁图标。 */
 const isOpenOrLockedLine = (line: SportMarketLine) =>

@@ -6,7 +6,7 @@
       type="button"
       class="flex h-9 min-w-0 flex-1 items-center justify-between rounded-lg px-3"
       :class="isSelected(selection) ? 'bg-theme-primary text-text-4' : 'bg-bg-3 text-text-1'"
-      @click="emit('select', { market: stripLine, option: selection })"
+      @click="onListSelect(stripLine, selection)"
     >
       <span class="flex min-w-0 items-center gap-1 truncate text-[12px] font-normal">
         <span class="truncate">{{ selectionLabel(selection) }}</span>
@@ -16,7 +16,7 @@
       </span>
       <span class="shrink-0 text-[12px] font-bold" :class="oddsNumberClass(selection)">
         <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span
-        >{{ selection.Odds }}
+        >{{ formatEuropeanOdds(selection) }}
       </span>
     </button>
   </div>
@@ -65,7 +65,7 @@
               :class="oddsNumberClass(selection)"
             >
               <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span>
-              {{ selection.Odds }}
+              {{ formatEuropeanOdds(selection) }}
             </span>
           </template>
         </button>
@@ -79,9 +79,11 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import lockIcon from '../../event-details/components/sports-score-details/img/bold.svg?url'
 import {
+  formatEuropeanOdds,
   formatHandicap,
-  hasFiniteOdds,
+  hasDisplayableCardOdds,
   isWagerSelected,
+  MAX_CARD_SELECTIONS,
   selectionLetterKey,
   shouldShowHandicap
 } from './display'
@@ -122,14 +124,14 @@ const columnClass = computed(() => {
 })
 
 const visibleSelections = (line: SportMarketLine) =>
-  (line.WagerSelections ?? []).filter(hasFiniteOdds)
+  (line.WagerSelections ?? []).filter(hasDisplayableCardOdds).slice(0, MAX_CARD_SELECTIONS)
 
 const lockedPlaceholderCount = (line: SportMarketLine) => (line.BetTypeId === 3 ? 3 : 2)
 
 const listCells = (line: SportMarketLine): Array<SportWagerSelection | undefined> => {
   if (!line.IsLocked) return visibleSelections(line)
   const selections = line.WagerSelections ?? []
-  if (selections.length) return selections
+  if (selections.length) return selections.slice(0, MAX_CARD_SELECTIONS)
   return Array.from({ length: lockedPlaceholderCount(line) })
 }
 
@@ -153,7 +155,7 @@ const oddsArrow = (selection: SportWagerSelection) => {
 watch(() => props.MarketLines, noteMarketLines, { deep: true, immediate: true })
 
 const onListSelect = (line: SportMarketLine, selection?: SportWagerSelection) => {
-  if (line.IsLocked || !selection) return
+  if (line.IsLocked || !selection || !hasDisplayableCardOdds(selection)) return
   emit('select', { market: line, option: selection })
 }
 

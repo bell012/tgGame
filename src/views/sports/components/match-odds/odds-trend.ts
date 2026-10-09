@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { formatEuropeanOdds } from './display'
 import type { SportMarketLine } from './types'
 import type { OddsTrend } from './types'
 
@@ -34,7 +35,8 @@ export const noteMarketLines = (lines: readonly SportMarketLine[]) => {
   for (const line of lines) {
     if (line.IsLocked) continue
     for (const selection of line.WagerSelections ?? []) {
-      noteOdds(selection.WagerSelectionId, selection.Odds)
+      const displayedOdds = formatEuropeanOdds(selection)
+      if (displayedOdds !== '') noteOdds(selection.WagerSelectionId, Number(displayedOdds))
     }
   }
 }

@@ -41,7 +41,7 @@
             </span>
             <span class="ml-auto shrink-0 text-xs font-bold" :class="oddsNumberClass(selection)">
               <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span
-              >{{ selection.Odds }}
+              >{{ formatEuropeanOdds(selection) }}
             </span>
           </template>
         </button>
@@ -112,7 +112,7 @@
                     <span v-if="oddsArrow(selection)" aria-hidden="true">{{
                       oddsArrow(selection)
                     }}</span
-                    >{{ selection.Odds }}
+                    >{{ formatEuropeanOdds(selection) }}
                   </span>
                 </template>
               </button>
@@ -130,9 +130,11 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import lockIcon from '../../event-details/components/sports-score-details/img/bold.svg?url'
 import {
+  formatEuropeanOdds,
   formatHandicap,
-  hasFiniteOdds,
+  hasDisplayableCardOdds,
   isWagerSelected,
+  MAX_CARD_SELECTIONS,
   selectionLetterKey,
   shouldShowHandicap
 } from './display'
@@ -171,14 +173,14 @@ const primaryLine = computed(() => props.MarketLines[0])
 const extraLines = computed(() => props.MarketLines.slice(1))
 
 const visibleSelections = (line: SportMarketLine) =>
-  (line.WagerSelections ?? []).filter(hasFiniteOdds)
+  (line.WagerSelections ?? []).filter(hasDisplayableCardOdds).slice(0, MAX_CARD_SELECTIONS)
 
 const lockedPlaceholderCount = (line: SportMarketLine) => (line.BetTypeId === 3 ? 3 : 2)
 
 const lineCells = (line: SportMarketLine): Array<SportWagerSelection | undefined> => {
   if (!line.IsLocked) return visibleSelections(line)
   const selections = line.WagerSelections ?? []
-  if (selections.length) return selections
+  if (selections.length) return selections.slice(0, MAX_CARD_SELECTIONS)
   return Array.from({ length: lockedPlaceholderCount(line) })
 }
 
@@ -190,7 +192,7 @@ const oddsButtonClass = (line: SportMarketLine, selection?: SportWagerSelection)
 }
 
 const onSelect = (line: SportMarketLine, selection?: SportWagerSelection) => {
-  if (line.IsLocked || !selection) return
+  if (line.IsLocked || !selection || !hasDisplayableCardOdds(selection)) return
   emit('select', { market: line, option: selection })
 }
 
