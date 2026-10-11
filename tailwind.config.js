@@ -6,6 +6,7 @@ export default {
     extend: {
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
+        pingfang: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
         impact: ['Impact', 'sans-serif'],
         'infoma-ultra': ['Infoma Ultra', 'sans-serif'],
         'impact-infoma-ultra': ['Impact', 'Infoma Ultra', 'sans-serif']

@@ -5,8 +5,7 @@
     <section v-if="!activeConversation" class="flex min-h-0 w-full flex-col bg-bg-5">
       <!-- PC 会话列表头部。 -->
       <header class="flex h-[58px] shrink-0 items-center bg-bg-2 px-[12px]">
-        <span class="size-[30px] shrink-0" />
-        <h1 class="min-w-0 flex-1 text-center text-[16px] font-bold leading-[19px] text-text-1">
+        <h1 class="min-w-0 flex-1 text-left text-[14px] font-bold leading-[17px] text-text-1">
           {{ t('chatPublic.customerServiceList') }}
         </h1>
         <button

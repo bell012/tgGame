@@ -6,13 +6,21 @@
   >
     <button
       type="button"
-      class="flex shrink-0 items-center justify-center bg-opacity-6"
+      class="flex shrink-0 items-center justify-center"
       :class="
-        props.displayMode === 'pc' ? 'size-[30px] rounded-[6px]' : 'size-[33px] rounded-[8px]'
+        props.displayMode === 'pc'
+          ? 'size-[30px] rounded-[6px] bg-opacity-10'
+          : 'size-[33px] rounded-[8px] bg-opacity-6'
       "
       @click="$emit('back')"
     >
-      <ArrowLeftIcon class="size-[14px]" />
+      <ArrowLeftIcon
+        :class="
+          props.displayMode === 'pc'
+            ? 'size-[15px] text-text-1 [&>path]:fill-text-1'
+            : 'size-[14px]'
+        "
+      />
     </button>
 
     <!-- 客服头像、名称与在线状态。 -->
@@ -35,7 +43,7 @@
           class="truncate text-text-1"
           :class="
             props.displayMode === 'pc'
-              ? 'text-[14px] font-bold'
+              ? 'text-[14px] font-bold leading-[17px]'
               : 'text-[15px] font-medium leading-[18px]'
           "
         >
@@ -60,14 +68,22 @@
 
     <button
       type="button"
-      class="flex shrink-0 items-center justify-center bg-opacity-6"
+      class="flex shrink-0 items-center justify-center"
       :class="
-        props.displayMode === 'pc' ? 'size-[30px] rounded-[6px]' : 'size-[33px] rounded-[8px]'
+        props.displayMode === 'pc'
+          ? 'size-[30px] rounded-[6px] bg-opacity-10'
+          : 'size-[33px] rounded-[8px] bg-opacity-6'
       "
       :aria-label="t('chatPublic.search')"
       @click="$emit('search')"
     >
-      <SearchIcon :class="props.displayMode === 'pc' ? 'size-[16px]' : 'size-[20px]'" />
+      <SearchIcon
+        :class="
+          props.displayMode === 'pc'
+            ? 'size-[15px] text-text-1 [&>path]:fill-text-1'
+            : 'size-[20px]'
+        "
+      />
     </button>
   </header>
 </template>

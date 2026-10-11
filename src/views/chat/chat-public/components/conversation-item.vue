@@ -49,7 +49,14 @@
       <div class="relative h-[36px] w-[35px] shrink-0">
         <span
           v-if="unreadCount > 0"
-          class="absolute right-0 top-[2px] flex size-[14px] items-center justify-center rounded-full bg-[#FC3C3C] text-[10px] font-[400] leading-3 text-common-100"
+          class="absolute right-0 top-[2px] flex h-[14px] items-center justify-center rounded-full bg-secondary-2 text-[10px] font-[400] leading-3 text-common-100"
+          :class="
+            unreadCount > 99
+              ? 'min-w-[27px] px-[4px]'
+              : unreadCount > 9
+                ? 'min-w-[21px] px-[4px]'
+                : 'w-[14px]'
+          "
         >
           {{ unreadCount > 99 ? '99+' : unreadCount }}
         </span>
@@ -68,7 +75,7 @@
       :aria-label="t('chatPublic.customerServiceName', { name: displayName })"
       @click="$emit('select', conversation)"
     >
-      <ArrowDownIcon class="size-4 -rotate-90 text-text-3" />
+      <ArrowDownIcon class="size-4 -rotate-90 text-text-3 [&>path]:fill-text-3" />
     </button>
   </div>
 

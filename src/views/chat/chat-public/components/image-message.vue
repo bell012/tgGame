@@ -25,11 +25,11 @@
         />
         <!-- 图片消息的时间与已读状态。 -->
         <div
-          class="absolute flex items-center gap-[4px] rounded-full bg-mask-40 text-common-100"
+          class="absolute flex items-center gap-[4px] rounded-full text-common-100"
           :class="
             props.displayMode === 'pc'
-              ? 'bottom-[6px] right-[6px] px-[4px] py-[2px] text-[12px] leading-[15px]'
-              : 'bottom-[7px] right-[7px] px-[7px] py-[3px] text-[10px]'
+              ? 'bottom-[6px] right-[6px] bg-mask-20 px-[4px] py-[2px] text-[12px] leading-[15px]'
+              : 'bottom-[7px] right-[7px] bg-mask-40 px-[7px] py-[3px] text-[10px]'
           "
         >
           <span>{{ message.time }}</span>
