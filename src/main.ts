@@ -10,11 +10,14 @@ import { useLocaleStore } from './stores/locale'
 import { useSiteConfigStore } from './stores/siteConfig'
 import { useTradeMessageSyncStore } from './stores/tradeMessageSync'
 import { initGlobalDicCache } from './utils/global-dic'
+import { initAndroidAppShellSafeArea } from './utils/app-shell'
 import './styles/fonts.css'
 import './styles/colors.css'
 import './styles/main.scss'
 import './style.css'
 import 'vant/lib/index.css'
+
+initAndroidAppShellSafeArea()
 
 const app = createApp(App)
 const pinia = createPinia()

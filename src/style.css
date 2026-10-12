@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --app-shell-top-safe-offset: 0px;
+  }
+
   * {
     margin: 0;
     padding: 0;
