@@ -254,10 +254,10 @@ onMounted(async () => {
 }
 
 :global(.android-app-shell) .payment-methods-mobile-tabs {
-  top: calc(49px + var(--app-shell-top-safe-offset) + 8px);
+  top: calc(49px + var(--app-shell-top-safe-offset) + var(--app-shell-payment-tabs-gap));
 }
 
 :global(.android-app-shell) .payment-methods-mobile-content {
-  padding-top: 72px;
+  padding-top: calc(64px + var(--app-shell-top-safe-offset) + var(--app-shell-payment-tabs-gap));
 }
 </style>

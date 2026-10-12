@@ -1,6 +1,7 @@
 const ANDROID_APP_SHELL_CLASS = 'android-app-shell'
 const ANDROID_APP_SHELL_OFFSET = '24px'
 const APP_SHELL_STORAGE_KEY = 'tg.androidAppShell'
+const APP_SHELL_SESSION_KEY = 'tg.androidAppShell.session'
 const APP_SHELL_COOKIE_KEY = 'tg_android_app_shell'
 const APP_SHELL_QUERY_KEYS = ['app_shell', 'appShell', 'tg_app_shell']
 const APP_SHELL_QUERY_VALUES = new Set(['1', 'true', 'android', 'apk', 'webview'])
@@ -73,7 +74,15 @@ function hasQueryValue(search: string, values: Set<string>) {
   })
 }
 
-function hasStoredAppShellFlag() {
+function hasSessionAppShellFlag() {
+  try {
+    return sessionStorage.getItem(APP_SHELL_SESSION_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function hasPersistentAppShellFlag() {
   try {
     if (localStorage.getItem(APP_SHELL_STORAGE_KEY) === '1') {
       return true
@@ -91,6 +100,12 @@ function hasStoredAppShellFlag() {
 
 function persistAppShellFlag() {
   try {
+    sessionStorage.setItem(APP_SHELL_SESSION_KEY, '1')
+  } catch {
+    // Storage can be unavailable in some embedded WebViews.
+  }
+
+  try {
     localStorage.setItem(APP_SHELL_STORAGE_KEY, '1')
   } catch {
     // Storage can be unavailable in some embedded WebViews.
@@ -104,6 +119,12 @@ function persistAppShellFlag() {
 }
 
 function clearAppShellFlag() {
+  try {
+    sessionStorage.removeItem(APP_SHELL_SESSION_KEY)
+  } catch {
+    // Storage can be unavailable in some embedded WebViews.
+  }
+
   try {
     localStorage.removeItem(APP_SHELL_STORAGE_KEY)
   } catch {
@@ -133,6 +154,11 @@ function getAppShellSafeAreaTargets() {
 
   if (document.body) {
     targets.push(document.body)
+  }
+
+  const app = document.getElementById('app')
+  if (app) {
+    targets.push(app)
   }
 
   return targets
@@ -173,11 +199,16 @@ export function initAndroidAppShellSafeArea() {
     isAndroidUserAgent(navigator.userAgent) &&
     APP_SHELL_USER_AGENT_PATTERN.test(navigator.userAgent)
   const androidWebViewUaMatched = isAndroidWebViewUserAgent(navigator.userAgent)
-  const storedMatched = hasStoredAppShellFlag()
+  const sessionStoredMatched = hasSessionAppShellFlag()
+  const persistentStoredMatched = hasPersistentAppShellFlag()
+  const storedMatched = sessionStoredMatched || persistentStoredMatched
+  const persistentStoredMatchedInShellLikeEnv =
+    persistentStoredMatched && (nativeSignalMatched || customUaMatched || androidWebViewUaMatched)
   const shellMatched =
     !disabledByQuery &&
     (queryMatched ||
-      storedMatched ||
+      sessionStoredMatched ||
+      persistentStoredMatchedInShellLikeEnv ||
       nativeSignalMatched ||
       customUaMatched ||
       androidWebViewUaMatched)
@@ -189,6 +220,10 @@ export function initAndroidAppShellSafeArea() {
   }
 
   if (!shellMatched) {
+    if (storedMatched) {
+      clearAppShellFlag()
+      removeAppShellSafeArea()
+    }
     return
   }
 
