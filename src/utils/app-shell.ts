@@ -13,9 +13,7 @@ function isAndroidWebViewUserAgent(userAgent: string) {
     return false
   }
 
-  return (
-    /\bwv\b/i.test(userAgent) || /Version\/[\d.]+.*Chrome\/[\d.]+.*Mobile Safari/i.test(userAgent)
-  )
+  return /\bwv\b/i.test(userAgent)
 }
 
 function hasAppShellQuery(search: string) {
@@ -43,16 +41,26 @@ function persistAppShellFlag() {
   }
 }
 
+function clearAppShellFlag() {
+  try {
+    localStorage.removeItem(APP_SHELL_STORAGE_KEY)
+  } catch {
+    // Storage can be unavailable in some embedded WebViews.
+  }
+}
+
 export function initAndroidAppShellSafeArea() {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return
   }
 
   const queryMatched = hasAppShellQuery(window.location.search)
-  const shellMatched =
-    queryMatched || hasStoredAppShellFlag() || isAndroidWebViewUserAgent(navigator.userAgent)
+  const webViewMatched = isAndroidWebViewUserAgent(navigator.userAgent)
+  const storedMatched = hasStoredAppShellFlag() && webViewMatched
+  const shellMatched = queryMatched || storedMatched || webViewMatched
 
   if (!shellMatched) {
+    clearAppShellFlag()
     return
   }
 
