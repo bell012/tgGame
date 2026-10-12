@@ -474,6 +474,7 @@ const mainStyle = computed(() => {
 
   if (isMobile.value) {
     return {
+      paddingTop: hideTopNav.value ? undefined : 'var(--app-shell-top-safe-offset)',
       marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
     }
   }
