@@ -1,9 +1,13 @@
 <template>
-  <nav class="flex w-full gap-2 overflow-x-auto scrollbar-hide touch-pan-x scroll-smooth">
+  <nav
+    ref="navRef"
+    class="flex w-full gap-2 overflow-x-auto scrollbar-hide touch-pan-x scroll-smooth"
+  >
     <button
       v-for="(item, index) in sportItems"
       :key="item.key"
       type="button"
+      :data-sport-index="index"
       class="flex shrink-0 cursor-pointer items-center rounded-lg border-none bg-bg-2 py-2 px-[7px] transition-colors duration-200"
       :class="props.selectedSportId === item.sportId ? 'gap-1.5 text-theme-primary' : 'text-icon-2'"
       @click="handleSelect(index)"
@@ -23,11 +27,13 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { sportItems } from './sport-items'
 
 const { t } = useI18n()
+const navRef = ref<HTMLElement | null>(null)
 
 const props = defineProps<{
   selectedSportId: number
@@ -40,4 +46,34 @@ const emit = defineEmits<{
 function handleSelect(index: number) {
   emit('change', index, sportItems[index].key)
 }
+
+function scrollSelectedToCenter() {
+  const nav = navRef.value
+  if (!nav) {
+    return
+  }
+
+  const index = sportItems.findIndex(item => item.sportId === props.selectedSportId)
+  const button = nav.querySelector<HTMLElement>(`[data-sport-index="${index}"]`)
+  if (!button) {
+    return
+  }
+
+  const navRect = nav.getBoundingClientRect()
+  const buttonRect = button.getBoundingClientRect()
+  const delta = buttonRect.left + buttonRect.width / 2 - (navRect.left + navRect.width / 2)
+  nav.scrollTo({
+    left: nav.scrollLeft + delta,
+    behavior: 'smooth'
+  })
+}
+
+watch(
+  () => props.selectedSportId,
+  () => {
+    nextTick(() => {
+      scrollSelectedToCenter()
+    })
+  }
+)
 </script>
