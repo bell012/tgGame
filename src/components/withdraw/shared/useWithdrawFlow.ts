@@ -474,7 +474,7 @@ export const useWithdrawFlow = () => {
     isRefreshingBalance.value = true
 
     try {
-      await userStore.refreshBalance({ force: true })
+      await userStore.refreshBalance()
     } finally {
       window.setTimeout(() => {
         isRefreshingBalance.value = false

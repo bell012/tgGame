@@ -441,7 +441,7 @@ const claimSingleTask = async (task: TaskViewItem | TaskInfoPopupData) => {
       // 当前新人领取接口只返回奖金金额，未返回活动度时不展示活动度奖励行。
       showTaskClaimSuccessToast(response.result)
       // 奖励入账后异步同步全局账户余额，TopNav 会基于 acctInfo 自动更新。
-      void userStore.refreshBalance({ force: true })
+      void userStore.refreshBalance()
       await Promise.all([refreshEntrantTaskSchedules(), fetchMemberActiveValue()])
       return
     }
@@ -463,7 +463,7 @@ const claimSingleTask = async (task: TaskViewItem | TaskInfoPopupData) => {
     // 普通任务领取接口只返回实际奖金金额，不能使用任务配置 activeNumber 伪造活动度奖励。
     showTaskClaimSuccessToast(response.result)
     // 奖励入账后异步同步全局账户余额，TopNav 会基于 acctInfo 自动更新。
-    void userStore.refreshBalance({ force: true })
+    void userStore.refreshBalance()
     await Promise.all([refreshMemberTaskSchedules(), fetchMemberActiveValue()])
   } catch (error) {
     showTaskClaimError(getTaskClaimRequestErrorMessage(error))
@@ -518,7 +518,7 @@ const handleClaimAll = async () => {
 
     showTaskClaimSuccessToast(response.result)
     // 一键领取成功后异步同步全局账户余额，避免任务状态更新后顶部余额滞后。
-    void userStore.refreshBalance({ force: true })
+    void userStore.refreshBalance()
     await Promise.all([
       refreshEntrantTaskSchedules(),
       refreshMemberTaskSchedules(),
