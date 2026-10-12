@@ -552,6 +552,7 @@ const handleActivityChestClaim = async (node: TaskActivityNode) => {
 
     activityClaimSuccessAmount.value = String(node.bonusAmount ?? '0').trim()
     showActivityClaimSuccessPopup.value = true
+    void userStore.refreshBalance()
     await fetchMemberActiveValue()
   } catch (error) {
     showTaskClaimError(getTaskClaimRequestErrorMessage(error))
