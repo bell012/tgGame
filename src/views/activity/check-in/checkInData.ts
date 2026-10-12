@@ -75,7 +75,7 @@ const getCheckInPopWay = (activity: ActivityListItem, isLoggedIn?: boolean) => {
   return Number(isLoggedIn ? activity.loginAfterPopWay : (activity.loginBeforePopWay ?? 0))
 }
 
-// 自动弹窗只关心是否允许弹，关闭弹窗不写入本地禁用状态。
+// 自动弹窗先排除「不弹」和未开启首页展示。具体次数在打开前再按 loginAfterPopWay 判断。
 const canAutoPopupActivity = (activity: ActivityListItem, isLoggedIn?: boolean) => {
   if (Number(activity.homeDisplay) !== HOME_DISPLAY_ENABLED) {
     return false

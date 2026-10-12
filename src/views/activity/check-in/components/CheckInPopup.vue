@@ -64,6 +64,7 @@ import { navigateToName } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { filterOpenedCheckInActivities } from '../checkInAutoPopupRules'
 import {
   loadActiveCheckInDataList,
   loadCheckInActivityData,
@@ -170,7 +171,7 @@ const loadCheckInData = async () => {
   isLoading.value = true
 
   try {
-    const nextQueue = await loadActiveCheckInDataList({
+    const loadedQueue = await loadActiveCheckInDataList({
       channelId: currentChannelId.value,
       currencyCode: activeCurrencyCode.value,
       languageCode: locale.value,
@@ -178,6 +179,7 @@ const loadCheckInData = async () => {
       requireAutoPopup: props.autoPopupOnly,
       excludeTodaySigned: props.autoPopupOnly
     })
+    const nextQueue = props.autoPopupOnly ? filterOpenedCheckInActivities(loadedQueue) : loadedQueue
 
     checkInDataQueue.value = nextQueue
 
