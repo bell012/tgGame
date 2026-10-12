@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import Api from '@/api'
 import { useUserStore } from '@/stores/user'
 import type { RewardCenterRecord } from '@/api/interface/reward-center'
-import { useUserStore } from '@/stores/user'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import {
   buildRewardCenterClaimAllQuery,
