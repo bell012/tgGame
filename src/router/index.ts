@@ -186,6 +186,9 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/sports/event-details/index.vue'),
     meta: {
       title: '赛事详情',
+      requiresAuth: true,
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
