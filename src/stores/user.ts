@@ -29,6 +29,10 @@ export type BalanceRefreshError = {
   message: string
 }
 
+export interface RefreshBalanceOptions {
+  force?: boolean
+}
+
 export const useUserStore = defineStore('user', () => {
   const userInfo = profileUserInfoState
   const acctInfo = ref<QueryAcctInfoResult | null>(null)
@@ -172,9 +176,16 @@ export const useUserStore = defineStore('user', () => {
    *
    * `acctInfo` 是 TopNav 和 useDisplayCurrency 的响应式余额来源；成功写入后，
    * `currentBalanceText` 会自动重新计算，调用页面无需直接操作 TopNav。
-   * 每次调用都会发起最新查询，并让此前尚未完成的余额查询结果失效。
+   * 默认复用正在进行中的余额查询；传入 force=true 时会发起最新查询，
+   * 并让此前尚未完成的余额查询结果失效。
    */
-  const refreshBalance = (): Promise<QueryAcctInfoResult | null> => {
+  const refreshBalance = (
+    options: RefreshBalanceOptions = {}
+  ): Promise<QueryAcctInfoResult | null> => {
+    if (!options.force && pendingBalanceRefresh) {
+      return pendingBalanceRefresh.promise
+    }
+
     // 业务操作（充值、提现、领奖、切钱包等）完成后必须以这次请求为准。
     balanceRefreshVersion += 1
     pendingBalanceRefresh = null
