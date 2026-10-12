@@ -1,6 +1,8 @@
 <template>
   <div class="relative min-h-full w-full">
-    <div class="fixed left-0 right-0 top-[49px] z-20 overflow-hidden bg-bg-1 p-3.5">
+    <div
+      class="payment-methods-mobile-tabs fixed left-0 right-0 top-[49px] z-20 overflow-hidden bg-bg-1 p-3.5"
+    >
       <div
         ref="methodTabsRef"
         class="flex w-full items-center gap-2 overflow-x-auto scrollbar-hide touch-pan-x scroll-smooth"
@@ -19,7 +21,10 @@
         </button>
       </div>
     </div>
-    <div v-if="selectPaymentMethodsOption" class="px-0 pb-[104px] pt-[64px]">
+    <div
+      v-if="selectPaymentMethodsOption"
+      class="payment-methods-mobile-content px-0 pb-[104px] pt-[64px]"
+    >
       <div v-if="!hasLoadedAccountOptions" class="flex flex-col gap-2.5 px-3.5">
         <div v-for="index in 6" :key="index" class="h-[76px] rounded-xl bg-bg-2 animate-pulse" />
       </div>
@@ -246,5 +251,13 @@ onMounted(async () => {
   color: var(--color-text-level-4);
   border-color: transparent;
   background: var(--color-theme-level-1);
+}
+
+:global(.android-app-shell) .payment-methods-mobile-tabs {
+  top: calc(49px + var(--app-shell-top-safe-offset) + var(--app-shell-payment-tabs-gap));
+}
+
+:global(.android-app-shell) .payment-methods-mobile-content {
+  padding-top: calc(64px + var(--app-shell-top-safe-offset) + var(--app-shell-payment-tabs-gap));
 }
 </style>

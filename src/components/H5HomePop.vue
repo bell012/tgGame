@@ -1,51 +1,55 @@
 <template>
-  <div
-    class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1"
-    @click.self="close"
-  >
-    <div class="w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-t-xl overflow-hidden">
-      <div class="bg-bg-2 relative flex flex-1 items-center justify-center pt-2.5 pb-2.5">
-        <span class="text-text-1 font-semibold">{{ $t('home.ExclusivePromotions') }} </span>
-        <button
-          type="button"
-          class="absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center justify-center p-2 rounded-[6px] bg-black/10"
-          aria-label="close"
-          @click="close"
-        >
-          <CloseIcon class="h-2.5 w-2.5 text-icon-1" />
-        </button>
-      </div>
-
-      <!-- 轮播图 -->
-      <Swipe
-        ref="swipeRef"
-        class="mt-2.5 mb-2.5 flex-1 min-h-0 w-full bg-bg-1"
-        :autoplay="list.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
-        :show-indicators="false"
-        :touchable="list.length > 1"
-        lazy-render
-        @change="handleChange"
+  <Transition name="bottom-sheet" appear @after-leave="handleAfterLeave">
+    <div
+      v-if="visible"
+      class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1"
+      @click.self="close"
+    >
+      <div
+        class="bottom-sheet-panel w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-t-xl overflow-hidden"
       >
-        <SwipeItem v-for="(item, index) in list" :key="index" class="h-full">
-          <div class="flex h-full w-full items-center justify-center">
-            <img
-              v-if="item.isImage === 1"
-              :src="item.imageUrl"
-              :alt="`slide-${index + 1}`"
-              class="max-h-full w-full max-w-[100vw] cursor-pointer select-none object-contain"
-              draggable="false"
-              @click="handleImageJump(item)"
-              @dragstart.prevent
-            />
-            <!-- 文本 -->
-            <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5 pop-rich-text bg-bg-2">
-              <h2 class="text-base font-bold text-text-1">{{ item.title }}</h2>
-              <div class="mt-2 font-normal text-sm text-text-1" v-html="item.text"></div>
+        <div class="bg-bg-2 relative flex flex-1 items-center justify-center pt-2.5 pb-2.5">
+          <span class="text-text-1 font-semibold">{{ $t('home.ExclusivePromotions') }} </span>
+          <button
+            type="button"
+            class="absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center justify-center p-2 rounded-[6px] bg-black/10"
+            aria-label="close"
+            @click="close"
+          >
+            <CloseIcon class="h-2.5 w-2.5 text-icon-1" />
+          </button>
+        </div>
+
+        <!-- 轮播图 -->
+        <Swipe
+          ref="swipeRef"
+          class="mt-2.5 mb-2.5 flex-1 min-h-0 w-full bg-bg-1"
+          :autoplay="list.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
+          :show-indicators="false"
+          :touchable="list.length > 1"
+          lazy-render
+          @change="handleChange"
+        >
+          <SwipeItem v-for="(item, index) in list" :key="index" class="h-full">
+            <div class="flex h-full w-full items-center justify-center">
+              <img
+                v-if="item.isImage === 1"
+                :src="item.imageUrl"
+                :alt="`slide-${index + 1}`"
+                class="max-h-full w-full max-w-[100vw] cursor-pointer select-none object-contain"
+                draggable="false"
+                @click="handleImageJump(item)"
+                @dragstart.prevent
+              />
+              <!-- 文本 -->
+              <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5 pop-rich-text bg-bg-2">
+                <h2 class="text-base font-bold text-text-1">{{ item.title }}</h2>
+                <div class="mt-2 font-normal text-sm text-text-1" v-html="item.text"></div>
+              </div>
             </div>
-          </div>
-        </SwipeItem>
-      </Swipe>
-      <!-- <button
+          </SwipeItem>
+        </Swipe>
+        <!-- <button
       
         class="flex justify-center items-center w-[92%] h-[40px] buttonStyle m-auto mb-2.5 text-text-4 font-bold"
         @click.stop="openLogin"
@@ -53,69 +57,70 @@
         {{ $t('home.JoinNow') }}
       </button> -->
 
-      <!-- 左右按钮 + 滑动条 -->
-      <div
-        v-if="list.length > 1"
-        class="flex flex-shrink-0 items-center justify-center px-4 pb-2.5"
-      >
-        <div class="inline-flex max-w-full min-w-0 items-center justify-center gap-2">
-          <button
-            type="button"
-            class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
-            :disabled="currentIndex <= 0"
-            aria-label="上一张"
-            @click="prev"
-          >
-            <LeftIcon />
-          </button>
-
-          <div class="flex min-w-0 items-center justify-center gap-1.5 overflow-hidden">
+        <!-- 左右按钮 + 滑动条 -->
+        <div
+          v-if="list.length > 1"
+          class="flex flex-shrink-0 items-center justify-center px-4 pb-2.5"
+        >
+          <div class="inline-flex max-w-full min-w-0 items-center justify-center gap-2">
             <button
-              v-for="(_, index) in list"
-              :key="index"
               type="button"
-              class="flex shrink-0 items-center justify-center transition-colors"
-              :class="
-                currentIndex === index
-                  ? 'h-[5px] w-6 rounded-full overflow-hidden bg-[var(--color-background-level-4)] sm:w-10'
-                  : 'size-[5px] rounded-full bg-[var(--color-background-level-4)]'
-              "
-              :aria-label="`第 ${index + 1} 张`"
-              @click="goTo(index)"
+              class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
+              :disabled="currentIndex <= 0"
+              aria-label="上一张"
+              @click="prev"
             >
-              <span
-                v-if="currentIndex === index"
-                class="slideshow-indicator-progress h-full w-full origin-left rounded-full bg-[var(--color-theme-level-1)]"
-                :key="`${index}-${progressKey}`"
-                :style="progressStyle"
-              ></span>
+              <LeftIcon />
+            </button>
+
+            <div class="flex min-w-0 items-center justify-center gap-1.5 overflow-hidden">
+              <button
+                v-for="(_, index) in list"
+                :key="index"
+                type="button"
+                class="flex shrink-0 items-center justify-center transition-colors"
+                :class="
+                  currentIndex === index
+                    ? 'h-[5px] w-6 rounded-full overflow-hidden bg-[var(--color-background-level-4)] sm:w-10'
+                    : 'size-[5px] rounded-full bg-[var(--color-background-level-4)]'
+                "
+                :aria-label="`第 ${index + 1} 张`"
+                @click="goTo(index)"
+              >
+                <span
+                  v-if="currentIndex === index"
+                  class="slideshow-indicator-progress h-full w-full origin-left rounded-full bg-[var(--color-theme-level-1)]"
+                  :key="`${index}-${progressKey}`"
+                  :style="progressStyle"
+                ></span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
+              :disabled="currentIndex >= list.length - 1"
+              aria-label="下一张"
+              @click="next"
+            >
+              <RightIcon />
             </button>
           </div>
-
-          <button
-            type="button"
-            class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
-            :disabled="currentIndex >= list.length - 1"
-            aria-label="下一张"
-            @click="next"
+        </div>
+        <!-- 底部多选框 -->
+        <div class="bg-bg-2 pl-3.5 pt-2 pb-1">
+          <label
+            class="checkbox-wrap inline-flex cursor-pointer items-center gap-2"
+            :class="{ 'checkbox-checked': checked }"
           >
-            <RightIcon />
-          </button>
+            <span class="checkbox-box" />
+            <input v-model="checked" type="checkbox" class="sr-only" aria-label="多选" />
+            <span class="text-text-1 text-xs">{{ $t('home.DontDisplayThisForNextToday') }}</span>
+          </label>
         </div>
       </div>
-      <!-- 底部多选框 -->
-      <div class="bg-bg-2 pl-3.5 pt-2 pb-1">
-        <label
-          class="checkbox-wrap inline-flex cursor-pointer items-center gap-2"
-          :class="{ 'checkbox-checked': checked }"
-        >
-          <span class="checkbox-box" />
-          <input v-model="checked" type="checkbox" class="sr-only" aria-label="多选" />
-          <span class="text-text-1 text-xs">{{ $t('home.DontDisplayThisForNextToday') }}</span>
-        </label>
-      </div>
     </div>
-  </div>
+  </Transition>
 </template>
 <script setup lang="ts">
 import Api from '@/api'
@@ -185,6 +190,7 @@ const swipeRef = ref<SwipeInstance>()
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const checked = ref(false)
+const visible = ref(true)
 usePageScrollLock(() => true)
 const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
@@ -431,9 +437,16 @@ const fetchNoticeList = async () => {
 }
 
 const close = () => {
+  if (!visible.value) {
+    return
+  }
   if (checked.value) {
     localStorage.setItem(HOME_POP_SUPPRESS_KEY, String(Date.now() + HOME_POP_SUPPRESS_MS))
   }
+  visible.value = false
+}
+
+const handleAfterLeave = () => {
   emit('close')
 }
 

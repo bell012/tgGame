@@ -891,11 +891,14 @@ defineExpose({
   top: 0;
   left: 0;
   right: 0;
-  height: calc(v-bind('layoutStore.TOPNAV_HEIGHT + "px"') + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
+  height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
   background-color: var(--color-background-level-5);
   z-index: 50;
   overflow: visible;
+}
+:global(.android-app-shell) .top-nav {
+  height: calc(v-bind('layoutStore.TOPNAV_HEIGHT + "px"') + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
 }
 .search {
   background-color: var(--color-background-level-3);

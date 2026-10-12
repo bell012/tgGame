@@ -20,7 +20,10 @@
     />
 
     <!-- 主内容区 -->
-    <main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out" :style="mainStyle">
+    <main
+      class="main-layout-content flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
+      :style="mainStyle"
+    >
       <!-- 主内容容器 -->
       <div :class="isFullscreenRoute ? 'min-h-full' : 'flex min-h-full items-start gap-4'">
         <!-- 路由内容区域 -->
@@ -474,7 +477,6 @@ const mainStyle = computed(() => {
 
   if (isMobile.value) {
     return {
-      paddingTop: hideTopNav.value ? undefined : 'var(--app-shell-top-safe-offset)',
       marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
     }
   }
@@ -610,5 +612,11 @@ watch(
 .notification-panel-leave-to {
   opacity: 0;
   transform: translateX(24px);
+}
+
+@media (max-width: 639px) {
+  :global(.android-app-shell) .main-layout-content {
+    padding-top: var(--app-shell-top-safe-offset);
+  }
 }
 </style>

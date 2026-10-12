@@ -2,7 +2,7 @@
   <!-- 当前客服会话头部。 -->
   <header
     class="flex shrink-0 items-center bg-bg-2"
-    :class="props.displayMode === 'pc' ? 'h-[58px] px-[12px]' : 'chat-header-h5 px-[14px]'"
+    :class="props.displayMode === 'pc' ? 'h-[58px] px-[12px]' : 'chat-header-h5 h-[49px] px-[14px]'"
   >
     <button
       type="button"
@@ -124,7 +124,7 @@ const statusText = computed(() =>
 </script>
 
 <style scoped>
-.chat-header-h5 {
+:global(.android-app-shell) .chat-header-h5 {
   height: calc(49px + var(--app-shell-top-safe-offset));
   padding-top: var(--app-shell-top-safe-offset);
 }

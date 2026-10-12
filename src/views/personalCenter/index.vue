@@ -2,7 +2,7 @@
   <div
     class="personal-center-mobile-page h-full min-h-0 w-full overflow-y-auto overscroll-contain bg-bg-1"
   >
-    <div class="flex items-center h-[49px] px-3.5">
+    <div class="personal-center-mobile-header flex items-center h-[49px] px-3.5">
       <button
         @click="handleBack"
         class="w-[33px] h-[33px] bg-opacity-5 rounded-lg flex items-center justify-center"
@@ -779,5 +779,10 @@ onMounted(() => {
 .personal-center-mobile-page {
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+:global(.android-app-shell) .personal-center-mobile-header {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
 }
 </style>

@@ -10,7 +10,7 @@
       :class="
         props.displayMode === 'pc'
           ? 'relative z-10 h-[58px] px-[12px]'
-          : 'chat-search-header-h5 px-[14px]'
+          : 'chat-search-header-h5 h-[49px] px-[14px]'
       "
     >
       <button
@@ -301,7 +301,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.chat-search-header-h5 {
+:global(.android-app-shell) .chat-search-header-h5 {
   height: calc(49px + var(--app-shell-top-safe-offset));
   padding-top: var(--app-shell-top-safe-offset);
 }
