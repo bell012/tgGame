@@ -17,250 +17,260 @@
     </header>
     <div :style="{ height: `${navigationHeight}px` }" aria-hidden="true"></div>
 
-    <div
-      v-if="page.homepageError.value"
-      class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
-      role="status"
-    >
-      <span>{{ page.sportsLoadFailedText.value }}</span>
-      <button
-        type="button"
-        class="shrink-0 text-theme-primary disabled:opacity-50"
-        :disabled="page.homepageLoading.value"
-        @click="page.retrySports"
-      >
-        {{ page.sportsRetryText.value }}
-      </button>
-    </div>
-
-    <section
-      v-if="liveMatches.length"
-      :aria-label="t('sports.homepage.popularMatches')"
-      class="mb-3 min-w-0"
-      data-testid="sports-h5-live-section"
-    >
-      <div
-        ref="liveStrip"
-        class="flex min-w-0 snap-x snap-mandatory gap-2 overflow-x-auto px-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        tabindex="0"
-        :aria-label="t('sports.homepage.popularMatches')"
-        data-testid="sports-h5-live-strip"
-      >
-        <article
-          v-for="match in liveMatches"
-          :key="match.id"
-          v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
-          class="flex min-h-[150px] w-full min-w-0 shrink-0 cursor-pointer snap-center flex-col rounded-lg bg-bg-2 px-2.5 py-3"
-          :data-sports-live-match="match.id"
-          @click="goToEventDetails(match)"
-        >
-          <div class="flex h-[14px] min-w-0 items-center gap-[14px] text-[10px] leading-3">
-            <MatchTime :match="match" class="shrink-0 text-text-2" />
-            <span class="min-w-0 flex-1 truncate text-[11px]" :title="match.league">{{
-              match.league
-            }}</span>
-            <span
-              v-if="match.totalMarkets !== undefined"
-              class="flex shrink-0 items-center gap-0.5 rounded bg-theme-primary py-px pl-[5px] pr-[3px] font-medium text-text-4"
-              :aria-label="t('sports.homepage.marketsCount', { count: match.totalMarkets })"
-            >
-              {{ match.totalMarkets }}
-              <ChevronIcon class="h-2 w-2 -rotate-90" aria-hidden="true" />
-            </span>
-          </div>
-
-          <MatchVersus
-            class="mt-3 min-h-[52px]"
-            :home-src="match.home.badge"
-            :away-src="match.away.badge"
-            :HomeTeam="match.HomeTeam"
-            :AwayTeam="match.AwayTeam"
-            :HomeScore="match.HomeScore"
-            :AwayScore="match.AwayScore"
-            :HomeTeamId="match.HomeTeamId"
-            :AwayTeamId="match.AwayTeamId"
-            :center-caption="liveStripCaption(match)"
-          />
-
-          <!-- 长队名允许换行，盘口靠底部对齐。 -->
-          <div class="mt-auto pt-3" @click.stop>
-            <MatchOdds
-              :MarketLines="match.MarketLines"
-              :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
-              picker="liveStrip"
-              @select="selectOdds(match.id, $event)"
-            />
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section
-      class="mx-[14px]"
-      :aria-label="t('sports.homepage.matchesByLeague', { sport: activeSportLabel })"
-    >
-      <div class="mb-3 flex h-[30px] items-center gap-[7px]">
-        <LeagueTabs_H5
-          :collect-only="page.collectOnly.value"
-          :collect-pending="page.collectPending.value"
-          :search-keyword="page.searchInput.value"
-          @filter-change="page.handleLeagueSortChange"
-          @league-filter="page.handleLeagueFilter"
-          @collect-change="page.handleCollectChange"
-          @search-change="page.handleSearchChange"
-        />
-        <button
-          type="button"
-          class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="toggleAllGroupsDisabled"
-          :aria-label="
-            allGroupsCollapsed
-              ? t('sports.homepage.expandAllLeagues')
-              : t('sports.homepage.collapseAllLeagues')
-          "
-          :aria-expanded="!allGroupsCollapsed"
-          data-testid="sports-h5-toggle-all-leagues"
-          @click="toggleAllGroups"
-        >
-          <ChevronIcon
-            class="h-2.5 w-2.5"
-            :class="allGroupsCollapsed ? '' : 'rotate-180'"
-            aria-hidden="true"
-          />
-          <ChevronIcon
-            class="-mt-1 h-2.5 w-2.5"
-            :class="allGroupsCollapsed ? '' : 'rotate-180'"
-            aria-hidden="true"
-          />
-        </button>
-      </div>
-
-      <div v-if="groups.length" class="space-y-[5px]" data-testid="sports-h5-league-list">
-        <section v-for="group in visibleGroups" :key="group.id" :data-league-id="group.id">
-          <h2>
-            <button
-              :id="`${idPrefix}-${group.id}-heading`"
-              type="button"
-              class="flex min-h-[34px] w-full items-center gap-1.5 rounded-lg bg-bg-2 px-2.5 py-[7px] text-left text-xs font-medium text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
-              :aria-expanded="isGroupExpanded(group.id)"
-              :aria-controls="`${idPrefix}-${group.id}-matches`"
-              data-testid="sports-h5-league-toggle"
-              @click="toggleGroup(group.id)"
-            >
-              <img :src="leagueIcon" alt="" class="h-5 w-5 shrink-0 object-contain" />
-              <span class="min-w-0 flex-1 truncate" :title="group.name">{{ group.name }}</span>
-              <span
-                class="min-w-4 shrink-0 rounded bg-theme-primary px-[5px] text-center text-[10px] font-medium leading-[15px] text-text-4"
-                :aria-label="t('sports.homepage.matchCount', { count: getGroupMatchCount(group) })"
-              >
-                {{ getGroupMatchCount(group) }}
-              </span>
-              <ChevronIcon
-                class="ml-1 h-3 w-3 shrink-0 text-icon-3 transition-transform"
-                :class="isGroupExpanded(group.id) ? 'rotate-180' : ''"
-                aria-hidden="true"
-              />
-            </button>
-          </h2>
+    <div class="filter-slide-stage">
+      <Transition :name="filterSlideName">
+        <div :key="page.selectedFilterKey.value" class="filter-slide-pane">
           <div
-            v-show="isGroupExpanded(group.id)"
-            :id="`${idPrefix}-${group.id}-matches`"
-            class="mt-[5px] space-y-[5px]"
-            role="region"
-            :aria-labelledby="`${idPrefix}-${group.id}-heading`"
+            v-if="page.homepageError.value"
+            class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
+            role="status"
+          >
+            <span>{{ page.sportsLoadFailedText.value }}</span>
+            <button
+              type="button"
+              class="shrink-0 text-theme-primary disabled:opacity-50"
+              :disabled="page.homepageLoading.value"
+              @click="page.retrySports"
+            >
+              {{ page.sportsRetryText.value }}
+            </button>
+          </div>
+
+          <section
+            v-if="liveMatches.length"
+            :aria-label="t('sports.homepage.popularMatches')"
+            class="mb-3 min-w-0"
+            data-testid="sports-h5-live-section"
           >
             <div
-              v-for="match in group.matches"
-              :key="match.id"
-              v-match-visibility="{
-                sportId: match.sportId,
-                eventId: match.EventId,
-                enabled: isGroupExpanded(group.id)
-              }"
+              ref="liveStrip"
+              class="flex min-w-0 snap-x snap-mandatory gap-2 overflow-x-auto px-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              tabindex="0"
+              :aria-label="t('sports.homepage.popularMatches')"
+              data-testid="sports-h5-live-strip"
             >
-              <MatchCardH5
-                :match="match"
-                :MarketLines="match.MarketLines"
-                :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
-                :favorite="match.IsFavourite"
-                :favorite-pending="page.isMatchFavoritePending(match.id)"
-                @favorite="page.handleMatchFavorite(match.id)"
-                @select="selectOdds(match.id, $event)"
-              />
+              <article
+                v-for="match in liveMatches"
+                :key="match.id"
+                v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
+                class="flex min-h-[150px] w-full min-w-0 shrink-0 cursor-pointer snap-center flex-col rounded-lg bg-bg-2 px-2.5 py-3"
+                :data-sports-live-match="match.id"
+                @click="goToEventDetails(match)"
+              >
+                <div class="flex h-[14px] min-w-0 items-center gap-[14px] text-[10px] leading-3">
+                  <MatchTime :match="match" class="shrink-0 text-text-2" />
+                  <span class="min-w-0 flex-1 truncate text-[11px]" :title="match.league">{{
+                    match.league
+                  }}</span>
+                  <span
+                    v-if="match.totalMarkets !== undefined"
+                    class="flex shrink-0 items-center gap-0.5 rounded bg-theme-primary py-px pl-[5px] pr-[3px] font-medium text-text-4"
+                    :aria-label="t('sports.homepage.marketsCount', { count: match.totalMarkets })"
+                  >
+                    {{ match.totalMarkets }}
+                    <ChevronIcon class="h-2 w-2 -rotate-90" aria-hidden="true" />
+                  </span>
+                </div>
+
+                <MatchVersus
+                  class="mt-3 min-h-[52px]"
+                  :home-src="match.home.badge"
+                  :away-src="match.away.badge"
+                  :HomeTeam="match.HomeTeam"
+                  :AwayTeam="match.AwayTeam"
+                  :HomeScore="match.HomeScore"
+                  :AwayScore="match.AwayScore"
+                  :HomeTeamId="match.HomeTeamId"
+                  :AwayTeamId="match.AwayTeamId"
+                  :center-caption="liveStripCaption(match)"
+                />
+
+                <!-- 长队名允许换行，盘口靠底部对齐。 -->
+                <div class="mt-auto pt-3" @click.stop>
+                  <MatchOdds
+                    :MarketLines="match.MarketLines"
+                    :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
+                    picker="liveStrip"
+                    @select="selectOdds(match.id, $event)"
+                  />
+                </div>
+              </article>
             </div>
-            <p
-              v-if="getGroupLoadState(group.id)?.loading"
-              class="py-3 text-center text-xs text-text-2"
-              role="status"
-            >
-              {{ $t('common.loadingMore') }}
-            </p>
-            <div
-              v-else-if="getGroupLoadState(group.id)?.error"
-              class="flex items-center justify-center gap-3 py-3 text-xs text-text-2"
-              role="status"
-            >
-              <span>{{ page.sportsLoadFailedText.value }}</span>
+          </section>
+
+          <section
+            class="mx-[14px]"
+            :aria-label="t('sports.homepage.matchesByLeague', { sport: activeSportLabel })"
+          >
+            <div class="mb-3 flex h-[30px] items-center gap-[7px]">
+              <LeagueTabs_H5
+                :collect-only="page.collectOnly.value"
+                :collect-pending="page.collectPending.value"
+                :search-keyword="page.searchInput.value"
+                @filter-change="page.handleLeagueSortChange"
+                @league-filter="page.handleLeagueFilter"
+                @collect-change="page.handleCollectChange"
+                @search-change="page.handleSearchChange"
+              />
               <button
                 type="button"
-                class="shrink-0 text-theme-primary"
-                @click="retryGroup(group.id)"
+                class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-not-allowed disabled:opacity-50"
+                :disabled="toggleAllGroupsDisabled"
+                :aria-label="
+                  allGroupsCollapsed
+                    ? t('sports.homepage.expandAllLeagues')
+                    : t('sports.homepage.collapseAllLeagues')
+                "
+                :aria-expanded="!allGroupsCollapsed"
+                data-testid="sports-h5-toggle-all-leagues"
+                @click="toggleAllGroups"
               >
-                {{ page.sportsRetryText.value }}
+                <ChevronIcon
+                  class="h-2.5 w-2.5"
+                  :class="allGroupsCollapsed ? '' : 'rotate-180'"
+                  aria-hidden="true"
+                />
+                <ChevronIcon
+                  class="-mt-1 h-2.5 w-2.5"
+                  :class="allGroupsCollapsed ? '' : 'rotate-180'"
+                  aria-hidden="true"
+                />
               </button>
             </div>
-          </div>
-        </section>
-      </div>
-      <!-- 联赛分批显示，展开时再补查赛事。 -->
-      <div
-        v-if="hasMoreCachedGroups"
-        ref="loadMoreSentinel"
-        class="h-px w-full"
-        aria-hidden="true"
-        data-testid="sports-h5-load-more"
-      ></div>
-      <template v-if="groups.length && !hasMoreCachedGroups && !page.homepageLoading.value">
-        <p
-          v-if="page.matchesLoading.value"
-          class="py-4 text-center text-xs text-text-2"
-          role="status"
-        >
-          {{ $t('common.loadingMore') }}
-        </p>
-        <div
-          v-else-if="page.matchesError.value && !page.homepageError.value"
-          class="flex items-center justify-center gap-3 py-4 text-xs text-text-2"
-          role="status"
-        >
-          <span>{{ page.sportsLoadFailedText.value }}</span>
-          <button
-            type="button"
-            class="shrink-0 text-theme-primary disabled:opacity-50"
-            :disabled="page.matchesLoading.value"
-            @click="page.retrySports"
+
+            <div v-if="groups.length" class="space-y-[5px]" data-testid="sports-h5-league-list">
+              <section v-for="group in visibleGroups" :key="group.id" :data-league-id="group.id">
+                <h2>
+                  <button
+                    :id="`${idPrefix}-${group.id}-heading`"
+                    type="button"
+                    class="flex min-h-[34px] w-full items-center gap-1.5 rounded-lg bg-bg-2 px-2.5 py-[7px] text-left text-xs font-medium text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
+                    :aria-expanded="isGroupExpanded(group.id)"
+                    :aria-controls="`${idPrefix}-${group.id}-matches`"
+                    data-testid="sports-h5-league-toggle"
+                    @click="toggleGroup(group.id)"
+                  >
+                    <img :src="leagueIcon" alt="" class="h-5 w-5 shrink-0 object-contain" />
+                    <span class="min-w-0 flex-1 truncate" :title="group.name">{{
+                      group.name
+                    }}</span>
+                    <span
+                      class="min-w-4 shrink-0 rounded bg-theme-primary px-[5px] text-center text-[10px] font-medium leading-[15px] text-text-4"
+                      :aria-label="
+                        t('sports.homepage.matchCount', { count: getGroupMatchCount(group) })
+                      "
+                    >
+                      {{ getGroupMatchCount(group) }}
+                    </span>
+                    <ChevronIcon
+                      class="ml-1 h-3 w-3 shrink-0 text-icon-3 transition-transform"
+                      :class="isGroupExpanded(group.id) ? 'rotate-180' : ''"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </h2>
+                <div
+                  v-show="isGroupExpanded(group.id)"
+                  :id="`${idPrefix}-${group.id}-matches`"
+                  class="mt-[5px] space-y-[5px]"
+                  role="region"
+                  :aria-labelledby="`${idPrefix}-${group.id}-heading`"
+                >
+                  <div
+                    v-for="match in group.matches"
+                    :key="match.id"
+                    v-match-visibility="{
+                      sportId: match.sportId,
+                      eventId: match.EventId,
+                      enabled: isGroupExpanded(group.id)
+                    }"
+                  >
+                    <MatchCardH5
+                      :match="match"
+                      :MarketLines="match.MarketLines"
+                      :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
+                      :favorite="match.IsFavourite"
+                      :favorite-pending="page.isMatchFavoritePending(match.id)"
+                      @favorite="page.handleMatchFavorite(match.id)"
+                      @select="selectOdds(match.id, $event)"
+                    />
+                  </div>
+                  <p
+                    v-if="getGroupLoadState(group.id)?.loading"
+                    class="py-3 text-center text-xs text-text-2"
+                    role="status"
+                  >
+                    {{ $t('common.loadingMore') }}
+                  </p>
+                  <div
+                    v-else-if="getGroupLoadState(group.id)?.error"
+                    class="flex items-center justify-center gap-3 py-3 text-xs text-text-2"
+                    role="status"
+                  >
+                    <span>{{ page.sportsLoadFailedText.value }}</span>
+                    <button
+                      type="button"
+                      class="shrink-0 text-theme-primary"
+                      @click="retryGroup(group.id)"
+                    >
+                      {{ page.sportsRetryText.value }}
+                    </button>
+                  </div>
+                </div>
+              </section>
+            </div>
+            <!-- 联赛分批显示，展开时再补查赛事。 -->
+            <div
+              v-if="hasMoreCachedGroups"
+              ref="loadMoreSentinel"
+              class="h-px w-full"
+              aria-hidden="true"
+              data-testid="sports-h5-load-more"
+            ></div>
+            <template v-if="groups.length && !hasMoreCachedGroups && !page.homepageLoading.value">
+              <p
+                v-if="page.matchesLoading.value"
+                class="py-4 text-center text-xs text-text-2"
+                role="status"
+              >
+                {{ $t('common.loadingMore') }}
+              </p>
+              <div
+                v-else-if="page.matchesError.value && !page.homepageError.value"
+                class="flex items-center justify-center gap-3 py-4 text-xs text-text-2"
+                role="status"
+              >
+                <span>{{ page.sportsLoadFailedText.value }}</span>
+                <button
+                  type="button"
+                  class="shrink-0 text-theme-primary disabled:opacity-50"
+                  :disabled="page.matchesLoading.value"
+                  @click="page.retrySports"
+                >
+                  {{ page.sportsRetryText.value }}
+                </button>
+              </div>
+            </template>
+          </section>
+          <p
+            v-if="page.homepageLoading.value"
+            class="mx-[14px] py-6 text-center text-xs text-text-2"
+            role="status"
           >
-            {{ page.sportsRetryText.value }}
-          </button>
+            {{ page.sportsLoadingText.value }}
+          </p>
+          <ThemedEmptyState
+            v-else-if="!groups.length && !page.homepageError.value"
+            :dark-image="emptyImage"
+            :light-image="emptyImageLight"
+            :message="page.sportsEmptyText.value"
+            container-class="mx-[14px] mt-10"
+            image-class="h-[180px] w-[198px] object-contain"
+            text-class="mt-4 text-center text-xs text-text-2"
+          />
         </div>
-      </template>
-    </section>
-    <p
-      v-if="page.homepageLoading.value"
-      class="mx-[14px] py-6 text-center text-xs text-text-2"
-      role="status"
-    >
-      {{ page.sportsLoadingText.value }}
-    </p>
-    <ThemedEmptyState
-      v-else-if="!groups.length && !page.homepageError.value"
-      :dark-image="emptyImage"
-      :light-image="emptyImageLight"
-      :message="page.sportsEmptyText.value"
-      container-class="mx-[14px] mt-10"
-      image-class="h-[180px] w-[198px] object-contain"
-      text-class="mt-4 text-center text-xs text-text-2"
-    />
+      </Transition>
+    </div>
     <Floating
       v-if="pageActive"
       v-show="!page.betSlipOpen.value"
@@ -323,6 +333,8 @@ const visibleGroupCount = ref(LEAGUE_BATCH_SIZE)
 const loadMoreSentinel = ref<HTMLElement | null>(null)
 const pageActive = ref(true)
 let pageDisposed = false
+const FILTER_TAB_ORDER = ['rolling', 'today', 'early', 'parlay'] as const
+const filterSlideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
 const { vMatchVisibility } = useMatchVisibility({
   enabled: () => !props.page.betSlipOpen.value && stripLocalePrefix(route.path) === '/sports',
   topInset: () => navigationHeight.value,
@@ -483,6 +495,17 @@ watch(
   syncExpandedLeagues,
   { immediate: true, flush: 'post' }
 )
+// 点右侧分类时列表向左滑出，点左侧分类时向右滑出。
+watch(
+  () => props.page.selectedFilterKey.value,
+  (next, previous) => {
+    if (!previous || next === previous) return
+    const nextIndex = FILTER_TAB_ORDER.indexOf(next)
+    const previousIndex = FILTER_TAB_ORDER.indexOf(previous)
+    filterSlideName.value = nextIndex > previousIndex ? 'filter-slide-left' : 'filter-slide-right'
+  }
+)
+
 // 切换球种后，热门区滚动回起点。
 watch(activeSport, async () => {
   await nextTick()
@@ -502,5 +525,46 @@ const selectOdds = async (matchId: string, payload: OddsSelectPayload) => {
 <style scoped>
 .sports-h5-sticky-navigation {
   padding-top: var(--app-shell-top-safe-offset);
+}
+
+.filter-slide-stage {
+  display: grid;
+  overflow: hidden;
+}
+
+.filter-slide-pane {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.filter-slide-left-enter-active,
+.filter-slide-left-leave-active,
+.filter-slide-right-enter-active,
+.filter-slide-right-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-slide-left-enter-from,
+.filter-slide-right-leave-to {
+  transform: translateX(100%);
+}
+
+.filter-slide-left-leave-to,
+.filter-slide-right-enter-from {
+  transform: translateX(-100%);
+}
+
+.filter-slide-left-leave-active,
+.filter-slide-right-leave-active {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-slide-left-enter-active,
+  .filter-slide-left-leave-active,
+  .filter-slide-right-enter-active,
+  .filter-slide-right-leave-active {
+    transition-duration: 0.01ms;
+  }
 }
 </style>
