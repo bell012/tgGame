@@ -1,6 +1,8 @@
 const ANDROID_APP_SHELL_CLASS = 'android-app-shell'
 const ANDROID_APP_SHELL_OFFSET = '24px'
 const APP_SHELL_STORAGE_KEY = 'tg.androidAppShell'
+const APP_SHELL_SESSION_KEY = 'tg.androidAppShell.session'
+const APP_SHELL_COOKIE_KEY = 'tg_android_app_shell'
 const APP_SHELL_QUERY_KEYS = ['app_shell', 'appShell', 'tg_app_shell']
 const APP_SHELL_QUERY_VALUES = new Set(['1', 'true', 'android', 'apk', 'webview'])
 const APP_SHELL_QUERY_DISABLED_VALUES = new Set(['0', 'false', 'off', 'browser'])
@@ -18,7 +20,52 @@ function isAndroidUserAgent(userAgent: string) {
   return /Android/i.test(userAgent)
 }
 
-function hasAppShellQueryValue(search: string, values: Set<string>) {
+function isAndroidWebViewUserAgent(userAgent: string) {
+  if (!isAndroidUserAgent(userAgent)) {
+    return false
+  }
+
+  return (
+    /;\s*wv\)/i.test(userAgent) ||
+    /\bwv\b/i.test(userAgent) ||
+    /Version\/[\d.]+.*Chrome\/[\d.]+.*Mobile Safari/i.test(userAgent)
+  )
+}
+
+function getSearchCandidates(win: AppShellWindow) {
+  const candidates = new Set<string>()
+  const { location } = win
+
+  if (location.search) {
+    candidates.add(location.search)
+  }
+
+  try {
+    const currentUrl = new URL(location.href)
+    if (currentUrl.search) {
+      candidates.add(currentUrl.search)
+    }
+  } catch {
+    // Some embedded WebViews can expose a partially encoded href.
+  }
+
+  const hash = location.hash.replace(/^#/, '')
+  const hashQueryIndex = hash.indexOf('?')
+
+  if (hashQueryIndex >= 0) {
+    candidates.add(hash.slice(hashQueryIndex))
+  } else if (hash.startsWith('?')) {
+    candidates.add(hash)
+  }
+
+  return Array.from(candidates)
+}
+
+function hasAppShellQueryValue(win: AppShellWindow, values: Set<string>) {
+  return getSearchCandidates(win).some(search => hasQueryValue(search, values))
+}
+
+function hasQueryValue(search: string, values: Set<string>) {
   const params = new URLSearchParams(search)
 
   return APP_SHELL_QUERY_KEYS.some(key => {
@@ -27,9 +74,25 @@ function hasAppShellQueryValue(search: string, values: Set<string>) {
   })
 }
 
-function hasStoredAppShellFlag() {
+function hasSessionAppShellFlag() {
   try {
-    return localStorage.getItem(APP_SHELL_STORAGE_KEY) === '1'
+    return sessionStorage.getItem(APP_SHELL_SESSION_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function hasPersistentAppShellFlag() {
+  try {
+    if (localStorage.getItem(APP_SHELL_STORAGE_KEY) === '1') {
+      return true
+    }
+  } catch {
+    // Storage can be unavailable in some embedded WebViews.
+  }
+
+  try {
+    return document.cookie.split(';').some(item => item.trim() === `${APP_SHELL_COOKIE_KEY}=1`)
   } catch {
     return false
   }
@@ -37,17 +100,41 @@ function hasStoredAppShellFlag() {
 
 function persistAppShellFlag() {
   try {
+    sessionStorage.setItem(APP_SHELL_SESSION_KEY, '1')
+  } catch {
+    // Storage can be unavailable in some embedded WebViews.
+  }
+
+  try {
     localStorage.setItem(APP_SHELL_STORAGE_KEY, '1')
   } catch {
     // Storage can be unavailable in some embedded WebViews.
+  }
+
+  try {
+    document.cookie = `${APP_SHELL_COOKIE_KEY}=1; path=/; max-age=31536000; SameSite=Lax`
+  } catch {
+    // Cookies can be unavailable in some embedded WebViews.
   }
 }
 
 function clearAppShellFlag() {
   try {
+    sessionStorage.removeItem(APP_SHELL_SESSION_KEY)
+  } catch {
+    // Storage can be unavailable in some embedded WebViews.
+  }
+
+  try {
     localStorage.removeItem(APP_SHELL_STORAGE_KEY)
   } catch {
     // Storage can be unavailable in some embedded WebViews.
+  }
+
+  try {
+    document.cookie = `${APP_SHELL_COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`
+  } catch {
+    // Cookies can be unavailable in some embedded WebViews.
   }
 }
 
@@ -62,10 +149,41 @@ function hasNativeAppShellSignal(win: AppShellWindow) {
   )
 }
 
+function getAppShellSafeAreaTargets() {
+  const targets: HTMLElement[] = [document.documentElement]
+
+  if (document.body) {
+    targets.push(document.body)
+  }
+
+  const app = document.getElementById('app')
+  if (app) {
+    targets.push(app)
+  }
+
+  return targets
+}
+
 function applyAppShellSafeArea() {
-  const root = document.documentElement
-  root.classList.add(ANDROID_APP_SHELL_CLASS)
-  root.style.setProperty('--app-shell-top-safe-offset', ANDROID_APP_SHELL_OFFSET)
+  getAppShellSafeAreaTargets().forEach(target => {
+    target.classList.add(ANDROID_APP_SHELL_CLASS)
+    target.style.setProperty('--app-shell-top-safe-offset', ANDROID_APP_SHELL_OFFSET)
+  })
+}
+
+function removeAppShellSafeArea() {
+  getAppShellSafeAreaTargets().forEach(target => {
+    target.classList.remove(ANDROID_APP_SHELL_CLASS)
+    target.style.removeProperty('--app-shell-top-safe-offset')
+  })
+}
+
+function scheduleAppShellSafeAreaReapply() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyAppShellSafeArea, { once: true })
+  }
+
+  window.setTimeout(applyAppShellSafeArea, 0)
 }
 
 export function initAndroidAppShellSafeArea() {
@@ -74,29 +192,45 @@ export function initAndroidAppShellSafeArea() {
   }
 
   const appWindow = window as AppShellWindow
-  const disabledByQuery = hasAppShellQueryValue(
-    window.location.search,
-    APP_SHELL_QUERY_DISABLED_VALUES
-  )
-  const queryMatched = hasAppShellQueryValue(window.location.search, APP_SHELL_QUERY_VALUES)
+  const disabledByQuery = hasAppShellQueryValue(appWindow, APP_SHELL_QUERY_DISABLED_VALUES)
+  const queryMatched = hasAppShellQueryValue(appWindow, APP_SHELL_QUERY_VALUES)
   const nativeSignalMatched = hasNativeAppShellSignal(appWindow)
   const customUaMatched =
     isAndroidUserAgent(navigator.userAgent) &&
     APP_SHELL_USER_AGENT_PATTERN.test(navigator.userAgent)
-  const storedMatched = hasStoredAppShellFlag()
+  const androidWebViewUaMatched = isAndroidWebViewUserAgent(navigator.userAgent)
+  const sessionStoredMatched = hasSessionAppShellFlag()
+  const persistentStoredMatched = hasPersistentAppShellFlag()
+  const storedMatched = sessionStoredMatched || persistentStoredMatched
+  const persistentStoredMatchedInShellLikeEnv =
+    persistentStoredMatched && (nativeSignalMatched || customUaMatched || androidWebViewUaMatched)
   const shellMatched =
-    !disabledByQuery && (queryMatched || storedMatched || nativeSignalMatched || customUaMatched)
+    !disabledByQuery &&
+    (queryMatched ||
+      sessionStoredMatched ||
+      persistentStoredMatchedInShellLikeEnv ||
+      nativeSignalMatched ||
+      customUaMatched ||
+      androidWebViewUaMatched)
 
-  if (!shellMatched) {
+  if (disabledByQuery) {
     clearAppShellFlag()
+    removeAppShellSafeArea()
     return
   }
 
-  if (queryMatched || nativeSignalMatched || customUaMatched) {
-    persistAppShellFlag()
+  if (!shellMatched) {
+    if (storedMatched) {
+      clearAppShellFlag()
+      removeAppShellSafeArea()
+    }
+    return
   }
 
+  persistAppShellFlag()
+
   applyAppShellSafeArea()
+  scheduleAppShellSafeAreaReapply()
 
   window.setTimeout(() => {
     if (hasNativeAppShellSignal(appWindow)) {
