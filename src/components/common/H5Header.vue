@@ -1,11 +1,12 @@
 <template>
   <!-- H5 公共头部 -->
-  <div class="h-[49px]">
+  <div class="h5-header-spacer">
     <div
+      class="h5-header-bar"
       :class="
         props.fixedTop
-          ? 'fixed left-0 top-0 z-[99] flex h-[49px] w-full items-center bg-bg-2 px-[10px]'
-          : 'relative z-[1] flex h-[49px] w-full items-center bg-bg-2 px-[10px]'
+          ? 'fixed left-0 top-0 z-[99] flex w-full items-center bg-bg-2 px-[10px]'
+          : 'relative z-[1] flex w-full items-center bg-bg-2 px-[10px]'
       "
     >
       <!-- 左侧返回按钮 -->
@@ -88,4 +89,13 @@ const handleSort = () => {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.h5-header-spacer {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+}
+
+.h5-header-bar {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
+}
+</style>
