@@ -45,10 +45,29 @@
               class="h-[35px] w-[35px] shrink-0 rounded-[3px] bg-common-0 object-cover"
             ></video>
             <div class="min-w-0 flex-1">
-              <p class="text-[11px] font-medium text-theme-primary">{{ message.reply.author }}</p>
-              <p class="mt-[2px] truncate text-[11px] text-text-2">
+              <p
+                class="truncate text-theme-primary"
+                :class="
+                  props.displayMode === 'pc'
+                    ? 'h-[17px] text-[14px] font-[700] leading-[17px]'
+                    : 'text-[11px] font-medium'
+                "
+              >
+                {{ message.reply.author }}
+              </p>
+
+              <p
+                class="truncate text-text-2"
+                :class="
+                  props.displayMode === 'pc'
+                    ? 'h-[15px] text-[12px] font-[400] leading-[15px]'
+                    : 'mt-[2px] text-[11px]'
+                "
+              >
                 <template v-for="(part, index) in replyHighlightParts" :key="index">
-                  <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
+                  <span :class="part.matched ? 'text-theme-primary' : ''">
+                    {{ part.text }}
+                  </span>
                 </template>
               </p>
             </div>
@@ -114,7 +133,7 @@
 import messageReadStatusImage from '@/static/img/chat/public/message-read-status.png'
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
-import { computed } from 'vue'
+import { computed, defineEmits, defineProps, withDefaults } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getChatTextHighlightParts } from '../shared'
 import type { ChatMessage } from '../types'

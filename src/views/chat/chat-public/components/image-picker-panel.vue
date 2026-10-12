@@ -14,6 +14,7 @@
         <span class="text-[12px] text-text-1">{{ t('chatPublic.photo') }}</span>
       </button>
       <button
+        v-if="props.displayMode === 'h5'"
         type="button"
         class="flex w-[60px] flex-col items-center gap-[10px]"
         @click="openCamera"

@@ -20,15 +20,27 @@
       <img
         :src="redPacketIcon"
         alt=""
-        class="absolute left-[12px] top-[11px] h-[40px] w-[34px] object-fill"
+        class="absolute h-[40px] w-[34px] object-fill"
+        :class="props.displayMode === 'pc' ? 'left-[16px] top-[12px]' : 'left-[12px] top-[11px]'"
       />
 
       <!-- 红包标题与当前状态。 -->
-      <div class="absolute left-[58px] top-[14px]">
-        <p class="font-inter text-[14px] font-[700] leading-[17px] text-[#FFD59E]">
+      <div
+        class="absolute left-[58px]"
+        :class="props.displayMode === 'pc' ? 'top-[13px]' : 'top-[14px]'"
+      >
+        <p
+          class="font-inter font-[700] text-[#FFD59E]"
+          :class="
+            props.displayMode === 'pc' ? 'text-[16px] leading-[19px]' : 'text-[14px] leading-[17px]'
+          "
+        >
           {{ t('chatPublic.redPacketGoodLuck') }}
         </p>
-        <p class="mt-[4px] text-[12px] leading-[14px] text-[#FFD59E]">
+        <p
+          class="mt-[4px] text-[12px] text-[#FFD59E]"
+          :class="props.displayMode === 'pc' ? 'leading-[15px]' : 'leading-[14px]'"
+        >
           {{ packetLabel }}
         </p>
       </div>
@@ -36,14 +48,27 @@
       <!-- 红包信息区与时间的分隔线。 -->
       <i
         aria-hidden="true"
-        class="absolute left-[12px] right-[12px] top-[64px] h-px bg-[#E65A3F]"
+        class="absolute right-[12px] top-[64px] h-px bg-[#E65A3F]"
+        :class="props.displayMode === 'pc' ? 'left-[16px]' : 'left-[12px]'"
       />
 
       <!-- 红包来源与发送时间。 -->
-      <span class="absolute bottom-[8px] left-[12px] text-[12px] leading-[14px] text-[#FFD59E]">
+      <span
+        class="absolute text-[12px] text-[#FFD59E]"
+        :class="
+          props.displayMode === 'pc'
+            ? 'bottom-[6px] left-[16px] leading-[15px]'
+            : 'bottom-[8px] left-[12px] leading-[14px]'
+        "
+      >
         {{ t('chatPublic.supportRedPacket') }}
       </span>
-      <span class="absolute bottom-[8px] right-[12px] text-[12px] leading-[14px] text-[#FFD59E]">
+      <span
+        class="absolute right-[12px] text-[12px] text-[#FFD59E]"
+        :class="
+          props.displayMode === 'pc' ? 'bottom-[6px] leading-[15px]' : 'bottom-[8px] leading-[14px]'
+        "
+      >
         {{ props.message.time }} {{ props.message.period }}
       </span>
     </button>

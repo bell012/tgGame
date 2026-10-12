@@ -7,17 +7,17 @@
     <!-- PC 端输入与功能操作区。 -->
     <div
       v-if="props.displayMode === 'pc'"
-      class="flex h-[66px] items-center gap-[10px] px-[10px] py-[10px]"
+      class="flex h-[64px] items-center gap-[10px] px-[10px] py-[10px]"
     >
       <div
-        class="flex h-[46px] min-w-0 flex-1 items-center rounded-[10px] border bg-opacity-6 px-[12px]"
+        class="flex h-[44px] min-w-0 flex-1 items-center rounded-[10px] border bg-opacity-6 px-[12px]"
         :class="hasDraft ? 'border-theme-primary' : 'border-transparent'"
       >
         <input
           ref="inputRef"
           :value="modelValue"
           type="text"
-          class="min-w-0 flex-1 bg-transparent font-pingfang text-[14px] font-[700] leading-[17px] text-text-1 outline-none placeholder:text-text-3"
+          class="min-w-0 flex-1 bg-transparent font-pingfang text-[14px] font-[400] leading-[20px] text-text-1 outline-none placeholder:text-text-3"
           :placeholder="t('chatPublic.inputPlaceholder')"
           @input="handleInput"
           @focus="handleInputFocus"
@@ -35,7 +35,7 @@
       <button
         type="button"
         class="flex size-[44px] shrink-0 items-center justify-center rounded-[10px]"
-        :class="hasDraft ? 'bg-theme-primary' : ''"
+        :class="hasDraft ? 'bg-theme-primary' : 'bg-opacity-6'"
         @click="hasDraft ? $emit('send') : openMediaPanel()"
       >
         <img

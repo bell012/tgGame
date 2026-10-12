@@ -11,7 +11,7 @@
         class="relative block overflow-hidden border-0 bg-common-0 p-0 text-left"
         :class="
           props.displayMode === 'pc'
-            ? 'h-[180px] w-[220px] rounded-[18px]'
+            ? 'h-[170px] w-[240px] rounded-[18px]'
             : 'h-[188px] w-[220px] rounded-[10px]'
         "
         @click="handleClick"
@@ -27,13 +27,15 @@
           playsinline
           preload="metadata"
           :aria-label="t('chatPublic.playVideo')"
-          class="h-full w-full bg-common-0 object-contain"
+          class="h-full w-full bg-common-0"
+          :class="props.displayMode === 'pc' ? 'object-cover' : 'object-contain'"
         />
 
         <!-- 视频消息中央的全屏播放提示图标，不拦截视频本身的点击事件。 -->
         <VideoPlayPauseIcon
           aria-hidden="true"
-          class="pointer-events-none absolute left-1/2 top-1/2 size-[36px] -translate-x-1/2 -translate-y-1/2"
+          class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          :class="props.displayMode === 'pc' ? 'invisible size-[40px]' : 'size-[36px]'"
         />
 
         <!-- 视频消息的时间与已读状态。 -->
@@ -62,11 +64,19 @@
       <button
         v-if="props.message.direction === 'outgoing' && props.message.status === 'failed'"
         type="button"
-        class="absolute -left-[20px] top-1/2 flex size-[12px] -translate-y-1/2 items-center justify-center"
+        class="absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
+        :class="
+          props.displayMode === 'pc' ? '-left-[52px] size-[36px]' : '-left-[20px] size-[12px]'
+        "
         :aria-label="t('chatPublic.retry')"
         @click="$emit('retry', props.message)"
       >
-        <img :src="messageRetryIcon" alt="" class="size-[12px] object-contain" />
+        <img
+          :src="messageRetryIcon"
+          alt=""
+          class="object-contain"
+          :class="props.displayMode === 'pc' ? 'size-[36px]' : 'size-[12px]'"
+        />
       </button>
     </div>
   </div>
@@ -77,7 +87,7 @@ import messageReadStatusImage from '@/static/img/chat/public/message-read-status
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
 import VideoPlayPauseIcon from '@/static/svg/chat/public/video-play-pause.svg?component'
-import { onBeforeUnmount, ref } from 'vue'
+import { defineEmits, defineProps, onBeforeUnmount, ref, withDefaults } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatMessage } from '../types'
 
