@@ -24,9 +24,31 @@ const REMEMBERED_PASSWORD_STORAGE_KEY = 'rememberedPassword'
 const REMEMBERED_SIGNIN_CREDENTIALS_STORAGE_KEY = 'rememberedSigninCredentials'
 const TRADE_MESSAGE_SYNC_STORAGE_KEY = 'memberTradeMessageSync'
 
+export type BalanceRefreshError = {
+  kind: 'business' | 'network'
+  message: string
+}
+
+export type RefreshBalanceOptions = {
+  /**
+   * 余额或钱包刚发生变更时使用。它会废弃进行中的旧查询，确保旧响应不会覆盖新状态。
+   * 页面初始加载或普通重复读取可省略；所有会改动余额/钱包的业务成功后必须传入 true。
+   */
+  force?: boolean
+}
+
 export const useUserStore = defineStore('user', () => {
   const userInfo = profileUserInfoState
   const acctInfo = ref<QueryAcctInfoResult | null>(null)
+  const isRefreshingBalance = ref(false)
+  const balanceRefreshError = ref<BalanceRefreshError | null>(null)
+
+  // 每次切换会话或强制刷新时递增。返回时版本不一致的请求不能写入当前账户状态。
+  let balanceRefreshVersion = 0
+  let pendingBalanceRefresh: {
+    version: number
+    promise: Promise<QueryAcctInfoResult | null>
+  } | null = null
 
   const normalizeCurrencyCode = (value: unknown) => {
     return String(value ?? '')
@@ -82,12 +104,21 @@ export const useUserStore = defineStore('user', () => {
     return acctInfo.value
   }
 
-  const syncCurrentCurrencyFromAcctInfo = async (nextAcctInfo?: QueryAcctInfoResult | null) => {
+  const syncCurrentCurrencyFromAcctInfo = async (
+    nextAcctInfo?: QueryAcctInfoResult | null,
+    isCurrent = () => true
+  ) => {
+    if (!isCurrent()) {
+      return
+    }
+
     const localeStore = useLocaleStore()
     const accountCurrency = normalizeCurrencyCode(nextAcctInfo?.currency)
 
     if (accountCurrency) {
-      localeStore.setCurrency(accountCurrency)
+      if (isCurrent()) {
+        localeStore.setCurrency(accountCurrency)
+      }
       return
     }
 
@@ -95,15 +126,43 @@ export const useUserStore = defineStore('user', () => {
     const siteConfig = siteConfigStore.config ?? (await siteConfigStore.initSiteConfig())
     const defaultCurrency = normalizeCurrencyCode(siteConfig?.baseSiteConfig?.defaultCurrency)
 
-    if (defaultCurrency) {
+    if (defaultCurrency && isCurrent()) {
       localeStore.setCurrency(defaultCurrency)
     }
   }
 
+  /**
+   * 让已发出的余额请求失效。请求无法可靠取消，但旧响应将不再覆盖当前会话的数据。
+   */
+  const invalidateBalanceRefresh = () => {
+    balanceRefreshVersion += 1
+    pendingBalanceRefresh = null
+    isRefreshingBalance.value = false
+    balanceRefreshError.value = null
+  }
+
   const syncStoredUserData = () => {
+    const previousAcctInfo = acctInfo.value
+    const previousSessionKey = JSON.stringify([
+      userInfo.value?.memberId ?? previousAcctInfo?.memberId ?? '',
+      userInfo.value?.tradeToken ?? ''
+    ])
+    const storedAcctInfo = parseStoredItem<QueryAcctInfoResult>(ACCT_INFO_STORAGE_KEY)
+
     syncProfileCustomizationState()
     syncProfileUserInfoState()
-    acctInfo.value = parseStoredItem<QueryAcctInfoResult>(ACCT_INFO_STORAGE_KEY)
+    const nextSessionKey = JSON.stringify([
+      userInfo.value?.memberId ?? storedAcctInfo?.memberId ?? '',
+      userInfo.value?.tradeToken ?? ''
+    ])
+    const acctInfoChanged = JSON.stringify(previousAcctInfo) !== JSON.stringify(storedAcctInfo)
+
+    // 页面挂载也会调用此方法，只有本地账户数据或会话身份真的变化时才废弃旧请求。
+    if (acctInfoChanged || previousSessionKey !== nextSessionKey) {
+      invalidateBalanceRefresh()
+    }
+
+    acctInfo.value = storedAcctInfo
     const storedCurrency = normalizeCurrencyCode(acctInfo.value?.currency)
 
     if (storedCurrency) {
@@ -116,24 +175,102 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const refreshAcctInfo = async () => {
-    try {
-      const response = await Api.user.queryAcctInfo({})
+  /**
+   * 全局余额刷新入口。
+   *
+   * `acctInfo` 是 TopNav 和 useDisplayCurrency 的响应式余额来源；成功写入后，
+   * `currentBalanceText` 会自动重新计算，调用页面无需直接操作 TopNav。
+   * 余额或钱包变更后的调用方式：`await userStore.refreshBalance({ force: true })`。
+   */
+  const refreshBalance = (
+    options: RefreshBalanceOptions = {}
+  ): Promise<QueryAcctInfoResult | null> => {
+    // 业务操作（充值、提现、领奖、切钱包等）完成后不能复用旧请求，
+    // 否则旧响应可能覆盖操作完成后的最新余额或币种。
+    if (options.force) {
+      balanceRefreshVersion += 1
+      pendingBalanceRefresh = null
+    }
 
-      if (response?.result) {
+    const requestVersion = balanceRefreshVersion
+    const isCurrentRequest = () => requestVersion === balanceRefreshVersion
+
+    // 同一账户状态下的普通重复读取共用一个请求，避免多个页面同时刷新时产生重复流量。
+    if (pendingBalanceRefresh?.version === requestVersion) {
+      return pendingBalanceRefresh.promise
+    }
+
+    isRefreshingBalance.value = true
+    balanceRefreshError.value = null
+
+    const promise = (async (): Promise<QueryAcctInfoResult | null> => {
+      try {
+        const response = await Api.user.queryAcctInfo({})
+
+        if (!isCurrentRequest()) {
+          return null
+        }
+
+        if (!response?.result) {
+          // 刷新失败时保留现有 acctInfo，避免顶部余额闪成 0 或空值。
+          balanceRefreshError.value = {
+            kind: 'business',
+            message: response?.message || 'Failed to refresh balance'
+          }
+          return null
+        }
+
+        // 余额是本次请求的核心结果，不能因可选的币种默认值初始化失败而丢弃。
         const nextAcctInfo = setAcctInfoState(response.result)
-        await syncCurrentCurrencyFromAcctInfo(nextAcctInfo)
-        return nextAcctInfo
+
+        try {
+          await syncCurrentCurrencyFromAcctInfo(nextAcctInfo, isCurrentRequest)
+        } catch (error) {
+          // 币种字段正常存在时不会走到这里；兜底配置拉取失败只记录，不影响余额刷新。
+          if (isCurrentRequest()) {
+            console.error(error)
+          }
+        }
+
+        return isCurrentRequest() ? nextAcctInfo : null
+      } catch (error) {
+        if (isCurrentRequest()) {
+          // 请求错误由触发页面决定是否提示；Store 只保留可观察的错误状态。
+          balanceRefreshError.value = {
+            kind: 'network',
+            message: error instanceof Error ? error.message : 'Failed to refresh balance'
+          }
+        }
+        if (isCurrentRequest()) {
+          console.error(error)
+        }
+        return null
+      }
+    })()
+
+    pendingBalanceRefresh = { version: requestVersion, promise }
+
+    void promise.finally(() => {
+      // 旧请求结束时不能关闭新请求的 loading，也不能清掉新请求的引用。
+      if (pendingBalanceRefresh?.promise !== promise) {
+        return
       }
 
-      await syncCurrentCurrencyFromAcctInfo(null)
+      pendingBalanceRefresh = null
 
-      return acctInfo.value
-    } catch (error) {
-      console.error(error)
-      return null
-    }
+      if (isCurrentRequest()) {
+        isRefreshingBalance.value = false
+      }
+    })
+
+    return promise
   }
+
+  /**
+   * @deprecated 业务页面请使用 refreshBalance()，名称更能表达调用意图。
+   * 保留该别名，避免旧模块或外部扩展在升级时中断。
+   */
+  const refreshAcctInfo = (options: RefreshBalanceOptions = {}) => refreshBalance(options)
 
   const refreshUserInfo = async (memberId: string) => {
     try {
@@ -156,11 +293,16 @@ export const useUserStore = defineStore('user', () => {
   const refreshCurrentUserData = async (memberId?: string) => {
     syncStoredUserData()
 
+    // 登录/注册会传入明确账号。此时即使 localStorage 尚未更新，也必须隔离游客或旧账号的请求。
+    if (memberId) {
+      invalidateBalanceRefresh()
+    }
+
     const storedMemberId = memberId || userInfo.value?.memberId || acctInfo.value?.memberId
 
     if (storedMemberId) {
       const [latestAcctInfo, latestUserInfo] = await Promise.all([
-        refreshAcctInfo(),
+        refreshBalance(),
         refreshUserInfo(storedMemberId)
       ])
 
@@ -170,7 +312,7 @@ export const useUserStore = defineStore('user', () => {
       }
     }
 
-    const latestAcctInfo = await refreshAcctInfo()
+    const latestAcctInfo = await refreshBalance()
     const nextMemberId = latestAcctInfo?.memberId || acctInfo.value?.memberId
     const latestUserInfo = nextMemberId ? await refreshUserInfo(nextMemberId) : userInfo.value
 
@@ -184,6 +326,7 @@ export const useUserStore = defineStore('user', () => {
    * 清除所有用户相关的本地状态，但保留基础偏好设置和按账号隔离的通知缓存
    */
   const clearUserSessionData = () => {
+    invalidateBalanceRefresh()
     clearStorageExcept(
       [
         'language',
@@ -240,7 +383,10 @@ export const useUserStore = defineStore('user', () => {
   return {
     userInfo,
     acctInfo,
+    isRefreshingBalance,
+    balanceRefreshError,
     syncStoredUserData,
+    refreshBalance,
     refreshAcctInfo,
     refreshUserInfo,
     refreshCurrentUserData,
