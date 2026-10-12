@@ -140,7 +140,7 @@
 <script setup lang="ts">
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import OnlineIcon from '@/static/svg/chat/public/online.svg?component'
-import { computed, defineEmits, defineProps, withDefaults } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getConversationStatusKey, resolveChatMediaUrl, resolveConversationStatus } from '../shared'
 import type { ConversationItem } from '../types'

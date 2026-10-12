@@ -238,7 +238,6 @@ import type { ChatMessage, ConversationItem } from '../types'
 
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
-import { defineEmits, defineProps, withDefaults } from 'vue'
 
 const props = withDefaults(
   defineProps<{

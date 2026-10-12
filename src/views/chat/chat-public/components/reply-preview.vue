@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import CloseIcon from '@/static/svg/chat/public/reply-close.svg?component'
-import { computed, defineEmits, defineProps } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatReplyTarget } from '../types'
 
