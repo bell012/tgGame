@@ -1036,10 +1036,15 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
               : t(`sports.betSubmit${result}`)
         })
     } finally {
-      submitting.value = false
-      finishBalanceBatch?.({ refresh: sent })
-      // 整批投注结束后统一刷新主账户余额，多笔单关不逐笔请求。
-      if (sent) void userStore.refreshBalance({ force: true })
+      try {
+        finishBalanceBatch?.({ refresh: sent })
+        // 本批投注结束后同步顶部余额，不复用下注前的查询；离开页面仍需更新。
+        if (sent && accountKey.value === account) {
+          await userStore.refreshBalance({ force: true })
+        }
+      } finally {
+        submitting.value = false
+      }
     }
   }
   const refreshBalance = async () => {

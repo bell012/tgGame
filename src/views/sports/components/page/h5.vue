@@ -6,7 +6,7 @@
   >
     <header
       ref="navigationHeader"
-      class="fixed inset-x-0 top-0 z-40 bg-bg-1"
+      class="sports-h5-sticky-navigation fixed inset-x-0 top-0 z-40 bg-bg-1"
       data-testid="sports-h5-sticky-navigation"
     >
       <SportsNavigation @change="page.handleSportChange" />
@@ -498,3 +498,9 @@ const selectOdds = async (matchId: string, payload: OddsSelectPayload) => {
   props.page.betSlipOpen.value = true
 }
 </script>
+
+<style scoped>
+.sports-h5-sticky-navigation {
+  padding-top: var(--app-shell-top-safe-offset);
+}
+</style>

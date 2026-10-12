@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import Api from '@/api'
+import { useUserStore } from '@/stores/user'
 import type { RewardCenterRecord } from '@/api/interface/reward-center'
 import { useUserStore } from '@/stores/user'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
@@ -57,6 +58,7 @@ const appendClaimedRecords = (
 
 export const useRewardCenterStore = defineStore('rewardCenter', () => {
   const userStore = useUserStore()
+  const getMemberId = () => userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId
   const pendingRecords = ref<RewardCenterRecord[]>([])
   const claimedRecords = ref<RewardCenterRecord[]>([])
   const pendingTotalAmount = ref(0)
@@ -248,15 +250,21 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
       return null
     }
 
+    const memberId = getMemberId()
     claiming.value = true
 
     try {
       const response = ensureApiBusinessSuccess(await claimPendingBonus(record))
 
       // 领取已成功：先本地移除；随后 silent 刷新会抬 generation，避免在途轮询写回已领项
-      void userStore.refreshBalance({ force: true })
       removePendingRecordById(itemId)
-      await fetchPendingRewards({ silent: true })
+      // 列表与顶部余额并行刷新；不复用领取前的余额请求，账号变化后跳过。
+      await Promise.all([
+        fetchPendingRewards({ silent: true }),
+        memberId != null && memberId === getMemberId()
+          ? userStore.refreshBalance({ force: true })
+          : undefined
+      ])
       return parsePendingClaimRewardAmount(response, Number(record.rewardAmount ?? 0))
     } finally {
       claiming.value = false
@@ -272,6 +280,7 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
       pendingTotalAmount.value > 0
         ? pendingTotalAmount.value
         : sumClaimedBonusAmount(pendingRecords.value)
+    const memberId = getMemberId()
     claiming.value = true
 
     try {
@@ -283,9 +292,13 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
       const claimedAmount = Number.isFinite(responseAmount) ? responseAmount : totalBeforeClaim
 
       // 一键领取已成功：先本地清空；silent 刷新抬 generation 防在途轮询写回
-      void userStore.refreshBalance({ force: true })
       clearPendingRecordsLocally()
-      await fetchPendingRewards({ silent: true })
+      await Promise.all([
+        fetchPendingRewards({ silent: true }),
+        memberId != null && memberId === getMemberId()
+          ? userStore.refreshBalance({ force: true })
+          : undefined
+      ])
 
       return claimedAmount > 0 ? claimedAmount : null
     } finally {
