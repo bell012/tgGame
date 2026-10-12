@@ -367,7 +367,7 @@
       class="block sm:hidden"
     >
       <div class="h5-page">
-        <header class="fixed top-2 left-0 right-0 z-50 h-14 px-2 headBg">
+        <header class="app-download-h5-header fixed left-0 right-0 z-50 px-2 headBg">
           <div class="h-14 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <img src="/src/static/img/app-download/app_download_1.webp" alt="" class="w-9 h-9" />
@@ -728,6 +728,13 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.app-download-h5-header {
+  top: calc(0.5rem + var(--app-shell-top-safe-offset));
+  height: 3.5rem;
+}
+</style>
 
 <style lang="scss" scoped>
 .pcBG {

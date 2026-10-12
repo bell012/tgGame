@@ -1,7 +1,7 @@
 <template>
   <!-- 旧版聊天室顶部工具栏。 -->
   <div
-    class="fixed left-0 top-0 flex h-[60px] w-full items-center justify-between bg-bg-5 px-4 shadow-[0px_4px_8px_0px_rgba(0,0,0,0.05)]"
+    class="chat-top-bar fixed left-0 top-0 flex w-full items-center justify-between bg-bg-5 px-4 shadow-[0px_4px_8px_0px_rgba(0,0,0,0.05)]"
   >
     <!-- 聊天频道选择器。 -->
     <div>
@@ -47,5 +47,10 @@ const popupShow = ref(false)
 .top-nav {
   background-color: var(--color-background-level-5);
   box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.05);
+}
+
+.chat-top-bar {
+  height: calc(60px + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
 }
 </style>

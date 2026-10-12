@@ -369,6 +369,7 @@ import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import SelectModal from '@/components/SelectModal.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import bellDefaultImage from '@/static/img/bell.png'
 import bellUnreadImage from '@/static/img/bell_n.png'
 import ChatIcon from '@/static/svg/chat.svg?component'
@@ -408,6 +409,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const isMobile = useIsMobile()
+useUserBalancePolling()
 const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
 const { hasUnread } = storeToRefs(notificationIndicatorStore)
@@ -889,11 +891,14 @@ defineExpose({
   top: 0;
   left: 0;
   right: 0;
-  height: calc(v-bind('layoutStore.TOPNAV_HEIGHT + "px"') + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
+  height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
   background-color: var(--color-background-level-5);
   z-index: 50;
   overflow: visible;
+}
+:global(.android-app-shell) .top-nav {
+  height: calc(v-bind('layoutStore.TOPNAV_HEIGHT + "px"') + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
 }
 .search {
   background-color: var(--color-background-level-3);

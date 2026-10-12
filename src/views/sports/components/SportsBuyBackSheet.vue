@@ -333,7 +333,11 @@ const submitBuyBack = async () => {
       sportsAuth.clearCredentials(credentials)
     const responseCode = getSportsResponseCode(response)
     // 结算响应没有余额；关闭弹窗或离开页面后仍由钱包上下文完成一次补查。
-    if (String(responseCode) === '100') finishBalanceUpdate({ refresh: true })
+    if (String(responseCode) === '100') {
+      finishBalanceUpdate({ refresh: true })
+      // 结算响应没有主账户余额；关闭弹窗后仍刷新 TopNav 使用的账户余额。
+      void userStore.refreshBalance({ force: true })
+    }
     if (!isCurrent()) return
 
     if (String(responseCode) === '100') {

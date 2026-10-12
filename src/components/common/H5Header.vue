@@ -1,7 +1,8 @@
 <template>
   <!-- H5 公共头部 -->
-  <div class="h-[49px]">
+  <div class="h5-header-spacer h-[49px]">
     <div
+      class="h5-header-bar"
       :class="
         props.fixedTop
           ? 'fixed left-0 top-0 z-[99] flex h-[49px] w-full items-center bg-bg-2 px-[10px]'
@@ -88,4 +89,13 @@ const handleSort = () => {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+:global(.android-app-shell) .h5-header-spacer {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+}
+
+:global(.android-app-shell) .h5-header-bar {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
+}
+</style>

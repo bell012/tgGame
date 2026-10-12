@@ -8,6 +8,7 @@ import type {
   SubmitPayOrderPageForm
 } from '@/api/interface/wallet'
 import { isOrderTerminalStatus } from '@/constants/orderStatus'
+import { useUserStore } from '@/stores/user'
 import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { formatTimestamp } from '@/utils/date'
@@ -116,6 +117,7 @@ const resolveFlowBoolean = (value: Ref<boolean> | boolean) =>
 
 export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
   const { t, locale } = useI18n()
+  const userStore = useUserStore()
   const defaultPresetAmounts: number[] = []
 
   const isInitialLoading = ref(true)
@@ -255,6 +257,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
       applyOrderDetail(detail)
       if (isOrderTerminalStatus('deposit', detail.status)) {
         stopOrderPolling()
+        void userStore.refreshBalance({ force: true })
       }
     } catch (error) {
       console.error('queryPayOrderByOrderId failed', error)
@@ -463,6 +466,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
 
 export const useDepositFiatFlow = (options: DepositFlowOptions) => {
   const { t } = useI18n()
+  const userStore = useUserStore()
   const defaultPresetAmounts: number[] = []
 
   const isInitialLoading = ref(true)
@@ -561,6 +565,7 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
       applyOrderDetail(detail)
       if (isOrderTerminalStatus('deposit', detail.status)) {
         stopOrderPolling()
+        void userStore.refreshBalance({ force: true })
       }
     } catch (error) {
       console.error('queryPayOrderByOrderId failed', error)

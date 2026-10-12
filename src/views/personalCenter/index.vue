@@ -2,7 +2,7 @@
   <div
     class="personal-center-mobile-page h-full min-h-0 w-full overflow-y-auto overscroll-contain bg-bg-1"
   >
-    <div class="flex items-center h-[49px] px-3.5">
+    <div class="personal-center-mobile-header flex items-center h-[49px] px-3.5">
       <button
         @click="handleBack"
         class="w-[33px] h-[33px] bg-opacity-5 rounded-lg flex items-center justify-center"
@@ -329,6 +329,7 @@ import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
 import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
+import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import { useLocaleStore } from '@/stores/locale'
 import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useThemeStore } from '@/stores/theme'
@@ -361,6 +362,7 @@ const themeStore = useThemeStore()
 const tradeMessageSyncStore = useTradeMessageSyncStore()
 const userStore = useUserStore()
 const vipStore = useVipStore()
+useUserBalancePolling()
 const { open: openOnlineCustomer } = useOnlineCustomerService()
 const { userInfo } = storeToRefs(userStore)
 const { currentCurrencyCode, currentBalanceText, currencyOptions, setDisplayCurrency } =
@@ -777,5 +779,10 @@ onMounted(() => {
 .personal-center-mobile-page {
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+:global(.android-app-shell) .personal-center-mobile-header {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
 }
 </style>

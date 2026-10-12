@@ -1,6 +1,8 @@
 <template>
-  <div class="h-[49px]">
-    <div class="fixed left-0 top-0 z-[99] flex h-[49px] w-full items-center bg-bg-2 px-[10px]">
+  <div class="game-detail-h5-header-spacer">
+    <div
+      class="game-detail-h5-header-bar fixed left-0 top-0 z-[99] flex w-full items-center bg-bg-2 px-[10px]"
+    >
       <div class="size-[33px] flex items-center justify-center">
         <button
           type="button"
@@ -25,4 +27,13 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 </script>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.game-detail-h5-header-spacer {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+}
+
+.game-detail-h5-header-bar {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
+}
+</style>

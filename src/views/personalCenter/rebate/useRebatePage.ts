@@ -1,5 +1,6 @@
 import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useUserStore } from '@/stores/user'
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { resolveGameImageUrl } from '@/utils/image'
@@ -379,6 +380,7 @@ const runMountedLoaders = (loaders: Array<() => Promise<void>>) => {
 
 export const useRebatePage = () => {
   const { t } = useI18n()
+  const userStore = useUserStore()
   const isMobile = useIsMobile()
   const { open: openOnlineCustomer } = useOnlineCustomerService()
   // ============================================================
@@ -717,6 +719,7 @@ export const useRebatePage = () => {
 
       claimSuccessAmount.value = claimedAmount
       showClaimSuccessPopup.value = true
+      void userStore.refreshBalance({ force: true })
 
       await Promise.allSettled([loadRebateOverview(), loadRebateData()])
     } catch (error) {

@@ -283,6 +283,7 @@ const handleAction = async () => {
       return
     }
 
+    void userStore.refreshBalance({ force: true })
     const claimHeroRewards = createCheckInHeroRewardsFromClaimResult(
       receiveRewardResponse.result,
       activeCurrencyCode.value

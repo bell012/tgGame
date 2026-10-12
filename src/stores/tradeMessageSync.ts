@@ -6,6 +6,7 @@ import type {
   TradePushMessage
 } from '@/api/interface/wallet'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { isOrderTerminalStatus, type OrderBizType } from '@/constants/orderStatus'
 import { useUserStore } from '@/stores/user'
 import type { OrderStatusMap, TradeMessageStreamItem } from '@/utils/payOrderSync'
 import {
@@ -470,6 +471,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
     }
 
     const nextMap: OrderStatusMap = { ...orderStatusMap.value }
+    let shouldRefreshBalance = false
 
     items.forEach(item => {
       const nextCacheItem = {
@@ -480,13 +482,29 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
         busiAmount: item.busiAmount,
         currency: item.currency
       }
+      const previousItem = nextMap[item.orderId]
+      const bizType: OrderBizType = item.orderType === '1' ? 'withdraw' : 'deposit'
+      const shouldReplace = shouldReplaceOrderStatusCacheItem(previousItem, nextCacheItem)
 
-      if (shouldReplaceOrderStatusCacheItem(nextMap[item.orderId], nextCacheItem)) {
+      // 只在订单状态真正变成终态时刷新。重复同步同一终态不会再次打余额接口。
+      if (
+        shouldReplace &&
+        previousItem?.status !== nextCacheItem.status &&
+        isOrderTerminalStatus(bizType, nextCacheItem.status)
+      ) {
+        shouldRefreshBalance = true
+      }
+
+      if (shouldReplace) {
         nextMap[item.orderId] = nextCacheItem
       }
     })
 
     orderStatusMap.value = nextMap
+
+    if (shouldRefreshBalance) {
+      void userStore.refreshBalance({ force: true })
+    }
   }
 
   // 把标准化后的交易消息同时写入消息流、订单状态和本地持久化状态。

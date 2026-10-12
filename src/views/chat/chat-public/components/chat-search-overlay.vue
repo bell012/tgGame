@@ -8,7 +8,9 @@
     <header
       class="flex shrink-0 items-center gap-[12px] bg-bg-2"
       :class="
-        props.displayMode === 'pc' ? 'relative z-10 h-[58px] px-[12px]' : 'h-[49px] px-[14px]'
+        props.displayMode === 'pc'
+          ? 'relative z-10 h-[58px] px-[12px]'
+          : 'chat-search-header-h5 h-[49px] px-[14px]'
       "
     >
       <button
@@ -236,7 +238,6 @@ import type { ChatMessage, ConversationItem } from '../types'
 
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
-import { defineEmits, defineProps, withDefaults } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -298,3 +299,10 @@ onMounted(() => {
   nextTick(() => inputRef.value?.focus())
 })
 </script>
+
+<style scoped>
+:global(.android-app-shell) .chat-search-header-h5 {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
+}
+</style>
