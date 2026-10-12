@@ -7,7 +7,7 @@
     <!-- 未选择会话时的客服列表页面。 -->
     <template v-if="!activeConversation">
       <!-- 客服列表头部。 -->
-      <header class="flex h-[49px] shrink-0 items-center bg-bg-2 px-[10px]">
+      <header class="chat-public-h5-list-header flex shrink-0 items-center bg-bg-2 px-[10px]">
         <button
           type="button"
           class="flex size-[33px] items-center justify-center rounded-[8px] bg-opacity-6"
@@ -336,6 +336,13 @@ watch(
   () => scrollToBottom()
 )
 </script>
+
+<style scoped>
+.chat-public-h5-list-header {
+  height: calc(49px + var(--app-shell-top-safe-offset));
+  padding-top: var(--app-shell-top-safe-offset);
+}
+</style>
 
 <style scoped>
 :global(body:has(.chat-public-h5) .bottom-tab-bar) {
