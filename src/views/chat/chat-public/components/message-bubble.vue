@@ -133,7 +133,7 @@
 import messageReadStatusImage from '@/static/img/chat/public/message-read-status.png'
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
-import { computed, defineEmits, defineProps, withDefaults } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getChatTextHighlightParts } from '../shared'
 import type { ChatMessage } from '../types'

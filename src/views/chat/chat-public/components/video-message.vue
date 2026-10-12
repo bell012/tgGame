@@ -87,7 +87,7 @@ import messageReadStatusImage from '@/static/img/chat/public/message-read-status
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
 import VideoPlayPauseIcon from '@/static/svg/chat/public/video-play-pause.svg?component'
-import { defineEmits, defineProps, onBeforeUnmount, ref, withDefaults } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatMessage } from '../types'
 
