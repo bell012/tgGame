@@ -29,13 +29,21 @@ export type BalanceRefreshError = {
   message: string
 }
 
+export type RefreshBalanceOptions = {
+  /**
+   * 余额或钱包刚发生变更时使用。它会废弃进行中的旧查询，确保旧响应不会覆盖新状态。
+   * 页面初始加载或普通重复读取可省略；所有会改动余额/钱包的业务成功后必须传入 true。
+   */
+  force?: boolean
+}
+
 export const useUserStore = defineStore('user', () => {
   const userInfo = profileUserInfoState
   const acctInfo = ref<QueryAcctInfoResult | null>(null)
   const isRefreshingBalance = ref(false)
   const balanceRefreshError = ref<BalanceRefreshError | null>(null)
 
-  // 每次切换会话或刷新余额时递增。返回时版本不一致的请求不能写入当前账户状态。
+  // 每次切换会话或强制刷新时递增。返回时版本不一致的请求不能写入当前账户状态。
   let balanceRefreshVersion = 0
   let pendingBalanceRefresh: {
     version: number
@@ -172,14 +180,28 @@ export const useUserStore = defineStore('user', () => {
    *
    * `acctInfo` 是 TopNav 和 useDisplayCurrency 的响应式余额来源；成功写入后，
    * `currentBalanceText` 会自动重新计算，调用页面无需直接操作 TopNav。
-   * 每次调用都会发起最新查询，并让此前尚未完成的余额查询结果失效。
+   *
+   * 余额或钱包变更成功后传 `{ force: true }`，旧请求结果不会覆盖最新余额。
+   * 需要等余额更新后再继续、控制 loading、判断刷新是否成功时用 `await`；
+   * 只需后台同步时用 `void`。页面初始加载或普通重复读取省略参数即可。
    */
-  const refreshBalance = (): Promise<QueryAcctInfoResult | null> => {
-    // 业务操作（充值、提现、领奖、切钱包等）完成后必须以这次请求为准。
-    balanceRefreshVersion += 1
-    pendingBalanceRefresh = null
+  const refreshBalance = (
+    options: RefreshBalanceOptions = {}
+  ): Promise<QueryAcctInfoResult | null> => {
+    // 业务操作（充值、提现、领奖、切钱包等）完成后不能复用旧请求，
+    // 否则旧响应可能覆盖操作完成后的最新余额或币种。
+    if (options.force) {
+      balanceRefreshVersion += 1
+      pendingBalanceRefresh = null
+    }
+
     const requestVersion = balanceRefreshVersion
     const isCurrentRequest = () => requestVersion === balanceRefreshVersion
+
+    // 同一账户状态下的普通重复读取共用一个请求，避免多个页面同时刷新时产生重复流量。
+    if (pendingBalanceRefresh?.version === requestVersion) {
+      return pendingBalanceRefresh.promise
+    }
 
     isRefreshingBalance.value = true
     balanceRefreshError.value = null
@@ -251,7 +273,7 @@ export const useUserStore = defineStore('user', () => {
    * @deprecated 业务页面请使用 refreshBalance()，名称更能表达调用意图。
    * 保留该别名，避免旧模块或外部扩展在升级时中断。
    */
-  const refreshAcctInfo = () => refreshBalance()
+  const refreshAcctInfo = (options: RefreshBalanceOptions = {}) => refreshBalance(options)
 
   const refreshUserInfo = async (memberId: string) => {
     try {

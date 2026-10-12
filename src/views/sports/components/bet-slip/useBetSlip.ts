@@ -1038,6 +1038,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     } finally {
       submitting.value = false
       finishBalanceBatch?.({ refresh: sent })
+      // 整批投注结束后统一刷新主账户余额，多笔单关不逐笔请求。
+      if (sent) void userStore.refreshBalance({ force: true })
     }
   }
   const refreshBalance = async () => {

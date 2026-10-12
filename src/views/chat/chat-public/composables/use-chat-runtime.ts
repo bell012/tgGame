@@ -1117,6 +1117,7 @@ export function useChatRuntime() {
         throw new Error(response.message || i18n.global.t('chatPublic.redPacketClaimFailed'))
       }
 
+      void userStore.refreshBalance({ force: true })
       const timestamp = Date.now()
       const mine = buildMemberParticipant()
       const serviceName = activeConversation.value?.nickName || ''

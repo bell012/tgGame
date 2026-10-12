@@ -2,7 +2,7 @@ import { storeToRefs } from 'pinia'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
-import { useUserStore } from '@/stores/user'
+import { useUserStore, type RefreshBalanceOptions } from '@/stores/user'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useTradeMessageSyncStore } from '@/stores/tradeMessageSync'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -466,15 +466,16 @@ export const useWithdrawFlow = () => {
     }
   }
 
-  const refreshBalance = async () => {
-    if (isRefreshingBalance.value) {
+  const refreshBalance = async (options: RefreshBalanceOptions = {}) => {
+    // 手动刷新进行中时，提交成功或订单终态仍必须强制刷新，避免被这次 loading 跳过。
+    if (isRefreshingBalance.value && !options.force) {
       return
     }
 
     isRefreshingBalance.value = true
 
     try {
-      await userStore.refreshBalance()
+      await userStore.refreshBalance(options)
     } finally {
       window.setTimeout(() => {
         isRefreshingBalance.value = false
@@ -707,7 +708,7 @@ export const useWithdrawFlow = () => {
       !hasHandledActiveWithdrawTerminalStatus.value
     ) {
       hasHandledActiveWithdrawTerminalStatus.value = true
-      refreshBalance()
+      void refreshBalance({ force: true })
     }
   }
 
@@ -776,7 +777,7 @@ export const useWithdrawFlow = () => {
       void tradeMessageSyncStore.forceSyncTradeMessages().then(() => {
         applyWithdrawOrderFromTradeMessage(String(orderId))
       })
-      refreshBalance()
+      void refreshBalance({ force: true })
     } catch (error) {
       const messageKey = error instanceof Error ? error.message : 'withdraw.submit_failed'
 

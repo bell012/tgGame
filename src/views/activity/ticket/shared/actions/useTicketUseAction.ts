@@ -1,4 +1,5 @@
 import Api from '@/api'
+import { useUserStore } from '@/stores/user'
 import type { UseTicketResponse, UseTicketResult } from '@/api/interface/activity'
 import { normalizeApiResponseMessage, translateApiMessageByCode } from '@/utils/request'
 import { globalShowToast } from '@/utils/toast'
@@ -47,6 +48,7 @@ export interface RunUseTicketOptions {
  */
 export const useTicketUseAction = () => {
   const isPending = ref(false)
+  const userStore = useUserStore()
 
   const runUseTicket = async (options: RunUseTicketOptions) => {
     if (isPending.value) return
@@ -86,7 +88,12 @@ export const useTicketUseAction = () => {
         globalTicketToastState.lastConsumedTicketRecord = { ...activeRecord }
       }
 
-      await options.onSuccess(response.result!)
+      try {
+        await options.onSuccess(response.result!)
+      } finally {
+        // 票券接口已成功入账；动画回调失败时也要刷新余额。
+        void userStore.refreshBalance({ force: true })
+      }
     } catch {
       globalShowToast({
         message: options.fallbackErrorMessage,

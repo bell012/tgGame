@@ -75,6 +75,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
+import { useUserStore } from '@/stores/user'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
@@ -131,6 +132,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const userStore = useUserStore()
 const { currentCurrencyCode } = useDisplayCurrency()
 
 /** 与列表汇总、接口 languageCode 使用同一套币种规范化 */
@@ -465,6 +467,7 @@ const handleReceiveAllFeedback = async () => {
 
     claimSucceeded = true
     claimedAmount = extractClaimedFeedbackAmount(response.result) || feedbackClaimRewardAmount.value
+    void userStore.refreshBalance({ force: true })
 
     feedbackClaimRewardAmount.value = 0
     await refreshMyFeedbackList({ force: true })

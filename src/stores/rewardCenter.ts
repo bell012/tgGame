@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import Api from '@/api'
 import type { RewardCenterRecord } from '@/api/interface/reward-center'
+import { useUserStore } from '@/stores/user'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import {
   buildRewardCenterClaimAllQuery,
@@ -55,6 +56,7 @@ const appendClaimedRecords = (
 }
 
 export const useRewardCenterStore = defineStore('rewardCenter', () => {
+  const userStore = useUserStore()
   const pendingRecords = ref<RewardCenterRecord[]>([])
   const claimedRecords = ref<RewardCenterRecord[]>([])
   const pendingTotalAmount = ref(0)
@@ -252,6 +254,7 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
       const response = ensureApiBusinessSuccess(await claimPendingBonus(record))
 
       // 领取已成功：先本地移除；随后 silent 刷新会抬 generation，避免在途轮询写回已领项
+      void userStore.refreshBalance({ force: true })
       removePendingRecordById(itemId)
       await fetchPendingRewards({ silent: true })
       return parsePendingClaimRewardAmount(response, Number(record.rewardAmount ?? 0))
@@ -280,6 +283,7 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
       const claimedAmount = Number.isFinite(responseAmount) ? responseAmount : totalBeforeClaim
 
       // 一键领取已成功：先本地清空；silent 刷新抬 generation 防在途轮询写回
+      void userStore.refreshBalance({ force: true })
       clearPendingRecordsLocally()
       await fetchPendingRewards({ silent: true })
 

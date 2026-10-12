@@ -329,6 +329,7 @@ import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
 import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
+import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import { useLocaleStore } from '@/stores/locale'
 import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useThemeStore } from '@/stores/theme'
@@ -361,6 +362,7 @@ const themeStore = useThemeStore()
 const tradeMessageSyncStore = useTradeMessageSyncStore()
 const userStore = useUserStore()
 const vipStore = useVipStore()
+useUserBalancePolling()
 const { open: openOnlineCustomer } = useOnlineCustomerService()
 const { userInfo } = storeToRefs(userStore)
 const { currentCurrencyCode, currentBalanceText, currencyOptions, setDisplayCurrency } =

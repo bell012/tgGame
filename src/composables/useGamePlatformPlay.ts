@@ -1,5 +1,6 @@
 import Api from '@/api'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useUserStore } from '@/stores/user'
 import { resolveGameSelectionPath } from '@/composables/useGameSelectionReturn'
 import { savePlayedGameRowId } from '@/utils/played-games-cache'
 import { navigateTo } from '@/utils/router'
@@ -25,6 +26,7 @@ export type GameDetailForPlatformPlay = {
  */
 export function useGamePlatformPlay() {
   const { currentCurrencyCode } = useDisplayCurrency()
+  const userStore = useUserStore()
   const currentGameDetail = inject<ComputedRef<GameDetailForPlatformPlay>>(
     'game-detail-current-game',
     computed(() => null)
@@ -36,6 +38,7 @@ export function useGamePlatformPlay() {
       await Api.user.changeWallet({
         currency: currentCurrencyCode.value
       })
+      void userStore.refreshBalance({ force: true })
 
       const res = await Api.game.getloginPlatform({
         pgType: currentGameDetail.value?.pgType,

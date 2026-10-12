@@ -140,7 +140,7 @@ const chageCurrency = async (value: string) => {
   try {
     await Api.user.changeWallet({ currency: value })
     emit('select', value)
-    void userStore.refreshBalance()
+    void userStore.refreshBalance({ force: true })
   } catch (error) {
     console.error('changeWallet failed', error)
     return

@@ -369,6 +369,7 @@ import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import SelectModal from '@/components/SelectModal.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import bellDefaultImage from '@/static/img/bell.png'
 import bellUnreadImage from '@/static/img/bell_n.png'
 import ChatIcon from '@/static/svg/chat.svg?component'
@@ -408,6 +409,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const isMobile = useIsMobile()
+useUserBalancePolling()
 const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
 const { hasUnread } = storeToRefs(notificationIndicatorStore)
