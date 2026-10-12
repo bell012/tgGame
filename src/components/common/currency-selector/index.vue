@@ -140,8 +140,7 @@ const chageCurrency = async (value: string) => {
   try {
     await Api.user.changeWallet({ currency: value })
     emit('select', value)
-    // 切换钱包后必须发起新查询，不能复用切换前尚未完成的余额请求。
-    void userStore.refreshBalance({ force: true })
+    void userStore.refreshBalance()
   } catch (error) {
     console.error('changeWallet failed', error)
     return
