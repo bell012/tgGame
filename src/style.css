@@ -7,6 +7,11 @@
     --app-shell-top-safe-offset: 0px;
   }
 
+  html.android-app-shell,
+  body.android-app-shell {
+    --app-shell-top-safe-offset: 24px;
+  }
+
   * {
     margin: 0;
     padding: 0;
