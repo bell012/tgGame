@@ -19,7 +19,7 @@
 
     <div class="filter-slide-stage">
       <Transition :name="filterSlideName">
-        <div :key="page.selectedFilterKey.value" class="filter-slide-pane">
+        <div :key="matchSlideKey" class="filter-slide-pane">
           <div
             v-if="page.homepageError.value"
             class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
@@ -303,6 +303,7 @@ import leagueIcon from '@/static/svg/sports/liansai_tabs/icon1.svg?url'
 import emptyImage from '@/static/img/explore/default.png'
 import emptyImageLight from '@/static/img/explore/default_white.png'
 import SportsNavigation from '../sports-navigation/index.vue'
+import { sportItems } from '../sports-navigation/sport-items'
 import FilterSearch_H5 from '../filter_search/H5.vue'
 import MatchVersus from '../match-versus/index.vue'
 import MatchOdds from '../match-odds/index.vue'
@@ -335,6 +336,9 @@ const pageActive = ref(true)
 let pageDisposed = false
 const FILTER_TAB_ORDER = ['rolling', 'today', 'early', 'parlay'] as const
 const filterSlideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
+const matchSlideKey = computed(
+  () => `${props.page.selectedSportId.value}:${props.page.selectedFilterKey.value}`
+)
 const { vMatchVisibility } = useMatchVisibility({
   enabled: () => !props.page.betSlipOpen.value && stripLocalePrefix(route.path) === '/sports',
   topInset: () => navigationHeight.value,
@@ -495,14 +499,27 @@ watch(
   syncExpandedLeagues,
   { immediate: true, flush: 'post' }
 )
-// 点右侧分类时列表向左滑出，点左侧分类时向右滑出。
+const setSlideDirection = (nextIndex: number, previousIndex: number) => {
+  if (nextIndex < 0 || previousIndex < 0 || nextIndex === previousIndex) return
+  filterSlideName.value = nextIndex > previousIndex ? 'filter-slide-left' : 'filter-slide-right'
+}
+
+// 点右侧球种或分类时列表向左滑出，点左侧时向右滑出。
+watch(
+  () => props.page.selectedSportId.value,
+  (next, previous) => {
+    if (previous == null || next === previous) return
+    setSlideDirection(
+      sportItems.findIndex(item => item.sportId === next),
+      sportItems.findIndex(item => item.sportId === previous)
+    )
+  }
+)
 watch(
   () => props.page.selectedFilterKey.value,
   (next, previous) => {
     if (!previous || next === previous) return
-    const nextIndex = FILTER_TAB_ORDER.indexOf(next)
-    const previousIndex = FILTER_TAB_ORDER.indexOf(previous)
-    filterSlideName.value = nextIndex > previousIndex ? 'filter-slide-left' : 'filter-slide-right'
+    setSlideDirection(FILTER_TAB_ORDER.indexOf(next), FILTER_TAB_ORDER.indexOf(previous))
   }
 )
 
