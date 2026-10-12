@@ -592,7 +592,7 @@ import taskInfoImage from '@/static/img/task/task-info.png'
 import newSideIcons from '@/static/svg/side/newIcon'
 import { getCurrencySymbol } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
-import { computed, ref } from 'vue'
+import { computed, defineEmits, defineProps, ref, withDefaults } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type {
   TaskActionState,

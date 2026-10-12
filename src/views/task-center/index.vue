@@ -105,6 +105,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
+import { useUserStore } from '@/stores/user'
 import { getLanguageCode } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -135,6 +136,7 @@ import { executeTaskCenterGoToTask } from './taskCenterNavigation'
 
 const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
+const userStore = useUserStore()
 const { currentCurrencyCode } = useDisplayCurrency()
 const { t } = useI18n()
 const route = useRoute()
@@ -438,6 +440,8 @@ const claimSingleTask = async (task: TaskViewItem | TaskInfoPopupData) => {
       showTaskInfoPopup.value = false
       // 当前新人领取接口只返回奖金金额，未返回活动度时不展示活动度奖励行。
       showTaskClaimSuccessToast(response.result)
+      // 奖励入账后异步同步全局账户余额，TopNav 会基于 acctInfo 自动更新。
+      void userStore.refreshBalance({ force: true })
       await Promise.all([refreshEntrantTaskSchedules(), fetchMemberActiveValue()])
       return
     }
@@ -458,6 +462,8 @@ const claimSingleTask = async (task: TaskViewItem | TaskInfoPopupData) => {
     showTaskInfoPopup.value = false
     // 普通任务领取接口只返回实际奖金金额，不能使用任务配置 activeNumber 伪造活动度奖励。
     showTaskClaimSuccessToast(response.result)
+    // 奖励入账后异步同步全局账户余额，TopNav 会基于 acctInfo 自动更新。
+    void userStore.refreshBalance({ force: true })
     await Promise.all([refreshMemberTaskSchedules(), fetchMemberActiveValue()])
   } catch (error) {
     showTaskClaimError(getTaskClaimRequestErrorMessage(error))
@@ -511,6 +517,8 @@ const handleClaimAll = async () => {
     }
 
     showTaskClaimSuccessToast(response.result)
+    // 一键领取成功后异步同步全局账户余额，避免任务状态更新后顶部余额滞后。
+    void userStore.refreshBalance({ force: true })
     await Promise.all([
       refreshEntrantTaskSchedules(),
       refreshMemberTaskSchedules(),
