@@ -7,12 +7,12 @@ import type {
   OnlineChatCustomer
 } from '@/api/interface/chat'
 import type { UploadPictureResult } from '@/api/interface/picture'
+import i18n from '@/i18n'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { prepareUploadImage } from '@/utils/compress-upload-image'
 import { getDeviceTraceId } from '@/utils/deviceId'
 import { globalShowToast } from '@/utils/toast'
-import i18n from '@/i18n'
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import {
@@ -1117,11 +1117,11 @@ export function useChatRuntime() {
         throw new Error(response.message || i18n.global.t('chatPublic.redPacketClaimFailed'))
       }
 
-      void userStore.refreshBalance({ force: true })
       const timestamp = Date.now()
       const mine = buildMemberParticipant()
       const serviceName = activeConversation.value?.nickName || ''
 
+      await userStore.refreshBalance({ force: true })
       // 领取成功后追加会员侧已领取红包，原客服侧待领取记录不替换。
       upsertMessage({
         id: `red-pack-claimed:${message.id}:${timestamp}`,
