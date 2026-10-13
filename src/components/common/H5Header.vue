@@ -88,14 +88,3 @@ const handleSort = () => {
   emit('sort')
 }
 </script>
-
-<style scoped lang="scss">
-:global(.android-app-shell) .h5-header-spacer {
-  height: calc(49px + var(--app-shell-top-safe-offset));
-}
-
-:global(.android-app-shell) .h5-header-bar {
-  height: calc(49px + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
-}
-</style>

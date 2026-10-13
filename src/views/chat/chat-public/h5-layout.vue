@@ -343,11 +343,6 @@ watch(
 .chat-public-h5-with-tab {
   bottom: calc(60px + var(--app-shell-bottom-safe-offset));
 }
-
-:global(.android-app-shell) .chat-public-h5-list-header {
-  height: calc(49px + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
-}
 </style>
 
 <style scoped>

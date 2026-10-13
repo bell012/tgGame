@@ -1,5 +1,5 @@
 const ANDROID_APP_SHELL_CLASS = 'android-app-shell'
-const ANDROID_APP_SHELL_TOP_OFFSET = '60px'
+const ANDROID_APP_SHELL_TOP_OFFSET = '40px'
 const ANDROID_APP_SHELL_AUTH_TOP_OFFSET = '8px'
 const ANDROID_APP_SHELL_BOTTOM_OFFSET = '12px'
 const APP_SHELL_STORAGE_KEY = 'tg.androidAppShell'
@@ -17,33 +17,6 @@ type AppShellWindow = Window &
     Android?: unknown
     ReactNativeWebView?: unknown
   }
-
-export interface AndroidAppShellDebugInfo {
-  href: string
-  search: string
-  hash: string
-  userAgent: string
-  searchCandidates: string[]
-  appShellAndroidQueryMatched: boolean
-  disabledByQuery: boolean
-  queryMatched: boolean
-  androidUserAgentMatched: boolean
-  androidWebViewUaMatched: boolean
-  customUaMatched: boolean
-  nativeSignalMatched: boolean
-  sessionStoredMatched: boolean
-  persistentStoredMatched: boolean
-  shellMatched: boolean
-  htmlClassMatched: boolean
-  bodyClassMatched: boolean
-  appClassMatched: boolean
-  htmlSafeOffset: string
-  bodySafeOffset: string
-  appSafeOffset: string
-  htmlBottomSafeOffset: string
-  bodyBottomSafeOffset: string
-  appBottomSafeOffset: string
-}
 
 function isAndroidUserAgent(userAgent: string) {
   return /Android/i.test(userAgent)
@@ -100,13 +73,6 @@ function hasQueryValue(search: string, values: Set<string>) {
   return APP_SHELL_QUERY_KEYS.some(key => {
     const value = params.get(key)
     return value !== null && values.has(value.trim().toLowerCase())
-  })
-}
-
-function hasExactAppShellAndroidQuery(win: AppShellWindow) {
-  return getSearchCandidates(win).some(search => {
-    const params = new URLSearchParams(search)
-    return params.get('app_shell')?.trim().toLowerCase() === 'android'
   })
 }
 
@@ -234,7 +200,6 @@ function resolveAppShellMatchState() {
   const nativeSignalMatched = hasNativeAppShellSignal(appWindow)
   const customUaMatched =
     isAndroidUserAgent(userAgent) && APP_SHELL_USER_AGENT_PATTERN.test(userAgent)
-  const androidUserAgentMatched = isAndroidUserAgent(userAgent)
   const androidWebViewUaMatched = isAndroidWebViewUserAgent(userAgent)
   const sessionStoredMatched = hasSessionAppShellFlag()
   const persistentStoredMatched = hasPersistentAppShellFlag()
@@ -257,51 +222,11 @@ function resolveAppShellMatchState() {
     queryMatched,
     nativeSignalMatched,
     customUaMatched,
-    androidUserAgentMatched,
     androidWebViewUaMatched,
     sessionStoredMatched,
     persistentStoredMatched,
     storedMatched,
     shellMatched
-  }
-}
-
-export function getAndroidAppShellDebugInfo(): AndroidAppShellDebugInfo | null {
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-    return null
-  }
-
-  const state = resolveAppShellMatchState()
-  const app = document.getElementById('app')
-
-  return {
-    href: window.location.href,
-    search: window.location.search,
-    hash: window.location.hash,
-    userAgent: state.userAgent,
-    searchCandidates: getSearchCandidates(state.appWindow),
-    appShellAndroidQueryMatched: hasExactAppShellAndroidQuery(state.appWindow),
-    disabledByQuery: state.disabledByQuery,
-    queryMatched: state.queryMatched,
-    androidUserAgentMatched: state.androidUserAgentMatched,
-    androidWebViewUaMatched: state.androidWebViewUaMatched,
-    customUaMatched: state.customUaMatched,
-    nativeSignalMatched: state.nativeSignalMatched,
-    sessionStoredMatched: state.sessionStoredMatched,
-    persistentStoredMatched: state.persistentStoredMatched,
-    shellMatched: state.shellMatched,
-    htmlClassMatched: document.documentElement.classList.contains(ANDROID_APP_SHELL_CLASS),
-    bodyClassMatched: document.body?.classList.contains(ANDROID_APP_SHELL_CLASS) ?? false,
-    appClassMatched: app?.classList.contains(ANDROID_APP_SHELL_CLASS) ?? false,
-    htmlSafeOffset: document.documentElement.style.getPropertyValue('--app-shell-top-safe-offset'),
-    bodySafeOffset: document.body?.style.getPropertyValue('--app-shell-top-safe-offset') ?? '',
-    appSafeOffset: app?.style.getPropertyValue('--app-shell-top-safe-offset') ?? '',
-    htmlBottomSafeOffset: document.documentElement.style.getPropertyValue(
-      '--app-shell-bottom-safe-offset'
-    ),
-    bodyBottomSafeOffset:
-      document.body?.style.getPropertyValue('--app-shell-bottom-safe-offset') ?? '',
-    appBottomSafeOffset: app?.style.getPropertyValue('--app-shell-bottom-safe-offset') ?? ''
   }
 }
 

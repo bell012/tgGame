@@ -122,10 +122,3 @@ const statusText = computed(() =>
   )
 )
 </script>
-
-<style scoped>
-:global(.android-app-shell) .chat-header-h5 {
-  height: calc(49px + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
-}
-</style>

@@ -896,18 +896,11 @@ defineExpose({
   z-index: 50;
   overflow: visible;
 }
-:global(.android-app-shell) .top-nav {
-  height: calc(v-bind('layoutStore.TOPNAV_HEIGHT + "px"') + var(--app-shell-top-safe-offset));
-}
 .top-nav-inner {
   --top-nav-scale: 1;
   height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
   transform: scale(var(--top-nav-scale));
   transform-origin: left center;
-}
-:global(.android-app-shell) .top-nav-inner {
-  transform: translateY(var(--app-shell-top-safe-offset)) scale(var(--top-nav-scale));
-  transform-origin: left top;
 }
 .search {
   background-color: var(--color-background-level-3);

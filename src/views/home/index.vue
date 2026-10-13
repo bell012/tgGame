@@ -2,76 +2,6 @@
   <div class="home mx-auto max-w-[1248px] py-2 sm:py-4">
     <div style="height: 55px" class="mb-2.5 sm:hidden"></div>
 
-    <div class="mb-2.5 px-3.5">
-      <section
-        class="rounded-lg border border-yellow-400/60 bg-yellow-50 p-3 text-xs leading-5 text-slate-950 shadow-sm"
-      >
-        <div class="mb-2 flex items-center justify-between gap-3">
-          <h2 class="text-sm font-bold">Android 壳包诊断</h2>
-          <button
-            type="button"
-            class="rounded bg-slate-900 px-2 py-1 text-[11px] font-semibold text-white"
-            @click="refreshAndroidShellDebugInfo"
-          >
-            刷新
-          </button>
-        </div>
-        <div class="grid gap-1 sm:grid-cols-3">
-          <div class="rounded bg-white/75 p-2">
-            <div class="font-semibold">1. URL 标识 app_shell=android</div>
-            <div
-              :class="
-                androidShellDebugInfo?.appShellAndroidQueryMatched
-                  ? 'text-green-700'
-                  : 'text-red-700'
-              "
-            >
-              {{ formatDebugBoolean(androidShellDebugInfo?.appShellAndroidQueryMatched) }}
-            </div>
-            <div class="break-all text-[11px] text-slate-600">
-              search: {{ androidShellDebugInfo?.search || '(空)' }}
-            </div>
-          </div>
-          <div class="rounded bg-white/75 p-2">
-            <div class="font-semibold">2. Android WebView UA</div>
-            <div
-              :class="
-                androidShellDebugInfo?.androidWebViewUaMatched ? 'text-green-700' : 'text-red-700'
-              "
-            >
-              {{ formatDebugBoolean(androidShellDebugInfo?.androidWebViewUaMatched) }}
-            </div>
-            <div class="break-all text-[11px] text-slate-600">
-              UA: {{ androidShellDebugInfo?.userAgent || '(空)' }}
-            </div>
-          </div>
-          <div class="rounded bg-white/75 p-2">
-            <div class="font-semibold">3. android-app-shell 样式类</div>
-            <div :class="isAndroidShellClassApplied ? 'text-green-700' : 'text-red-700'">
-              {{ formatDebugBoolean(isAndroidShellClassApplied) }}
-            </div>
-            <div class="text-[11px] text-slate-600">
-              html: {{ formatDebugBoolean(androidShellDebugInfo?.htmlClassMatched) }} / body:
-              {{ formatDebugBoolean(androidShellDebugInfo?.bodyClassMatched) }} / #app:
-              {{ formatDebugBoolean(androidShellDebugInfo?.appClassMatched) }}
-            </div>
-          </div>
-        </div>
-        <div class="mt-2 break-all text-[11px] text-slate-700">
-          壳包总匹配: {{ formatDebugBoolean(androidShellDebugInfo?.shellMatched) }}； 通用 query
-          匹配: {{ formatDebugBoolean(androidShellDebugInfo?.queryMatched) }}； 候选 search:
-          {{ androidShellDebugInfo?.searchCandidates.join(' | ') || '(空)' }}； offset: html={{
-            androidShellDebugInfo?.htmlSafeOffset || '(空)'
-          }}, body={{ androidShellDebugInfo?.bodySafeOffset || '(空)' }}, #app={{
-            androidShellDebugInfo?.appSafeOffset || '(空)'
-          }}； bottom offset: html={{ androidShellDebugInfo?.htmlBottomSafeOffset || '(空)' }},
-          body={{ androidShellDebugInfo?.bodyBottomSafeOffset || '(空)' }}, #app={{
-            androidShellDebugInfo?.appBottomSafeOffset || '(空)'
-          }}
-        </div>
-      </section>
-    </div>
-
     <HomeCarouselImg
       v-if="isSlideshowLoading || querySlideshowList.length"
       :list="querySlideshowList"
@@ -379,17 +309,8 @@ import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
-import { getAndroidAppShellDebugInfo, type AndroidAppShellDebugInfo } from '@/utils/app-shell'
 import { storeToRefs } from 'pinia'
-import {
-  computed,
-  defineAsyncComponent,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch
-} from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import LazySection from './components/LazySection.vue'
@@ -458,53 +379,6 @@ const rawGameData = ref<GameDataItem[]>([])
 const querySlideshowList = ref<QuerySlideshowItem[]>([])
 const isGameDataLoading = ref(false)
 const isSlideshowLoading = ref(false)
-const androidShellDebugInfo = ref<AndroidAppShellDebugInfo | null>(null)
-const androidShellDebugTimers: number[] = []
-
-const isAndroidShellClassApplied = computed(() => {
-  const info = androidShellDebugInfo.value
-  return Boolean(info?.htmlClassMatched && info.bodyClassMatched && info.appClassMatched)
-})
-
-const formatDebugBoolean = (value: boolean | null | undefined) => {
-  if (value === true) {
-    return '是'
-  }
-
-  if (value === false) {
-    return '否'
-  }
-
-  return '未知'
-}
-
-const refreshAndroidShellDebugInfo = () => {
-  androidShellDebugInfo.value = getAndroidAppShellDebugInfo()
-}
-
-const scheduleAndroidShellDebugRefreshes = () => {
-  refreshAndroidShellDebugInfo()
-
-  void nextTick(() => {
-    refreshAndroidShellDebugInfo()
-  })
-
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  window.requestAnimationFrame(() => {
-    refreshAndroidShellDebugInfo()
-  })
-
-  ;[100, 500, 1500].forEach(delay => {
-    androidShellDebugTimers.push(
-      window.setTimeout(() => {
-        refreshAndroidShellDebugInfo()
-      }, delay)
-    )
-  })
-}
 
 const closeH5HomePop = () => {
   showH5HomePop.value = false
@@ -657,14 +531,8 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
-  scheduleAndroidShellDebugRefreshes()
   void maybeAutoOpenTicketActivity()
   await Promise.allSettled([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
-})
-
-onBeforeUnmount(() => {
-  androidShellDebugTimers.forEach(timer => window.clearTimeout(timer))
-  androidShellDebugTimers.length = 0
 })
 
 watch(

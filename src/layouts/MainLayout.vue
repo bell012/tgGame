@@ -613,10 +613,4 @@ watch(
   opacity: 0;
   transform: translateX(24px);
 }
-
-@media (max-width: 639px) {
-  :global(.android-app-shell) .main-layout-content {
-    padding-top: var(--app-shell-top-safe-offset);
-  }
-}
 </style>
