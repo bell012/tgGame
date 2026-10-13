@@ -869,6 +869,11 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
           const parsedPayload = JSON.parse(decodedPayload)
           handleTradePushPayload(parsedPayload)
           console.log(parsedPayload)
+          if (parsedPayload.status === 1) {
+            // 同步全局账户余额
+            // TODO:  后续待类型确定后，只针对成功的消息进行请求 refreshBalance
+            void userStore.refreshBalance()
+          }
         } catch (error) {
           if (shouldPrintMqttDebugLog) {
             console.warn('[MQTT][MESSAGE][NON_JSON_OR_ERROR]', { topic, packet })
@@ -876,8 +881,6 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
           console.error(error)
         }
       })
-      // 同步全局账户余额
-      void userStore.refreshBalance()
     })
       .catch(error => {
         console.error(error)
