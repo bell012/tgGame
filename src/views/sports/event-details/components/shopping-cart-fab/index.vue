@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="fixed z-30 h-[54px] w-[54px] shrink-0 border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary"
+    class="fixed z-30 h-[50px] w-[50px] shrink-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary rounded-[24.667px] border border-[rgba(253,161,40,0.2)] bg-[linear-gradient(180deg,rgba(253,161,40,0.2)_0%,rgba(253,161,40,0)_100%),linear-gradient(180deg,rgba(60,60,60,0.9)_0%,rgba(39,39,39,0.9)_66.35%,rgba(43,43,43,0.9)_100%)] backdrop-blur-[1px]"
     :style="fabStyle"
     :aria-label="ariaLabel"
     data-testid="event-details-shopping-cart-fab"
