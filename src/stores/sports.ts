@@ -32,6 +32,7 @@ import { useSportsAuthStore } from '@/stores/sportsAuth'
 import { useSportsBalanceStore } from '@/stores/sportsBalance'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { isApiBusinessSuccess } from '@/utils/apiBusiness'
+import { decimalOdds } from '@/views/sports/components/bet-slip/bet-info'
 import i18n from '@/i18n'
 import { globalShowToast } from '@/utils/toast'
 
@@ -83,12 +84,7 @@ type SportsRequestError = {
 }
 
 type SportsFavouriteResult =
-  | 'success'
-  | 'synced'
-  | 'failed'
-  | 'login-failed'
-  | 'auth-expired'
-  | 'stale'
+  'success' | 'synced' | 'failed' | 'login-failed' | 'auth-expired' | 'stale'
 
 type SportsRequestState<Params, Response> = {
   params: Params | null
@@ -160,7 +156,7 @@ const mergeGroupBatches = async (
   let batch: SportCompetitionGroup[] = []
   let count = 0
   for (const group of groups) {
-    for (let offset = 0; offset < Math.max(1, group.Sports.length); ) {
+    for (let offset = 0; offset < Math.max(1, group.Sports.length);) {
       if (!isCurrent()) return false
       const sports = group.Sports.slice(offset, offset + size - count)
       batch.push({ ...group, Sports: sports })
@@ -465,9 +461,7 @@ export const useSportsStore = defineStore('sports', () => {
   ): Promise<GetSportsV2Response> => {
     const context = sportsAuth.contextVersion
     const revision = favouriteRevision
-    const credentials = sportsAuth.isReady
-      ? await sportsAuth.ensureCredentials({ fetchIfMissing: false })
-      : null
+    const credentials = sportsAuth.peekCredentials()
     if (options?.signal?.aborted || context !== sportsAuth.contextVersion)
       throw new Error('Stale sports request')
     const current = credentials && sportsAuth.isCredentialsCurrent(credentials) ? credentials : null
@@ -884,6 +878,23 @@ export const useSportsStore = defineStore('sports', () => {
   })
   let betInfoGeneration = 0
   let betInfoController: AbortController | undefined
+  // 所有报价入口共用 3 秒发送间隔；取消查询、关闭投注单不会重置冷却时间。
+  let lastBetInfoSentAt = 0
+  const waitForBetInfoSlot = async (signal: AbortSignal) => {
+    while (!signal.aborted) {
+      const remaining = lastBetInfoSentAt + 3000 - Date.now()
+      if (remaining <= 0) return
+      await new Promise<void>(resolve => {
+        const finish = () => {
+          clearTimeout(timer)
+          signal.removeEventListener('abort', finish)
+          resolve()
+        }
+        const timer = setTimeout(finish, remaining)
+        signal.addEventListener('abort', finish, { once: true })
+      })
+    }
+  }
   const cancelBetInfo = () => {
     betInfoGeneration += 1
     betInfoController?.abort()
@@ -927,50 +938,24 @@ export const useSportsStore = defineStore('sports', () => {
           betInfoState.error = { kind: 'business', code: 439, message: 'Parlay unavailable' }
           return null
         }
-        // 串关取欧洲盘，不转换首页赔率，也不改原选项。
-        const sportIds = [
-          ...new Set(selections.filter(item => item.OddsType !== 3).map(item => item.SportId))
-        ]
-        for (const sportId of sportIds) {
-          const items = selections.filter(item => item.SportId === sportId && item.OddsType !== 3)
-          const eventIds = [...new Set(items.map(item => item.EventId))]
-          for (let offset = 0; offset < eventIds.length; offset += SELECTED_EVENT_BATCH_SIZE) {
-            if (!isCurrent()) return null
-            const batch = eventIds.slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
-            const response = await sportsApi.getSelectedEventInfo(
-              getBaseUrl(),
-              {
-                SportId: sportId,
-                EventIds: batch,
-                OddsType: 3,
-                IsCombo: true,
-                IncludeGroupEvents: false,
-                LanguageCode: getLanguage()
-              },
-              { signal: controller.signal }
-            )
-            if (!isCurrent()) return null
-            if (!isSportsSuccess(response) || !Array.isArray(response.e))
-              throw new Error('European odds unavailable')
-            for (const item of items.filter(item => batch.includes(item.EventId))) {
-              const event = response.e.find(event => event.EventId === item.EventId)
-              const line = event?.MarketLines?.find(line => line.MarketlineId === item.MarketlineId)
-              const option = line?.WagerSelections.find(
-                option => option.WagerSelectionId === item.WagerSelectionId
-              )
-              if (!option || option.OddsType !== 3 || !Number.isFinite(option.Odds))
-                throw new Error('European odds unavailable')
-              item.OddsType = 3
-              item.Odds = option.Odds
-            }
-          }
+        // 只换算查询赔率，保留用户选择的 ID、盘口值和源数据。
+        // 滚球补查可能已换线；是否可投及最新报价统一由 GetBetInfo 判断。
+        for (const item of selections) {
+          if (item.OddsType === 3) continue
+          const odds = decimalOdds(item.Odds, item.OddsType)
+          if (odds === null || !Number.isFinite(odds) || odds <= 1)
+            throw new Error('Invalid parlay odds')
+          item.OddsType = 3
+          item.Odds = odds
         }
       }
+      await waitForBetInfoSlot(controller.signal)
       if (!isCurrent()) return null
       if (!sportsAuth.isCredentialsCurrent(credentials))
         throw new SportsCredentialsUnavailableError('Sports credentials changed')
       // 查询状态不保存 Token / MemberCode；只在发送时补齐。
       betInfoState.params = { ...query, WagerSelectionInfos: selections }
+      lastBetInfoSentAt = Date.now()
       const response = await sportsApi.getBetInfo(
         getBaseUrl(),
         {

@@ -19,6 +19,31 @@ export const parseBetInfoItems = (
       item => item.WagerSelectionId === quote.wsid || item.RefId === quote.rid
     )
     if (!input) {
+      // 串关失效项可能返回空 rid、零盘口/选项 ID；仅将明确关盘结果关联到唯一原选项。
+      // 不按响应顺序匹配，也不把缺少身份信息的可投报价用于下单。
+      if (quote.st === 380 && quote.mlsid === 2 && quote.wsid === 0 && quote.mlid === 0) {
+        const candidates = selections.filter(
+          item =>
+            item.EventId === quote.eid &&
+            item.SportId === quote.sid &&
+            item.BetTypeId === quote.btid &&
+            item.BetTypeSelectionId === quote.btsid
+        )
+        if (candidates.length === 1) {
+          const original = candidates[0]
+          // 关盘响应的盘口值可能为 0；展示仍保留原选项，不把占位值当成换线。
+          quotes.set(original.RefId, {
+            ...quote,
+            rid: original.RefId,
+            h: original.Handicap,
+            dih: null,
+            o: original.Odds,
+            ot: original.OddsType,
+            sp: original.Specifiers
+          })
+          continue
+        }
+      }
       const original = selections.find(
         item =>
           item.EventId === quote.eid &&
@@ -37,7 +62,7 @@ export const parseBetInfoItems = (
   return { quotes: [...quotes.values()], replacedIds: [...replacedIds] }
 }
 
-// 用于赔率显示和比较赔率改善，不用于计算派彩；派彩读取接口 epa。
+/** 将同一投注选项的赔率换算为欧洲盘；无效或未知盘型返回 null，不计算派彩。 */
 export const decimalOdds = (odds: number, type: number): number | null => {
   if (!Number.isFinite(odds)) return null
   if (type === 3) return odds > 1 ? odds : null

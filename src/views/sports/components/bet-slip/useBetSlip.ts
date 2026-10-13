@@ -161,6 +161,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     open: betSlipOpen,
     mode,
     parlayEligible,
+    interactionKey: computed(() => outcomes.value.map(outcome => outcome.id).join(',')),
     selectionKey: computed(() =>
       outcomes.value
         .filter(outcome => !selectionBlocked(outcome.id))
@@ -544,13 +545,15 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         item.comboSelection !== undefined && hasValidStake(item.stake)
     )
   )
-  const canPrepareBet = computed(() =>
-    mode.value === 'single'
-      ? submittableSingles.value.length > 0
-      : outcomes.value.length >= 2 &&
-        parlayEligible.value &&
-        outcomes.value.every(canUseSelection) &&
-        submittableCombos.value.length > 0
+  const canPrepareBet = computed(
+    () =>
+      !invalidStake.value &&
+      (mode.value === 'single'
+        ? submittableSingles.value.length > 0
+        : outcomes.value.length >= 2 &&
+          parlayEligible.value &&
+          outcomes.value.every(canUseSelection) &&
+          submittableCombos.value.length > 0)
   )
   const canSubmit = computed(() => !submitting.value && canPrepareBet.value)
   const currencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
