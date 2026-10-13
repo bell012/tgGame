@@ -1,5 +1,7 @@
 const ANDROID_APP_SHELL_CLASS = 'android-app-shell'
-const ANDROID_APP_SHELL_OFFSET = '24px'
+const ANDROID_APP_SHELL_TOP_OFFSET = '40px'
+const ANDROID_APP_SHELL_AUTH_TOP_OFFSET = '8px'
+const ANDROID_APP_SHELL_BOTTOM_OFFSET = '12px'
 const APP_SHELL_STORAGE_KEY = 'tg.androidAppShell'
 const APP_SHELL_SESSION_KEY = 'tg.androidAppShell.session'
 const APP_SHELL_COOKIE_KEY = 'tg_android_app_shell'
@@ -167,7 +169,9 @@ function getAppShellSafeAreaTargets() {
 function applyAppShellSafeArea() {
   getAppShellSafeAreaTargets().forEach(target => {
     target.classList.add(ANDROID_APP_SHELL_CLASS)
-    target.style.setProperty('--app-shell-top-safe-offset', ANDROID_APP_SHELL_OFFSET)
+    target.style.setProperty('--app-shell-top-safe-offset', ANDROID_APP_SHELL_TOP_OFFSET)
+    target.style.setProperty('--app-shell-auth-top-safe-offset', ANDROID_APP_SHELL_AUTH_TOP_OFFSET)
+    target.style.setProperty('--app-shell-bottom-safe-offset', ANDROID_APP_SHELL_BOTTOM_OFFSET)
   })
 }
 
@@ -175,6 +179,8 @@ function removeAppShellSafeArea() {
   getAppShellSafeAreaTargets().forEach(target => {
     target.classList.remove(ANDROID_APP_SHELL_CLASS)
     target.style.removeProperty('--app-shell-top-safe-offset')
+    target.style.removeProperty('--app-shell-auth-top-safe-offset')
+    target.style.removeProperty('--app-shell-bottom-safe-offset')
   })
 }
 
@@ -186,19 +192,15 @@ function scheduleAppShellSafeAreaReapply() {
   window.setTimeout(applyAppShellSafeArea, 0)
 }
 
-export function initAndroidAppShellSafeArea() {
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-    return
-  }
-
+function resolveAppShellMatchState() {
   const appWindow = window as AppShellWindow
+  const userAgent = navigator.userAgent
   const disabledByQuery = hasAppShellQueryValue(appWindow, APP_SHELL_QUERY_DISABLED_VALUES)
   const queryMatched = hasAppShellQueryValue(appWindow, APP_SHELL_QUERY_VALUES)
   const nativeSignalMatched = hasNativeAppShellSignal(appWindow)
   const customUaMatched =
-    isAndroidUserAgent(navigator.userAgent) &&
-    APP_SHELL_USER_AGENT_PATTERN.test(navigator.userAgent)
-  const androidWebViewUaMatched = isAndroidWebViewUserAgent(navigator.userAgent)
+    isAndroidUserAgent(userAgent) && APP_SHELL_USER_AGENT_PATTERN.test(userAgent)
+  const androidWebViewUaMatched = isAndroidWebViewUserAgent(userAgent)
   const sessionStoredMatched = hasSessionAppShellFlag()
   const persistentStoredMatched = hasPersistentAppShellFlag()
   const storedMatched = sessionStoredMatched || persistentStoredMatched
@@ -213,14 +215,36 @@ export function initAndroidAppShellSafeArea() {
       customUaMatched ||
       androidWebViewUaMatched)
 
-  if (disabledByQuery) {
+  return {
+    appWindow,
+    userAgent,
+    disabledByQuery,
+    queryMatched,
+    nativeSignalMatched,
+    customUaMatched,
+    androidWebViewUaMatched,
+    sessionStoredMatched,
+    persistentStoredMatched,
+    storedMatched,
+    shellMatched
+  }
+}
+
+export function initAndroidAppShellSafeArea() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return
+  }
+
+  const state = resolveAppShellMatchState()
+
+  if (state.disabledByQuery) {
     clearAppShellFlag()
     removeAppShellSafeArea()
     return
   }
 
-  if (!shellMatched) {
-    if (storedMatched) {
+  if (!state.shellMatched) {
+    if (state.storedMatched) {
       clearAppShellFlag()
       removeAppShellSafeArea()
     }
@@ -233,7 +257,7 @@ export function initAndroidAppShellSafeArea() {
   scheduleAppShellSafeAreaReapply()
 
   window.setTimeout(() => {
-    if (hasNativeAppShellSignal(appWindow)) {
+    if (hasNativeAppShellSignal(state.appWindow)) {
       persistAppShellFlag()
       applyAppShellSafeArea()
     }

@@ -104,7 +104,10 @@ const isActive = (path: string, exact = false) => {
   bottom: -2px;
   left: 0;
   right: 0;
-  height: v-bind('layoutStore.BOTTOM_TAB_HEIGHT + "px"');
+  height: calc(
+    v-bind('layoutStore.BOTTOM_TAB_HEIGHT + "px"') + var(--app-shell-bottom-safe-offset)
+  );
+  padding-bottom: var(--app-shell-bottom-safe-offset);
   border-radius: 12px 12px 0 0;
   background: var(--color-background-level-2);
   z-index: 50;

@@ -1,6 +1,6 @@
 ﻿<template>
   <div
-    class="sidebar-menu px-3.5 pb-3.5 sm:px-0"
+    class="sidebar-menu px-3.5 pb-[70px] sm:pb-3.5 sm:px-0"
     :class="{ 'sidebar-menu-pc-expanded': !isCollapsed }"
     :style="mobileMenuStyle"
   >

@@ -780,9 +780,4 @@ onMounted(() => {
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
 }
-
-:global(.android-app-shell) .personal-center-mobile-header {
-  height: calc(49px + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
-}
 </style>

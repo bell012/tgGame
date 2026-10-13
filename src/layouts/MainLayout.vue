@@ -477,7 +477,7 @@ const mainStyle = computed(() => {
 
   if (isMobile.value) {
     return {
-      marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
+      marginBottom: `calc(${layoutStore.BOTTOM_TAB_HEIGHT}px + var(--app-shell-bottom-safe-offset))`
     }
   }
 
@@ -612,11 +612,5 @@ watch(
 .notification-panel-leave-to {
   opacity: 0;
   transform: translateX(24px);
-}
-
-@media (max-width: 639px) {
-  :global(.android-app-shell) .main-layout-content {
-    padding-top: var(--app-shell-top-safe-offset);
-  }
 }
 </style>

@@ -299,10 +299,3 @@ onMounted(() => {
   nextTick(() => inputRef.value?.focus())
 })
 </script>
-
-<style scoped>
-:global(.android-app-shell) .chat-search-header-h5 {
-  height: calc(49px + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
-}
-</style>

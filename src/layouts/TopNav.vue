@@ -896,9 +896,11 @@ defineExpose({
   z-index: 50;
   overflow: visible;
 }
-:global(.android-app-shell) .top-nav {
-  height: calc(v-bind('layoutStore.TOPNAV_HEIGHT + "px"') + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
+.top-nav-inner {
+  --top-nav-scale: 1;
+  height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
+  transform: scale(var(--top-nav-scale));
+  transform-origin: left center;
 }
 .search {
   background-color: var(--color-background-level-3);
@@ -982,15 +984,13 @@ defineExpose({
 @media (max-width: 390px) {
   .top-nav-inner {
     width: 111%;
-    transform: scale(0.9);
-    transform-origin: left center;
+    --top-nav-scale: 0.9;
   }
 }
 @media (max-width: 360px) {
   .top-nav-inner {
     width: 117%;
-    transform: scale(0.85);
-    transform-origin: left center;
+    --top-nav-scale: 0.85;
   }
   .mobileLogo {
     margin-left: 2px;

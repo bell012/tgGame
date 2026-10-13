@@ -76,7 +76,7 @@
     </div>
 
     <!-- H5 底部安全区域留白。 -->
-    <div v-if="props.displayMode === 'h5'" class="h-[33px] bg-bg-2" />
+    <div v-if="props.displayMode === 'h5'" class="chat-composer-bottom-safe bg-bg-2" />
   </div>
 </template>
 
@@ -157,3 +157,9 @@ watch(
   }
 )
 </script>
+
+<style scoped>
+.chat-composer-bottom-safe {
+  height: calc(33px + var(--app-shell-bottom-safe-offset));
+}
+</style>
