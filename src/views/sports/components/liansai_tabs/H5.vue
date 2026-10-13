@@ -26,9 +26,9 @@
       </button>
 
       <label
-        class="flex h-[30px] max-w-[110px] flex-1 items-center rounded-lg bg-bg-2 px-[6px] transition-colors"
+        class="flex h-[30px] max-w-[100px] flex-1 items-center gap-[5px] rounded-lg bg-bg-2 px-[6.667px] transition-colors"
       >
-        <SearchIcon class="h-[18px] w-[18px] text-icon-3" />
+        <SearchIcon class="h-[18px] w-[18px] shrink-0 text-icon-3" />
         <input
           v-model="searchKeyword"
           class="min-w-0 flex-1 border-0 bg-transparent text-[11px] font-[400] text-text-1 outline-none placeholder:text-text-3"
@@ -43,7 +43,7 @@
         v-for="item in filterTabs"
         :key="item.key"
         type="button"
-        class="inline-flex h-full flex-none items-center justify-center rounded-[8px] border-0 px-[10px] text-[10px] transition-colors"
+        class="inline-flex h-[26px] flex-none items-center justify-center rounded-[7px] border-0 px-[10px] text-[10px] transition-colors"
         :class="getFilterButtonClass(item.key)"
         @click="onFilterTabClick(item.key)"
       >
@@ -227,7 +227,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Loading } from 'vant'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
-import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
+import SearchIcon from '@/static/svg/sports/h5-search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import Filter from '@/static/svg/sports/liansai_tabs/filter.svg?component'
 import CloseIcon from '@/static/svg/sports/liansai_tabs/close.svg?component'

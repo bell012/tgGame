@@ -1,7 +1,7 @@
 <template>
   <div
     class="sports-navigation w-full"
-    :class="isMobile ? 'min-h-full bg-bg-1 pl-[14px]' : 'px-[24px] pt-4'"
+    :class="isMobile ? 'min-h-full bg-bg-1' : 'px-[24px] pt-4'"
     :style="pageStyle"
   >
     <SportsNavigationH5

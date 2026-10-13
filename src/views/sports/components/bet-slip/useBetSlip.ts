@@ -39,7 +39,7 @@ type SelectedOutcome = {
 type BetSlipOptions = {
   getMatch: (id: string) => SportsMatch | undefined
   getTeamLogoUrl: (id: number) => string
-  resultPresentation?: () => 'panel' | 'toast'
+  resultPresentation?: () => 'panel' | 'toast' | undefined
 }
 
 export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: BetSlipOptions) => {

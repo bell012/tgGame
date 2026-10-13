@@ -125,14 +125,9 @@
                 data-testid="sports-h5-toggle-all-leagues"
                 @click="toggleAllGroups"
               >
-                <ChevronIcon
-                  class="h-2.5 w-2.5"
-                  :class="allGroupsCollapsed ? '' : 'rotate-180'"
-                  aria-hidden="true"
-                />
-                <ChevronIcon
-                  class="-mt-1 h-2.5 w-2.5"
-                  :class="allGroupsCollapsed ? '' : 'rotate-180'"
+                <CollapseAllIcon
+                  class="h-3 w-3 text-icon-3"
+                  :class="allGroupsCollapsed ? 'rotate-180' : ''"
                   aria-hidden="true"
                 />
               </button>
@@ -281,6 +276,7 @@
 </template>
 
 <script setup lang="ts">
+import CollapseAllIcon from '@/static/svg/sports/h5-collapse-all.svg?component'
 import {
   computed,
   nextTick,
