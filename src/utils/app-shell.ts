@@ -1,5 +1,6 @@
 const ANDROID_APP_SHELL_CLASS = 'android-app-shell'
-const ANDROID_APP_SHELL_TOP_OFFSET = 'max(40px, env(safe-area-inset-top))'
+const ANDROID_APP_SHELL_TOP_OFFSET = 'max(60px, env(safe-area-inset-top))'
+const ANDROID_APP_SHELL_AUTH_TOP_OFFSET = 'max(12px, env(safe-area-inset-top))'
 const ANDROID_APP_SHELL_BOTTOM_OFFSET = 'max(12px, env(safe-area-inset-bottom))'
 const APP_SHELL_STORAGE_KEY = 'tg.androidAppShell'
 const APP_SHELL_SESSION_KEY = 'tg.androidAppShell.session'
@@ -203,6 +204,7 @@ function applyAppShellSafeArea() {
   getAppShellSafeAreaTargets().forEach(target => {
     target.classList.add(ANDROID_APP_SHELL_CLASS)
     target.style.setProperty('--app-shell-top-safe-offset', ANDROID_APP_SHELL_TOP_OFFSET)
+    target.style.setProperty('--app-shell-auth-top-safe-offset', ANDROID_APP_SHELL_AUTH_TOP_OFFSET)
     target.style.setProperty('--app-shell-bottom-safe-offset', ANDROID_APP_SHELL_BOTTOM_OFFSET)
   })
 }
@@ -211,6 +213,7 @@ function removeAppShellSafeArea() {
   getAppShellSafeAreaTargets().forEach(target => {
     target.classList.remove(ANDROID_APP_SHELL_CLASS)
     target.style.removeProperty('--app-shell-top-safe-offset')
+    target.style.removeProperty('--app-shell-auth-top-safe-offset')
     target.style.removeProperty('--app-shell-bottom-safe-offset')
   })
 }

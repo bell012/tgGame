@@ -446,7 +446,7 @@ const handleResetPasswordSuccess = () => {
 }
 
 .auth-mobile-drawer {
-  padding-top: var(--app-shell-top-safe-offset);
+  padding-top: var(--app-shell-auth-top-safe-offset);
   overscroll-behavior: contain;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;

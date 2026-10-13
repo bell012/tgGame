@@ -5,13 +5,15 @@
 @layer base {
   :root {
     --app-shell-top-safe-offset: 0px;
+    --app-shell-auth-top-safe-offset: 0px;
     --app-shell-bottom-safe-offset: 0px;
     --app-shell-payment-tabs-gap: 0px;
   }
 
   html.android-app-shell,
   body.android-app-shell {
-    --app-shell-top-safe-offset: max(40px, env(safe-area-inset-top));
+    --app-shell-top-safe-offset: max(60px, env(safe-area-inset-top));
+    --app-shell-auth-top-safe-offset: max(12px, env(safe-area-inset-top));
     --app-shell-bottom-safe-offset: max(12px, env(safe-area-inset-bottom));
     --app-shell-payment-tabs-gap: 8px;
   }
