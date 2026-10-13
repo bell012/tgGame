@@ -5,9 +5,10 @@ import type {
   QueryMemberPayOrderSyncResp,
   TradePushMessage
 } from '@/api/interface/wallet'
-import { useSiteConfigStore } from '@/stores/siteConfig'
 import { isOrderTerminalStatus, type OrderBizType } from '@/constants/orderStatus'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+
 import type { OrderStatusMap, TradeMessageStreamItem } from '@/utils/payOrderSync'
 import {
   compareTradeMessageStreamItem,
@@ -875,6 +876,8 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
           console.error(error)
         }
       })
+      // 同步全局账户余额
+      void userStore.refreshBalance()
     })
       .catch(error => {
         console.error(error)
