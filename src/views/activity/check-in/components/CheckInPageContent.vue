@@ -210,8 +210,9 @@
         <!-- PC 单票券主视觉卡片 -->
         <div
           v-else-if="isHeroSingle && primaryActionHeroReward"
-          class="absolute left-1/2 top-[84px] h-[316px] w-[344px] -translate-x-1/2 rounded-[32px]"
+          class="absolute left-1/2 top-[84px] h-[316px] w-[344px] -translate-x-1/2 cursor-pointer rounded-[32px]"
           :style="{ background: primaryActionHeroReward.background }"
+          @click="handleHeroUseNow(primaryActionHeroReward)"
         >
           <img
             :src="primaryActionHeroReward.icon"
@@ -234,7 +235,7 @@
           <button
             type="button"
             class="absolute left-1/2 top-[254px] flex h-[42px] w-[136px] -translate-x-1/2 items-center justify-center rounded-[12px] border border-white/25 bg-white/25 text-[18px] font-[700] leading-[22px] text-common-100"
-            @click="handleHeroUseNow(primaryActionHeroReward)"
+            @click.stop="handleHeroUseNow(primaryActionHeroReward)"
           >
             {{
               primaryActionHeroReward.actionLabel ||
@@ -285,8 +286,9 @@
 
           <div
             v-if="secondaryActionHeroReward"
-            class="relative h-[316px] w-[216px] rounded-[32px]"
+            class="relative h-[316px] w-[216px] cursor-pointer rounded-[32px]"
             :style="{ background: secondaryActionHeroReward.background }"
+            @click="handleHeroUseNow(secondaryActionHeroReward)"
           >
             <img
               :src="secondaryActionHeroReward.icon"
@@ -309,7 +311,7 @@
             <button
               type="button"
               class="absolute left-1/2 top-[254px] flex h-[42px] w-[136px] -translate-x-1/2 items-center justify-center rounded-[12px] border border-white/25 bg-white/25 text-[18px] font-[700] leading-[22px] text-common-100"
-              @click="handleHeroUseNow(secondaryActionHeroReward)"
+              @click.stop="handleHeroUseNow(secondaryActionHeroReward)"
             >
               {{
                 secondaryActionHeroReward.actionLabel ||
@@ -450,8 +452,9 @@
       <!-- H5 单票券主视觉卡片 -->
       <div
         v-else-if="isHeroSingle && primaryActionHeroReward"
-        class="absolute left-1/2 top-[190px] h-[210.67px] w-[230.67px] -translate-x-1/2 rounded-[20px]"
+        class="absolute left-1/2 top-[190px] h-[210.67px] w-[230.67px] -translate-x-1/2 cursor-pointer rounded-[20px]"
         :style="{ background: primaryActionHeroReward.background }"
+        @click="handleHeroUseNow(primaryActionHeroReward)"
       >
         <img
           :src="primaryActionHeroReward.icon"
@@ -474,7 +477,7 @@
         <button
           type="button"
           class="absolute left-1/2 top-[169px] flex h-[28px] w-[90px] -translate-x-1/2 items-center justify-center rounded-[8px] border border-white/25 bg-white/25 text-[12px] font-[700] leading-[14.67px] text-common-100"
-          @click="handleHeroUseNow(primaryActionHeroReward)"
+          @click.stop="handleHeroUseNow(primaryActionHeroReward)"
         >
           {{
             primaryActionHeroReward.actionLabel ||
@@ -525,8 +528,9 @@
 
         <div
           v-if="secondaryActionHeroReward"
-          class="relative h-[210.67px] w-[162.33px] rounded-[20px]"
+          class="relative h-[210.67px] w-[162.33px] cursor-pointer rounded-[20px]"
           :style="{ background: secondaryActionHeroReward.background }"
+          @click="handleHeroUseNow(secondaryActionHeroReward)"
         >
           <img
             :src="secondaryActionHeroReward.icon"
@@ -549,7 +553,7 @@
           <button
             type="button"
             class="absolute left-1/2 top-[169px] flex h-[28px] w-[90px] -translate-x-1/2 items-center justify-center rounded-[8px] border border-white/25 bg-white/25 text-[12px] font-[700] leading-[14.67px] text-common-100"
-            @click="handleHeroUseNow(secondaryActionHeroReward)"
+            @click.stop="handleHeroUseNow(secondaryActionHeroReward)"
           >
             {{
               secondaryActionHeroReward.actionLabel ||

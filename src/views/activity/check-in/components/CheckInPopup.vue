@@ -61,6 +61,8 @@ import { useUserStore } from '@/stores/user'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentCurrency } from '@/utils/locale'
 import { navigateToName } from '@/utils/router'
+import { openTicketActivity } from '@/utils/openTicketActivity'
+import { TICKET_TYPE_TO_GAME_ID } from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
 import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -349,7 +351,7 @@ const closeBindPhonePrompt = () => {
   bindPhonePromptVisible.value = false
 }
 
-// 点击主视觉票券的 Use Now：若票券要求验证手机号且用户未绑定，则先提示绑定手机号。
+// 点击主视觉票券：未绑定手机号时先提示绑定，否则关闭签到弹窗并打开对应票券活动。
 const handleHeroUseNow = (reward: CheckInHeroActionReward) => {
   if (isContentLoading.value) {
     return
@@ -359,6 +361,28 @@ const handleHeroUseNow = (reward: CheckInHeroActionReward) => {
     bindPhonePromptVisible.value = true
     return
   }
+
+  const gameId = reward.ticketType != null ? TICKET_TYPE_TO_GAME_ID[reward.ticketType] : undefined
+
+  if (!gameId) {
+    return
+  }
+
+  const hasTicketIdentity = reward.ticketId != null || reward.rowId != null
+
+  emit('update:modelValue', false)
+  void openTicketActivity(
+    gameId,
+    hasTicketIdentity
+      ? {
+          record: {
+            type: reward.ticketType,
+            ticketId: reward.ticketId,
+            rowId: reward.rowId
+          }
+        }
+      : undefined
+  )
 }
 
 // 用户确认去绑定手机号：关闭签到弹窗后跳转到绑定手机号页。

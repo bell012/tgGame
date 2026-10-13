@@ -53,8 +53,7 @@ export const CHECK_IN_REQUIREMENT_LABEL_VALID_BET = 'validBet'
 
 // 签到条件提醒条件标签类型。
 export type CheckInRequirementReminderLabel =
-  | typeof CHECK_IN_REQUIREMENT_LABEL_DEPOSIT
-  | typeof CHECK_IN_REQUIREMENT_LABEL_VALID_BET
+  typeof CHECK_IN_REQUIREMENT_LABEL_DEPOSIT | typeof CHECK_IN_REQUIREMENT_LABEL_VALID_BET
 
 // 签到条件提醒弹窗单行数据。
 export interface CheckInRequirementReminderItem {
@@ -88,6 +87,9 @@ export interface CheckInHeroActionReward {
   requiresPhoneVerification?: boolean
   actionLabel?: string
   actionKey?: string
+  ticketType?: number
+  ticketId?: number
+  rowId?: number
 }
 
 // 主视觉奖励联合类型，页面根据 type 区分金额奖励和功能奖励。
@@ -646,14 +648,14 @@ const resolveTodayHistoryReward = (
   }
 }
 
-// 创建主视觉现金奖励卡数据。
+// 创建主视觉现金奖励卡数据。金额缺失或小于等于 0 时不生成卡片，避免单独票券被画成 ¥0.00。
 const createAmountHeroReward = (
   amount: unknown,
   currencyCode?: string
 ): CheckInHeroAmountReward | null => {
   const resolvedAmount = toNumber(amount)
 
-  if (resolvedAmount === null) {
+  if (resolvedAmount === null || resolvedAmount <= 0) {
     return null
   }
 
@@ -681,9 +683,10 @@ const createActionHeroReward = (
   ticket?: CheckInTicketInfo,
   fallbackTicketType?: unknown
 ): CheckInHeroActionReward | null => {
-  const preset = resolveHeroTicketPreset(ticket?.type ?? fallbackTicketType)
+  const ticketType = toNumber(ticket?.type ?? fallbackTicketType)
+  const preset = resolveHeroTicketPreset(ticketType)
 
-  if (!preset) {
+  if (ticketType === null || !preset) {
     return null
   }
 
@@ -693,7 +696,10 @@ const createActionHeroReward = (
     icon: preset.icon,
     background: preset.background,
     requiresPhoneVerification: toNumber(ticket?.completeVerification?.verifyPhone) === 1,
-    actionKey: 'checkIn.useNow'
+    actionKey: 'checkIn.useNow',
+    ticketType,
+    ticketId: toNumber(ticket?.ticketId) ?? undefined,
+    rowId: toNumber(ticket?.rowId) ?? undefined
   }
 }
 
