@@ -13,9 +13,41 @@
   html.android-app-shell,
   body.android-app-shell {
     --app-shell-top-safe-offset: 60px;
-    --app-shell-auth-top-safe-offset: 0px;
+    --app-shell-auth-top-safe-offset: 8px;
     --app-shell-bottom-safe-offset: 12px;
     --app-shell-payment-tabs-gap: 8px;
+  }
+
+  html.android-app-shell .top-nav {
+    height: calc(60px + var(--app-shell-top-safe-offset)) !important;
+    padding-top: var(--app-shell-top-safe-offset) !important;
+  }
+
+  html.android-app-shell .top-nav-inner {
+    height: 60px !important;
+    transform: scale(var(--top-nav-scale, 1)) !important;
+    transform-origin: left center !important;
+  }
+
+  html.android-app-shell .h5-header-spacer,
+  html.android-app-shell .personal-center-mobile-header,
+  html.android-app-shell .chat-public-h5-list-header,
+  html.android-app-shell .chat-header-h5,
+  html.android-app-shell .chat-search-header-h5 {
+    height: calc(49px + var(--app-shell-top-safe-offset)) !important;
+  }
+
+  html.android-app-shell .h5-header-bar,
+  html.android-app-shell .personal-center-mobile-header,
+  html.android-app-shell .chat-public-h5-list-header,
+  html.android-app-shell .chat-header-h5,
+  html.android-app-shell .chat-search-header-h5 {
+    padding-top: var(--app-shell-top-safe-offset) !important;
+  }
+
+  html.android-app-shell .chat-top-bar {
+    height: calc(60px + var(--app-shell-top-safe-offset)) !important;
+    padding-top: var(--app-shell-top-safe-offset) !important;
   }
 
   * {
