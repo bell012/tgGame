@@ -64,6 +64,9 @@
             androidShellDebugInfo?.htmlSafeOffset || '(空)'
           }}, body={{ androidShellDebugInfo?.bodySafeOffset || '(空)' }}, #app={{
             androidShellDebugInfo?.appSafeOffset || '(空)'
+          }}； bottom offset: html={{ androidShellDebugInfo?.htmlBottomSafeOffset || '(空)' }},
+          body={{ androidShellDebugInfo?.bodyBottomSafeOffset || '(空)' }}, #app={{
+            androidShellDebugInfo?.appBottomSafeOffset || '(空)'
           }}
         </div>
       </section>

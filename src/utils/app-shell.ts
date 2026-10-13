@@ -1,5 +1,6 @@
 const ANDROID_APP_SHELL_CLASS = 'android-app-shell'
-const ANDROID_APP_SHELL_OFFSET = '24px'
+const ANDROID_APP_SHELL_TOP_OFFSET = 'max(40px, env(safe-area-inset-top))'
+const ANDROID_APP_SHELL_BOTTOM_OFFSET = 'max(12px, env(safe-area-inset-bottom))'
 const APP_SHELL_STORAGE_KEY = 'tg.androidAppShell'
 const APP_SHELL_SESSION_KEY = 'tg.androidAppShell.session'
 const APP_SHELL_COOKIE_KEY = 'tg_android_app_shell'
@@ -38,6 +39,9 @@ export interface AndroidAppShellDebugInfo {
   htmlSafeOffset: string
   bodySafeOffset: string
   appSafeOffset: string
+  htmlBottomSafeOffset: string
+  bodyBottomSafeOffset: string
+  appBottomSafeOffset: string
 }
 
 function isAndroidUserAgent(userAgent: string) {
@@ -198,7 +202,8 @@ function getAppShellSafeAreaTargets() {
 function applyAppShellSafeArea() {
   getAppShellSafeAreaTargets().forEach(target => {
     target.classList.add(ANDROID_APP_SHELL_CLASS)
-    target.style.setProperty('--app-shell-top-safe-offset', ANDROID_APP_SHELL_OFFSET)
+    target.style.setProperty('--app-shell-top-safe-offset', ANDROID_APP_SHELL_TOP_OFFSET)
+    target.style.setProperty('--app-shell-bottom-safe-offset', ANDROID_APP_SHELL_BOTTOM_OFFSET)
   })
 }
 
@@ -206,6 +211,7 @@ function removeAppShellSafeArea() {
   getAppShellSafeAreaTargets().forEach(target => {
     target.classList.remove(ANDROID_APP_SHELL_CLASS)
     target.style.removeProperty('--app-shell-top-safe-offset')
+    target.style.removeProperty('--app-shell-bottom-safe-offset')
   })
 }
 
@@ -286,7 +292,13 @@ export function getAndroidAppShellDebugInfo(): AndroidAppShellDebugInfo | null {
     appClassMatched: app?.classList.contains(ANDROID_APP_SHELL_CLASS) ?? false,
     htmlSafeOffset: document.documentElement.style.getPropertyValue('--app-shell-top-safe-offset'),
     bodySafeOffset: document.body?.style.getPropertyValue('--app-shell-top-safe-offset') ?? '',
-    appSafeOffset: app?.style.getPropertyValue('--app-shell-top-safe-offset') ?? ''
+    appSafeOffset: app?.style.getPropertyValue('--app-shell-top-safe-offset') ?? '',
+    htmlBottomSafeOffset: document.documentElement.style.getPropertyValue(
+      '--app-shell-bottom-safe-offset'
+    ),
+    bodyBottomSafeOffset:
+      document.body?.style.getPropertyValue('--app-shell-bottom-safe-offset') ?? '',
+    appBottomSafeOffset: app?.style.getPropertyValue('--app-shell-bottom-safe-offset') ?? ''
   }
 }
 

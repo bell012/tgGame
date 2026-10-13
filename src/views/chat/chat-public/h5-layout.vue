@@ -2,7 +2,7 @@
   <!-- H5 客服页面根容器。 -->
   <div
     class="chat-public-h5 fixed inset-x-0 top-0 flex flex-col overflow-hidden bg-bg-1 sm:hidden"
-    :class="activeConversation ? 'bottom-0 z-[60]' : 'bottom-[60px] z-20'"
+    :class="activeConversation ? 'bottom-0 z-[60]' : 'chat-public-h5-with-tab z-20'"
   >
     <!-- 未选择会话时的客服列表页面。 -->
     <template v-if="!activeConversation">
@@ -340,6 +340,10 @@ watch(
 </script>
 
 <style scoped>
+.chat-public-h5-with-tab {
+  bottom: calc(60px + var(--app-shell-bottom-safe-offset));
+}
+
 :global(.android-app-shell) .chat-public-h5-list-header {
   height: calc(49px + var(--app-shell-top-safe-offset));
   padding-top: var(--app-shell-top-safe-offset);

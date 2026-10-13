@@ -477,7 +477,7 @@ const mainStyle = computed(() => {
 
   if (isMobile.value) {
     return {
-      marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
+      marginBottom: `calc(${layoutStore.BOTTOM_TAB_HEIGHT}px + var(--app-shell-bottom-safe-offset))`
     }
   }
 
