@@ -1,7 +1,7 @@
 <template>
   <nav
     ref="navRef"
-    class="flex w-full gap-2 overflow-x-auto scrollbar-hide touch-pan-x scroll-smooth"
+    class="flex w-full gap-[7px] overflow-x-auto px-[14px] scrollbar-hide touch-pan-x scroll-smooth"
   >
     <button
       v-for="(item, index) in sportItems"

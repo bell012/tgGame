@@ -118,7 +118,8 @@
 
           <button
             type="button"
-            class="mt-[30px] flex h-[40px] w-full items-center justify-center rounded-lg bg-theme-primary text-[14px] font-[400] text-text-4 disabled:opacity-60"
+            class="mt-[30px] flex h-[40px] w-full items-center justify-center rounded-lg bg-theme-primary text-[14px] text-text-4 disabled:opacity-60"
+            :class="isMobile ? 'font-bold' : 'font-normal'"
             :disabled="isSubmittingBuyBack"
             @click="submitBuyBack"
           >

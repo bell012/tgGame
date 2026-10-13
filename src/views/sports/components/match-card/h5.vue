@@ -8,11 +8,11 @@
   >
     <div class="grid min-w-0 grid-cols-[minmax(0,430fr)_minmax(0,522fr)] gap-2.5">
       <div class="flex min-w-0 flex-col">
-        <div class="flex h-[15px] min-w-0 items-center gap-2 text-[11px] leading-[15px]">
+        <div class="flex h-[15px] min-w-0 items-center gap-2 text-[11px] leading-[13.333px]">
           <button
             type="button"
             class="-mx-1 flex h-5 w-5 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
-            :class="favorite ? 'text-theme-primary' : 'text-icon-1'"
+            :class="favorite ? 'text-text-1' : 'text-icon-1'"
             :aria-label="
               favorite ? t('sports.matchCard.removeFavorite') : t('sports.matchCard.addFavorite')
             "
@@ -31,7 +31,7 @@
             />
             <StarIcon
               v-else
-              class="h-3 w-3 overflow-visible"
+              class="block h-3 w-3 shrink-0 overflow-visible"
               :class="
                 favorite
                   ? '[&_path]:fill-current'

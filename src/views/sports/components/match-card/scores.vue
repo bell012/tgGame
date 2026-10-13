@@ -24,7 +24,9 @@
           : t('sports.matchCard.periodScore', { number: Number(item.key) + 1, score: item.score })
       "
     >
-      <span v-if="item.label" class="text-text-2">{{ item.label }}</span>
+      <span v-if="item.label" :class="layout === 'h5' ? 'text-text-1' : 'text-text-2'">{{
+        item.label
+      }}</span>
       <span>{{ item.score }}</span>
     </span>
     <span v-if="totalScore" class="ml-auto inline-flex shrink-0 items-center gap-3 text-text-1">

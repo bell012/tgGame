@@ -17,7 +17,7 @@
       </button>
 
       <div
-        class="scrollbar-none flex min-w-0 flex-1 touch-pan-x items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        class="scrollbar-none flex min-w-0 flex-1 touch-pan-x items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-3.5"
         role="tablist"
         aria-label="Market categories"
       >
@@ -64,7 +64,7 @@
         :key="market.id"
         class="overflow-hidden rounded-lg bg-bg-2"
       >
-        <header class="flex items-center gap-2 px-3 py-3">
+        <header class="flex items-center gap-2 px-2.5 py-3.5 border-b border-b-opacity-6">
           <button
             type="button"
             class="flex min-w-0 flex-1 items-center gap-2 border-0 bg-transparent p-0 text-left"
@@ -88,7 +88,7 @@
             @click="togglePin(market.id)"
           >
             <img
-              class="h-[18px] w-[18px] object-contain"
+              class="h-[14px] w-[14px] object-contain"
               :src="pinIcon"
               alt=""
               draggable="false"
@@ -97,7 +97,7 @@
           </button>
         </header>
 
-        <div v-if="isSectionOpen(market.id)" class="px-3 pb-3">
+        <div v-if="isSectionOpen(market.id)" class="px-2.5 pb-3.5 pt-3.5">
           <template v-if="market.kind === 'dual-column'">
             <div
               v-if="market.leftHeader || market.rightHeader"

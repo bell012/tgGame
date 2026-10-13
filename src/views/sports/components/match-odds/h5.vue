@@ -4,19 +4,31 @@
       v-for="selection in visibleSelections(stripLine)"
       :key="selection.WagerSelectionId"
       type="button"
-      class="flex h-9 min-w-0 flex-1 items-center justify-between rounded-lg px-3"
+      class="flex min-h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-lg px-3"
       :class="isSelected(selection) ? 'bg-theme-primary text-text-4' : 'bg-bg-3 text-text-1'"
       @click="onListSelect(stripLine, selection)"
     >
-      <span class="flex min-w-0 items-center gap-1 truncate text-[12px] font-normal">
-        <span class="truncate">{{ selectionLabel(selection) }}</span>
-        <span v-if="shouldShowHandicap(stripLine, selection)" class="shrink-0">{{
-          formatHandicap(selection.Handicap)
+      <span class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 text-[12px] font-normal">
+        <span class="min-w-0 max-w-full truncate" :title="selectionLabel(selection)">{{
+          selectionLabel(selection)
         }}</span>
+        <span
+          v-if="shouldShowHandicap(stripLine, selection)"
+          class="max-w-full shrink-0 break-words"
+          >{{ formatHandicap(selection.Handicap) }}</span
+        >
       </span>
-      <span class="shrink-0 text-[12px] font-bold" :class="oddsNumberClass(selection)">
-        <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span
-        >{{ formatEuropeanOdds(selection) }}
+      <span
+        class="flex shrink-0 items-center text-[12px] font-bold"
+        :class="oddsNumberClass(selection)"
+      >
+        <component
+          v-if="oddsArrow(selection)"
+          :is="oddsArrow(selection)"
+          class="h-3 w-3 shrink-0"
+          aria-hidden="true"
+        />
+        {{ formatEuropeanOdds(selection) }}
       </span>
     </button>
   </div>
@@ -26,10 +38,15 @@
       <p
         v-for="line in MarketLines"
         :key="`${line.MarketlineId}-title`"
-        class="flex flex-col items-center gap-0.5 text-center text-[10px] font-normal leading-[15px] text-text-2"
+        class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[10px] font-normal leading-[15px] text-text-2"
       >
-        <span>{{ line.BetTypeName }}</span>
-        <span v-if="line.PeriodId !== 1 && line.PeriodName">{{ line.PeriodName }}</span>
+        <span class="w-full truncate" :title="line.BetTypeName">{{ line.BetTypeName }}</span>
+        <span
+          v-if="line.PeriodId !== 1 && line.PeriodName"
+          class="w-full truncate"
+          :title="line.PeriodName"
+          >{{ line.PeriodName }}</span
+        >
       </p>
     </div>
     <div class="grid items-start gap-x-1" :class="columnClass">
@@ -38,7 +55,8 @@
           v-for="(selection, index) in listCells(line)"
           :key="selection?.WagerSelectionId ?? `${line.MarketlineId}-locked-${index}`"
           type="button"
-          class="flex w-full flex-col items-center justify-center rounded-[5px]"
+          class="flex w-full min-w-0 flex-col items-center justify-center overflow-hidden rounded-[5px]"
+          :title="selection ? selectionLabel(selection) : undefined"
           :class="cellClass(line, selection)"
           @click="onListSelect(line, selection)"
         >
@@ -52,20 +70,31 @@
           />
           <template v-else-if="selection">
             <span
-              class="text-[12px] font-normal leading-none"
+              class="flex w-full flex-wrap items-center justify-center gap-x-1 text-[12px] font-normal leading-[14.667px]"
               :class="isSelected(selection) ? 'text-text-4' : 'text-text-2'"
             >
-              {{ selectionLabel(selection) }}
-              <span v-if="shouldShowHandicap(line, selection)">{{
-                formatHandicap(selection.Handicap)
-              }}</span>
+              <span class="min-w-0 max-w-full truncate">{{ selectionLabel(selection) }}</span>
+              <!-- 只截断名称；盘口值独立换行，避免长名称遮住让分或大小数值。 -->
+              <span
+                v-if="shouldShowHandicap(line, selection)"
+                class="max-w-full shrink-0 break-words"
+                >{{ formatHandicap(selection.Handicap) }}</span
+              >
             </span>
+            <!-- 赔率与箭头空间不足时换行，数字不参与名称截断。 -->
             <span
-              class="flex items-center justify-center gap-0.5 text-[12px] font-bold leading-none"
+              class="flex w-full shrink-0 flex-wrap items-center justify-center text-[12px] font-bold leading-[14.667px]"
               :class="oddsNumberClass(selection)"
             >
-              <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span>
-              {{ formatEuropeanOdds(selection) }}
+              <component
+                v-if="oddsArrow(selection)"
+                :is="oddsArrow(selection)"
+                class="h-3 w-3 shrink-0"
+                aria-hidden="true"
+              />
+              <span class="max-w-full shrink-0 break-words">{{
+                formatEuropeanOdds(selection)
+              }}</span>
             </span>
           </template>
         </button>
@@ -77,6 +106,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import OddsUpIcon from '@/static/svg/sports/h5-odds-up.svg?component'
+import OddsDownIcon from '@/static/svg/sports/h5-odds-down.svg?component'
 import lockIcon from '../../event-details/components/sports-score-details/img/bold.svg?url'
 import {
   formatEuropeanOdds,
@@ -149,7 +180,7 @@ const oddsNumberClass = (selection: SportWagerSelection) => {
 const oddsArrow = (selection: SportWagerSelection) => {
   if (isSelected(selection)) return ''
   const trend = trendOf(selection.WagerSelectionId)
-  return trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''
+  return trend === 'up' ? OddsUpIcon : trend === 'down' ? OddsDownIcon : undefined
 }
 
 watch(() => props.MarketLines, noteMarketLines, { deep: true, immediate: true })
@@ -161,9 +192,7 @@ const onListSelect = (line: SportMarketLine, selection?: SportWagerSelection) =>
 
 const cellClass = (line: SportMarketLine, selection?: SportWagerSelection) => {
   const compact = listCells(line).length >= 3
-  const size = compact
-    ? 'h-[37px] gap-0.5 px-[10px] py-[3px]'
-    : 'h-[58px] gap-[3px] px-[5px] py-[7px]'
+  const size = compact ? 'min-h-[37px] px-[3px] py-[3px]' : 'min-h-[58px] px-[5px] py-[7px]'
   const tone = !line.IsLocked && selection && isSelected(selection) ? 'bg-theme-primary' : 'bg-bg-3'
   return `${size} ${tone}`
 }

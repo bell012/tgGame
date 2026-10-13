@@ -14,7 +14,7 @@
       data-testid="sports-quick-amounts-h5"
       @keydown.stop="onKeydown"
     >
-      <header class="relative flex h-12 shrink-0 items-center justify-center bg-bg-2 px-12">
+      <header class="relative flex h-12 shrink-0 items-center justify-center px-12">
         <h2 :id="titleId" class="text-center text-base font-bold">
           {{ t('sports.betSlip.editQuickAmounts') }}
         </h2>
@@ -55,7 +55,7 @@
                   : 'border-opacity-10 focus-within:border-theme-primary focus-within:text-theme-primary'
               "
             >
-              <span class="shrink-0">{{ props.currencySymbol }}</span>
+              <span class="shrink-0">$</span>
               <input
                 :value="props.amounts[index]"
                 type="text"

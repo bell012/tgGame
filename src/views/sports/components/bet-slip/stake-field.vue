@@ -16,7 +16,8 @@
       :disabled="props.disabled"
       @click="emit('focus')"
     >
-      <span class="shrink-0 text-[15px] font-bold text-text-1">{{ props.currencySymbol }}</span>
+      <!-- 金额框固定显示符号，实际币种仍由投注请求管理。 -->
+      <span class="shrink-0 text-[15px] font-bold text-text-1">$</span>
       <span class="flex min-w-0 items-center">
         <span
           v-if="props.value"

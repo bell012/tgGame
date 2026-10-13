@@ -48,7 +48,7 @@
         </div>
 
         <div
-          class="mt-[14px] grid w-full grid-cols-[minmax(0,1fr)_126.67px_minmax(0,1fr)] items-start px-[14px]"
+          class="mt-[22px] grid w-full grid-cols-[minmax(0,1fr)_126.67px_minmax(0,1fr)] items-start px-[14px]"
         >
           <div class="flex min-w-0 flex-col items-center gap-[10px]">
             <div class="relative">
@@ -93,7 +93,7 @@
                   <span>{{ match.phaseText }}</span>
                   <span>{{ match.clockText }}</span>
                 </p>
-                <div class="flex items-center gap-[14px] text-xs font-normal leading-4">
+                <div class="flex items-center gap-[14px] text-xs font-normal leading-4 mt-[10px]">
                   <span class="inline-flex items-center gap-1.5">
                     <img
                       class="h-[14px] w-[14px] shrink-0 object-contain"

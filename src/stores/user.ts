@@ -9,6 +9,7 @@ import { withLocalePrefix } from '@/utils/locale'
 import { PLAYED_GAMES_CACHE_STORAGE_PREFIXES } from '@/utils/played-games-cache'
 import { NOTIFICATION_CACHE_STORAGE_PREFIXES } from '@/utils/notification-cache'
 import { setManualLogoutInProgress } from '@/utils/request'
+import { isApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentLocale, navigateTo } from '@/utils/router'
 import {
   clearProfileAvatarPreviewState,
@@ -42,6 +43,19 @@ export const useUserStore = defineStore('user', () => {
   const acctInfo = ref<QueryAcctInfoResult | null>(null)
   const isRefreshingBalance = ref(false)
   const balanceRefreshError = ref<BalanceRefreshError | null>(null)
+  // 当前会话成功查询余额的事件序号，订阅方不需要接触账户响应或敏感凭据。
+  const balanceUpdatedVersion = ref(0)
+  // 强制刷新不会取消旧 HTTP 请求；等待时必须覆盖全部在途查询。
+  const balanceQueries = new Set<Promise<QueryAcctInfoResult | null>>()
+
+  const waitForBalanceQueries = async () => {
+    while (balanceQueries.size) await Promise.all([...balanceQueries])
+  }
+  const getBalanceSessionKey = () =>
+    JSON.stringify([
+      userInfo.value?.tradeToken,
+      userInfo.value?.memberId ?? acctInfo.value?.memberId
+    ])
 
   // 每次切换会话或强制刷新时递增。返回时版本不一致的请求不能写入当前账户状态。
   let balanceRefreshVersion = 0
@@ -196,6 +210,7 @@ export const useUserStore = defineStore('user', () => {
     }
 
     const requestVersion = balanceRefreshVersion
+    const requestSessionKey = getBalanceSessionKey()
     const isCurrentRequest = () => requestVersion === balanceRefreshVersion
 
     // 同一账户状态下的普通重复读取共用一个请求，避免多个页面同时刷新时产生重复流量。
@@ -206,9 +221,12 @@ export const useUserStore = defineStore('user', () => {
     isRefreshingBalance.value = true
     balanceRefreshError.value = null
 
-    const promise = (async (): Promise<QueryAcctInfoResult | null> => {
+    const promise = Promise.resolve().then(async (): Promise<QueryAcctInfoResult | null> => {
+      let querySucceeded = false
       try {
+        if (!isCurrentRequest()) return null
         const response = await Api.user.queryAcctInfo({})
+        querySucceeded = Boolean(response?.result && isApiBusinessSuccess(response))
 
         if (!isCurrentRequest()) {
           return null
@@ -235,7 +253,8 @@ export const useUserStore = defineStore('user', () => {
           }
         }
 
-        return isCurrentRequest() ? nextAcctInfo : null
+        if (!isCurrentRequest()) return null
+        return nextAcctInfo
       } catch (error) {
         if (isCurrentRequest()) {
           // 请求错误由触发页面决定是否提示；Store 只保留可观察的错误状态。
@@ -248,12 +267,19 @@ export const useUserStore = defineStore('user', () => {
           console.error(error)
         }
         return null
+      } finally {
+        // 同会话旧查询虽然不能覆盖余额，成功响应仍可能影响平台凭据。
+        // 等可选的币种同步结束后再通知，避免新凭据被随后的币种变化废弃。
+        if (querySucceeded && (isCurrentRequest() || requestSessionKey === getBalanceSessionKey()))
+          balanceUpdatedVersion.value += 1
       }
-    })()
+    })
 
+    balanceQueries.add(promise)
     pendingBalanceRefresh = { version: requestVersion, promise }
 
     void promise.finally(() => {
+      balanceQueries.delete(promise)
       // 旧请求结束时不能关闭新请求的 loading，也不能清掉新请求的引用。
       if (pendingBalanceRefresh?.promise !== promise) {
         return
@@ -388,6 +414,8 @@ export const useUserStore = defineStore('user', () => {
     acctInfo,
     isRefreshingBalance,
     balanceRefreshError,
+    balanceUpdatedVersion,
+    waitForBalanceQueries,
     syncStoredUserData,
     refreshBalance,
     refreshAcctInfo,

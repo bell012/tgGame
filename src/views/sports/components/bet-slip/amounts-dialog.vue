@@ -46,9 +46,8 @@
             @dragover.prevent="dragOverId = row.id"
             @drop.prevent="dropAmount(index)"
           >
-            <span class="shrink-0 text-sm font-bold" aria-hidden="true">
-              {{ props.currencySymbol }}
-            </span>
+            <!-- 快捷金额输入框与投注金额输入框使用相同的显示符号。 -->
+            <span class="shrink-0 text-sm font-bold" aria-hidden="true">$</span>
             <input
               v-model="row.value"
               type="text"
