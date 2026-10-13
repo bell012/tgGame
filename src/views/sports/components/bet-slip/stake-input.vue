@@ -8,12 +8,13 @@
           : 'h-[42px] focus-within:ring-1 focus-within:ring-inset focus-within:ring-theme-primary'
       "
     >
+      <!-- 仅固定输入框符号，不改变实际投注币种。 -->
       <span
         class="shrink-0 font-bold leading-[17px]"
         :class="props.value ? 'text-text-1' : 'text-text-3'"
         aria-hidden="true"
       >
-        {{ props.currencySymbol }}
+        $
       </span>
       <input
         type="text"

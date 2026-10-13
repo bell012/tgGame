@@ -10,13 +10,15 @@
         :class="getFilterTabClass(item.key)"
         @click="onFilterTabClick(item.key)"
       >
-        <span class="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
-          {{ item.label }}
-        </span>
-        <span
-          class="absolute right-[16px] top-[3px] inline-flex items-center justify-center rounded-full bg-secondary-2 px-[2px] text-[10px] font-[400] text-text-1"
-        >
-          {{ item.count }}
+        <span class="relative max-w-full">
+          <span class="block overflow-hidden text-ellipsis whitespace-nowrap">
+            {{ item.label }}
+          </span>
+          <span
+            class="absolute -top-[5.667px] left-full inline-flex h-[11px] items-center justify-center rounded-[5.667px] bg-secondary-2 px-[2px] text-[9px] font-normal leading-[11px] text-common-100"
+          >
+            {{ item.count }}
+          </span>
         </span>
       </button>
     </div>

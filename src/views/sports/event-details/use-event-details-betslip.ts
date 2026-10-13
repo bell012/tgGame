@@ -1,6 +1,7 @@
 import { computed, onMounted, onScopeDispose, type Ref } from 'vue'
 import type { SportCompetitionGroup } from '@/api/interface/sport'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
+import { isMobileViewport } from '@/composables/useMediaQuery'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { useBetSlip } from '../components/bet-slip/useBetSlip'
@@ -42,7 +43,12 @@ export function useEventDetailsBetSlip(deps: {
   const { isLoggedIn } = useRequireLoginAction()
   const siteConfigStore = useSiteConfigStore()
   const sportsStore = useSportsStore()
-  const betSlip = useBetSlip({ getMatch, getTeamLogoUrl })
+  const betSlip = useBetSlip({
+    getMatch,
+    getTeamLogoUrl,
+    // H5 共用结果浮层；PC 仍保留原来的通用提示。
+    resultPresentation: () => (isMobileViewport() ? 'toast' : undefined)
+  })
   let disposed = false
   onScopeDispose(() => {
     disposed = true

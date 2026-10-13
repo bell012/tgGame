@@ -247,7 +247,7 @@
           class="h-[50px] w-[50px] shrink-0"
           aria-hidden="true"
         />
-        <p class="text-[15px] font-bold leading-[18px]">
+        <p class="text-[15px] font-bold leading-[18px] text-common-100">
           {{
             t(
               result === 'success'
@@ -281,7 +281,7 @@ import { computed, nextTick, ref, useId, watch } from 'vue'
 import { Loading } from 'vant'
 import CheckedIcon from '@/static/svg/sports/bet-slip/checked.svg'
 import UncheckedIcon from '@/static/svg/sports/bet-slip/unchecked.svg'
-import SuccessIcon from '@/static/svg/sports/bet-slip/success.svg'
+import SuccessIcon from '@/static/svg/sports/h5-bet-success.svg?component'
 import FailedIcon from '@/static/svg/sports/bet-slip/failed.svg'
 import PopShell from '@/components/withdraw/popShell.vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'

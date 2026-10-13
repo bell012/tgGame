@@ -12,18 +12,18 @@
           v-for="item in mobileHistoryList"
           :key="item.id"
           @click="openSportsBetDetails(item)"
-          class="relative overflow-hidden rounded-lg bg-bg-2 px-3.5 py-[10px]"
+          class="relative overflow-hidden rounded-lg bg-bg-2"
         >
           <span
             :class="[
-              'absolute right-0 top-0 rounded-bl-[10px] px-[6px] py-[3px] text-[11px] font-[400]',
+              'absolute right-0 top-0 rounded-bl-[10px] px-[6px] py-[3px] text-[11px] font-normal leading-[13.333px]',
               item.statusBadgeClass
             ]"
           >
             {{ item.statusLabel }}
           </span>
 
-          <div class="flex items-center gap-2.5">
+          <div class="flex min-h-[85px] items-center gap-2.5 px-3.5 py-2.5">
             <div
               class="flex h-[65px] w-[49px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[7px] bg-bg-3 text-text-1"
             >
@@ -38,11 +38,13 @@
               </span>
             </div>
 
-            <div class="min-w-0 flex-1">
-              <h2 class="min-w-0 truncate text-[14px] font-[700] text-text-1">
+            <div class="min-w-0 flex-1 self-start pt-[10.5px]">
+              <h2 class="min-w-0 truncate text-[14px] font-bold leading-[17px] text-text-1">
                 {{ item.matchName }}
               </h2>
-              <div class="mt-2.5 flex items-center justify-between gap-3">
+              <div
+                class="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 leading-[17px]"
+              >
                 <p class="min-w-0 flex-1 text-[14px] font-[400] text-text-1">
                   {{ t('betHistory.betAmount') }} : {{ item.betAmount }}
                 </p>
@@ -53,7 +55,9 @@
             </div>
           </div>
 
-          <div class="mt-2.5 flex items-center justify-between gap-2.5 pt-2.5">
+          <div
+            class="flex min-h-10 items-center justify-between gap-2.5 border-t border-solid border-opacity-15 px-3.5 py-[9px]"
+          >
             <p class="min-w-0 flex-1 text-[12px] font-[400] text-text-2">
               {{ item.createdAt }}
             </p>
@@ -297,12 +301,7 @@ import {
 
 type SportsBetHistoryStatus = 'settled' | 'unsettled'
 type SportsBetHistoryTime =
-  | 'all'
-  | 'today'
-  | 'yesterday'
-  | 'last3days'
-  | 'last15days'
-  | 'last30days'
+  'all' | 'today' | 'yesterday' | 'last3days' | 'last15days' | 'last30days'
 type SportsBetHistoryFilterValues = {
   status: SportsBetHistoryStatus
   time: SportsBetHistoryTime

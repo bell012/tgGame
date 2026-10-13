@@ -56,6 +56,8 @@ type BetInfoOptions = {
   open: Ref<boolean>
   mode: Ref<SportsBetMode>
   parlayEligible: Ref<boolean>
+  /** 原始选择标识，不受后台盘口可用性检查影响。 */
+  interactionKey: Ref<string>
   selectionKey: Ref<string>
   getSources: () => BetInfoSource[]
 }
@@ -64,6 +66,7 @@ export const useBetInfo = ({
   open,
   mode,
   parlayEligible,
+  interactionKey,
   selectionKey,
   getSources
 }: BetInfoOptions) => {
@@ -75,6 +78,8 @@ export const useBetInfo = ({
   const error = ref('')
   const loading = ref(false)
   const ready = ref(false)
+  // 独立于查询状态，避免后台取消/排队将凭据失败锁定清除。
+  const credentialsBlocked = ref(false)
   const state = ref<
     'idle' | 'queued' | 'loading' | 'success' | 'error' | 'credentials-unavailable'
   >('idle')
@@ -89,6 +94,7 @@ export const useBetInfo = ({
   let retryTimer: ReturnType<typeof setTimeout> | undefined
   let finishRetry: ((continueQuery: boolean) => void) | undefined
   const enabled = () =>
+    !credentialsBlocked.value &&
     open.value &&
     Boolean(selectionKey.value) &&
     active.value &&
@@ -105,7 +111,7 @@ export const useBetInfo = ({
     sportsStore.cancelBetInfo()
     loading.value = false
     ready.value = false
-    state.value = 'idle'
+    state.value = credentialsBlocked.value ? 'credentials-unavailable' : 'idle'
   }
   const query = async (preserveQuotes = false) => {
     if (!enabled()) return
@@ -193,6 +199,7 @@ export const useBetInfo = ({
       if (current === generation) {
         ready.value = false
         credentialsUnavailable = failure instanceof SportsCredentialsUnavailableError
+        if (credentialsUnavailable) credentialsBlocked.value = true
         // 登录接口已提示，投注项和金额保留，不再显示报价失败文案。
         error.value = credentialsUnavailable ? '' : 'sports.betInfoFailed'
       }
@@ -219,11 +226,22 @@ export const useBetInfo = ({
 
   // 其他主动操作取得凭据后，只恢复当前因凭据失败的报价。
   watch(
-    [() => sportsAuth.isReady, state],
-    ([isReady, status]) => {
-      if (isReady && status === 'credentials-unavailable' && enabled()) refreshBetInfo()
+    [() => sportsAuth.isReady, credentialsBlocked],
+    ([isReady, blocked]) => {
+      if (!isReady || !blocked) return
+      credentialsBlocked.value = false
+      refreshBetInfo()
     },
     { flush: 'post' }
+  )
+
+  // 重新打开、主动更换选项/模式或切换账号后允许重试；后台赔率变化不解锁。
+  watch(
+    () => [open.value, mode.value, interactionKey.value, sportsAuth.contextVersion] as const,
+    () => {
+      credentialsBlocked.value = false
+    },
+    { flush: 'sync' }
   )
 
   // 只在投注单打开、选项或模式变化时查询，不定时轮询。

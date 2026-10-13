@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import ClearIcon from '@/static/svg/sports/clear-bets.svg'
+import ClearIcon from '@/static/svg/sports/h5-selection-delete.svg?component'
 import StakeField from './stake-field.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
