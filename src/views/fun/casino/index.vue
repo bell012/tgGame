@@ -197,8 +197,12 @@
         </div>
 
         <!-- 6种样式 -->
-        <div class="tabs-content min-h-48">
-          <component :is="getPageStyle" v-bind="currentPageProps" />
+        <div class="tabs-content filter-slide-stage min-h-48">
+          <Transition :name="slideName">
+            <div :key="tabSlideKey" class="filter-slide-pane w-full">
+              <component :is="getPageStyle" v-bind="currentPageProps" />
+            </div>
+          </Transition>
         </div>
       </div>
     </div>
@@ -283,6 +287,8 @@ const getCurrentTab = computed(() => {
   return tabButtons.value.find(tab => tab.sysGameTypeCode === key)
 })
 const currentTabCode = computed(() => getCurrentTab.value?.sysGameTypeCode)
+const tabSlideKey = computed(() => props.tabKey ?? '')
+const slideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
 const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
 const basePageStyle = computed(() => {
   const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
@@ -688,6 +694,14 @@ watch(
   (value, previousValue) => {
     if (value === previousValue) {
       return
+    }
+
+    const nextKey = value ?? ''
+    const previousKey = previousValue ?? ''
+    const nextIndex = tabButtons.value.findIndex(item => item.sysGameTypeCode === nextKey)
+    const previousIndex = tabButtons.value.findIndex(item => item.sysGameTypeCode === previousKey)
+    if (nextIndex >= 0 && previousIndex >= 0 && nextIndex !== previousIndex) {
+      slideName.value = nextIndex > previousIndex ? 'filter-slide-left' : 'filter-slide-right'
     }
 
     clearSearch()
