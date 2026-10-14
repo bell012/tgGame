@@ -18,7 +18,7 @@
 
     <div
       ref="scrollRef"
-      class="scrollbar-none ml-[8px] flex min-w-0 flex-1 touch-pan-x items-center gap-[8px] overflow-x-auto overflow-y-hidden scroll-smooth py-0"
+      class="scrollbar-none ml-[8px] flex min-w-0 flex-1 touch-pan-x items-center gap-[8px] overflow-x-auto overflow-y-hidden py-0"
       :class="isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'"
       @pointerdown="onDragStart"
       @pointermove="onDragMove"
@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?component'
@@ -153,6 +153,42 @@ const getLeagueButtonClass = (item: LeagueTabItem) => {
   return 'bg-bg-2 text-text-2 hover:bg-opacity-6'
 }
 
+const getLeagueTabElement = (key: string) => {
+  const element = scrollRef.value
+  if (!element) {
+    return null
+  }
+
+  return (
+    Array.from(element.querySelectorAll<HTMLButtonElement>('[data-league-key]')).find(
+      item => item.dataset.leagueKey === key
+    ) ?? null
+  )
+}
+
+const centerLeagueTab = async (key: string) => {
+  await nextTick()
+
+  const element = scrollRef.value
+  const tab = getLeagueTabElement(key)
+  if (!element || !tab) {
+    return
+  }
+
+  const elementRect = element.getBoundingClientRect()
+  const tabRect = tab.getBoundingClientRect()
+  const centeredLeft =
+    element.scrollLeft + tabRect.left + tabRect.width / 2 - elementRect.left - elementRect.width / 2
+  const maxLeft = Math.max(0, element.scrollWidth - element.clientWidth)
+  const shouldReduceMotion =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  element.scrollTo({
+    left: Math.min(Math.max(centeredLeft, 0), maxLeft),
+    behavior: shouldReduceMotion ? 'auto' : 'smooth'
+  })
+}
+
 // 点击“联赛/时间”时切换分段选中态  emit已经暴露出去，别的组件可以接受当前选中哪个值
 const onFilterTabClick = (key: LiansaiFilterKey) => {
   emit('filter-change', selectFilterKey(key))
@@ -161,6 +197,7 @@ const onFilterTabClick = (key: LiansaiFilterKey) => {
 // 点击联赛 tab 时切换选中项。emit已经暴露出去，别的组件可以接受当前选中哪个值
 const onLeagueTabClick = (key: string) => {
   emit('league-change', selectLeagueKey(key))
+  void centerLeagueTab(key)
 }
 
 // 点击更多按钮切换联赛弹窗，同时驱动按钮里的三角图标旋转方向。
@@ -185,6 +222,7 @@ const handleDocumentClick = (event: MouseEvent) => {
 const onLeaguePopupItemClick = (key: string) => {
   emit('league-change', selectLeagueKey(key))
   isLeaguePopupOpen.value = false
+  void centerLeagueTab(key)
 }
 
 // 记录鼠标按下时的位置和滚动距离，后续用于计算横向拖动偏移。
@@ -240,9 +278,18 @@ const onDragEnd = (event: PointerEvent) => {
 
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
+  void centerLeagueTab(activeLeagueKey.value)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
 })
+
+watch(
+  [activeLeagueKey, () => leagueTabs.value.map(item => item.key).join('|')],
+  ([key]) => {
+    void centerLeagueTab(key)
+  },
+  { flush: 'post' }
+)
 </script>
