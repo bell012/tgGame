@@ -25,7 +25,7 @@
             'bg-bg-7 text-text-1': latestBetIndex === 0
           }"
           class="flex h-[39px] flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
-          @click.stop="latestBetIndex = 0"
+          @click.stop="switchLatestBet(0)"
         >
           {{ t('casino.latest_bet') }}
         </button>
@@ -34,13 +34,19 @@
             'bg-bg-7 text-text-1': latestBetIndex === 1
           }"
           class="flex h-[39px] flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
-          @click.stop="latestBetIndex = 1"
+          @click.stop="switchLatestBet(1)"
         >
           {{ t('casino.high_roller') }}
         </button>
       </div>
-      <div class="mt-3 h-[430px]">
-        <LatestBetTable :type="latestBetIndex === 0 ? 1 : 2" />
+      <div class="filter-slide-stage mt-3 h-[430px] overflow-hidden rounded-lg sm:rounded-xl">
+        <Transition :name="slideName">
+          <LatestBetTable
+            :key="latestBetIndex"
+            :type="latestBetIndex === 0 ? 1 : 2"
+            class="filter-slide-pane"
+          />
+        </Transition>
       </div>
     </template>
   </template>
@@ -69,7 +75,14 @@ const lobbyButtons = computed<CasinoLobbyButtonItem[]>(() => {
 })
 
 const latestBetIndex = ref(0)
+const slideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
 const skeletonSectionCount = computed(() => (isMobile.value ? 3 : 4))
+
+const switchLatestBet = (index: 0 | 1) => {
+  if (index === latestBetIndex.value) return
+  slideName.value = index > latestBetIndex.value ? 'filter-slide-left' : 'filter-slide-right'
+  latestBetIndex.value = index
+}
 </script>
 
 <style scoped lang="scss"></style>
