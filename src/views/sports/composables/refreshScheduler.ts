@@ -1,111 +1,53 @@
 type RefreshActions = {
-  visible: () => Promise<unknown>
-  counts: () => Promise<unknown>
-  background: () => Promise<unknown>
+  normal: () => Promise<unknown>
   hot: () => Promise<unknown>
-  cancel: () => void
+  cancelNormal: () => void
+  cancelHot: () => void
 }
 
-type ListTask = 'counts' | 'background' | 'hot'
+const ROUND_INTERVAL = 20_000
 
-const EVENT_INTERVAL = 10_000
-const LIST_INTERVAL = 10_000
-const HOT_INTERVAL = 60_000
-
-/** 数量、名单和可见赛事独立刷新，同类请求不重叠。 */
+/** 两条更新线独立计时；请求及数据合并结束后才开始下一轮倒计时。 */
 export const createHomepageRefresh = (actions: RefreshActions) => {
-  let active = false
-  let generation = 0
-  let visibleRunning = false
-  const runningLists = new Set<ListTask>()
-  let visibleRequested = false
-  let nextListRefresh = Date.now() + LIST_INTERVAL
-  let nextHotRefresh = Date.now() + HOT_INTERVAL
-  let eventTimer: ReturnType<typeof setTimeout> | undefined
-  let listTimer: ReturnType<typeof setTimeout> | undefined
-  let targetsTimer: ReturnType<typeof setTimeout> | undefined
-
-  const scheduleVisible = (delay: number) => {
-    clearTimeout(eventTimer)
-    eventTimer = setTimeout(runVisible, delay)
-  }
-
-  const runVisible = async () => {
-    if (!active) return
-    if (visibleRunning) {
-      visibleRequested = true
-      return
+  const createLine = (run: () => Promise<unknown>, cancel: () => void) => {
+    let active = false
+    let generation = 0
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const tick = async () => {
+      if (!active) return
+      const current = generation
+      try {
+        await run()
+      } catch {
+        // 本轮失败也要等任务结束，保留已有数据并在下一轮重试。
+      } finally {
+        if (active && current === generation) timer = setTimeout(tick, ROUND_INTERVAL)
+      }
     }
-    clearTimeout(eventTimer)
-    const current = generation
-    visibleRunning = true
-    try {
-      await actions.visible()
-    } catch {
-      // 静默刷新失败，保留旧数据，下轮再试。
-    } finally {
-      if (active && current === generation) {
-        visibleRunning = false
-        scheduleVisible(visibleRequested ? 100 : EVENT_INTERVAL)
-        visibleRequested = false
+    return {
+      start(immediate = false) {
+        if (active) return
+        active = true
+        timer = setTimeout(tick, immediate ? 0 : ROUND_INTERVAL)
+      },
+      stop() {
+        active = false
+        generation += 1
+        clearTimeout(timer)
+        cancel()
       }
     }
   }
-
-  const runListTask = async (task: ListTask) => {
-    if (!active || runningLists.has(task)) return
-    const current = generation
-    runningLists.add(task)
-    try {
-      await actions[task]()
-    } catch {
-      // 各自重试，不清空旧数据，也不阻塞其他任务。
-    } finally {
-      if (current === generation) runningLists.delete(task)
+  const normal = createLine(actions.normal, actions.cancelNormal)
+  const hot = createLine(actions.hot, actions.cancelHot)
+  return {
+    startNormal: normal.start,
+    stopNormal: normal.stop,
+    startHot: hot.start,
+    stopHot: hot.stop,
+    stop() {
+      normal.stop()
+      hot.stop()
     }
   }
-
-  const scheduleLists = () => {
-    clearTimeout(listTimer)
-    listTimer = setTimeout(runLists, Math.max(0, nextListRefresh - Date.now()))
-  }
-
-  const runLists = () => {
-    if (!active) return
-    // 数量先发出，名单不等待数量响应。
-    void runListTask('counts')
-    void runListTask('background')
-    if (Date.now() >= nextHotRefresh) {
-      void runListTask('hot')
-      nextHotRefresh = Date.now() + HOT_INTERVAL
-    }
-    nextListRefresh = Date.now() + LIST_INTERVAL
-    scheduleLists()
-  }
-
-  const stop = () => {
-    active = false
-    generation += 1
-    visibleRunning = false
-    runningLists.clear()
-    visibleRequested = false
-    clearTimeout(eventTimer)
-    clearTimeout(listTimer)
-    clearTimeout(targetsTimer)
-    actions.cancel()
-  }
-
-  const start = (immediate = false) => {
-    if (active) return
-    active = true
-    scheduleLists()
-    scheduleVisible(immediate ? 0 : EVENT_INTERVAL)
-  }
-
-  const targetsChanged = () => {
-    clearTimeout(targetsTimer)
-    if (active) targetsTimer = setTimeout(runVisible, 100)
-  }
-
-  return { start, stop, targetsChanged }
 }
