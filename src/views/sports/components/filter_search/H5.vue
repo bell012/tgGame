@@ -15,9 +15,9 @@
             {{ item.label }}
           </span>
           <span
-            class="absolute -top-[5.667px] left-full inline-flex h-[11px] items-center justify-center rounded-[5.667px] bg-secondary-2 px-[2px] text-[9px] font-normal leading-[11px] text-common-100"
+            class="absolute -top-[5.667px] left-full inline-flex h-[11px] items-center justify-center rounded-[5.667px] bg-secondary-2 px-[2px] text-[9px] font-normal text-common-100"
           >
-            {{ item.count }}
+            <span>{{ item.count }}</span>
           </span>
         </span>
       </button>
