@@ -24,6 +24,39 @@
   transform: translateX(0);
 }
 
+/* 标签切换滑动：点右侧向左滑出，点左侧向右滑出 */
+.filter-slide-stage {
+  display: grid;
+  overflow: hidden;
+}
+
+.filter-slide-pane {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.filter-slide-left-enter-active,
+.filter-slide-left-leave-active,
+.filter-slide-right-enter-active,
+.filter-slide-right-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-slide-left-enter-from,
+.filter-slide-right-leave-to {
+  transform: translateX(100%);
+}
+
+.filter-slide-left-leave-to,
+.filter-slide-right-enter-from {
+  transform: translateX(-100%);
+}
+
+.filter-slide-left-leave-active,
+.filter-slide-right-leave-active {
+  pointer-events: none;
+}
+
 /* 淡入淡出风琴动画  展开/收起 */
 .fade-accordion-enter-active {
   max-height: var(--fade-accordion-max-height);
@@ -103,7 +136,11 @@
   .bottom-sheet-enter-active,
   .bottom-sheet-leave-active,
   .bottom-sheet-enter-active .bottom-sheet-panel,
-  .bottom-sheet-leave-active .bottom-sheet-panel {
+  .bottom-sheet-leave-active .bottom-sheet-panel,
+  .filter-slide-left-enter-active,
+  .filter-slide-left-leave-active,
+  .filter-slide-right-enter-active,
+  .filter-slide-right-leave-active {
     transition-duration: 0.01ms;
   }
 }

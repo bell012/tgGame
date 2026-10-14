@@ -539,45 +539,4 @@ const selectOdds = async (matchId: string, payload: OddsSelectPayload) => {
 .sports-h5-sticky-navigation {
   padding-top: var(--app-shell-top-safe-offset);
 }
-
-.filter-slide-stage {
-  display: grid;
-  overflow: hidden;
-}
-
-.filter-slide-pane {
-  grid-area: 1 / 1;
-  min-width: 0;
-}
-
-.filter-slide-left-enter-active,
-.filter-slide-left-leave-active,
-.filter-slide-right-enter-active,
-.filter-slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.filter-slide-left-enter-from,
-.filter-slide-right-leave-to {
-  transform: translateX(100%);
-}
-
-.filter-slide-left-leave-to,
-.filter-slide-right-enter-from {
-  transform: translateX(-100%);
-}
-
-.filter-slide-left-leave-active,
-.filter-slide-right-leave-active {
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .filter-slide-left-enter-active,
-  .filter-slide-left-leave-active,
-  .filter-slide-right-enter-active,
-  .filter-slide-right-leave-active {
-    transition-duration: 0.01ms;
-  }
-}
 </style>
