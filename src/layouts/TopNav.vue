@@ -106,13 +106,11 @@
         <template v-else>
           <div
             ref="desktopCurrencyAnchorRef"
-            class="hidden sm:flex items-center justify-between search h-[40px] p-1 rounded-lg mr-3"
+            class="hidden sm:flex items-center justify-between search h-[40px] p-1 rounded-lg mr-3 cursor-pointer"
             style="width: 260px"
+            @click="openLoggedInCurrencyPopup"
           >
-            <div
-              class="flex items-center justify-center cursor-pointer ml-1"
-              @click="openLoggedInCurrencyPopup"
-            >
+            <div class="flex items-center justify-center ml-1">
               <div class="w-10 h-10 mr-1">
                 <img
                   :src="currentCurrencyIcon"
@@ -127,11 +125,7 @@
             </div>
             <!-- 充值 -->
             <div class="flex items-center">
-              <button
-                type="button"
-                class="top-nav-currency-arrow-bg mr-1 cursor-pointer"
-                @click="openLoggedInCurrencyPopup"
-              >
+              <button type="button" class="top-nav-currency-arrow-bg mr-1 cursor-pointer">
                 <svg
                   class="top-nav-currency-arrow"
                   viewBox="0 0 20 20"
@@ -143,7 +137,7 @@
               </button>
               <div
                 class="cursor-pointer h-8 text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
-                @click="openDeposit"
+                @click.stop="openDeposit"
               >
                 {{ t('deposit.title') }}
               </div>
@@ -153,12 +147,10 @@
           <!-- H5 余额和充值容器 -->
           <div
             ref="mobileCurrencyAnchorRef"
-            class="flex sm:hidden items-center justify-between search w-[184px] h-[33px] p-1 rounded-lg mr-2"
+            class="flex sm:hidden items-center justify-between search w-[184px] h-[33px] p-1 rounded-lg mr-2 cursor-pointer"
+            @click="openLoggedInCurrencyPopup"
           >
-            <div
-              class="flex items-center justify-center cursor-pointer ml-1"
-              @click="openLoggedInCurrencyPopup"
-            >
+            <div class="flex items-center justify-center ml-1">
               <div class="w-5 h-5 mr-1">
                 <img
                   :src="currentCurrencyIcon"
@@ -173,11 +165,7 @@
             </div>
 
             <div class="flex items-center">
-              <button
-                type="button"
-                class="top-nav-currency-arrow-bg mr-1 cursor-pointer"
-                @click="openLoggedInCurrencyPopup"
-              >
+              <button type="button" class="top-nav-currency-arrow-bg mr-1 cursor-pointer">
                 <svg
                   class="top-nav-currency-arrow"
                   viewBox="0 0 20 20"
@@ -190,7 +178,7 @@
               <!-- 充值按钮 -->
               <div
                 class="cursor-pointer w-[26px] h-[26px] text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
-                @click="openDeposit"
+                @click.stop="openDeposit"
               >
                 <Jia class="w-3 h-3" />
               </div>
