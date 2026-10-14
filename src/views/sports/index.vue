@@ -1,8 +1,8 @@
 <template>
-  <template v-if="isMobile">
+  <div v-if="isMobile">
     <H5Page :page="page" />
     <BetSlipH5 :page="page" />
-  </template>
+  </div>
 
   <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1" data-testid="sports-page">
     <SportsNavigation class="!px-5" @change="handleSportChange" />
