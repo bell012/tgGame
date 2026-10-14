@@ -8,7 +8,7 @@
   >
     <div class="grid min-w-0 grid-cols-[minmax(0,430fr)_minmax(0,522fr)] gap-2.5">
       <div class="flex min-w-0 flex-col">
-        <div class="flex h-[15px] min-w-0 items-center gap-2 text-[11px] leading-[13.333px]">
+        <div class="flex h-[15px] min-w-0 items-center gap-2 text-[11px]">
           <button
             type="button"
             class="-mx-1 flex h-5 w-5 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"

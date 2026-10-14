@@ -208,14 +208,13 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     }
   )
   const homepageRefresh = createHomepageRefresh({
-    visible: () => sportsStore.refreshVisibleEvents(refreshTargets.value),
-    counts: () => sportsStore.refreshHomepageCounts(),
-    background: async () => {
-      await sportsStore.refreshHomepageBackground()
+    normal: async () => {
+      await sportsStore.refreshHomepageNormal()
       sportsStore.pruneEventCache(getBetTargets)
     },
     hot: () => sportsStore.refreshHomepageHot(),
-    cancel: () => sportsStore.cancelHomepageRefresh()
+    cancelNormal: () => sportsStore.cancelHomepageRefresh(),
+    cancelHot: () => sportsStore.cancelHomepageHot()
   })
   let homepageReady = false
   let homepageLoadVersion = 0
@@ -228,8 +227,8 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
       !document.hidden
     ) {
       // 初始加载期间也可能切后台；就绪后恢复时统一续查，由 Store 复用在途请求和缓存。
-      void sportsStore.fetchMissingHotEvents()
-      homepageRefresh.start(immediate)
+      homepageRefresh.startNormal(immediate)
+      homepageRefresh.startHot(true)
     }
   }
   const handlePageVisibility = () => {
@@ -237,14 +236,6 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     else resumeHomepageRefresh(true)
   }
   watch(isHomepageRoute, handlePageVisibility)
-  watch(
-    () =>
-      refreshTargets.value
-        .map(target => `${target.sportId}:${target.eventId}`)
-        .sort()
-        .join(','),
-    () => homepageRefresh.targetsChanged()
-  )
   const matchListContext = computed(() =>
     JSON.stringify([storeMatchListContext.value, collectOnly.value])
   )
@@ -372,15 +363,19 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
       ],
       (values, previous) => {
         if (!sportsPageActive.value || sportsPageDisposed) return
-        homepageRefresh.stop()
+        homepageRefresh.stopNormal()
         homepageReady = false
         const version = ++homepageLoadVersion
         const refreshCounts =
           previous[0] !== true || values[1] !== previous[1] || values[2] !== previous[2]
         if (refreshCounts) resetMatchListState()
-        // 热门随进入页面、语言、球种或分类变化刷新；先等待数量接口成功。
+        // 共同条件变化才重启热门线；名单并行取得，详情等待普通首轮结束。
         const refreshCompetitionList =
-          refreshCounts || values[3] !== previous[3] || values[4] !== previous[4]
+          refreshCounts ||
+          values[3] !== previous[3] ||
+          values[4] !== previous[4] ||
+          values[10] !== previous[10]
+        if (refreshCompetitionList) homepageRefresh.stopHot()
         void sportsStore.loadHomepage({ refreshCounts, refreshCompetitionList }).finally(() => {
           if (version !== homepageLoadVersion) return
           homepageReady = true

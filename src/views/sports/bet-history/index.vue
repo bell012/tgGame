@@ -65,7 +65,7 @@
               <button
                 v-if="!item.settled"
                 type="button"
-                class="rounded-[6px] bg-theme-primary px-[8px] py-[3px] text-[12px] font-[400] text-text-4"
+                class="flex h-5 items-center justify-center rounded-[6px] bg-theme-primary px-[8px] text-[12px] font-[400] leading-4 text-text-4"
               >
                 {{ t('betHistory.earlySettlement') }}
               </button>
