@@ -17,7 +17,7 @@
             v-for="(tab, index) in tabs"
             :key="tab.value"
             :class="['bet-tab', 'flex-1 lg:flex-none', { active: activeTab === index }]"
-            @click="activeTab = index"
+            @click="switchTab(index)"
           >
             {{ tab.label }}
           </button>
@@ -25,110 +25,122 @@
       </div>
     </div>
     <!-- Table -->
-    <div class="table-wrap">
-      <div
-        v-if="activeTab !== 2"
-        class="table-scroll-shell relative h-[430px] w-full overflow-hidden [overflow-anchor:none]"
-      >
-        <table class="table [&_td]:px-3 sm:[&_td]:px-4" role="table" style="overflow-anchor: none">
-          <thead class="table-head pc-only" role="rowgroup">
-            <tr role="row" class="text-text-2">
-              <th>{{ t('gameDetail.betId') }}</th>
-              <th class="sm:w-auto">{{ t('gameDetail.bet') }}</th>
-              <th>{{ t('home.Multiplier') }}</th>
-              <th class="text-right">{{ t('gameDetail.profit') }}</th>
-            </tr>
-          </thead>
-          <tbody v-if="isLoading">
-            <tr
-              v-for="index in MAX_VISIBLE_ROWS"
-              :key="`skeleton-${index}`"
-              class="h-[39px]"
-              :class="[index % 2 === 1 ? 'bg-bg-3' : 'bg-bg-2']"
-            >
-              <td class="h-[39px] px-3">
-                <div class="h-3.5 w-24 max-w-full rounded bg-text-2/10" />
-              </td>
-              <td class="h-[39px] px-3">
-                <div class="flex items-center justify-center gap-1">
-                  <div class="h-3.5 w-10 rounded bg-text-2/10" />
-                  <div class="h-3 w-3 shrink-0 rounded-full bg-text-2/10" />
-                </div>
-              </td>
-              <td class="h-[39px] px-3">
-                <div class="mx-auto h-3.5 w-10 rounded bg-text-2/10" />
-              </td>
-              <td class="h-[39px] px-3">
-                <div class="ml-auto flex w-[73px] items-center justify-end gap-1 sm:w-[88px]">
-                  <div class="h-3.5 w-12 rounded bg-text-2/10 sm:w-16" />
-                  <div class="h-3 w-3 shrink-0 rounded-full bg-text-2/10" />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-          <tbody v-else-if="rows.length">
-            <tr
-              v-for="(item, index) in rows"
-              :key="`row-${index}`"
-              :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
-            >
-              <td class="h-[39px] px-3 text-text-1 truncate">
-                <span class="text-text-1 truncate">
-                  {{ item.betId }}
-                </span>
-              </td>
-              <td class="cell" role="cell">
-                <div class="flex items-center justify-center">
-                  <span class="order-1">{{ item.bet }}</span>
-                  <SmartImage
-                    :src="currentCurrencyIcon"
-                    class="icon object-contain shrink-0 order-2"
-                    :alt="currentRequestCurrency"
-                  />
-                </div>
-              </td>
-              <td class="h-[39px] px-3 text-text-1 truncate">
-                {{ item.payout }}{{ multiplierUnit }}
-              </td>
-              <td class="profit-cell h-[39px] px-3">
-                <div class="flex items-center justify-end gap-1">
-                  <span
-                    class="order-1"
-                    :class="
-                      item.profitNumber >= 0
-                        ? 'text-[var(--color-secondary-level-4)]'
-                        : 'text-[#ff4d4f]'
-                    "
-                  >
-                    {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
+    <div class="table-wrap filter-slide-stage">
+      <Transition :name="slideName">
+        <div
+          v-if="activeTab !== 2"
+          :key="`bet-list-${activeTab}`"
+          class="filter-slide-pane table-scroll-shell relative h-[430px] w-full overflow-hidden [overflow-anchor:none]"
+        >
+          <table
+            class="table [&_td]:px-3 sm:[&_td]:px-4"
+            role="table"
+            style="overflow-anchor: none"
+          >
+            <thead class="table-head pc-only" role="rowgroup">
+              <tr role="row" class="text-text-2">
+                <th>{{ t('gameDetail.betId') }}</th>
+                <th class="sm:w-auto">{{ t('gameDetail.bet') }}</th>
+                <th>{{ t('home.Multiplier') }}</th>
+                <th class="text-right">{{ t('gameDetail.profit') }}</th>
+              </tr>
+            </thead>
+            <tbody v-if="isLoading">
+              <tr
+                v-for="index in MAX_VISIBLE_ROWS"
+                :key="`skeleton-${index}`"
+                class="h-[39px]"
+                :class="[index % 2 === 1 ? 'bg-bg-3' : 'bg-bg-2']"
+              >
+                <td class="h-[39px] px-3">
+                  <div class="h-3.5 w-24 max-w-full rounded bg-text-2/10" />
+                </td>
+                <td class="h-[39px] px-3">
+                  <div class="flex items-center justify-center gap-1">
+                    <div class="h-3.5 w-10 rounded bg-text-2/10" />
+                    <div class="h-3 w-3 shrink-0 rounded-full bg-text-2/10" />
+                  </div>
+                </td>
+                <td class="h-[39px] px-3">
+                  <div class="mx-auto h-3.5 w-10 rounded bg-text-2/10" />
+                </td>
+                <td class="h-[39px] px-3">
+                  <div class="ml-auto flex w-[73px] items-center justify-end gap-1 sm:w-[88px]">
+                    <div class="h-3.5 w-12 rounded bg-text-2/10 sm:w-16" />
+                    <div class="h-3 w-3 shrink-0 rounded-full bg-text-2/10" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="rows.length">
+              <tr
+                v-for="(item, index) in rows"
+                :key="`row-${index}`"
+                :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
+              >
+                <td class="h-[39px] px-3 text-text-1 truncate">
+                  <span class="text-text-1 truncate">
+                    {{ item.betId }}
                   </span>
-                  <SmartImage
-                    :src="currentCurrencyIcon"
-                    class="w-3 h-3 object-contain shrink-0 order-2"
-                    :alt="currentRequestCurrency"
+                </td>
+                <td class="cell" role="cell">
+                  <div class="flex items-center justify-center">
+                    <span class="order-1">{{ item.bet }}</span>
+                    <SmartImage
+                      :src="currentCurrencyIcon"
+                      class="icon object-contain shrink-0 order-2"
+                      :alt="currentRequestCurrency"
+                    />
+                  </div>
+                </td>
+                <td class="h-[39px] px-3 text-text-1 truncate">
+                  {{ item.payout }}{{ multiplierUnit }}
+                </td>
+                <td class="profit-cell h-[39px] px-3">
+                  <div class="flex items-center justify-end gap-1">
+                    <span
+                      class="order-1"
+                      :class="
+                        item.profitNumber >= 0
+                          ? 'text-[var(--color-secondary-level-4)]'
+                          : 'text-[#ff4d4f]'
+                      "
+                    >
+                      {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
+                    </span>
+                    <SmartImage
+                      :src="currentCurrencyIcon"
+                      class="w-3 h-3 object-contain shrink-0 order-2"
+                      :alt="currentRequestCurrency"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr class="bg-bg-2">
+                <td colspan="4" class="px-2 py-5">
+                  <ThemedEmptyState
+                    :dark-image="defaultImgDark"
+                    :light-image="defaultImgLight"
+                    :image-alt="t('gameDetail.noData')"
+                    :message="t('gameDetail.stayTunedComingSoon')"
+                    container-class="mt-0"
+                    image-class="h-[120px] w-auto mb-1.5"
+                    text-class="text-[12px] font-[500] leading-[18px] text-text-2"
                   />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-          <tbody v-else>
-            <tr class="bg-bg-2">
-              <td colspan="4" class="px-2 py-5">
-                <ThemedEmptyState
-                  :dark-image="defaultImgDark"
-                  :light-image="defaultImgLight"
-                  :image-alt="t('gameDetail.noData')"
-                  :message="t('gameDetail.stayTunedComingSoon')"
-                  container-class="mt-0"
-                  image-class="h-[120px] w-auto mb-1.5"
-                  text-class="text-[12px] font-[500] leading-[18px] text-text-2"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <LatestBetTable v-else :type="2" class="detail-high-roller-table" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <LatestBetTable
+          v-else
+          :key="`high-roller-${activeTab}`"
+          :type="2"
+          class="filter-slide-pane detail-high-roller-table"
+        />
+      </Transition>
     </div>
   </div>
 </template>
@@ -151,6 +163,13 @@ import SmartImage from '@/components/common/SmartImage.vue'
 import { storeToRefs } from 'pinia'
 
 const activeTab = ref(0)
+const slideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
+
+const switchTab = (index: number) => {
+  if (index === activeTab.value) return
+  slideName.value = index > activeTab.value ? 'filter-slide-left' : 'filter-slide-right'
+  activeTab.value = index
+}
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const themeStore = useThemeStore()

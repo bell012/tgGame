@@ -32,10 +32,27 @@
             {{ tab.label }}
           </div>
         </div>
-        <!-- 内容：v-show 保持挂载，避免切换 tab 时重复加载与布局跳动 -->
-        <div class="recent-games-tab-content">
-          <Winlist v-show="shouldShowRankList" :list="rankList" :loading="isRankLoading" />
-          <Review v-show="shouldShowReviewTab" />
+        <!-- 内容：KeepAlive 保持挂载，避免切换 tab 时重复加载 -->
+        <div class="recent-games-tab-content filter-slide-stage">
+          <Transition :name="slideName">
+            <KeepAlive>
+              <Winlist
+                v-if="tabValue === TAB_HIGH_WIN"
+                key="high-win"
+                class="filter-slide-pane w-full"
+                :list="rankListByType[TAB_HIGH_WIN] ?? []"
+                :loading="isRankLoading && tabValue === TAB_HIGH_WIN"
+              />
+              <Winlist
+                v-else-if="tabValue === TAB_LUCKY_WIN"
+                key="lucky-win"
+                class="filter-slide-pane w-full"
+                :list="rankListByType[TAB_LUCKY_WIN] ?? []"
+                :loading="isRankLoading && tabValue === TAB_LUCKY_WIN"
+              />
+              <Review v-else key="review" class="filter-slide-pane w-full" />
+            </KeepAlive>
+          </Transition>
         </div>
       </div>
     </transition>
@@ -80,6 +97,8 @@ const REQUEST_OPTIONS = {
 
 // 展开/收起状态通过 provide 共享给子组件
 const tabValue = ref<TabValue>(TAB_HIGH_WIN)
+const TAB_ORDER: TabValue[] = [TAB_HIGH_WIN, TAB_LUCKY_WIN, TAB_REVIEW]
+const slideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
 const isOpen = ref(false)
 provide('isRgOpen', isOpen)
 
@@ -140,25 +159,11 @@ const currentRequestCurrency = computed(
   () => normalizeValue(actualCurrency.value).toUpperCase() || 'USD'
 )
 
-// 模板展示条件
-const shouldShowRankList = computed(
-  () => tabValue.value === TAB_HIGH_WIN || tabValue.value === TAB_LUCKY_WIN
-)
-const shouldShowReviewTab = computed(() => tabValue.value === TAB_REVIEW)
-
 // 将 Tab 映射为排行榜接口 type
 const currentType = computed<1 | 2 | 0>(() => {
   if (tabValue.value === TAB_HIGH_WIN) return TAB_HIGH_WIN
   if (tabValue.value === TAB_LUCKY_WIN) return TAB_LUCKY_WIN
   return RANK_TYPE_NONE
-})
-
-const rankList = computed(() => {
-  const type = currentType.value
-  if (type === TAB_HIGH_WIN || type === TAB_LUCKY_WIN) {
-    return rankListByType.value[type] ?? []
-  }
-  return []
 })
 
 // 接口可能返回数组或 { records }，统一兜底成数组
@@ -222,8 +227,13 @@ watch(
   { immediate: true }
 )
 
-const tabIndexClick = (index: number) => {
-  tabValue.value = index as TabValue
+const tabIndexClick = (next: TabValue) => {
+  if (next === tabValue.value) return
+  slideName.value =
+    TAB_ORDER.indexOf(next) > TAB_ORDER.indexOf(tabValue.value)
+      ? 'filter-slide-left'
+      : 'filter-slide-right'
+  tabValue.value = next
 }
 </script>
 
