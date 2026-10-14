@@ -1,15 +1,13 @@
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useCheckInModalStore } from '@/stores/checkInModal'
 import { useUserStore } from '@/stores/user'
-import { getCurrentCurrency } from '@/utils/locale'
+import { getCurrentCurrency, getLocaleFromRouteParam } from '@/utils/locale'
 import { storeToRefs } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { loadActiveCheckInDataList } from './checkInData'
 import {
-  CHECK_IN_POP_WAY,
-  getCheckInLoginPopWay,
   markCheckInAutoPopupShown,
   setOpenedCheckInActivityIds,
   shouldShowCheckInAutoPopup
@@ -30,8 +28,8 @@ export const useCheckInAutoPopup = () => {
   const isChecking = ref(false)
   const lastCheckedKey = ref('')
   const homeEntryId = ref(0)
-  // 每次进入首页只弹一次。停在首页关掉后，同一次停留不再打开。
-  const frequentShownEntry = new Map<string, number>()
+  // 本次弹窗打开时使用的语言。语言从默认英文切到路由语言后，要按新语言重算队列。
+  const localeAtOpen = ref('')
 
   // 当前用户是否已经登录，登录后才允许自动查询签到状态。
   const isLoggedIn = computed(() => {
@@ -76,11 +74,19 @@ export const useCheckInAutoPopup = () => {
       return
     }
 
-    if (!isLoggedIn.value || isChecking.value || checkInModalStore.visible) {
+    // 路由语言还没准备好时，initLanguage 会先落到默认英文。这时筛活动会丢掉只有中文简介的签到。
+    if (!getLocaleFromRouteParam(route.params.locale as string | undefined)) {
       return
     }
 
-    if (isCheckInPreviewRoute.value) {
+    if (!isLoggedIn.value || isChecking.value || isCheckInPreviewRoute.value) {
+      return
+    }
+
+    const localeChangedWhileOpen =
+      checkInModalStore.visible && localeAtOpen.value !== String(locale.value)
+
+    if (checkInModalStore.visible && !localeChangedWhileOpen) {
       return
     }
 
@@ -114,20 +120,14 @@ export const useCheckInAutoPopup = () => {
         return
       }
 
-      const eligibleQueue = checkInDataQueue.filter(item => {
-        if (!shouldShowCheckInAutoPopup(item.activity, activeMemberId.value, loginToken.value)) {
-          return false
-        }
-
-        if (getCheckInLoginPopWay(item.activity) !== CHECK_IN_POP_WAY.EACH_HOME_VISIT) {
-          return true
-        }
-
-        const activityId = String(item.activity.rowId ?? '')
-        return frequentShownEntry.get(activityId) !== requestEntryId
-      })
+      const eligibleQueue = checkInDataQueue.filter(item =>
+        shouldShowCheckInAutoPopup(item.activity, activeMemberId.value, loginToken.value)
+      )
 
       if (eligibleQueue.length === 0) {
+        if (localeChangedWhileOpen) {
+          checkInModalStore.closeModal()
+        }
         return
       }
 
@@ -136,10 +136,19 @@ export const useCheckInAutoPopup = () => {
       )
       eligibleQueue.forEach(item => {
         markCheckInAutoPopupShown(item.activity, activeMemberId.value, loginToken.value)
-        if (getCheckInLoginPopWay(item.activity) === CHECK_IN_POP_WAY.EACH_HOME_VISIT) {
-          frequentShownEntry.set(String(item.activity.rowId ?? ''), requestEntryId)
-        }
       })
+      localeAtOpen.value = String(locale.value)
+
+      // 先关掉再打开，让弹窗用新的活动名单重新加载。同步开关会被合并成一次 true，队列不会刷新。
+      if (checkInModalStore.visible) {
+        checkInModalStore.closeModal()
+        await nextTick()
+      }
+
+      if (!isHomeRoute.value || requestEntryId !== homeEntryId.value || !isLoggedIn.value) {
+        return
+      }
+
       checkInModalStore.openModal()
     } catch (error) {
       console.error(error)
@@ -147,6 +156,24 @@ export const useCheckInAutoPopup = () => {
       isChecking.value = false
     }
   }
+
+  // 从往返缓存恢复页面时，内存里的本次访问记录还在。记一次新的首页访问，高频活动可以再弹。
+  const handlePageShow = (event: PageTransitionEvent) => {
+    if (!event.persisted || !isHomeRoute.value) {
+      return
+    }
+
+    lastCheckedKey.value = ''
+    homeEntryId.value += 1
+  }
+
+  onMounted(() => {
+    window.addEventListener('pageshow', handlePageShow)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('pageshow', handlePageShow)
+  })
 
   // 进入首页记一次访问；离开首页关掉已经打开的自动弹窗。
   watch(
@@ -172,6 +199,7 @@ export const useCheckInAutoPopup = () => {
       activeMemberId,
       activeCurrency,
       () => locale.value,
+      () => route.params.locale,
       activeChannelId,
       isHomeRoute,
       homeEntryId
