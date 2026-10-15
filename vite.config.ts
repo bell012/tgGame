@@ -1,4 +1,5 @@
 import vue from '@vitejs/plugin-vue'
+import { readFileSync } from 'node:fs'
 import imagemin from 'imagemin'
 import imageminWebp from 'imagemin-webp'
 import { resolve } from 'path'
@@ -47,6 +48,27 @@ const createWebpAssetsPlugin = (): Plugin => ({
   }
 })
 
+const createPwaAssetsPlugin = (): Plugin => ({
+  name: 'tg-game:pwa-assets',
+  apply: 'build',
+  generateBundle() {
+    const assetPaths = [
+      'src/static/img/180.png',
+      'src/static/img/192.png',
+      'src/static/img/512.png',
+      'src/static/img/1125.png'
+    ]
+
+    assetPaths.forEach(assetPath => {
+      this.emitFile({
+        type: 'asset',
+        fileName: assetPath,
+        source: readFileSync(resolve(process.cwd(), assetPath))
+      })
+    })
+  }
+})
+
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   const apiProxy: ProxyOptions = {
@@ -88,6 +110,7 @@ export default defineConfig(() => {
         }
       }),
       createWebpAssetsPlugin(),
+      createPwaAssetsPlugin(),
       viteImagemin({
         filter: /\.(png|jpe?g)$/i,
         mozjpeg: {
@@ -117,25 +140,23 @@ export default defineConfig(() => {
           orientation: 'portrait',
           scope: '/',
           start_url: '/',
-          icons: []
-          // icons: [
-          //   {
-          //     src: 'pwa-192x192.png',
-          //     sizes: '192x192',
-          //     type: 'image/png'
-          //   },
-          //   {
-          //     src: 'pwa-512x512.png',
-          //     sizes: '512x512',
-          //     type: 'image/png'
-          //   },
-          //   {
-          //     src: 'pwa-512x512.png',
-          //     sizes: '512x512',
-          //     type: 'image/png',
-          //     purpose: 'any maskable'
-          //   }
-          // ]
+          icons: [
+            {
+              src: '/src/static/img/180.png',
+              sizes: '180x180',
+              type: 'image/png'
+            },
+            {
+              src: '/src/static/img/192.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: '/src/static/img/512.png',
+              sizes: '512x512',
+              type: 'image/png'
+            }
+          ]
         },
         workbox: {
           maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
