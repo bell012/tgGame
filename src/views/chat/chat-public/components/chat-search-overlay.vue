@@ -73,16 +73,13 @@
 
     <!-- PC 提示相对搜索覆盖层定位，避免与 header 发生层叠。 -->
     <p
-      v-if="!query && props.displayMode === 'pc'"
-      class="absolute left-1/2 top-[178px] w-[186px] -translate-x-1/2 text-center text-[14px] font-[400] leading-[20px] text-text-1"
-    >
-      {{ t('chatPublic.searchHint') }}
-    </p>
-
-    <!-- H5 保留原有位置与视觉尺寸。 -->
-    <p
-      v-if="!query && props.displayMode === 'h5'"
-      class="absolute left-1/2 top-[233.67px] w-[162px] -translate-x-1/2 text-center text-[12px] font-[400] leading-[14.67px] text-text-3"
+      v-if="!query"
+      class="absolute left-1/2 min-w-0 -translate-x-1/2 text-center text-[14px] font-[400] leading-[20px] text-text-1"
+      :class="
+        props.displayMode === 'pc'
+          ? 'top-[178px]      text-[14px]  leading-[20px] text-text-1'
+          : 'top-[233.67px]     text-[12px]   leading-[14.67px] text-text-3 '
+      "
     >
       {{ t('chatPublic.searchHint') }}
     </p>
