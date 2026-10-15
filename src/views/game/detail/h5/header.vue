@@ -1,8 +1,6 @@
 <template>
-  <div class="game-detail-h5-header-spacer">
-    <div
-      class="game-detail-h5-header-bar fixed left-0 top-0 z-[99] flex w-full items-center bg-bg-2 px-[10px]"
-    >
+  <div class="game-detail-h5-header">
+    <div class="game-detail-h5-header-bar">
       <div class="size-[33px] flex items-center justify-center">
         <button
           type="button"
@@ -13,11 +11,13 @@
         </button>
       </div>
 
-      <div class="flex flex-1 justify-center items-center text-base font-extrabold text-text-1">
-        <slot />
+      <div
+        class="flex min-w-0 flex-1 items-center justify-center overflow-hidden px-1 text-base font-extrabold text-text-1"
+      >
+        <span class="truncate"><slot /></span>
       </div>
 
-      <div class="size-[33px]" />
+      <div class="size-[33px] shrink-0" />
     </div>
   </div>
 </template>
@@ -28,12 +28,24 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 </script>
 <style scoped lang="scss">
-.game-detail-h5-header-spacer {
-  height: calc(49px + var(--app-shell-top-safe-offset));
+.game-detail-h5-header {
+  flex-shrink: 0;
+  width: 100%;
+  background: var(--color-background-level-2);
+  padding-top: calc(constant(safe-area-inset-top) + var(--app-shell-top-safe-offset, 0px));
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--app-shell-top-safe-offset, 0px));
+  padding-right: constant(safe-area-inset-right);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-left: constant(safe-area-inset-left);
+  padding-left: env(safe-area-inset-left, 0px);
 }
 
 .game-detail-h5-header-bar {
-  height: calc(49px + var(--app-shell-top-safe-offset));
-  padding-top: var(--app-shell-top-safe-offset);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 49px;
+  padding-right: 10px;
+  padding-left: 10px;
 }
 </style>
