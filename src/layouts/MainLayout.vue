@@ -2,7 +2,7 @@
   <div class="flex min-h-screen">
     <!-- 顶部导航 -->
     <TopNav
-      v-if="!hideTopNav && !isFullscreenRoute"
+      v-if="showTopNav"
       ref="topNavRef"
       :sidebar-collapsed="isSidebarCollapsed"
       :style="topNavStyle"
@@ -29,10 +29,7 @@
         <!-- 路由内容区域 -->
         <section
           class="min-w-0 flex-1"
-          :class="{
-            'filter-slide-stage': isMobile && isPageSliding,
-            'pointer-events-none opacity-0': shouldHideMobileMenuDuringSlide
-          }"
+          :class="{ 'filter-slide-stage': isMobile && isPageSliding }"
         >
           <!-- 主内容区：滑动路由场景下优先渲染背景页，避免 keep-alive 在双 router-view 间切换失效 -->
           <router-view
@@ -279,17 +276,6 @@ const pageSlideName = ref<'filter-slide-left' | 'filter-slide-right' | 'tab-page
 )
 const isPageSliding = ref(false)
 let pageSlideTimer: number | null = null
-
-const shouldHideMobileMenuDuringSlide = computed(() => {
-  const backgroundPath = backgroundRouteSnapshot.value?.path
-
-  return (
-    isMobile.value &&
-    slideRouteStack.value.length > 0 &&
-    !!backgroundPath &&
-    stripLocalePrefix(backgroundPath) === '/menu'
-  )
-})
 
 const getBottomTabIndex = (fullPath: string) => {
   const path = stripLocalePrefix(fullPath).replace(/\/$/, '') || '/'
@@ -655,6 +641,14 @@ const hideBottomBar = computed(() => {
 
 const hideTopNav = computed(() => {
   return (route.meta?.mobile as MobileRouteMeta | undefined)?.hideTopNav && isMobile.value
+})
+
+const showTopNav = computed(() => {
+  if (isFullscreenRoute.value) {
+    return false
+  }
+
+  return !hideTopNav.value || (isMobile.value && slideRouteStack.value.length > 0)
 })
 
 watch(
