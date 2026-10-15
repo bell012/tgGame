@@ -53,17 +53,17 @@ const createPwaAssetsPlugin = (): Plugin => ({
   apply: 'build',
   generateBundle() {
     const assetPaths = [
-      'src/static/img/180.png',
-      'src/static/img/192.png',
-      'src/static/img/512.png',
-      'src/static/img/1125.png'
+      { source: 'src/static/img/180.png', output: 'pwa-icons/180.png' },
+      { source: 'src/static/img/192.png', output: 'pwa-icons/192.png' },
+      { source: 'src/static/img/512.png', output: 'pwa-icons/512.png' },
+      { source: 'src/static/img/1125.png', output: 'pwa-icons/1125.png' }
     ]
 
-    assetPaths.forEach(assetPath => {
+    assetPaths.forEach(({ source, output }) => {
       this.emitFile({
         type: 'asset',
-        fileName: assetPath,
-        source: readFileSync(resolve(process.cwd(), assetPath))
+        fileName: output,
+        source: readFileSync(resolve(process.cwd(), source))
       })
     })
   }
@@ -132,6 +132,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: ['mask-icon.svg'],
         manifest: {
+          id: '/',
           name: 'TG Game',
           short_name: 'TGGame',
           theme_color: '#323738',
@@ -142,17 +143,17 @@ export default defineConfig(() => {
           start_url: '/',
           icons: [
             {
-              src: '/src/static/img/180.png',
+              src: '/pwa-icons/180.png',
               sizes: '180x180',
               type: 'image/png'
             },
             {
-              src: '/src/static/img/192.png',
+              src: '/pwa-icons/192.png',
               sizes: '192x192',
               type: 'image/png'
             },
             {
-              src: '/src/static/img/512.png',
+              src: '/pwa-icons/512.png',
               sizes: '512x512',
               type: 'image/png'
             }
