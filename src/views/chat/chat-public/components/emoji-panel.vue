@@ -1,7 +1,7 @@
 <template>
   <!-- 第三方表情选择面板。 -->
   <section class="flex h-[384px] shrink-0 flex-col bg-bg-1 px-[12px] pb-[16px] pt-[12px]">
-    <p class="shrink-0 text-[13px] leading-[16px] text-text-1">{{ t('chatPublic.allEmojis') }}</p>
+    <p class="shrink-0 text-[13px] leading-[16px] text-text-2">{{ t('chatPublic.allEmojis') }}</p>
     <!-- emoji-picker-element 自定义元素。 -->
     <emoji-picker ref="pickerRef" class="chat-emoji-picker mt-[8px]" />
     <!-- 删除与发送操作区。 -->
@@ -111,10 +111,10 @@ onBeforeUnmount(unbindPickerEvent)
   touch-action: pan-y;
   overscroll-behavior: contain;
   --background: var(--color-background-level-1);
-  --border-color: rgb(255 255 255 / 0.06);
-  --border-radius: 8px;
+  --border-size: 0px;
   --category-font-color: var(--color-text-level-1);
-  --emoji-size: 1.375rem;
+  --num-columns: 7;
+  --emoji-size: 1.875rem;
   --input-border-color: rgb(255 255 255 / 0.1);
   --input-font-color: var(--color-text-level-1);
   --input-placeholder-color: var(--color-text-level-3);
