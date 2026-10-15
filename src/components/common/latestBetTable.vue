@@ -191,6 +191,13 @@ const formatMultiplier = (value: number) => {
   return value.toFixed(2)
 }
 
+/** 倍数须大于 0；盈余须为非 0 的有效数字。0、空值、非数字都不展示 */
+const isVisibleBetRow = (item: LiveBetRow) =>
+  Number.isFinite(item.multiplier) &&
+  item.multiplier > 0 &&
+  Number.isFinite(item.profit) &&
+  item.profit !== 0
+
 const toGameImageUrl = (value?: string) => {
   if (!value) {
     return ''
@@ -279,7 +286,7 @@ const startLatestListRefresh = () => {
 }
 
 const rows = computed<LiveBetRow[]>(() => {
-  return sourceRows.value.map(item => ({
+  return sourceRows.value.filter(isVisibleBetRow).map(item => ({
     ...item,
     gameIcon: item.gameIcon || placeholderImg
   }))

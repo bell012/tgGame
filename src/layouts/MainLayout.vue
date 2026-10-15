@@ -2,7 +2,7 @@
   <div class="flex min-h-screen">
     <!-- 顶部导航 -->
     <TopNav
-      v-if="!hideTopNav && !isFullscreenRoute"
+      v-if="showTopNav"
       ref="topNavRef"
       :sidebar-collapsed="isSidebarCollapsed"
       :style="topNavStyle"
@@ -21,31 +21,54 @@
 
     <!-- 主内容区 -->
     <main
-      class="main-layout-content flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
+      class="main-layout-content flex-1 overflow-y-auto bg-bg-1 transition-all duration-300 ease-in-out sm:bg-bg-1"
       :style="mainStyle"
     >
       <!-- 主内容容器 -->
       <div :class="isFullscreenRoute ? 'min-h-full' : 'flex min-h-full items-start gap-4'">
         <!-- 路由内容区域 -->
-        <section class="min-w-0 flex-1">
+        <section
+          class="min-w-0 flex-1"
+          :class="{ 'filter-slide-stage': isMobile && isPageSliding }"
+        >
           <!-- 主内容区：滑动路由场景下优先渲染背景页，避免 keep-alive 在双 router-view 间切换失效 -->
           <router-view
             v-if="mainAreaRoute"
             :route="mainAreaRoute"
             v-slot="{ Component, route: viewRoute }"
           >
-            <KeepAlive>
+            <template v-if="isMobile">
+              <Transition :name="pageSlideName" @after-enter="finishPageSlide">
+                <div :key="getMainRouteViewKey(viewRoute)" class="filter-slide-pane w-full">
+                  <KeepAlive>
+                    <component
+                      :is="Component"
+                      v-if="viewRoute.meta?.keepAlive"
+                      :key="getMainRouteViewKey(viewRoute)"
+                    />
+                  </KeepAlive>
+                  <component
+                    :is="Component"
+                    v-if="!viewRoute.meta?.keepAlive"
+                    :key="getMainRouteViewKey(viewRoute)"
+                  />
+                </div>
+              </Transition>
+            </template>
+            <template v-else>
+              <KeepAlive>
+                <component
+                  :is="Component"
+                  v-if="viewRoute.meta?.keepAlive"
+                  :key="getMainRouteViewKey(viewRoute)"
+                />
+              </KeepAlive>
               <component
                 :is="Component"
-                v-if="viewRoute.meta?.keepAlive"
+                v-if="!viewRoute.meta?.keepAlive"
                 :key="getMainRouteViewKey(viewRoute)"
               />
-            </KeepAlive>
-            <component
-              :is="Component"
-              v-if="!viewRoute.meta?.keepAlive"
-              :key="getMainRouteViewKey(viewRoute)"
-            />
+            </template>
           </router-view>
         </section>
 
@@ -246,6 +269,53 @@ const mainAreaRoute = computed(() => {
 
   return null
 })
+
+const BOTTOM_TAB_PATHS = ['/', '/explore', '/casino', '/sports'] as const
+const pageSlideName = ref<'filter-slide-left' | 'filter-slide-right' | 'tab-page-none'>(
+  'tab-page-none'
+)
+const isPageSliding = ref(false)
+let pageSlideTimer: number | null = null
+
+const getBottomTabIndex = (fullPath: string) => {
+  const path = stripLocalePrefix(fullPath).replace(/\/$/, '') || '/'
+  return BOTTOM_TAB_PATHS.findIndex(tabPath =>
+    tabPath === '/' ? path === '/' : path === tabPath || path.startsWith(`${tabPath}/`)
+  )
+}
+
+const finishPageSlide = () => {
+  if (pageSlideTimer) {
+    window.clearTimeout(pageSlideTimer)
+    pageSlideTimer = null
+  }
+  isPageSliding.value = false
+}
+
+// 底部菜单切换时，页面按菜单顺序左右滑动。点右侧向左滑出，点左侧向右滑出。
+watch(
+  () => (isMobile.value ? mainAreaRoute.value?.fullPath : ''),
+  (fullPath, previousFullPath) => {
+    if (!isMobile.value || !fullPath || !previousFullPath || fullPath === previousFullPath) {
+      pageSlideName.value = 'tab-page-none'
+      isPageSliding.value = false
+      return
+    }
+
+    const nextIndex = getBottomTabIndex(fullPath)
+    const previousIndex = getBottomTabIndex(previousFullPath)
+    if (nextIndex < 0 || previousIndex < 0 || nextIndex === previousIndex) {
+      pageSlideName.value = 'tab-page-none'
+      isPageSliding.value = false
+      return
+    }
+
+    pageSlideName.value = nextIndex > previousIndex ? 'filter-slide-left' : 'filter-slide-right'
+    isPageSliding.value = true
+    if (pageSlideTimer) window.clearTimeout(pageSlideTimer)
+    pageSlideTimer = window.setTimeout(finishPageSlide, 320)
+  }
+)
 
 /** 判断当前路由是否应在 PC 端作为右侧客服面板展示。 */
 const isDesktopOverlayRoute = computed(() => !isMobile.value && route.meta?.desktopOverlay === true)
@@ -571,6 +641,14 @@ const hideBottomBar = computed(() => {
 
 const hideTopNav = computed(() => {
   return (route.meta?.mobile as MobileRouteMeta | undefined)?.hideTopNav && isMobile.value
+})
+
+const showTopNav = computed(() => {
+  if (isFullscreenRoute.value) {
+    return false
+  }
+
+  return !hideTopNav.value || (isMobile.value && slideRouteStack.value.length > 0)
 })
 
 watch(
