@@ -73,10 +73,14 @@
 
   .sheet-safe-mask {
     position: fixed;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    top: calc(-1 * (env(safe-area-inset-top, 0px) + var(--app-shell-top-safe-offset, 0px)));
+    inset: 0;
+    /* 不用套壳变量：它在 0 时会被编译成无单位 0，和安全区相加后整段定位失效，蒙层高度变成 0。 */
+    top: calc(-1 * env(safe-area-inset-top, 0px));
+    background-color: var(--color-mask-60-1);
+  }
+
+  html.android-app-shell .sheet-safe-mask {
+    top: calc(-1 * env(safe-area-inset-top, 0px) - 40px);
   }
 
   .sheet-safe-mask::before {
@@ -85,8 +89,12 @@
     top: 0;
     right: 0;
     left: 0;
-    height: calc(env(safe-area-inset-top, 0px) + var(--app-shell-top-safe-offset, 0px));
-    background: var(--sheet-status-bar-color);
+    height: env(safe-area-inset-top, 0px);
+    background: var(--sheet-status-bar-color, var(--color-mask-60-1));
+  }
+
+  html.android-app-shell .sheet-safe-mask::before {
+    height: calc(env(safe-area-inset-top, 0px) + 40px);
   }
 
   * {
