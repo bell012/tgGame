@@ -21,7 +21,7 @@
 
     <!-- 主内容区 -->
     <main
-      class="main-layout-content flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
+      class="main-layout-content flex-1 overflow-y-auto bg-bg-1 transition-all duration-300 ease-in-out sm:bg-bg-1"
       :style="mainStyle"
     >
       <!-- 主内容容器 -->
@@ -29,7 +29,10 @@
         <!-- 路由内容区域 -->
         <section
           class="min-w-0 flex-1"
-          :class="{ 'filter-slide-stage': isMobile && isPageSliding }"
+          :class="{
+            'filter-slide-stage': isMobile && isPageSliding,
+            'pointer-events-none opacity-0': shouldHideMobileMenuDuringSlide
+          }"
         >
           <!-- 主内容区：滑动路由场景下优先渲染背景页，避免 keep-alive 在双 router-view 间切换失效 -->
           <router-view
@@ -276,6 +279,17 @@ const pageSlideName = ref<'filter-slide-left' | 'filter-slide-right' | 'tab-page
 )
 const isPageSliding = ref(false)
 let pageSlideTimer: number | null = null
+
+const shouldHideMobileMenuDuringSlide = computed(() => {
+  const backgroundPath = backgroundRouteSnapshot.value?.path
+
+  return (
+    isMobile.value &&
+    slideRouteStack.value.length > 0 &&
+    !!backgroundPath &&
+    stripLocalePrefix(backgroundPath) === '/menu'
+  )
+})
 
 const getBottomTabIndex = (fullPath: string) => {
   const path = stripLocalePrefix(fullPath).replace(/\/$/, '') || '/'

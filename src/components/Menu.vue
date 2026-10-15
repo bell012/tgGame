@@ -1,6 +1,6 @@
 ﻿<template>
   <div
-    class="sidebar-menu px-3.5 pb-[70px] sm:pb-3.5 sm:px-0"
+    class="sidebar-menu px-3.5 pb-[90px] sm:pb-3.5 sm:px-0"
     :class="{ 'sidebar-menu-pc-expanded': !isCollapsed }"
     :style="mobileMenuStyle"
   >
@@ -1126,6 +1126,10 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 .launch-card-active {
   background: var(--color-opacity-10);
   border-radius: 8px;
+}
+
+.launch-card-active .pc-menu-icon {
+  color: var(--color-theme-level-1);
 }
 
 @media (min-width: 641px) {

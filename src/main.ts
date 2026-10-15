@@ -32,6 +32,20 @@ themeStore.initTheme()
 
 app.mount('#app')
 
+const hidePwaSplash = () => {
+  const splash = document.getElementById('pwa-splash-screen')
+  if (!splash) {
+    return
+  }
+
+  splash.classList.add('is-hidden')
+  window.setTimeout(() => splash.remove(), 220)
+}
+
+router.isReady().then(() => {
+  requestAnimationFrame(hidePwaSplash)
+})
+
 // 初始化语言
 router.isReady().then(async () => {
   const localeStore = useLocaleStore()
