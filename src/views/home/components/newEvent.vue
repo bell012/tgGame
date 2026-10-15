@@ -19,7 +19,9 @@
       </div>
     </div>
 
-    <div class="table-viewport filter-slide-stage mt-3">
+    <div
+      class="table-viewport filter-slide-stage mt-3 rounded-lg h-[430px] sm:h-[430px] sm:rounded-xl"
+    >
       <Transition :name="slideName">
         <LatestBetTable :key="activeType" :type="activeType" class="filter-slide-pane" />
       </Transition>
@@ -89,9 +91,7 @@ const switchType = (type: 1 | 2) => {
 
 .table-viewport {
   position: relative;
-  height: 430px;
   overflow: hidden;
-  border-radius: 8px;
   background: var(--color-background-level-2);
 }
 

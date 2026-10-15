@@ -14,7 +14,7 @@ export const useLayoutStore = defineStore('layout', () => {
   const TOPNAV_HEIGHT = 60
 
   /** 底部 Tab 栏高度 (px) */
-  const BOTTOM_TAB_HEIGHT = 60
+  const BOTTOM_TAB_HEIGHT = 80
 
   /** H5/移动端 (px) */
   const MOBILE_BREAKPOINT = 640

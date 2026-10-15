@@ -80,9 +80,7 @@ const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 
 // 根据当前选中的筛选项返回按钮样式。
 const getFilterTabClass = (key: FilterTabKey) =>
-  activeFilterKey.value === key
-    ? 'bg-bg-3 text-text-1 font-[700]'
-    : 'bg-bg-9 text-text-3 hover:bg-opacity-6'
+  activeFilterKey.value === key ? 'bg-bg-3 text-text-1' : 'bg-bg-9 text-text-3 hover:bg-opacity-6'
 
 // 点击筛选按钮切换选中项。
 const onFilterTabClick = (key: FilterTabKey) => {

@@ -1,7 +1,7 @@
 <template>
   <div
     ref="pageRootRef"
-    class="search-container sm:flex sm:min-h-0 sm:flex-1 sm:flex-col"
+    class="search-container sm:flex sm:min-h-0 sm:flex-1 sm:flex-col pb-[100px]"
     :style="mobileStyle"
   >
     <div class="shrink-0" :class="{ 'search-filter-panel': isMobile }">

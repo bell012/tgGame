@@ -248,16 +248,61 @@ export const isValidSigninUsername = (value: string): boolean => {
   return /^[a-zA-Z0-9]{6,16}$/.test(value)
 }
 
+const composingUsernameInputs = new WeakSet<HTMLInputElement>()
+
+const isUsernameInputComposing = (event: Event) => {
+  const input = event.target as HTMLInputElement | null
+  if (!input) {
+    return false
+  }
+
+  return composingUsernameInputs.has(input) || Boolean((event as InputEvent).isComposing)
+}
+
+const commitSigninUsernameInput = (input: HTMLInputElement, callback: (value: string) => void) => {
+  const formatted = formatSigninUsername(input.value)
+  callback(formatted)
+  input.value = formatted
+}
+
 /**
- * 处理登录用户名输入事件
+ * 拼音组字开始。组字期间不要改写输入框，否则 iOS 会把未确认拼音重复拼进账号。
+ */
+export const handleSigninUsernameCompositionStart = (event: CompositionEvent) => {
+  const input = event.target as HTMLInputElement | null
+  if (input) {
+    composingUsernameInputs.add(input)
+  }
+}
+
+/**
+ * 拼音组字结束后再格式化用户名。
+ */
+export const handleSigninUsernameCompositionEnd = (
+  event: CompositionEvent,
+  callback: (value: string) => void
+) => {
+  const input = event.target as HTMLInputElement | null
+  if (!input) {
+    return
+  }
+
+  composingUsernameInputs.delete(input)
+  commitSigninUsernameInput(input, callback)
+}
+
+/**
+ * 处理登录用户名输入事件。组字未结束时保持输入法原文。
  * @param event 输入事件
  * @param callback 回调函数，用于更新表单数据
  */
 export const handleSigninUsernameInput = (event: Event, callback: (value: string) => void) => {
+  if (isUsernameInputComposing(event)) {
+    return
+  }
+
   const input = event.target as HTMLInputElement
-  const formatted = formatSigninUsername(input.value)
-  callback(formatted)
-  input.value = formatted
+  commitSigninUsernameInput(input, callback)
 }
 
 /**

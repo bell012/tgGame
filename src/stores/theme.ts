@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import { syncIdleStatusBarColor } from '@/utils/sheetStatusBar'
 
 export type Theme = 'light' | 'dark'
 
@@ -18,9 +19,8 @@ export const useThemeStore = defineStore('theme', () => {
     const resolvedSystemUiThemeColor = systemUiThemeColor || bodyBackgroundColor
     const resolvedBackgroundColor = pageBackgroundColor || bodyBackgroundColor
 
-    const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    if (themeColorMeta && resolvedSystemUiThemeColor) {
-      themeColorMeta.setAttribute('content', resolvedSystemUiThemeColor)
+    if (resolvedSystemUiThemeColor) {
+      syncIdleStatusBarColor(resolvedSystemUiThemeColor)
     }
 
     if (resolvedBackgroundColor) {
