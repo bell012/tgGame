@@ -11,6 +11,7 @@ import { useSiteConfigStore } from './stores/siteConfig'
 import { useTradeMessageSyncStore } from './stores/tradeMessageSync'
 import { initGlobalDicCache } from './utils/global-dic'
 import { initAndroidAppShellSafeArea } from './utils/app-shell'
+import { startMobileMaskStatusBar } from './utils/sheetStatusBar'
 import './styles/fonts.css'
 import './styles/colors.css'
 import './styles/main.scss'
@@ -31,6 +32,21 @@ const themeStore = useThemeStore()
 themeStore.initTheme()
 
 app.mount('#app')
+startMobileMaskStatusBar()
+
+const hidePwaSplash = () => {
+  const splash = document.getElementById('pwa-splash-screen')
+  if (!splash) {
+    return
+  }
+
+  splash.classList.add('is-hidden')
+  window.setTimeout(() => splash.remove(), 220)
+}
+
+router.isReady().then(() => {
+  requestAnimationFrame(hidePwaSplash)
+})
 
 // 初始化语言
 router.isReady().then(async () => {

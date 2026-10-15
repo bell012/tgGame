@@ -5,18 +5,18 @@
       class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px] rounded-[6px]"
       @click="visible = true"
     >
-      <div class="flex gap-[10px] min-w-0">
-        <div v-if="selectedData" class="flex gap-[8px] items-center min-w-0">
-          <SmartImage alt="" :src="selectedData.icon" class="size-[24px] object-contain" />
-          <div class="text-[14px] font-[700] leading-[20px] shrink-0">{{ selectedData.label }}</div>
-          <div class="balance-text text-[14px] font-[700] shrink-0">
+      <div class="flex min-w-0 flex-1 gap-[10px]">
+        <div v-if="selectedData" class="flex min-w-0 items-center gap-[8px]">
+          <SmartImage alt="" :src="selectedData.icon" class="size-[24px] shrink-0 object-contain" />
+          <div class="shrink-0 text-[14px] font-[700] leading-[20px]">{{ selectedData.label }}</div>
+          <div class="balance-text min-w-0 truncate text-[14px] font-[700]">
             <span class="balance-bracket">(</span>
             <span>{{ selectedBalanceText }}</span>
             <span class="balance-bracket">)</span>
           </div>
         </div>
       </div>
-      <div class="ml-auto flex items-center gap-[8px] min-w-0">
+      <div class="ml-auto flex shrink-0 items-center gap-[8px]">
         <div class="trigger-arrow-bg">
           <component
             :is="casinoIcons.dropdown_chevron"

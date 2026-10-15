@@ -27,7 +27,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-1 flex flex-col">
+      <div class="flex min-w-0 flex-1 flex-col">
         <template v-if="isLogin">
           <div class="flex h-[146px] flex-col justify-between">
             <div class="text-[15px] font-bold leading-[15px]">

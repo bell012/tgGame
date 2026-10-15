@@ -1,4 +1,5 @@
 import vue from '@vitejs/plugin-vue'
+import { readFileSync } from 'node:fs'
 import imagemin from 'imagemin'
 import imageminWebp from 'imagemin-webp'
 import { resolve } from 'path'
@@ -47,6 +48,27 @@ const createWebpAssetsPlugin = (): Plugin => ({
   }
 })
 
+const createPwaAssetsPlugin = (): Plugin => ({
+  name: 'tg-game:pwa-assets',
+  apply: 'build',
+  generateBundle() {
+    const assetPaths = [
+      { source: 'src/static/img/180.png', output: 'pwa-icons/180.png' },
+      { source: 'src/static/img/192.png', output: 'pwa-icons/192.png' },
+      { source: 'src/static/img/512.png', output: 'pwa-icons/512.png' },
+      { source: 'src/static/img/1125.png', output: 'pwa-icons/1125.png' }
+    ]
+
+    assetPaths.forEach(({ source, output }) => {
+      this.emitFile({
+        type: 'asset',
+        fileName: output,
+        source: readFileSync(resolve(process.cwd(), source))
+      })
+    })
+  }
+})
+
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   const apiProxy: ProxyOptions = {
@@ -88,6 +110,7 @@ export default defineConfig(() => {
         }
       }),
       createWebpAssetsPlugin(),
+      createPwaAssetsPlugin(),
       viteImagemin({
         filter: /\.(png|jpe?g)$/i,
         mozjpeg: {
@@ -109,6 +132,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: ['mask-icon.svg'],
         manifest: {
+          id: '/',
           name: 'TG Game',
           short_name: 'TGGame',
           theme_color: '#323738',
@@ -117,25 +141,23 @@ export default defineConfig(() => {
           orientation: 'portrait',
           scope: '/',
           start_url: '/',
-          icons: []
-          // icons: [
-          //   {
-          //     src: 'pwa-192x192.png',
-          //     sizes: '192x192',
-          //     type: 'image/png'
-          //   },
-          //   {
-          //     src: 'pwa-512x512.png',
-          //     sizes: '512x512',
-          //     type: 'image/png'
-          //   },
-          //   {
-          //     src: 'pwa-512x512.png',
-          //     sizes: '512x512',
-          //     type: 'image/png',
-          //     purpose: 'any maskable'
-          //   }
-          // ]
+          icons: [
+            {
+              src: '/pwa-icons/180.png',
+              sizes: '180x180',
+              type: 'image/png'
+            },
+            {
+              src: '/pwa-icons/192.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: '/pwa-icons/512.png',
+              sizes: '512x512',
+              type: 'image/png'
+            }
+          ]
         },
         workbox: {
           maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
