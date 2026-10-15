@@ -57,11 +57,12 @@
       @emoji="toggleEmoji"
       @emoji-close="handleEmojiPanelClose"
       @media="toggleMedia"
+      @composer-focus="handleComposerFocus"
       @cancel-reply="cancelReply"
       @emoji-select="handleEmojiSelect"
       @emoji-delete="handleEmojiDelete"
-      @photo="openMediaPreview"
-      @camera="openMediaPreview"
+      @photo="sendSelectedMedia"
+      @camera="sendSelectedMedia"
       @view-image="openImageViewer"
       @view-video="openVideoViewer"
     />
@@ -302,11 +303,20 @@ const handleEmojiPanelClose = () => {
   }
 }
 
-/** 打开 PC 端多张图片或视频的发送预览，用户确认后再上传。 */
-const openMediaPreview = (files: File[]) => {
-  pendingMediaFiles.value = files.slice(0, 9)
-  pcPreviewImage.value = ''
-  pcPreviewUrls.value = []
+/** 用户点回输入框时，收起与键盘互斥的表情或媒体面板。 */
+const handleComposerFocus = () => {
+  if (mode.value === 'emoji' || mode.value === 'media') {
+    mode.value = draft.value.trim() ? 'typing' : 'idle'
+  }
+}
+
+/** 暂时跳过发送前预览：相册或相机选中媒体后立即依次上传发送。 */
+const sendSelectedMedia = async (files: File[]) => {
+  mode.value = 'idle'
+  for (const file of files.slice(0, 9)) {
+    await sendMediaFile(file)
+  }
+  scrollToBottom()
 }
 
 /** 关闭 PC 媒体发送预览，并清空尚未发送的文件。 */

@@ -64,6 +64,7 @@
             <div class="flex items-center gap-6">
               <button
                 type="button"
+                class="flex size-[16px] items-center justify-center text-[16px] leading-none"
                 :aria-label="isPlaying ? t('chatPublic.pauseVideo') : t('chatPublic.playVideo')"
                 @click="togglePlay"
               >
@@ -305,13 +306,9 @@ onBeforeUnmount(() => videoRef.value?.pause())
 .pc-video-progress::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
-  margin-top: -3px;
+  width: 0;
+  height: 0;
   border: 0;
-  border-radius: 50%;
-  background: var(--color-common-100);
-  cursor: pointer;
 }
 
 .pc-video-progress::-moz-range-track {
@@ -327,11 +324,8 @@ onBeforeUnmount(() => videoRef.value?.pause())
 }
 
 .pc-video-progress::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 0;
+  height: 0;
   border: 0;
-  border-radius: 50%;
-  background: var(--color-common-100);
-  cursor: pointer;
 }
 </style>

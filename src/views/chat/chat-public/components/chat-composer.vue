@@ -1,6 +1,6 @@
 <template>
   <!-- 消息编辑器整体容器。 -->
-  <div class="shrink-0 bg-bg-2">
+  <div data-chat-composer class="shrink-0 bg-bg-2">
     <!-- 引用回复预览区域。 -->
     <ReplyPreview v-if="replyTarget" :target="replyTarget" @close="$emit('cancel-reply')" />
 
@@ -19,7 +19,7 @@
           contenteditable="true"
           role="textbox"
           aria-multiline="false"
-          class="chat-composer-input chat-composer-input--pc min-w-0 flex-1 overflow-x-auto whitespace-nowrap bg-transparent font-pingfang text-[14px] font-[400] leading-[20px] text-text-1 outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
+          class="chat-composer-input chat-composer-input--pc h-[36px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap bg-transparent font-pingfang text-[14px] font-[400] leading-[36px] text-text-1 outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
           :data-placeholder="t('chatPublic.inputPlaceholder')"
           @input="handleInput"
           @compositionend="handleCompositionEnd"
@@ -123,6 +123,7 @@ const emit = defineEmits<{
 /** H5 与 PC 当前渲染的单行富文本输入框，用于独立控制 emoji 视觉尺寸。 */
 const inputRef = ref<HTMLElement | null>(null)
 const isComposing = ref(false)
+const isRestoringInputSelection = ref(false)
 
 const emojiPattern =
   /(\p{Regional_Indicator}{2}|[#*0-9]\uFE0F?\u20E3|\p{Extended_Pictographic}\p{Emoji_Modifier}?(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}\p{Emoji_Modifier}?(?:\uFE0F)?)*)/gu
@@ -169,34 +170,44 @@ const renderInputValue = (value: string, caretOffset = value.length) => {
 
   const selection = window.getSelection()
   if (!selection) return
-  const range = document.createRange()
-  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
-  let remaining = Math.max(0, Math.min(caretOffset, value.length))
-  let textNode = walker.nextNode() as Text | null
-  while (textNode) {
-    if (remaining <= textNode.data.length) {
-      const emojiElement = textNode.parentElement?.closest<HTMLElement>(
-        '[data-chat-composer-emoji]'
-      )
-      // 光标位于表情末尾时放到 emoji 元素之后，使右侧预留间距真实参与光标定位。
-      if (remaining === textNode.data.length && emojiElement?.parentElement === element) {
-        range.setStartAfter(emojiElement)
-      } else {
-        range.setStart(textNode, remaining)
-      }
-      range.collapse(true)
-      selection.removeAllRanges()
-      selection.addRange(range)
-      return
-    }
-    remaining -= textNode.data.length
-    textNode = walker.nextNode() as Text | null
-  }
 
-  range.selectNodeContents(element)
-  range.collapse(false)
-  selection.removeAllRanges()
-  selection.addRange(range)
+  // 表情面板选择后会重建输入内容并恢复光标；该过程可能触发原生 focus，
+  // 需避免被误判为用户主动点回输入框而关闭 EmojiPanel。
+  isRestoringInputSelection.value = true
+  try {
+    const range = document.createRange()
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+    let remaining = Math.max(0, Math.min(caretOffset, value.length))
+    let textNode = walker.nextNode() as Text | null
+    while (textNode) {
+      if (remaining <= textNode.data.length) {
+        const emojiElement = textNode.parentElement?.closest<HTMLElement>(
+          '[data-chat-composer-emoji]'
+        )
+        // 光标位于表情末尾时放到 emoji 元素之后，使右侧预留间距真实参与光标定位。
+        if (remaining === textNode.data.length && emojiElement?.parentElement === element) {
+          range.setStartAfter(emojiElement)
+        } else {
+          range.setStart(textNode, remaining)
+        }
+        range.collapse(true)
+        selection.removeAllRanges()
+        selection.addRange(range)
+        return
+      }
+      remaining -= textNode.data.length
+      textNode = walker.nextNode() as Text | null
+    }
+
+    range.selectNodeContents(element)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  } finally {
+    requestAnimationFrame(() => {
+      isRestoringInputSelection.value = false
+    })
+  }
 }
 
 /** 将原生可编辑区域转换为草稿，并在非输入法组合期间给 emoji 包裹独立样式。 */
@@ -220,7 +231,9 @@ const handleCompositionStart = () => {
 }
 
 /** 用户重新点回输入框时通知上层关闭与键盘互斥的功能面板。 */
-const handleInputFocus = () => emit('focus')
+const handleInputFocus = () => {
+  if (!isRestoringInputSelection.value) emit('focus')
+}
 
 /** 打开表情面板前收起原生键盘，避免键盘与面板同时占用屏幕。 */
 const openEmojiPanel = () => {

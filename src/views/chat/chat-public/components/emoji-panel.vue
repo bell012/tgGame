@@ -2,7 +2,7 @@
   <!-- 第三方表情选择面板。 -->
   <section
     ref="panelRef"
-    class="chat-emoji-panel flex h-[384px] shrink-0 flex-col px-[12px] pb-[16px] pt-[12px]"
+    class="chat-emoji-panel flex h-[284px] shrink-0 flex-col px-[12px] pb-[16px] pt-[12px]"
     :class="props.displayMode === 'pc' ? 'bg-bg-5' : 'bg-bg-1'"
   >
     <p class="shrink-0 text-[13px] leading-[16px] text-text-2">{{ t('chatPublic.allEmojis') }}</p>
@@ -112,16 +112,15 @@ const bindPickerEvent = () => pickerRef.value?.addEventListener('emoji-click', h
 const unbindPickerEvent = () =>
   pickerRef.value?.removeEventListener('emoji-click', handleEmojiClick)
 
-/** 表情面板展开时，点击面板外任意区域立即收起；Shadow DOM 内部点击会保留面板。 */
+/**
+ * 表情面板展开时，仅点击 ChatComposer 顶边以上的聊天内容区域才收起。
+ * 面板自身、ChatComposer 及其下方区域均不参与关闭，避免操作输入区时面板意外消失。
+ */
 const handleDocumentPointerDown = (event: PointerEvent) => {
   if (panelRef.value && event.composedPath().includes(panelRef.value)) return
-  const isComposerInputClick = event
-    .composedPath()
-    .some(
-      target => target instanceof HTMLElement && target.hasAttribute('data-chat-composer-input')
-    )
-  if (isComposerInputClick) return
-  emit('close')
+
+  const composer = document.querySelector<HTMLElement>('[data-chat-composer]')
+  if (!composer || event.clientY < composer.getBoundingClientRect().top) emit('close')
 }
 
 onMounted(() => {
