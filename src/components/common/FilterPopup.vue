@@ -1,8 +1,8 @@
 ﻿<template>
   <!-- 公共筛选组件 -->
-  <div>
+  <Teleport to="body">
     <transition name="popup-fade">
-      <div v-show="visible" class="fixed z-[9999] inset-0 bg-mask-60-1" @click="close" />
+      <div v-show="visible" class="sheet-safe-mask z-[9999] bg-mask-60-1" @click="close" />
     </transition>
 
     <transition name="up-down">
@@ -42,7 +42,7 @@
         </div>
       </div>
     </transition>
-  </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">

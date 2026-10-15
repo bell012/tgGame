@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <Teleport to="body">
     <transition name="popup-fade">
-      <div v-show="visible" class="fixed inset-0 z-[999] bg-mask-60-1" @click.self="close" />
+      <div v-show="visible" class="sheet-safe-mask z-[999] bg-mask-60-1" @click.self="close" />
     </transition>
     <transition :name="props.desktop ? 'popup-scale' : 'up-down'">
       <div
@@ -55,7 +55,7 @@
         </div>
       </div>
     </transition>
-  </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -125,7 +125,8 @@ watch(
     }
 
     window.addEventListener('resize', refreshDesktopPosition)
-  }
+  },
+  { immediate: true }
 )
 
 onBeforeUnmount(() => {
