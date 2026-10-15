@@ -12,11 +12,11 @@
   >
     <!-- 快捷问题内容面板。 -->
     <section
-      class="w-full bg-bg-1"
+      class="w-full"
       :class="
         props.displayMode === 'pc'
-          ? 'flex max-h-full flex-col px-[12px] pb-[28px] pt-[12px]'
-          : 'rounded-t-[12px] px-[14px] pb-[40px] pt-[14px]'
+          ? 'flex max-h-full flex-col px-[12px] pb-[28px] pt-[12px]  bg-bg-2 rounded-t-[20px]'
+          : 'rounded-t-[12px] px-[14px] pb-[40px] pt-[14px]  bg-bg-1  '
       "
     >
       <!-- 弹层标题与关闭按钮。 -->
