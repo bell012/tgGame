@@ -34,6 +34,7 @@
 
     <!-- 快捷问题入口。 -->
     <QuickIssueBar
+      v-if="issues.length"
       :display-mode="props.displayMode"
       :issues="issues"
       @select="$emit('issue', $event)"
@@ -52,17 +53,21 @@
       @cancel-reply="$emit('cancel-reply')"
     />
 
-    <!-- 表情面板。 -->
-    <EmojiPanel
-      v-if="mode === 'emoji'"
-      :has-emoji="hasEmoji"
-      @select="$emit('emoji-select', $event)"
-      @delete="$emit('emoji-delete')"
-      @send="$emit('send')"
-    />
+    <!-- 表情面板：H5 采用底部抽屉效果，PC 使用较轻的上浮淡入。 -->
+    <Transition :name="props.displayMode === 'pc' ? 'emoji-panel-pc' : 'emoji-panel-h5'">
+      <EmojiPanel
+        v-if="mode === 'emoji'"
+        :display-mode="props.displayMode"
+        :has-emoji="hasEmoji"
+        @select="$emit('emoji-select', $event)"
+        @delete="$emit('emoji-delete')"
+        @send="$emit('send')"
+        @close="$emit('emoji-close')"
+      />
+    </Transition>
     <!-- 图片选择面板。 -->
     <ImagePickerPanel
-      v-else-if="mode === 'media'"
+      v-if="mode === 'media'"
       :display-mode="props.displayMode"
       @photo="$emit('photo', $event)"
       @camera="$emit('camera', $event)"
@@ -147,6 +152,7 @@ defineEmits<{
   'update:draft': [value: string]
   send: []
   emoji: []
+  'emoji-close': []
   media: []
   'composer-focus': []
   'cancel-reply': []
@@ -167,3 +173,61 @@ defineExpose({
   scrollToMessage: (messageId: string) => messageListRef.value?.scrollToMessage(messageId)
 })
 </script>
+
+<style scoped>
+.emoji-panel-h5-enter-active,
+.emoji-panel-h5-leave-active,
+.emoji-panel-pc-enter-active,
+.emoji-panel-pc-leave-active {
+  overflow: hidden;
+  will-change: height, opacity, transform;
+}
+
+.emoji-panel-h5-enter-active,
+.emoji-panel-h5-leave-active {
+  transition:
+    height 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.emoji-panel-h5-enter-from,
+.emoji-panel-h5-leave-to {
+  height: 0;
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.emoji-panel-h5-enter-to,
+.emoji-panel-h5-leave-from,
+.emoji-panel-pc-enter-to,
+.emoji-panel-pc-leave-from {
+  height: 384px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.emoji-panel-pc-enter-active,
+.emoji-panel-pc-leave-active {
+  transition:
+    height 180ms ease-out,
+    opacity 150ms ease-out,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.emoji-panel-pc-enter-from,
+.emoji-panel-pc-leave-to {
+  height: 0;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emoji-panel-h5-enter-active,
+  .emoji-panel-h5-leave-active,
+  .emoji-panel-pc-enter-active,
+  .emoji-panel-pc-leave-active {
+    transition-duration: 1ms;
+  }
+}
+</style>

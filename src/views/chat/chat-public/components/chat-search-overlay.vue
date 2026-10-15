@@ -74,11 +74,11 @@
     <!-- PC 提示相对搜索覆盖层定位，避免与 header 发生层叠。 -->
     <p
       v-if="!query"
-      class="absolute left-1/2 min-w-0 -translate-x-1/2 text-center text-[14px] font-[400] leading-[20px] text-text-1"
+      class="absolute left-1/2 min-w-0 -translate-x-1/2 text-center text-[14px] font-[400] leading-[20px]"
       :class="
         props.displayMode === 'pc'
-          ? 'top-[178px]      text-[14px]  leading-[20px] text-text-1'
-          : 'top-[233.67px]     text-[12px]   leading-[14.67px] text-text-3 '
+          ? 'top-[178px]  text-[14px]  leading-[20px] text-text-1'
+          : 'top-[233.67px]   text-[12px] leading-[14.67px] text-text-3 '
       "
     >
       {{ t('chatPublic.searchHint') }}
@@ -207,8 +207,8 @@
         :message="t('chatPublic.noSearchResults')"
         :container-class="
           props.displayMode === 'pc'
-            ? 'flex flex-1 justify-center px-6 py-10'
-            : 'flex flex-1 justify-center px-6 pb-[72px]'
+            ? 'absolute inset-x-0 top-[358px] px-6'
+            : 'absolute inset-x-0 top-[190px] px-6'
         "
         image-class="h-[200px] w-[220px] object-contain"
         text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"

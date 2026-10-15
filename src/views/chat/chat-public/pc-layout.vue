@@ -55,6 +55,7 @@
       @update:draft="setDraft"
       @send="handleSend"
       @emoji="toggleEmoji"
+      @emoji-close="handleEmojiPanelClose"
       @media="toggleMedia"
       @cancel-reply="cancelReply"
       @emoji-select="handleEmojiSelect"
@@ -294,6 +295,13 @@ const handleEmojiDelete = () => {
   mode.value = 'emoji'
 }
 
+/** 点击表情面板以外的区域时收起面板，保留当前草稿内容。 */
+const handleEmojiPanelClose = () => {
+  if (mode.value === 'emoji') {
+    mode.value = draft.value.trim() ? 'typing' : 'idle'
+  }
+}
+
 /** 打开 PC 端多张图片或视频的发送预览，用户确认后再上传。 */
 const openMediaPreview = (files: File[]) => {
   pendingMediaFiles.value = files.slice(0, 9)
@@ -332,7 +340,7 @@ const openVideoViewer = (message: ChatMessage) => {
 
 /** 从 PC 待发送媒体列表中移除用户取消的文件。 */
 const removePendingMedia = (index: number) => {
-  pendingMediaFiles.value.splice(index, 1)
+  pendingMediaFiles.value = pendingMediaFiles.value.filter((_, itemIndex) => itemIndex !== index)
   if (!pendingMediaFiles.value.length) closeMediaPreview()
 }
 

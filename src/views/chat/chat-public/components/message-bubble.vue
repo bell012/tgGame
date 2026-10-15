@@ -79,7 +79,7 @@
             class="absolute top-1/2 h-[13px] w-[8px] -translate-y-1/2"
             :class="
               message.direction === 'outgoing'
-                ? '-right-[7px] bg-bg-2 [clip-path:polygon(0_0,100%_50%,0_100%)]'
+                ? '-right-[7px] bg-bg-3 [clip-path:polygon(0_0,100%_50%,0_100%)]'
                 : '-left-[7px] bg-bg-3 [clip-path:polygon(100%_0,0_50%,100%_100%)]'
             "
           />

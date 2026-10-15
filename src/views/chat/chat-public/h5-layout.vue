@@ -58,6 +58,7 @@
         @update:draft="setDraft"
         @send="handleSend"
         @emoji="toggleEmoji"
+        @emoji-close="handleEmojiPanelClose"
         @media="toggleMedia"
         @composer-focus="handleComposerFocus"
         @cancel-reply="cancelReply"
@@ -257,7 +258,7 @@ const openMediaPreview = (files: File[]) => {
 
 /** 从待发送媒体列表中移除用户取消的文件。 */
 const removePendingMedia = (index: number) => {
-  pendingMediaFiles.value.splice(index, 1)
+  pendingMediaFiles.value = pendingMediaFiles.value.filter((_, itemIndex) => itemIndex !== index)
   if (!pendingMediaFiles.value.length) closeImagePreview()
 }
 
@@ -318,6 +319,13 @@ const handleEmojiSelect = (emoji: string) => {
 const handleEmojiDelete = () => {
   setDraft(Array.from(draft.value).slice(0, -1).join(''))
   mode.value = 'emoji'
+}
+
+/** 点击表情面板以外的区域时收起面板，保留当前草稿内容。 */
+const handleEmojiPanelClose = () => {
+  if (mode.value === 'emoji') {
+    mode.value = draft.value.trim() ? 'typing' : 'idle'
+  }
 }
 
 /** H5 用户点回输入框时，收起与软键盘互斥的图片选择面板。 */
