@@ -128,7 +128,8 @@ import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { syncSheetStatusBar } from '@/utils/sheetStatusBar'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
@@ -474,6 +475,29 @@ const next = () => {
   if (currentIndex.value >= list.value.length - 1) return
   swipeRef.value?.next()
 }
+
+watch(
+  visible,
+  (open, wasOpen) => {
+    if (wasOpen === undefined) {
+      if (open && !isSuppressedNow()) {
+        syncSheetStatusBar(true)
+      }
+      return
+    }
+
+    if (open !== wasOpen) {
+      syncSheetStatusBar(open)
+    }
+  },
+  { immediate: true }
+)
+
+onBeforeUnmount(() => {
+  if (visible.value && !isSuppressedNow()) {
+    syncSheetStatusBar(false)
+  }
+})
 
 onMounted(() => {
   if (isSuppressedNow()) {

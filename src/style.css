@@ -86,7 +86,7 @@
     right: 0;
     left: 0;
     height: calc(env(safe-area-inset-top, 0px) + var(--app-shell-top-safe-offset, 0px));
-    background: var(--color-background-level-1);
+    background: var(--sheet-status-bar-color);
   }
 
   * {
