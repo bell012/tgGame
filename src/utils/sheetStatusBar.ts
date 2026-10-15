@@ -1,5 +1,17 @@
-let openSheetMaskCount = 0
+/** 与 stores/layout.ts 的 MOBILE_BREAKPOINT 一致。 */
+const MOBILE_MASK_QUERY = '(max-width: 640px)'
+const MASK_SELECTOR = [
+  '.bg-mask-20',
+  '.bg-mask-40',
+  '.bg-mask-60-1',
+  '.bg-mask-80-2',
+  '.sheet-safe-mask'
+].join(',')
+
+let maskApplied = false
 let previousThemeColor: string | null = null
+let scanScheduled = false
+let observer: MutationObserver | null = null
 
 const STATUS_BAR_MASK_COLOR_VAR = '--sheet-status-bar-color'
 
@@ -20,7 +32,7 @@ export const syncIdleStatusBarColor = (color: string) => {
   if (!color) {
     return
   }
-  if (openSheetMaskCount > 0) {
+  if (maskApplied) {
     previousThemeColor = color
     return
   }
@@ -81,39 +93,141 @@ const composite = (base: Rgb, overlay: Rgb) => {
 }
 
 /** 蒙层盖在顶栏上的实色。theme-color 不认透明色。 */
-const maskStatusBarColor = () => {
+const maskStatusBarColor = (mask: Rgb) => {
   const top = parseColor(cssVar('--color-background-level-5'))
-  const mask = parseColor(cssVar('--color-mask-60-1'))
-  if (!top || !mask) {
+  if (!top || mask.a <= 0) {
     return ''
   }
   return composite(top, mask)
 }
 
-/** 蒙层打开时让系统电池栏跟蒙层同一色，全部关闭后再恢复。 */
-export const syncSheetStatusBar = (visible: boolean) => {
+const isMobileViewport = () => window.matchMedia(MOBILE_MASK_QUERY).matches
+
+const isFullScreenMask = (element: Element): element is HTMLElement => {
+  if (!(element instanceof HTMLElement)) {
+    return false
+  }
+
+  const style = getComputedStyle(element)
+  if (style.position !== 'fixed' || style.display === 'none' || style.visibility === 'hidden') {
+    return false
+  }
+  if (Number(style.opacity) === 0) {
+    return false
+  }
+
+  const rect = element.getBoundingClientRect()
+  return (
+    rect.top <= 8 &&
+    rect.width >= window.innerWidth * 0.8 &&
+    rect.height >= window.innerHeight * 0.8
+  )
+}
+
+const stackingZIndex = (element: HTMLElement) => {
+  const zIndex = Number.parseInt(getComputedStyle(element).zIndex, 10)
+  return Number.isFinite(zIndex) ? zIndex : 0
+}
+
+const topmostFullScreenMask = () => {
+  let best: HTMLElement | null = null
+  let bestZIndex = -Infinity
+
+  document.querySelectorAll(MASK_SELECTOR).forEach(element => {
+    if (!isFullScreenMask(element)) {
+      return
+    }
+
+    const zIndex = stackingZIndex(element)
+    const isLater =
+      best !== null &&
+      zIndex === bestZIndex &&
+      Boolean(element.compareDocumentPosition(best) & Node.DOCUMENT_POSITION_PRECEDING)
+    if (!best || zIndex > bestZIndex || isLater) {
+      best = element
+      bestZIndex = zIndex
+    }
+  })
+
+  return best
+}
+
+const restoreIdleStatusBar = () => {
+  if (!maskApplied) {
+    return
+  }
+
+  if (previousThemeColor !== null) {
+    writeThemeColor(previousThemeColor)
+  }
+  previousThemeColor = null
+  maskApplied = false
+  document.documentElement.style.removeProperty(STATUS_BAR_MASK_COLOR_VAR)
+}
+
+const applyTopmostMask = (mask: HTMLElement) => {
+  const overlay = parseColor(getComputedStyle(mask).backgroundColor)
+  const backgroundColor = overlay ? maskStatusBarColor(overlay) : ''
+  if (!backgroundColor) {
+    return
+  }
+
   const meta = themeColorMeta()
   if (!meta) {
     return
   }
 
-  if (visible) {
-    if (openSheetMaskCount === 0) {
-      previousThemeColor = meta.getAttribute('content')
-    }
-    openSheetMaskCount += 1
-    const backgroundColor = maskStatusBarColor()
-    if (backgroundColor) {
-      writeThemeColor(backgroundColor)
-      document.documentElement.style.setProperty(STATUS_BAR_MASK_COLOR_VAR, backgroundColor)
-    }
+  if (!maskApplied) {
+    previousThemeColor = meta.getAttribute('content')
+    maskApplied = true
+  }
+
+  writeThemeColor(backgroundColor)
+  document.documentElement.style.setProperty(STATUS_BAR_MASK_COLOR_VAR, backgroundColor)
+}
+
+const scanFullScreenMasks = () => {
+  if (!isMobileViewport()) {
+    restoreIdleStatusBar()
     return
   }
 
-  openSheetMaskCount = Math.max(0, openSheetMaskCount - 1)
-  if (openSheetMaskCount === 0 && previousThemeColor !== null) {
-    writeThemeColor(previousThemeColor)
-    previousThemeColor = null
-    document.documentElement.style.removeProperty(STATUS_BAR_MASK_COLOR_VAR)
+  const mask = topmostFullScreenMask()
+  if (!mask) {
+    restoreIdleStatusBar()
+    return
   }
+
+  applyTopmostMask(mask)
+}
+
+const scheduleMaskScan = () => {
+  if (scanScheduled) {
+    return
+  }
+
+  scanScheduled = true
+  window.requestAnimationFrame(() => {
+    scanScheduled = false
+    scanFullScreenMasks()
+  })
+}
+
+/** 移动端出现全屏蒙层时，电池栏跟最上面那层蒙层。 */
+export const startMobileMaskStatusBar = () => {
+  if (observer || typeof document === 'undefined') {
+    return
+  }
+
+  observer = new MutationObserver(scheduleMaskScan)
+  observer.observe(document.body, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['class', 'style', 'hidden']
+  })
+
+  window.addEventListener('resize', scheduleMaskScan)
+  window.matchMedia(MOBILE_MASK_QUERY).addEventListener('change', scheduleMaskScan)
+  scheduleMaskScan()
 }

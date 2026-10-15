@@ -36,12 +36,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, watch } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
-import { syncSheetStatusBar } from '@/utils/sheetStatusBar'
 
 const props = defineProps<{
   visible: boolean
@@ -66,29 +65,6 @@ const listOptions = computed(() => {
 })
 
 const close = () => emit('update:visible', false)
-
-watch(
-  () => props.visible,
-  (visible, wasVisible) => {
-    if (wasVisible === undefined) {
-      if (visible) {
-        syncSheetStatusBar(true)
-      }
-      return
-    }
-
-    if (visible !== wasVisible) {
-      syncSheetStatusBar(visible)
-    }
-  },
-  { immediate: true }
-)
-
-onBeforeUnmount(() => {
-  if (props.visible) {
-    syncSheetStatusBar(false)
-  }
-})
 
 const handleSelect = (value: string) => {
   emit('select', value)

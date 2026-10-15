@@ -63,7 +63,6 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { syncSheetStatusBar } from '@/utils/sheetStatusBar'
 
 type PopupAnchorRect = {
   top: number
@@ -119,18 +118,7 @@ const refreshDesktopPosition = () => {
 
 watch(
   () => props.visible,
-  (visible, wasVisible) => {
-    if (wasVisible === undefined) {
-      if (visible) {
-        syncSheetStatusBar(true)
-      }
-      return
-    }
-
-    if (visible !== wasVisible) {
-      syncSheetStatusBar(visible)
-    }
-
+  visible => {
     if (!props.desktop || !visible) {
       window.removeEventListener('resize', refreshDesktopPosition)
       return
@@ -143,9 +131,6 @@ watch(
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', refreshDesktopPosition)
-  if (props.visible) {
-    syncSheetStatusBar(false)
-  }
 })
 
 const desktopPanelStyle = computed(() => {

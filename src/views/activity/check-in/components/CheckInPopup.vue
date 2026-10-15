@@ -64,8 +64,7 @@ import { navigateToName } from '@/utils/router'
 import { openTicketActivity } from '@/utils/openTicketActivity'
 import { TICKET_TYPE_TO_GAME_ID } from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { syncSheetStatusBar } from '@/utils/sheetStatusBar'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { filterOpenedCheckInActivities } from '../checkInAutoPopupRules'
 import {
@@ -401,29 +400,6 @@ const handleRewardClick = (reward: CheckInRewardItem) => {
 
   openRequirementReminder(reward)
 }
-
-watch(
-  () => props.modelValue,
-  (visible, wasVisible) => {
-    if (wasVisible === undefined) {
-      if (visible) {
-        syncSheetStatusBar(true)
-      }
-      return
-    }
-
-    if (visible !== wasVisible) {
-      syncSheetStatusBar(visible)
-    }
-  },
-  { immediate: true }
-)
-
-onBeforeUnmount(() => {
-  if (props.modelValue) {
-    syncSheetStatusBar(false)
-  }
-})
 
 watch(
   [() => props.modelValue, isLoggedIn, () => locale.value, currentChannelId],

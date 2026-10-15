@@ -46,8 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from 'vue'
-import { syncSheetStatusBar } from '@/utils/sheetStatusBar'
+import { ref, watch } from 'vue'
 
 export interface FilterOption {
   label: string
@@ -138,29 +137,6 @@ const emitLiveUpdate = () => {
 
   emit('update:modelValue', cloneSelectedValues())
 }
-
-watch(
-  () => props.visible,
-  (visible, wasVisible) => {
-    if (wasVisible === undefined) {
-      if (visible) {
-        syncSheetStatusBar(true)
-      }
-      return
-    }
-
-    if (visible !== wasVisible) {
-      syncSheetStatusBar(visible)
-    }
-  },
-  { immediate: true }
-)
-
-onBeforeUnmount(() => {
-  if (props.visible) {
-    syncSheetStatusBar(false)
-  }
-})
 
 watch(
   [() => props.visible, () => props.modelValue, () => props.filterGroups],
