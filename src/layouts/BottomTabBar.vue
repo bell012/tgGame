@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="bottom-tab-bar">
-    <div class="h-full flex items-center justify-around px-4">
+    <div class="h-full flex items-center justify-around px-[14px] gap-[6px]">
       <button
         v-for="menu in menus"
         :key="menu.id"
@@ -10,10 +10,10 @@
       >
         <component
           :is="bottomTabBarIcons[menu.icon]"
-          class="mb-1 h-[18px] w-[18px] fill-current [&_path]:fill-current"
-          :class="menu.active ? 'text-theme-primary' : 'text-text-2'"
+          class="mb-[6px] h-[20px] w-[20px] fill-current [&_path]:fill-current"
+          :class="menu.active ? 'text-theme-primary' : 'text-icon-2'"
         />
-        <p class="text-xs font-medium">{{ menu.name }}</p>
+        <p class="text-xs font-[700]">{{ menu.name }}</p>
       </button>
     </div>
   </div>
@@ -104,12 +104,11 @@ const isActive = (path: string, exact = false) => {
   bottom: -2px;
   left: 0;
   right: 0;
-  height: calc(
-    v-bind('layoutStore.BOTTOM_TAB_HEIGHT + "px"') + var(--app-shell-bottom-safe-offset)
-  );
-  padding-bottom: var(--app-shell-bottom-safe-offset);
+  height: calc(v-bind('layoutStore.BOTTOM_TAB_HEIGHT + "px"'));
+  padding-bottom: 16px;
   border-radius: 12px 12px 0 0;
   background: var(--color-background-level-2);
+  border-top: 1px solid var(--color-background-level-3);
   z-index: 50;
 }
 
@@ -119,8 +118,8 @@ const isActive = (path: string, exact = false) => {
   align-items: center;
   justify-content: center;
   flex: 1;
-  padding: 0.5rem;
-  color: var(--color-text-level-3);
+  padding: 6px;
+  color: var(--color-text-level-2);
   transition: color 0.2s;
 }
 
