@@ -187,8 +187,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '赛事详情',
       requiresAuth: true,
-      mobileOnly: true, //pc中路由不可见 H5中路由可见
-      slideTransition: true, // 启用滑动动画
+      slideTransition: true, // H5 仍使用滑动进入，PC 在主内容区打开
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
