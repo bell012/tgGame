@@ -8,7 +8,7 @@
       :loading="isSlideshowLoading"
       class="mb-2.5"
     />
-    <div class="px-3.5">
+    <div class="px-3.5 pb-[60px]">
       <!--Favorites Games -->
       <GameList
         v-if="isLogin && (isHomeCollectionsLoading || favoriteHomeGames.length)"
