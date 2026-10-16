@@ -1,11 +1,22 @@
 <template>
   <!-- 第三方表情选择面板。 -->
-  <section class="flex h-[384px] shrink-0 flex-col bg-bg-1 px-[12px] pb-[16px] pt-[12px]">
-    <p class="shrink-0 text-[13px] leading-[16px] text-text-1">{{ t('chatPublic.allEmojis') }}</p>
+  <section
+    ref="panelRef"
+    class="chat-emoji-panel flex h-[284px] shrink-0 flex-col px-[12px] pb-[16px] pt-[12px]"
+    :class="props.displayMode === 'pc' ? 'bg-bg-5' : 'bg-bg-1'"
+  >
+    <p class="shrink-0 text-[13px] leading-[16px] text-text-2">{{ t('chatPublic.allEmojis') }}</p>
     <!-- emoji-picker-element 自定义元素。 -->
-    <emoji-picker ref="pickerRef" class="chat-emoji-picker mt-[8px]" />
+    <emoji-picker
+      ref="pickerRef"
+      class="chat-emoji-picker mt-[8px]"
+      :class="props.displayMode === 'pc' ? 'chat-emoji-picker--pc' : ''"
+    />
     <!-- 删除与发送操作区。 -->
-    <div v-if="props.hasEmoji" class="mt-[14px] flex shrink-0 justify-end gap-[10px]">
+    <div
+      v-if="props.displayMode !== 'pc' && props.hasEmoji"
+      class="mt-[14px] flex shrink-0 justify-end gap-[10px]"
+    >
       <button
         type="button"
         @click="$emit('delete')"
@@ -80,10 +91,13 @@ onMounted(async () => {
 
 const { t } = useI18n()
 
-const props = defineProps<{ hasEmoji: boolean }>()
+const props = withDefaults(defineProps<{ hasEmoji: boolean; displayMode?: 'h5' | 'pc' }>(), {
+  displayMode: 'h5'
+})
 
-const emit = defineEmits<{ select: [emoji: string]; delete: []; send: [] }>()
+const emit = defineEmits<{ select: [emoji: string]; delete: []; send: []; close: [] }>()
 const pickerRef = ref<HTMLElement | null>(null)
+const panelRef = ref<HTMLElement | null>(null)
 
 /** 将第三方表情组件的 emoji-click 事件转换为页面组件事件。 */
 const handleEmojiClick = (event: Event) => {
@@ -98,8 +112,25 @@ const bindPickerEvent = () => pickerRef.value?.addEventListener('emoji-click', h
 const unbindPickerEvent = () =>
   pickerRef.value?.removeEventListener('emoji-click', handleEmojiClick)
 
-onMounted(bindPickerEvent)
-onBeforeUnmount(unbindPickerEvent)
+/**
+ * 表情面板展开时，仅点击 ChatComposer 顶边以上的聊天内容区域才收起。
+ * 面板自身、ChatComposer 及其下方区域均不参与关闭，避免操作输入区时面板意外消失。
+ */
+const handleDocumentPointerDown = (event: PointerEvent) => {
+  if (panelRef.value && event.composedPath().includes(panelRef.value)) return
+
+  const composer = document.querySelector<HTMLElement>('[data-chat-composer]')
+  if (!composer || event.clientY < composer.getBoundingClientRect().top) emit('close')
+}
+
+onMounted(() => {
+  bindPickerEvent()
+  document.addEventListener('pointerdown', handleDocumentPointerDown, true)
+})
+onBeforeUnmount(() => {
+  unbindPickerEvent()
+  document.removeEventListener('pointerdown', handleDocumentPointerDown, true)
+})
 </script>
 
 <style scoped>
@@ -111,12 +142,16 @@ onBeforeUnmount(unbindPickerEvent)
   touch-action: pan-y;
   overscroll-behavior: contain;
   --background: var(--color-background-level-1);
-  --border-color: rgb(255 255 255 / 0.06);
-  --border-radius: 8px;
+  --border-size: 0px;
   --category-font-color: var(--color-text-level-1);
-  --emoji-size: 1.375rem;
+  --num-columns: 7;
+  --emoji-size: 1.875rem;
   --input-border-color: rgb(255 255 255 / 0.1);
   --input-font-color: var(--color-text-level-1);
   --input-placeholder-color: var(--color-text-level-3);
+}
+
+.chat-emoji-picker--pc {
+  --background: var(--color-background-level-5);
 }
 </style>

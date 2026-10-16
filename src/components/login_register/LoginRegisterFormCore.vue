@@ -38,6 +38,8 @@
     :open-reset-password="openResetPassword"
     :handle-signin-account-input="handleSigninAccountInput"
     :handle-signin-username-input="handleSigninUsernameInput"
+    :handle-signin-username-composition-start="handleSigninUsernameCompositionStart"
+    :handle-signin-username-composition-end="handleSigninUsernameCompositionEnd"
     :handle-signin-phone-input="handleSigninPhoneInput"
     :handle-signin-password-input="handleSigninPasswordInput"
     :handle-signin-sms-code-input="handleSigninSmsCodeInput"
@@ -47,6 +49,8 @@
     :refresh-signup-captcha="fetchSignupCaptcha"
     :handle-signup-account-input="handleSignupAccountInput"
     :handle-signup-username-input="handleSignupUsernameInput"
+    :handle-signup-username-composition-start="handleSignupUsernameCompositionStart"
+    :handle-signup-username-composition-end="handleSignupUsernameCompositionEnd"
     :handle-signup-phone-input="handleSignupPhoneInput"
     :handle-signup-code-input="handleSignupCodeInput"
     :handle-signup-password-input="handleSignupPasswordInput"
@@ -69,6 +73,8 @@ import {
   formatSigninUsername,
   handleInvitationCodeInput,
   handlePasswordInput,
+  handleSigninUsernameCompositionEnd as handleSigninUsernameCompositionEndValue,
+  handleSigninUsernameCompositionStart,
   handleSigninUsernameInput as handleSigninUsernameInputValue,
   handleLoosePhoneInput,
   handleVerificationCodeInput,
@@ -799,11 +805,17 @@ const handleSigninAccountInput = (event: Event) => {
 /**
  * 处理账号登录的用户名输入。
  */
+const applySigninUsername = (value: string) => {
+  formData.value.signin.usernameAccount = value
+  formData.value.signin.account = value
+}
+
 const handleSigninUsernameInput = (event: Event) => {
-  handleSigninUsernameInputValue(event, (value: string) => {
-    formData.value.signin.usernameAccount = value
-    formData.value.signin.account = value
-  })
+  handleSigninUsernameInputValue(event, applySigninUsername)
+}
+
+const handleSigninUsernameCompositionEnd = (event: CompositionEvent) => {
+  handleSigninUsernameCompositionEndValue(event, applySigninUsername)
 }
 
 /**
@@ -871,11 +883,19 @@ const handleSignupAccountInput = (event: Event) => {
 /**
  * 处理用户名注册的用户名输入。
  */
+const applySignupUsername = (value: string) => {
+  formData.value.signup.usernameAccount = value
+  formData.value.signup.account = value
+}
+
 const handleSignupUsernameInput = (event: Event) => {
-  handleSigninUsernameInputValue(event, (value: string) => {
-    formData.value.signup.usernameAccount = value
-    formData.value.signup.account = value
-  })
+  handleSigninUsernameInputValue(event, applySignupUsername)
+}
+
+const handleSignupUsernameCompositionStart = handleSigninUsernameCompositionStart
+
+const handleSignupUsernameCompositionEnd = (event: CompositionEvent) => {
+  handleSigninUsernameCompositionEndValue(event, applySignupUsername)
 }
 
 /**
@@ -1522,6 +1542,8 @@ defineExpose({
   resetForm,
   handleSigninAccountInput,
   handleSigninUsernameInput,
+  handleSigninUsernameCompositionStart,
+  handleSigninUsernameCompositionEnd,
   handleSigninPhoneInput,
   handleSigninPasswordInput,
   handleSigninSmsCodeInput,
@@ -1531,6 +1553,8 @@ defineExpose({
   fetchSignupCaptcha,
   handleSignupAccountInput,
   handleSignupUsernameInput,
+  handleSignupUsernameCompositionStart,
+  handleSignupUsernameCompositionEnd,
   handleSignupPhoneInput,
   handleSignupCodeInput,
   handleSignupPasswordInput,

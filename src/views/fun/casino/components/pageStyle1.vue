@@ -39,7 +39,9 @@
           {{ t('casino.high_roller') }}
         </button>
       </div>
-      <div class="filter-slide-stage mt-3 h-[430px] overflow-hidden rounded-lg sm:rounded-xl">
+      <div
+        class="filter-slide-stage mt-3 overflow-hidden rounded-lg h-[520px] sm:h-[430px] sm:rounded-xl"
+      >
         <Transition :name="slideName">
           <LatestBetTable
             :key="latestBetIndex"

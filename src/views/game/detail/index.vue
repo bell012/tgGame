@@ -12,7 +12,11 @@
     <div
       ref="detailPageRef"
       class="detail-page w-full max-w-[1248px] mx-auto pt-[14px] sm:pt-[20px] px-[12px] pb-[20px] sm:pb-[24px]"
-      :class="isMobile ? 'flex-1 min-h-0 overflow-y-auto overscroll-contain' : ''"
+      :class="
+        isMobile
+          ? 'min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain'
+          : ''
+      "
     >
       <!-- Loading -->
       <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">

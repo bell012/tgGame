@@ -44,8 +44,12 @@
         handleSendCode,
         openResetPassword,
         handleSigninUsernameInput,
+        handleSigninUsernameCompositionStart,
+        handleSigninUsernameCompositionEnd,
         handleSigninPhoneInput,
         handleSignupUsernameInput,
+        handleSignupUsernameCompositionStart,
+        handleSignupUsernameCompositionEnd,
         handleSignupPhoneInput,
         handleSignupCodeInput,
         handleSigninPasswordInput,
@@ -178,6 +182,16 @@
                           "
                           class="auth-input-placeholder w-full h-[42px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                           :class="activeLoginMethod === 'phone' ? 'pl-[78px]' : 'pl-[44px]'"
+                          @compositionstart="
+                            activeLoginMethod === 'username'
+                              ? handleSigninUsernameCompositionStart($event)
+                              : undefined
+                          "
+                          @compositionend="
+                            activeLoginMethod === 'username'
+                              ? handleSigninUsernameCompositionEnd($event)
+                              : undefined
+                          "
                           @input="
                             activeLoginMethod === 'username'
                               ? handleSigninUsernameInput($event)
@@ -401,6 +415,16 @@
                           "
                           class="auth-input-placeholder w-full h-[42px] pr-[3px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                           :class="activeSignupMethod === 'phone' ? 'pl-[78px]' : 'pl-[44px]'"
+                          @compositionstart="
+                            activeSignupMethod === 'username'
+                              ? handleSignupUsernameCompositionStart($event)
+                              : undefined
+                          "
+                          @compositionend="
+                            activeSignupMethod === 'username'
+                              ? handleSignupUsernameCompositionEnd($event)
+                              : undefined
+                          "
                           @input="
                             activeSignupMethod === 'username'
                               ? handleSignupUsernameInput($event)

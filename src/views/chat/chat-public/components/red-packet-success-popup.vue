@@ -54,7 +54,17 @@
               {{ displayAmount }}
             </p>
           </div>
-
+          <!-- 插画内置区域的币种符号 -->
+          <span
+            class="absolute inline-flex items-center justify-center font-black leading-none text-[#E92629]"
+            :class="
+              props.displayMode === 'pc'
+                ? 'left-1/2 top-[313.88px] h-[48.657px] w-[30.053px] -translate-x-1/2 text-[48.657px] [text-shadow:0_1px_0_#FFEEAB]'
+                : 'left-1/2 top-[219.33px] h-[34px] w-[21px] -translate-x-1/2 text-[34px] [text-shadow:0_0.702px_0_#FFEEAB]'
+            "
+          >
+            {{ currencySymbol }}
+          </span>
           <!-- 插画内置按钮区域的领取完成状态。 -->
           <button
             type="button"
@@ -110,7 +120,8 @@ const props = withDefaults(
 defineEmits<{ close: [] }>()
 
 const { t } = useI18n()
-
+// 币种符号
+const currencySymbol = computed(() => getCurrencySymbol(props.currency))
 /** 使用红包消息携带的币种符号展示领取成功金额。 */
-const displayAmount = computed(() => `${getCurrencySymbol(props.currency)}${props.amount}`)
+const displayAmount = computed(() => `${currencySymbol.value}${props.amount}`)
 </script>

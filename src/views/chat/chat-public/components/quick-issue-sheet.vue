@@ -5,18 +5,18 @@
     class="z-[100] flex items-end"
     :class="
       props.displayMode === 'pc'
-        ? 'absolute inset-x-0 bottom-[64px] max-h-[calc(100%-64px)] bg-bg-5'
+        ? 'absolute inset-x-0 top-0 bottom-[64px]'
         : 'fixed inset-0 bg-mask-60-1'
     "
-    @click.self="$emit('close')"
+    @pointerdown.self="$emit('close')"
   >
     <!-- 快捷问题内容面板。 -->
     <section
-      class="w-full bg-bg-1"
+      class="w-full"
       :class="
         props.displayMode === 'pc'
-          ? 'flex max-h-full flex-col px-[12px] pb-[28px] pt-[12px]'
-          : 'rounded-t-[12px] px-[14px] pb-[40px] pt-[14px]'
+          ? 'flex max-h-full flex-col px-[12px] pb-[28px] pt-[12px]  bg-bg-2 rounded-t-[20px]'
+          : 'rounded-t-[12px] px-[14px] pb-[40px] pt-[14px]  bg-bg-1  '
       "
     >
       <!-- 弹层标题与关闭按钮。 -->

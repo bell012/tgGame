@@ -35,7 +35,7 @@
         <VideoPlayPauseIcon
           aria-hidden="true"
           class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          :class="props.displayMode === 'pc' ? 'invisible size-[40px]' : 'size-[36px]'"
+          :class="props.displayMode === 'pc' ? 'size-[40px]' : 'size-[36px]'"
         />
 
         <!-- 视频消息的时间与已读状态。 -->

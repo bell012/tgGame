@@ -2,7 +2,7 @@
   <div class="flex min-h-screen">
     <!-- 顶部导航 -->
     <TopNav
-      v-if="!hideTopNav && !isFullscreenRoute"
+      v-if="showTopNav"
       ref="topNavRef"
       :sidebar-collapsed="isSidebarCollapsed"
       :style="topNavStyle"
@@ -21,7 +21,7 @@
 
     <!-- 主内容区 -->
     <main
-      class="main-layout-content flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
+      class="main-layout-content flex-1 overflow-y-auto bg-bg-1 transition-all duration-300 ease-in-out sm:bg-bg-1"
       :style="mainStyle"
     >
       <!-- 主内容容器 -->
@@ -641,6 +641,14 @@ const hideBottomBar = computed(() => {
 
 const hideTopNav = computed(() => {
   return (route.meta?.mobile as MobileRouteMeta | undefined)?.hideTopNav && isMobile.value
+})
+
+const showTopNav = computed(() => {
+  if (isFullscreenRoute.value) {
+    return false
+  }
+
+  return !hideTopNav.value || (isMobile.value && slideRouteStack.value.length > 0)
 })
 
 watch(

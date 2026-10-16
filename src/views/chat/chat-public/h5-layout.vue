@@ -58,13 +58,15 @@
         @update:draft="setDraft"
         @send="handleSend"
         @emoji="toggleEmoji"
+        @emoji-close="handleEmojiPanelClose"
         @media="toggleMedia"
         @composer-focus="handleComposerFocus"
+        @composer-interact="closeQuickIssue"
         @cancel-reply="cancelReply"
         @emoji-select="handleEmojiSelect"
         @emoji-delete="handleEmojiDelete"
-        @photo="openMediaPreview"
-        @camera="openMediaPreview"
+        @photo="sendSelectedMedia"
+        @camera="sendSelectedMedia"
         @view-image="openImageViewer"
         @view-video="openVideoViewer"
       />
@@ -183,6 +185,12 @@ const pendingMediaFiles = ref<File[]>([])
 const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 
+/** 关闭快捷问题层并清空当前分类。 */
+const closeQuickIssue = () => {
+  quickIssueVisible.value = false
+  activeIssue.value = null
+}
+
 /** 在消息新增或切换会话后，将消息区域滚动到最底部。 */
 const scrollToBottom = () => {
   nextTick(() => conversationViewRef.value?.scrollToBottom())
@@ -248,16 +256,18 @@ const closeImagePreview = () => {
   mode.value = 'idle'
 }
 
-/** 打开多张图片或视频的发送预览，并等待用户确认后再上传。 */
-const openMediaPreview = (files: File[]) => {
-  pendingMediaFiles.value = files.slice(0, 9)
-  previewImage.value = ''
-  previewMode.value = 'compose'
+/** 暂时跳过发送前预览：相册或相机选中媒体后立即依次上传发送。 */
+const sendSelectedMedia = async (files: File[]) => {
+  mode.value = 'idle'
+  for (const file of files.slice(0, 9)) {
+    await sendMediaFile(file)
+  }
+  scrollToBottom()
 }
 
 /** 从待发送媒体列表中移除用户取消的文件。 */
 const removePendingMedia = (index: number) => {
-  pendingMediaFiles.value.splice(index, 1)
+  pendingMediaFiles.value = pendingMediaFiles.value.filter((_, itemIndex) => itemIndex !== index)
   if (!pendingMediaFiles.value.length) closeImagePreview()
 }
 
@@ -320,9 +330,17 @@ const handleEmojiDelete = () => {
   mode.value = 'emoji'
 }
 
-/** H5 用户点回输入框时，收起与软键盘互斥的图片选择面板。 */
+/** 点击表情面板以外的区域时收起面板，保留当前草稿内容。 */
+const handleEmojiPanelClose = () => {
+  if (mode.value === 'emoji') {
+    mode.value = draft.value.trim() ? 'typing' : 'idle'
+  }
+}
+
+/** 用户点回输入框时，收起与软键盘互斥的功能面板。 */
 const handleComposerFocus = () => {
-  if (mode.value === 'media') {
+  closeQuickIssue()
+  if (mode.value === 'emoji' || mode.value === 'media') {
     mode.value = draft.value.trim() ? 'typing' : 'idle'
   }
 }

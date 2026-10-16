@@ -1,7 +1,7 @@
 <template>
   <!-- 红包领取完成后插入聊天记录中的系统提示。 -->
   <div
-    class="flex w-full items-center justify-center gap-[4px] py-[2px] text-[12px] leading-[15px] text-text-2"
+    class="flex w-full items-center justify-center gap-[4px] py-[2px] text-[12px] leading-[15px] text-text-3"
   >
     <img :src="redPacketIcon" alt="" class="h-[16px] w-[14px] shrink-0 object-fill" />
     <span>{{ t('chatPublic.claimedRedPacketPrefix') }}</span>

@@ -5,7 +5,7 @@
     class="fixed inset-0 z-[120] flex items-center justify-center bg-mask-60-1"
   >
     <!-- PC 端 836 × 540 视频预览主体。 -->
-    <section class="h-[540px] w-[836px] overflow-hidden rounded-[8px] bg-bg-1">
+    <section class="relative h-[540px] w-[836px] overflow-hidden rounded-[8px] bg-bg-1">
       <!-- PC 端视频标题与关闭操作。 -->
       <header class="relative flex h-[56px] items-center justify-center bg-bg-2">
         <strong class="text-[18px] font-[700] leading-[22px] text-text-1">
@@ -13,16 +13,16 @@
         </strong>
         <button
           type="button"
-          class="absolute right-4 top-4 flex size-6 items-center justify-center rounded-[4px] bg-opacity-10 text-[20px] leading-none text-text-1"
+          class="absolute right-4 top-4 flex size-6 items-center justify-center rounded-[4px] bg-opacity-10"
           :aria-label="t('chatPublic.close')"
           @click="closePreview"
         >
-          ×
+          <CloseIcon class="size-3 text-text-1" />
         </button>
       </header>
 
       <!-- PC 端视频内容与控制条。 -->
-      <div class="relative m-4 h-[452px] overflow-hidden rounded-[8px] bg-common-0">
+      <div class="relative m-4 h-[452px] overflow-hidden rounded-[8px] bg-bg-2">
         <video
           ref="videoRef"
           class="size-full object-contain"
@@ -39,30 +39,32 @@
         <!-- 点击中心按钮播放或暂停视频。 -->
         <button
           type="button"
-          class="absolute left-1/2 top-1/2 flex size-[60px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-mask-40 text-[24px] text-text-1"
+          class="absolute left-1/2 top-1/2 flex size-[60px] -translate-x-1/2 -translate-y-1/2 items-center justify-center"
           :aria-label="isPlaying ? t('chatPublic.pauseVideo') : t('chatPublic.playVideo')"
           @click="togglePlay"
         >
-          {{ isPlaying ? 'Ⅱ' : '▶' }}
+          <VideoPlayPauseIcon v-if="!isPlaying" class="size-full" />
         </button>
 
         <!-- PC 端进度、下载和全屏控制区域。 -->
         <div
-          class="absolute inset-x-0 bottom-0 h-[82px] bg-gradient-to-t from-common-0/80 to-transparent px-[30px] pt-[20px]"
+          class="absolute inset-x-0 bottom-0 h-[54px] bg-gradient-to-t from-common-0/80 to-transparent px-[30px]"
         >
           <input
             :aria-label="t('chatPublic.videoProgress')"
-            class="h-[6px] w-full accent-common-100"
+            class="pc-video-progress block h-[6px] w-full"
             type="range"
             min="0"
             :max="duration || 0"
             :value="currentTime"
+            :style="{ '--video-progress': `${progressPercent}%` }"
             @input="seekVideo"
           />
-          <div class="mt-3 flex items-center justify-between text-[12px] text-text-1">
+          <div class="mt-4 flex items-center justify-between text-[12px] text-text-1">
             <div class="flex items-center gap-6">
               <button
                 type="button"
+                class="flex size-[16px] items-center justify-center text-[16px] leading-none"
                 :aria-label="isPlaying ? t('chatPublic.pauseVideo') : t('chatPublic.playVideo')"
                 @click="togglePlay"
               >
@@ -85,12 +87,35 @@
             </div>
           </div>
         </div>
+
+        <!-- 单个视频没有可切换的相邻项，保留设计中的禁用翻页按钮。 -->
+        <!-- <button
+          type="button"
+          disabled
+          class="absolute left-2 top-[calc(50%-41px)] flex size-[36px] -translate-y-1/2 items-center justify-center rounded-[8px] bg-mask-40"
+          :aria-label="t('chatPublic.previousImage')"
+        >
+          <span class="flex rotate-180"><MediaPreviewArrowDisabled /></span>
+        </button>
+        <button
+          type="button"
+          disabled
+          class="absolute right-2 top-[calc(50%-41px)] flex size-[36px] -translate-y-1/2 items-center justify-center rounded-[8px] bg-mask-40"
+          :aria-label="t('chatPublic.nextImage')"
+        >
+          <MediaPreviewArrowDisabled />
+        </button> -->
+        <span
+          class="absolute right-[14px] top-[14px] rounded-full bg-mask-40 px-4 py-1 text-[12px] text-text-1"
+        >
+          1 / 1
+        </span>
       </div>
     </section>
   </div>
 
   <!-- H5 端全屏视频播放页。 -->
-  <div v-else class="fixed inset-0 z-[120] bg-common-0">
+  <div v-else class="fixed inset-0 z-[120] bg-black">
     <!-- H5 端视频画面。 -->
     <video
       ref="videoRef"
@@ -117,7 +142,7 @@
 
     <!-- H5 端播放进度和底部操作栏。 -->
     <footer
-      class="absolute inset-x-0 bottom-0 h-[84px] bg-common-0 px-[22px] pt-[18px] text-text-1"
+      class="absolute inset-x-0 bottom-3 h-[84px] bg-common-0 px-[22px] pt-[18px] text-text-1"
     >
       <div class="flex items-center gap-4">
         <button
@@ -162,8 +187,10 @@
 
 <script setup lang="ts">
 import ChatMediaDownload from '@/static/svg/chat/public/download.svg?component'
+import VideoPlayPauseIcon from '@/static/svg/chat/public/video-play-pause.svg?component'
+import CloseIcon from '@/static/svg/close.svg?component'
 import { globalShowToast } from '@/utils/toast'
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(defineProps<{ src: string; displayMode?: 'h5' | 'pc' }>(), {
@@ -175,6 +202,10 @@ const videoRef = ref<HTMLVideoElement | null>(null)
 const currentTime = ref(0)
 const duration = ref(0)
 const isPlaying = ref(false)
+const progressPercent = computed(() => {
+  if (!duration.value) return 0
+  return Math.min(100, Math.max(0, (currentTime.value / duration.value) * 100))
+})
 
 /** 将秒数格式化为视频控制条使用的 mm:ss 文案。 */
 const formatDuration = (seconds: number) => {
@@ -250,3 +281,51 @@ onMounted(() => {
 /** 组件卸载时确保视频播放停止。 */
 onBeforeUnmount(() => videoRef.value?.pause())
 </script>
+
+<style scoped>
+.pc-video-progress {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-common-100) 0%,
+    var(--color-common-100) var(--video-progress),
+    color-mix(in srgb, var(--color-icon-level-1) 50%, transparent) var(--video-progress),
+    color-mix(in srgb, var(--color-icon-level-1) 50%, transparent) 100%
+  );
+  outline: none;
+}
+
+.pc-video-progress::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.pc-video-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 0;
+  border: 0;
+}
+
+.pc-video-progress::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-assist-red);
+}
+
+.pc-video-progress::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-common-100);
+}
+
+.pc-video-progress::-moz-range-thumb {
+  width: 0;
+  height: 0;
+  border: 0;
+}
+</style>

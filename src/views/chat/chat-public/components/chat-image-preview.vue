@@ -19,7 +19,7 @@
           :aria-label="t('chatPublic.close')"
           @click="$emit('close')"
         >
-          <span class="text-[20px] leading-none text-text-1">×</span>
+          <CloseIcon class="size-3 text-text-1" />
         </button>
       </header>
 
@@ -49,36 +49,49 @@
           class="absolute bottom-[16px] right-[14px] z-10 flex h-8 min-w-[88px] items-center justify-center rounded-[6px] bg-theme-primary px-3 text-[14px] font-[700] text-text-4"
           @click="$emit('send')"
         >
-          {{ mediaFiles.length }} / 9
+          {{ t('chatPublic.send') }}
         </button>
-        <!-- PC 端历史媒体的下载入口。 -->
+        <!-- PC 端下载入口始终可见，待发送媒体也可保存当前预览。 -->
         <button
-          v-else
           type="button"
-          class="absolute left-1/2 top-[322px] flex size-[32px] -translate-x-1/2 items-center justify-center rounded-[8px] bg-mask-40"
+          class="absolute bottom-[88px] left-1/2 z-10 flex size-[32px] -translate-x-1/2 items-center justify-center rounded-[8px] bg-mask-40"
           :aria-label="t('chatPublic.download')"
           @click="handleDownload"
         >
           <ChatMediaDownload class="size-[16px] text-text-1" />
         </button>
 
-        <!-- PC 端缩略图横向列表与翻页控制。 -->
+        <!-- PC 端媒体区左右翻页控制。 -->
+        <button
+          v-if="previewSources.length > 1"
+          type="button"
+          class="absolute left-2 top-1/2 z-10 flex size-[36px] -translate-y-1/2 items-center justify-center rounded-full bg-opacity-10"
+          :aria-label="t('chatPublic.previousImage')"
+          :disabled="currentIndex === 0"
+          @click="showPreviousPreview"
+        >
+          <span class="flex rotate-180">
+            <MediaPreviewArrowActive v-if="currentIndex > 0" />
+            <MediaPreviewArrowDisabled v-else />
+          </span>
+        </button>
+        <button
+          v-if="previewSources.length > 1"
+          type="button"
+          class="absolute right-2 top-1/2 z-10 flex size-[36px] -translate-y-1/2 items-center justify-center rounded-full bg-opacity-10"
+          :aria-label="t('chatPublic.nextImage')"
+          :disabled="currentIndex >= previewSources.length - 1"
+          @click="showNextPreview"
+        >
+          <MediaPreviewArrowActive v-if="currentIndex < previewSources.length - 1" />
+          <MediaPreviewArrowDisabled v-else />
+        </button>
+
+        <!-- PC 端缩略图横向列表。 -->
         <div
           v-if="previewSources.length"
-          class="absolute inset-x-0 bottom-0 flex h-[82px] items-start justify-center gap-[10px] overflow-hidden bg-mask-60-1 px-4 pt-2"
+          class="absolute inset-x-0 bottom-0 flex h-[82px] items-center gap-[10px] overflow-x-auto rounded-b-[8px] bg-opacity-15 px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          <button
-            type="button"
-            class="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-opacity-20"
-            :aria-label="t('chatPublic.previousImage')"
-            :disabled="currentIndex === 0"
-            @click="showPreviousPreview"
-          >
-            <span class="flex rotate-180">
-              <MediaPreviewArrowActive v-if="currentIndex > 0" />
-              <MediaPreviewArrowDisabled v-else />
-            </span>
-          </button>
           <button
             v-for="(source, index) in previewSources"
             :key="`${source}-${index}`"
@@ -103,16 +116,6 @@
             >
               ×
             </span>
-          </button>
-          <button
-            type="button"
-            class="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-opacity-20"
-            :aria-label="t('chatPublic.nextImage')"
-            :disabled="currentIndex >= previewSources.length - 1"
-            @click="showNextPreview"
-          >
-            <MediaPreviewArrowActive v-if="currentIndex < previewSources.length - 1" />
-            <MediaPreviewArrowDisabled v-else />
           </button>
         </div>
       </div>
@@ -156,11 +159,11 @@
       <img v-else :src="currentMediaUrl" alt="" class="max-h-full w-full object-contain" />
     </div>
 
-    <!-- 图片查看模式的下载按钮固定显示在页面右下角。 -->
+    <!-- 下载按钮始终显示；待发送模式上移，避免与底部发送操作重叠。 -->
     <button
-      v-if="mode === 'viewer'"
       type="button"
-      class="absolute bottom-[14px] right-[14px] z-10 flex size-[27px] items-center justify-center rounded-[8px] bg-mask-40 p-[3px]"
+      class="absolute right-[14px] z-10 flex size-[27px] items-center justify-center rounded-[8px] bg-mask-40 p-[3px]"
+      :class="mode === 'compose' ? 'bottom-[168px]' : 'bottom-[14px]'"
       :aria-label="t('chatPublic.download')"
       @click="handleDownload"
     >
@@ -170,13 +173,13 @@
     <template v-if="mode === 'compose'">
       <!-- 待发送媒体缩略图列表，可切换当前预览项。 -->
       <div
-        class="flex h-[81px] shrink-0 items-center gap-[8px] overflow-x-auto border-t border-opacity-10 bg-text-4 px-[8px]"
+        class="flex h-[70px] shrink-0 items-center gap-[7px] overflow-x-auto bg-mask-80-2 px-[7px]"
       >
         <button
           v-for="(file, index) in mediaFiles"
           :key="`${file.name}-${file.lastModified}-${index}`"
           type="button"
-          class="relative size-[58px] shrink-0 overflow-hidden rounded-[2px]"
+          class="relative size-[56px] shrink-0 overflow-hidden rounded-[2px]"
           :class="index === currentIndex ? 'ring-[2px] ring-theme-primary' : ''"
           @click="currentIndex = index"
         >
@@ -197,17 +200,14 @@
         </button>
       </div>
       <!-- 批量发送图片或视频的底部操作栏。 -->
-      <footer
-        class="flex h-[58px] shrink-0 items-center justify-end border-t border-opacity-10 bg-bg-1 px-[14px]"
-      >
+      <footer class="flex h-[84px] shrink-0 items-center justify-end bg-mask-80-2 px-[20px]">
         <button
           type="button"
-          class="flex h-[34px] min-w-[90px] items-center justify-center gap-[8px] rounded-[6px] bg-theme-primary px-[12px] text-[14px] font-bold text-text-4"
+          class="flex h-[30px] w-[80px] items-center justify-center rounded-[6px] bg-theme-primary text-[14px] font-bold text-text-4"
           :disabled="!mediaFiles.length"
           @click="$emit('send')"
         >
-          {{ mediaFiles.length }} / 9
-          <span aria-hidden="true" class="text-[20px] leading-none">→</span>
+          {{ t('chatPublic.send') }}
         </button>
       </footer>
     </template>
@@ -219,6 +219,7 @@ import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ChatMediaDownload from '@/static/svg/chat/public/download.svg?component'
 import MediaPreviewArrowActive from '@/static/svg/chat/public/media-preview-arrow-active.svg?component'
 import MediaPreviewArrowDisabled from '@/static/svg/chat/public/media-preview-arrow-disabled.svg?component'
+import CloseIcon from '@/static/svg/close.svg?component'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onBeforeUnmount, ref, toRefs, watch } from 'vue'
 import { useI18n } from 'vue-i18n'

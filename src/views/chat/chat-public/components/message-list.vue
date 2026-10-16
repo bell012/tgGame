@@ -15,7 +15,14 @@
     <!-- 消息气泡列表。 -->
     <div class="flex flex-col gap-[10px] pb-2">
       <template v-for="message in messages" :key="message.id">
-        <div :data-chat-message-id="message.id">
+        <div
+          :data-chat-message-id="message.id"
+          :class="
+            message.id === props.highlightMessageId
+              ? '  -my-[6px] py-[6px] -mx-[7px] bg-opacity-6 px-[7px]'
+              : ''
+          "
+        >
           <RedPacketMessage
             v-if="message.type === 'red-pack'"
             :claimed="props.claimedRedPacketIds.includes(String(message.redPacket?.id ?? ''))"
