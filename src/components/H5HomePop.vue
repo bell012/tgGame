@@ -127,8 +127,9 @@ import Api from '@/api'
 import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { useLocaleStore } from '@/stores/locale'
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeUnmount, onDeactivated, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
@@ -147,6 +148,7 @@ const emit = defineEmits<{
 }>()
 const authModalStore = useAuthModalStore()
 const userStore = useUserStore()
+const localeStore = useLocaleStore()
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 const loginToken = computed(() => String(userInfo.value?.tradeToken ?? ''))
@@ -500,9 +502,18 @@ const next = () => {
   swipeRef.value?.next()
 }
 
-onMounted(() => {
+let hasStartedNoticeRequest = false
+const startNoticeAfterInitialization = () => {
+  // 刷新时先等站点默认语言及路由稳定，再请求并展示，避免安卓上先显示后被初始化关闭。
+  // 组件已停用或本实例已经开始请求时跳过，防止旧实例和就绪通知重复触发。
+  if (isDisposed || hasStartedNoticeRequest || !localeStore.isSiteDefaultsReady) return
+  hasStartedNoticeRequest = true
   void fetchNoticeList()
-})
+}
+
+watch(() => localeStore.isSiteDefaultsReady, startNoticeAfterInitialization, { flush: 'post' })
+// 切换 Tab 再次进入首页时初始化已完成，直接沿用原有公告展示规则。
+onMounted(startNoticeAfterInitialization)
 
 onBeforeUnmount(() => {
   // 标记实例已卸载，阻止未完成请求继续处理展示逻辑。
