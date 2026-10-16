@@ -1,5 +1,6 @@
 <template>
   <section
+    ref="rootRef"
     class="relative flex min-w-0 items-center gap-2"
     aria-label="Related matches"
     data-testid="event-details-tabs"
@@ -131,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { SportCompetitionGroup } from '@/api/interface/sport'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
@@ -166,6 +167,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const activeId = ref(props.modelValue || props.items[0]?.id || '')
+const rootRef = ref<HTMLElement | null>(null)
 const scrollRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 const isPopupOpen = ref(false)
@@ -260,17 +262,35 @@ const selectTab = (id: string) => {
   void scrollActiveTabIntoView(id)
 }
 
+const closePopup = () => {
+  isPopupOpen.value = false
+  popupSearchKeyword.value = ''
+}
+
 const togglePopup = () => {
-  isPopupOpen.value = !isPopupOpen.value
-  if (!isPopupOpen.value) {
-    popupSearchKeyword.value = ''
+  if (isPopupOpen.value) {
+    closePopup()
+    return
   }
+  isPopupOpen.value = true
+}
+
+const handleDocumentClick = (event: MouseEvent) => {
+  if (!isPopupOpen.value) {
+    return
+  }
+
+  const target = event.target as Node | null
+  if (!target || rootRef.value?.contains(target)) {
+    return
+  }
+
+  closePopup()
 }
 
 const onLeaguePopupItemClick = (key: string) => {
   activeLeagueKey.value = key
-  isPopupOpen.value = false
-  popupSearchKeyword.value = ''
+  closePopup()
   const next = visibleMatchItems.value[0]
   if (next) {
     selectTab(next.id)
@@ -308,9 +328,14 @@ const scrollActiveTabIntoView = async (id: string) => {
 }
 
 onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
   if (activeId.value) {
     void scrollActiveTabIntoView(activeId.value)
   }
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
 })
 
 const onDragStart = (event: PointerEvent) => {
