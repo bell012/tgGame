@@ -108,7 +108,7 @@
           </div>
         </div>
         <!-- 底部多选框 -->
-        <div class="bg-bg-2 pl-3.5 pt-2 pb-1">
+        <div class="bg-bg-2 px-3.5 pt-[10px] pb-[20px]">
           <label
             class="checkbox-wrap inline-flex cursor-pointer items-center gap-2"
             :class="{ 'checkbox-checked': checked }"
@@ -127,8 +127,9 @@ import Api from '@/api'
 import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { useLocaleStore } from '@/stores/locale'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
@@ -140,12 +141,14 @@ import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
 import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
+import { homePopVisitState } from '@/utils/homePopVisit'
 
 const emit = defineEmits<{
   close: []
 }>()
 const authModalStore = useAuthModalStore()
 const userStore = useUserStore()
+const localeStore = useLocaleStore()
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 const loginToken = computed(() => String(userInfo.value?.tradeToken ?? ''))
@@ -190,8 +193,11 @@ const swipeRef = ref<SwipeInstance>()
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const checked = ref(false)
-const visible = ref(true)
-usePageScrollLock(() => true)
+// 公告加载完成且存在可展示内容后再打开，避免先出现空弹窗。
+const visible = ref(false)
+let isDisposed = false
+// 仅在弹窗可见时锁定页面滚动，关闭后恢复。
+usePageScrollLock(() => visible.value)
 const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
 }))
@@ -402,7 +408,8 @@ const isSuppressedNow = () => {
 }
 
 const fetchNoticeList = async () => {
-  if (isSuppressedNow()) {
+  // 同一次首页访问已展示过，或处于勾选“不再显示”的抑制期时，直接结束。
+  if (homePopVisitState.hasShown || isSuppressedNow()) {
     closeWithoutSuppress()
     return
   }
@@ -418,18 +425,38 @@ const fetchNoticeList = async () => {
         size: 50
       }
     })
+    // 请求返回时组件可能已因路由切换被卸载，忽略旧实例的响应。
+    if (isDisposed) {
+      return
+    }
+    // 请求期间其他实例可能已经展示，返回后再次判断，避免并发重复弹出。
+    if (homePopVisitState.hasShown || isSuppressedNow()) {
+      closeWithoutSuppress()
+      return
+    }
     const records = Array.isArray(res?.result?.records) ? res.result.records : []
     const filtered = sortNoticeRecords(records).filter(item => shouldShowNoticeByRule(item))
+    noticeList.value = filtered
+    // 没有有效展示内容时直接通知父组件移除，无需等待关闭动画。
+    if (list.value.length === 0) {
+      closeWithoutSuppress()
+      return
+    }
+    // 记录本次访问已展示，后续首页重新挂载也不会再次弹出。
+    homePopVisitState.hasShown = true
     filtered.forEach(item => {
       markNoticeShownByRule(item)
     })
-    noticeList.value = filtered
-    if (noticeList.value.length === 0) {
-      close()
-    }
+    visible.value = true
   } catch (error) {
+    // 已卸载实例不再更新弹窗或向父组件发送关闭事件。
+    if (isDisposed) {
+      return
+    }
     noticeList.value = []
     console.error('queryNoticeMsg failed', error)
+    // 请求失败时移除弹窗组件，避免残留空弹窗。
+    closeWithoutSuppress()
   } finally {
     currentIndex.value = 0
     progressKey.value += 1
@@ -475,12 +502,27 @@ const next = () => {
   swipeRef.value?.next()
 }
 
-onMounted(() => {
-  if (isSuppressedNow()) {
-    closeWithoutSuppress()
-    return
-  }
+let hasStartedNoticeRequest = false
+const startNoticeAfterInitialization = () => {
+  // 刷新时先等站点默认语言及路由稳定，再请求并展示，避免安卓上先显示后被初始化关闭。
+  // 组件已停用或本实例已经开始请求时跳过，防止旧实例和就绪通知重复触发。
+  if (isDisposed || hasStartedNoticeRequest || !localeStore.isSiteDefaultsReady) return
+  hasStartedNoticeRequest = true
   void fetchNoticeList()
+}
+
+watch(() => localeStore.isSiteDefaultsReady, startNoticeAfterInitialization, { flush: 'post' })
+// 切换 Tab 再次进入首页时初始化已完成，直接沿用原有公告展示规则。
+onMounted(startNoticeAfterInitialization)
+
+onBeforeUnmount(() => {
+  // 标记实例已卸载，阻止未完成请求继续处理展示逻辑。
+  isDisposed = true
+})
+
+onDeactivated(() => {
+  // 首页进入缓存时立即忽略未完成的公告请求，防止后台页面占用本次弹窗次数。
+  isDisposed = true
 })
 </script>
 <style lang="scss" scoped>

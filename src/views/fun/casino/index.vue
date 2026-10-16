@@ -2,6 +2,8 @@
   <div
     ref="pageRootRef"
     class="casino-page max-w-[1340px] mx-auto py-3 sm:py-4 w-full font-['Inter']"
+    :class="{ 'casino-page--mobile': isMobile }"
+    data-tab-transition="slide"
     :style="casinoPageStyle"
   >
     <HomeCarouselImg
@@ -264,7 +266,8 @@ const casinoPageStyle = computed<StyleValue | undefined>(() => {
   }
 
   return {
-    paddingTop: `${layoutStore.TOPNAV_HEIGHT + 12}px`
+    paddingTop: `${layoutStore.TOPNAV_HEIGHT + 12}px`,
+    paddingBottom: `calc(${layoutStore.BOTTOM_TAB_HEIGHT + 12}px + env(safe-area-inset-bottom))`
   }
 })
 
@@ -725,6 +728,11 @@ watch(
 </script>
 
 <style scoped lang="scss">
+// 安卓套壳的公共布局已预留底栏空间，页面只保留原有内容间距。
+html.android-app-shell .casino-page--mobile {
+  padding-bottom: 12px !important;
+}
+
 .casino-tab-button--active {
   background: var(--color-background-level-2);
 }

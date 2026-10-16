@@ -5,13 +5,16 @@
     :class="message.direction === 'outgoing' ? 'justify-end' : 'justify-start'"
   >
     <div class="relative" :class="props.displayMode === 'pc' ? 'max-w-[249px]' : 'max-w-[82%]'">
-      <button
-        type="button"
+      <div
         data-chat-message-bubble
-        class="text-left"
+        class="cursor-pointer text-left"
         :class="message.direction === 'outgoing' ? 'items-end' : 'items-start'"
+        role="button"
+        tabindex="0"
         @click="handleFocus"
         @contextmenu.prevent="handleFocus"
+        @keydown.enter.prevent="handleKeyboardFocus"
+        @keydown.space.prevent="handleKeyboardFocus"
       >
         <!-- 当前消息气泡，内部同时承载引用摘要、回复内容与发送时间。 -->
         <div
@@ -83,7 +86,7 @@
                 : '-left-[7px] bg-bg-3 [clip-path:polygon(100%_0,0_50%,100%_100%)]'
             "
           />
-          <p
+          <div
             class="whitespace-pre-wrap break-words text-text-1"
             :class="
               props.displayMode === 'pc'
@@ -91,10 +94,16 @@
                 : 'text-[15px] leading-[20px]'
             "
           >
-            <template v-for="(part, index) in messageHighlightParts" :key="index">
-              <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
+            <!-- 仅客服发来的消息按白名单富文本展示；用户消息始终作为纯文本插值。 -->
+            <template v-if="shouldRenderRichText">
+              <div class="chat-rich-text" v-html="richText"></div>
             </template>
-          </p>
+            <template v-else>
+              <template v-for="(part, index) in messageHighlightParts" :key="index">
+                <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
+              </template>
+            </template>
+          </div>
           <div
             class="flex items-center justify-end gap-[4px] text-text-3"
             :class="
@@ -113,7 +122,7 @@
             />
           </div>
         </div>
-      </button>
+      </div>
 
       <!-- 发送失败时显示在消息左侧中部的重发按钮。 -->
       <button
@@ -135,7 +144,7 @@ import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getChatTextHighlightParts } from '../shared'
+import { getChatTextHighlightParts, sanitizeChatRichText } from '../shared'
 import type { ChatMessage } from '../types'
 
 const props = withDefaults(
@@ -156,6 +165,14 @@ const messageHighlightParts = computed(() =>
   getChatTextHighlightParts(props.message.text, props.highlightKeyword)
 )
 
+/** 客服原始内容保存在 socketContent；搜索高亮时保留纯文本，确保命中词可见。 */
+const shouldRenderRichText = computed(
+  () => props.message.direction === 'incoming' && !props.highlightKeyword.trim()
+)
+const richText = computed(() =>
+  sanitizeChatRichText(props.message.socketContent ?? props.message.text ?? '')
+)
+
 /** 生成引用摘要的关键词高亮片段。 */
 const replyHighlightParts = computed(() =>
   getChatTextHighlightParts(props.message.reply?.preview, props.highlightKeyword)
@@ -173,4 +190,25 @@ const replyMediaType = computed(() => {
 const handleFocus = (event: MouseEvent) => {
   emit('focus', props.message, event, event.currentTarget as HTMLElement | null)
 }
+
+/** 键盘触发时沿用点击的回复操作，不影响富文本中的链接点击。 */
+const handleKeyboardFocus = (event: KeyboardEvent) => {
+  emit(
+    'focus',
+    props.message,
+    event as unknown as MouseEvent,
+    event.currentTarget as HTMLElement | null
+  )
+}
 </script>
+
+<style scoped>
+.chat-rich-text :deep(p + p) {
+  margin-top: 0.5em;
+}
+
+.chat-rich-text :deep(a) {
+  color: var(--color-theme-level-1);
+  text-decoration: underline;
+}
+</style>

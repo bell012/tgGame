@@ -21,15 +21,18 @@
 
     <!-- 主内容区 -->
     <main
-      class="main-layout-content flex-1 overflow-y-auto bg-bg-1 transition-all duration-300 ease-in-out sm:bg-bg-1"
+      ref="mainContentRef"
+      class="main-layout-content flex-1 overflow-y-auto bg-bg-1 sm:bg-bg-1"
+      :class="{ 'transition-all duration-300 ease-in-out': !isMobile }"
       :style="mainStyle"
     >
       <!-- 主内容容器 -->
       <div :class="isFullscreenRoute ? 'min-h-full' : 'flex min-h-full items-start gap-4'">
         <!-- 路由内容区域 -->
         <section
+          ref="routeContentRef"
           class="min-w-0 flex-1"
-          :class="{ 'filter-slide-stage': isMobile && isPageSliding }"
+          :class="{ 'mobile-tab-stage': isMobile }"
         >
           <!-- 主内容区：滑动路由场景下优先渲染背景页，避免 keep-alive 在双 router-view 间切换失效 -->
           <router-view
@@ -38,22 +41,20 @@
             v-slot="{ Component, route: viewRoute }"
           >
             <template v-if="isMobile">
-              <Transition :name="pageSlideName" @after-enter="finishPageSlide">
-                <div :key="getMainRouteViewKey(viewRoute)" class="filter-slide-pane w-full">
-                  <KeepAlive>
-                    <component
-                      :is="Component"
-                      v-if="viewRoute.meta?.keepAlive"
-                      :key="getMainRouteViewKey(viewRoute)"
-                    />
-                  </KeepAlive>
-                  <component
-                    :is="Component"
-                    v-if="!viewRoute.meta?.keepAlive"
-                    :key="getMainRouteViewKey(viewRoute)"
-                  />
-                </div>
-              </Transition>
+              <!-- 缓存容器保持稳定，Tab 切换只激活页面，不重建整棵组件树。 -->
+              <!-- 登录身份变化时清理缓存，避免复用上一账号的页面数据。 -->
+              <KeepAlive :key="mobileCacheScope" :max="8">
+                <component
+                  :is="Component"
+                  v-if="shouldCacheMobileRoute(viewRoute)"
+                  :key="getMainRouteViewKey(viewRoute)"
+                />
+              </KeepAlive>
+              <component
+                :is="Component"
+                v-if="!shouldCacheMobileRoute(viewRoute)"
+                :key="getMainRouteViewKey(viewRoute)"
+              />
             </template>
             <template v-else>
               <KeepAlive>
@@ -117,9 +118,14 @@
     <teleport to="body" v-if="isMobile && slideRouteStack.length > 0">
       <!-- 渲染所有滑动路由栈 -->
       <template v-for="(item, index) in slideRouteStack" :key="item.path">
-        <transition name="drawer-slide">
+        <transition
+          name="drawer-slide"
+          :css="item.animate"
+          @after-leave="removeClosedDrawer(item.path)"
+        >
           <div
             v-if="item.showDrawer"
+            data-route-drawer
             class="fixed inset-0 overflow-hidden bg-bg-1"
             :style="{ zIndex: 99 + index }"
           >
@@ -130,7 +136,7 @@
     </teleport>
 
     <!-- 底部Tab栏 -->
-    <BottomTabBar class="sm:hidden" v-if="!hideBottomBar" />
+    <BottomTabBar class="sm:hidden" v-if="isMobile && !hideBottomBar" />
 
     <CheckInPopup v-model="checkInVisible" auto-popup-only />
   </div>
@@ -138,9 +144,11 @@
 
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useNativeHistoryTransition } from '@/composables/useNativeHistoryTransition'
 import { useCheckInModalStore } from '@/stores/checkInModal'
 import { useLayoutStore } from '@/stores/layout'
 import { usePromotionsStore } from '@/stores/promotions'
+import { useUserStore } from '@/stores/user'
 import {
   DEFAULT_LOCALE,
   getLocaleFromRouteParam,
@@ -148,6 +156,11 @@ import {
   withLocalePrefix
 } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import {
+  cancelBottomTabTransition,
+  cancelUnrelatedTabTransition,
+  isBottomTabSnapshotActive
+} from '@/utils/bottomTabTransition'
 import NotificationDetailPage from '@/views/menu/notifications/detail/index.vue'
 import NotificationListPage from '@/views/menu/notifications/index.vue'
 import { storeToRefs } from 'pinia'
@@ -155,6 +168,7 @@ import {
   computed,
   markRaw,
   nextTick,
+  onBeforeUnmount,
   onMounted,
   ref,
   shallowRef,
@@ -171,8 +185,12 @@ import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToas
 const layoutStore = useLayoutStore()
 const promotionsStore = usePromotionsStore()
 const checkInModalStore = useCheckInModalStore()
+const userStore = useUserStore()
+const mobileCacheScope = computed(() => userStore.userInfo?.tradeToken || 'guest')
 const { visible: checkInVisible } = storeToRefs(checkInModalStore)
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
+const mainContentRef = ref<HTMLElement | null>(null)
+const routeContentRef = ref<HTMLElement | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 const isSidebarCollapsed = ref(false)
 const showNotificationPanel = ref(false)
@@ -183,7 +201,19 @@ const hasViewportModeInitialized = ref(false)
 
 const route = useRoute()
 const router = useRouter()
-const DRAWER_TRANSITION_MS = 350
+const consumeNativeHistoryTransition = useNativeHistoryTransition(
+  router,
+  () => isMobile.value && route.meta?.slideTransition === true
+)
+
+// 离开当前目标路由时中止快照动画，避免与抽屉或下一次导航叠加。
+const removeTabTransitionGuard = router.beforeEach(to => {
+  cancelUnrelatedTabTransition(to.fullPath)
+})
+onBeforeUnmount(() => {
+  removeTabTransitionGuard()
+  cancelBottomTabTransition()
+})
 
 useCheckInAutoPopup()
 
@@ -201,6 +231,7 @@ interface SlideRouteItem {
   path: string
   route: RouteLocationNormalizedLoaded
   showDrawer: boolean
+  animate: boolean
 }
 
 interface NotificationPanelDetail {
@@ -216,11 +247,30 @@ interface NotificationPanelDetail {
 // 滑动路由栈
 const slideRouteStack = ref<SlideRouteItem[]>([])
 
+// 以真实退场结束事件清理，仅删除仍处于关闭状态的项，快速返回时保留已重新打开的抽屉。
+const removeClosedDrawer = (path: string) => {
+  slideRouteStack.value = slideRouteStack.value.filter(
+    item => item.path !== path || item.showDrawer
+  )
+}
+
 // 主区域当前应该显示的根背景页
 const backgroundRouteSnapshot = shallowRef<RouteLocationNormalizedLoaded | null>(null)
 
+const BOTTOM_TAB_ROUTE_NAMES = ['Home', 'explore', 'casino', 'sports', 'chat-public']
+const getBottomTabIndex = (currentRoute: RouteLocationNormalizedLoaded) => {
+  const name = String(currentRoute.name || '').replace(/^Locale/, '')
+  return BOTTOM_TAB_ROUTE_NAMES.indexOf(name === 'casinoTabKey' ? 'casino' : name)
+}
+const isBottomTabRoute = (currentRoute: RouteLocationNormalizedLoaded) =>
+  getBottomTabIndex(currentRoute) >= 0
+
+const shouldCacheMobileRoute = (currentRoute: RouteLocationNormalizedLoaded) =>
+  isBottomTabRoute(currentRoute) || currentRoute.meta?.keepAlive === true
+
 // 判断是否应该使用滑动过渡动画
 const shouldUseSlideTransition = (currentRoute: RouteLocationNormalizedLoaded) => {
+  // 尊重路由配置，chat-public 与其他 slideTransition 页面使用同一套抽屉动画。
   return currentRoute.meta?.slideTransition === true
 }
 
@@ -270,53 +320,6 @@ const mainAreaRoute = computed(() => {
   return null
 })
 
-const BOTTOM_TAB_PATHS = ['/', '/explore', '/casino', '/sports'] as const
-const pageSlideName = ref<'filter-slide-left' | 'filter-slide-right' | 'tab-page-none'>(
-  'tab-page-none'
-)
-const isPageSliding = ref(false)
-let pageSlideTimer: number | null = null
-
-const getBottomTabIndex = (fullPath: string) => {
-  const path = stripLocalePrefix(fullPath).replace(/\/$/, '') || '/'
-  return BOTTOM_TAB_PATHS.findIndex(tabPath =>
-    tabPath === '/' ? path === '/' : path === tabPath || path.startsWith(`${tabPath}/`)
-  )
-}
-
-const finishPageSlide = () => {
-  if (pageSlideTimer) {
-    window.clearTimeout(pageSlideTimer)
-    pageSlideTimer = null
-  }
-  isPageSliding.value = false
-}
-
-// 底部菜单切换时，页面按菜单顺序左右滑动。点右侧向左滑出，点左侧向右滑出。
-watch(
-  () => (isMobile.value ? mainAreaRoute.value?.fullPath : ''),
-  (fullPath, previousFullPath) => {
-    if (!isMobile.value || !fullPath || !previousFullPath || fullPath === previousFullPath) {
-      pageSlideName.value = 'tab-page-none'
-      isPageSliding.value = false
-      return
-    }
-
-    const nextIndex = getBottomTabIndex(fullPath)
-    const previousIndex = getBottomTabIndex(previousFullPath)
-    if (nextIndex < 0 || previousIndex < 0 || nextIndex === previousIndex) {
-      pageSlideName.value = 'tab-page-none'
-      isPageSliding.value = false
-      return
-    }
-
-    pageSlideName.value = nextIndex > previousIndex ? 'filter-slide-left' : 'filter-slide-right'
-    isPageSliding.value = true
-    if (pageSlideTimer) window.clearTimeout(pageSlideTimer)
-    pageSlideTimer = window.setTimeout(finishPageSlide, 320)
-  }
-)
-
 /** 判断当前路由是否应在 PC 端作为右侧客服面板展示。 */
 const isDesktopOverlayRoute = computed(() => !isMobile.value && route.meta?.desktopOverlay === true)
 
@@ -341,8 +344,86 @@ const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
     return `gamelist-${localeKey}-${tabKey}`
   }
 
+  // 搜索页会同步筛选条件到 query；查询参数变化只更新页面，不创建新的缓存实例。
+  if (isMobile.value && isBottomTabRoute(currentRoute)) {
+    return `bottom-tab-${routeName}-${localeKey}`
+  }
+
   return currentRoute.fullPath
 }
+
+// 缓存页面各自保留滚动位置，在 DOM 更新后、浏览器绘制前恢复，避免先露出错误位置再跳动。
+const mobileScrollPositions = new Map<string, { windowTop: number; mainTop: number }>()
+let previousBottomTabIndex = -1
+watch(
+  () => {
+    const currentRoute = mainAreaRoute.value
+    return isMobile.value && currentRoute ? getMainRouteViewKey(currentRoute) : ''
+  },
+  async (key, previousKey, onCleanup) => {
+    const fromTabIndex = previousBottomTabIndex
+    const targetRoute = mainAreaRoute.value
+    const toTabIndex = isMobile.value && targetRoute ? getBottomTabIndex(targetRoute) : -1
+    previousBottomTabIndex = toTabIndex
+    if (!key) return
+    if (previousKey) {
+      mobileScrollPositions.set(previousKey, {
+        windowTop: window.scrollY,
+        mainTop: mainContentRef.value?.scrollTop ?? 0
+      })
+    }
+    if (!mainAreaRoute.value || !isBottomTabRoute(mainAreaRoute.value)) return
+
+    let cancelled = false
+    const animationCleanups: Array<() => void> = []
+    onCleanup(() => {
+      cancelled = true
+      // 快速连续切换、离开 Tab 或卸载布局时取消旧动画，不排队等待退场。
+      animationCleanups.forEach(cleanup => cleanup())
+    })
+    await nextTick()
+    // 连续快速点击时只恢复最终目标页，避免旧任务覆盖新页面的位置。
+    if (cancelled) return
+    const position = mobileScrollPositions.get(key)
+    mainContentRef.value?.scrollTo({ top: position?.mainTop ?? 0, behavior: 'instant' })
+    window.scrollTo({ top: position?.windowTop ?? 0, behavior: 'instant' })
+
+    // 快照动画负责整屏滑入滑出；抽屉进出期间也不叠加 Tab 动画。
+    if (isBottomTabSnapshotActive() || slideRouteStack.value.length > 0) return
+    // 安卓直接播放合成滑动；仅在不同 Tab 之间播放，首屏、语言切换和页内筛选即时更新。
+    if (fromTabIndex < 0 || toTabIndex < 0 || fromTabIndex === toTabIndex) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const offset = toTabIndex > fromTabIndex ? '100%' : '-100%'
+    const targets = routeContentRef.value?.querySelectorAll<HTMLElement>('[data-tab-transition]')
+    targets?.forEach(element => {
+      if (typeof element.animate !== 'function') return
+
+      // 只在本次滑动期间提示浏览器准备变换层，结束或中断后恢复，避免长列表常驻额外图层。
+      const previousWillChange = element.style.willChange
+      element.style.willChange = 'transform'
+      const animation = element.animate(
+        [{ transform: `translate3d(${offset}, 0, 0)` }, { transform: 'translate3d(0, 0, 0)' }],
+        {
+          duration: 300,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        }
+      )
+      let cleaned = false
+      const cleanup = () => {
+        if (cleaned) return
+        cleaned = true
+        animation.onfinish = null
+        animation.cancel()
+        element.style.willChange = previousWillChange
+      }
+      // 同步清理旧动画的图层提示，防止快速切换时旧回调覆盖新动画的状态。
+      animation.onfinish = cleanup
+      animationCleanups.push(cleanup)
+    })
+  },
+  { immediate: true }
+)
 
 const resolveRouteSnapshot = (fullPath: string) => {
   return markRaw(router.resolve(fullPath) as RouteLocationNormalizedLoaded)
@@ -419,6 +500,8 @@ watch(
   () => ({ fullPath: route.fullPath, isMobileDevice: isMobile.value }),
   async ({ fullPath, isMobileDevice }, previousValue) => {
     const newPath = String(fullPath)
+    // iOS 右滑已由浏览器完成动画，此次仅同步抽屉栈；按钮返回仍播放 CSS 动画。
+    const animateDrawer = !consumeNativeHistoryTransition(newPath)
     const currentRouteSnapshot = resolveRouteSnapshot(newPath)
     const previousRouteSnapshot = previousValue?.fullPath
       ? resolveRouteSnapshot(String(previousValue.fullPath))
@@ -444,19 +527,20 @@ watch(
     if (!shouldSlide || !isMobileDevice) {
       backgroundRouteSnapshot.value = currentRouteSnapshot
 
+      if (!animateDrawer) {
+        // 原生返回直接卸载整个过渡组件，避免旧抽屉节点再走一轮 leave。
+        slideRouteStack.value = []
+        return
+      }
+
       if (slideRouteStack.value.length === 0) {
         return
       }
 
       for (const item of slideRouteStack.value) {
+        item.animate = animateDrawer
         item.showDrawer = false
       }
-
-      setTimeout(() => {
-        if (!shouldUseSlideTransition(route) || !isMobile.value) {
-          slideRouteStack.value = []
-        }
-      }, DRAWER_TRANSITION_MS)
 
       return
     }
@@ -488,30 +572,48 @@ watch(
     }
 
     if (backgroundRouteSnapshot.value.fullPath === newPath) {
+      if (!animateDrawer) {
+        slideRouteStack.value = []
+        return
+      }
+
       if (slideRouteStack.value.length === 0) {
         return
       }
 
       for (const item of slideRouteStack.value) {
+        item.animate = animateDrawer
         item.showDrawer = false
       }
-
-      setTimeout(() => {
-        if (route.fullPath === newPath) {
-          slideRouteStack.value = []
-        }
-      }, DRAWER_TRANSITION_MS)
 
       return
     }
 
     const existingIndex = slideRouteStack.value.findIndex(item => item.path === newPath)
 
+    if (!animateDrawer) {
+      // 原生历史动画已经展示目标页：一次渲染内还原栈，直接移除其上的过渡组件。
+      // 目标不在当前栈时直接以打开状态挂载，不再先隐藏、nextTick 后再触发入场。
+      if (existingIndex === -1) {
+        slideRouteStack.value = [
+          { path: newPath, route: currentRouteSnapshot, showDrawer: true, animate: false }
+        ]
+      } else {
+        const targetItem = slideRouteStack.value[existingIndex]
+        targetItem.route = currentRouteSnapshot
+        targetItem.showDrawer = true
+        targetItem.animate = false
+        slideRouteStack.value = slideRouteStack.value.slice(0, existingIndex + 1)
+      }
+      return
+    }
+
     if (existingIndex === -1) {
       const newItem: SlideRouteItem = {
         path: newPath,
         route: currentRouteSnapshot,
-        showDrawer: false
+        showDrawer: false,
+        animate: animateDrawer
       }
 
       slideRouteStack.value.push(newItem)
@@ -519,25 +621,26 @@ watch(
       await nextTick()
 
       const targetItem = slideRouteStack.value.find(item => item.path === newPath)
-      if (targetItem) {
+      if (targetItem && route.fullPath === newPath && isMobile.value) {
         targetItem.showDrawer = true
+      } else if (targetItem && !targetItem.showDrawer) {
+        // 尚未显示就被新导航取代的项没有 after-leave，直接清理以免残留在栈中。
+        removeClosedDrawer(newPath)
       }
     } else {
       slideRouteStack.value[existingIndex].route = currentRouteSnapshot
+      slideRouteStack.value[existingIndex].animate = animateDrawer
+      slideRouteStack.value[existingIndex].showDrawer = true
 
       const itemsToRemove = slideRouteStack.value.slice(existingIndex + 1)
       for (const item of itemsToRemove) {
+        item.animate = animateDrawer
         item.showDrawer = false
       }
-
-      setTimeout(() => {
-        if (route.fullPath === newPath) {
-          slideRouteStack.value = slideRouteStack.value.slice(0, existingIndex + 1)
-        }
-      }, DRAWER_TRANSITION_MS)
     }
   },
-  { immediate: true, flush: 'post' }
+  // 渲染前确定背景页与抽屉层，避免客服先在主区域挂载，再移到抽屉中挂载第二次。
+  { immediate: true, flush: 'pre' }
 )
 
 const mainStyle = computed(() => {
@@ -679,6 +782,11 @@ watch(
 </script>
 
 <style scoped>
+/* 横向入场时裁掉溢出的边缘，避免出现横向滚动条。 */
+.mobile-tab-stage {
+  overflow-x: clip;
+}
+
 .notification-panel-enter-active,
 .notification-panel-leave-active {
   transition:

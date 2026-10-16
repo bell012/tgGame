@@ -1,6 +1,11 @@
 <template>
   <!-- 消息编辑器整体容器。 -->
-  <div data-chat-composer class="shrink-0 bg-bg-2" @pointerdown="$emit('interact')">
+  <div
+    data-chat-composer
+    class="shrink-0 bg-bg-2"
+    :class="{ 'chat-composer--keyboard-visible': props.keyboardVisible }"
+    @pointerdown="$emit('interact')"
+  >
     <!-- 引用回复预览区域。 -->
     <ReplyPreview v-if="replyTarget" :target="replyTarget" @close="$emit('cancel-reply')" />
 
@@ -107,6 +112,7 @@ const props = withDefaults(
     modelValue: string
     replyTarget?: ChatReplyTarget | null
     displayMode?: 'h5' | 'pc'
+    keyboardVisible?: boolean
   }>(),
   { displayMode: 'h5' }
 )
@@ -147,8 +153,8 @@ const getCaretOffset = () => {
   return beforeRange.toString().length
 }
 
-/** 重建表情与文字节点，并把光标放回指定的文本偏移处。 */
-const renderInputValue = (value: string, caretOffset = value.length) => {
+/** 重建表情与文字节点；只有用户已聚焦输入框时才恢复光标。 */
+const renderInputValue = (value: string, caretOffset = value.length, restoreSelection = false) => {
   const element = inputRef.value
   if (!element) return
 
@@ -168,6 +174,9 @@ const renderInputValue = (value: string, caretOffset = value.length) => {
   emojiPattern.lastIndex = 0
 
   element.replaceChildren(fragment)
+
+  // iOS 会将 contenteditable 的程序化选区视作一次聚焦，导致刚进入会话便弹出键盘。
+  if (!restoreSelection) return
 
   const selection = window.getSelection()
   if (!selection) return
@@ -217,7 +226,7 @@ const handleInput = (event: Event) => {
   const value = (event.currentTarget as HTMLElement).textContent ?? ''
   const caretOffset = getCaretOffset()
   emit('update:modelValue', value)
-  renderInputValue(value, caretOffset)
+  renderInputValue(value, caretOffset, true)
 }
 
 /** 输入法组合结束后再格式化，避免打断中文等组合输入。 */
@@ -257,7 +266,11 @@ const scrollInputToEnd = async () => {
   }
 
   if (inputRef.value.textContent !== props.modelValue) {
-    renderInputValue(props.modelValue)
+    renderInputValue(
+      props.modelValue,
+      props.modelValue.length,
+      document.activeElement === inputRef.value
+    )
   }
   inputRef.value.scrollLeft = inputRef.value.scrollWidth
 }
@@ -306,6 +319,14 @@ onMounted(() => {
 }
 
 .chat-composer-bottom-safe {
-  height: calc(33px + var(--app-shell-bottom-safe-offset));
+  height: calc(33px + env(safe-area-inset-bottom, 0px));
+  min-height: 33px;
+  flex-shrink: 0;
+}
+
+/* 键盘展开时取消固定安全区留白，让输入框紧贴键盘上沿。 */
+.chat-composer--keyboard-visible .chat-composer-bottom-safe {
+  height: 0;
+  min-height: 0;
 }
 </style>

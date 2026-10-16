@@ -211,7 +211,8 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 /** 从对话返回客服会话列表，并清理会话内的临时状态。 */
 const handleConversationBack = async () => {
   await leaveConversation()
-  await loadConversations()
+  // 保留已有列表并在后台刷新，返回列表时不重新显示骨架屏。
+  await loadConversations({ silent: true })
   highlightMessageId.value = ''
   highlightKeyword.value = ''
   quickIssueVisible.value = false
