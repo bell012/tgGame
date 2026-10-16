@@ -42,7 +42,6 @@
         :aria-selected="activeId === item.id"
         class="inline-flex h-[76px] w-[152px] flex-none flex-col rounded-lg border-0 p-2 text-left transition-colors"
         :class="getTabClass(item.id)"
-        @click="selectTab(item.id)"
       >
         <div class="flex h-4 min-w-0 items-center gap-0.5">
           <img
@@ -114,7 +113,7 @@
           type="button"
           role="option"
           :aria-selected="activeLeagueKey === item.key"
-          class="flex w-full items-center border-0 bg-transparent py-[12px] text-left"
+          class="flex w-full items-center border-0 bg-transparent py-[12px] text-left px-[12px]"
           @click="onLeaguePopupItemClick(item.key)"
         >
           <span class="mr-3 min-w-0 flex-1 truncate text-[14px] font-bold text-text-1">
@@ -132,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { SportCompetitionGroup } from '@/api/interface/sport'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
@@ -205,6 +204,7 @@ watch(
   value => {
     if (value && value !== activeId.value) {
       activeId.value = value
+      void scrollActiveTabIntoView(value)
     }
   }
 )
@@ -257,6 +257,7 @@ const selectTab = (id: string) => {
   activeId.value = id
   emit('update:modelValue', id)
   emit('change', id)
+  void scrollActiveTabIntoView(id)
 }
 
 const togglePopup = () => {
@@ -273,18 +274,44 @@ const onLeaguePopupItemClick = (key: string) => {
   const next = visibleMatchItems.value[0]
   if (next) {
     selectTab(next.id)
-    scrollActiveTabIntoView(next.id)
   }
 }
 
-const scrollActiveTabIntoView = (id: string) => {
-  const root = scrollRef.value
-  if (!root) {
+const scrollActiveTabIntoView = async (id: string) => {
+  await nextTick()
+
+  const element = scrollRef.value
+  if (!element) {
     return
   }
-  const tab = root.querySelector<HTMLElement>(`[data-event-tab="${id}"]`)
-  tab?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+
+  const tab =
+    Array.from(element.querySelectorAll<HTMLElement>('[data-event-tab]')).find(
+      item => item.dataset.eventTab === id
+    ) ?? null
+  if (!tab) {
+    return
+  }
+
+  const elementRect = element.getBoundingClientRect()
+  const tabRect = tab.getBoundingClientRect()
+  const centeredLeft =
+    element.scrollLeft + tabRect.left + tabRect.width / 2 - elementRect.left - elementRect.width / 2
+  const maxLeft = Math.max(0, element.scrollWidth - element.clientWidth)
+  const shouldReduceMotion =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  element.scrollTo({
+    left: Math.min(Math.max(centeredLeft, 0), maxLeft),
+    behavior: shouldReduceMotion ? 'auto' : 'smooth'
+  })
 }
+
+onMounted(() => {
+  if (activeId.value) {
+    void scrollActiveTabIntoView(activeId.value)
+  }
+})
 
 const onDragStart = (event: PointerEvent) => {
   if (event.pointerType === 'mouse' && event.button !== 0) {

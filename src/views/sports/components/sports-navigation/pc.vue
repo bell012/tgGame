@@ -36,7 +36,11 @@
     <button
       type="button"
       class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-icon-2 transition-colors duration-200 hover:text-theme-primary"
-      aria-label="betting history"
+      :aria-label="t('betHistory.title')"
+      @mouseenter="showBettingHistoryTooltip"
+      @mouseleave="hideSportTooltip"
+      @focus="showBettingHistoryTooltip"
+      @blur="hideSportTooltip"
       @click="handleBettingHistory"
     >
       <BettingHistoryIcon
@@ -99,7 +103,7 @@ function getSportButtonClass(item: SportItem) {
     : 'text-icon-2 hover:text-theme-primary'
 }
 
-function showSportTooltip(event: MouseEvent | FocusEvent, item: SportItem) {
+function showTooltipAt(event: MouseEvent | FocusEvent, label: string) {
   const target = event.currentTarget
   if (!(target instanceof HTMLElement)) {
     return
@@ -109,8 +113,16 @@ function showSportTooltip(event: MouseEvent | FocusEvent, item: SportItem) {
   sportTooltip.value = {
     x: rect.left + rect.width / 2,
     y: rect.bottom + 6,
-    label: t(item.i18nKey)
+    label
   }
+}
+
+function showSportTooltip(event: MouseEvent | FocusEvent, item: SportItem) {
+  showTooltipAt(event, t(item.i18nKey))
+}
+
+function showBettingHistoryTooltip(event: MouseEvent | FocusEvent) {
+  showTooltipAt(event, t('betHistory.title'))
 }
 
 function hideSportTooltip() {
@@ -119,6 +131,7 @@ function hideSportTooltip() {
 
 // 点击 PC 投注历史图标进入体育投注历史页。
 function handleBettingHistory() {
+  hideSportTooltip()
   navigateTo('/sports/bet-history')
 }
 
