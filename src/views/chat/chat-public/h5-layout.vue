@@ -2,7 +2,8 @@
   <!-- H5 客服页面根容器。 -->
   <div
     class="chat-public-h5 fixed inset-x-0 top-0 flex flex-col overflow-hidden bg-bg-1 sm:hidden"
-    :class="activeConversation ? 'bottom-0 z-[60]' : 'chat-public-h5-with-tab z-20'"
+    :class="activeConversation ? 'bottom-auto z-[60]' : 'chat-public-h5-with-tab z-20'"
+    :style="activeConversation ? chatViewportStyle : undefined"
   >
     <!-- 未选择会话时的客服列表页面。 -->
     <template v-if="!activeConversation">
@@ -31,7 +32,7 @@
     </template>
 
     <!-- 已选择会话时的对话内容层。 -->
-    <div v-else class="fixed inset-0 z-[60] bg-bg-1">
+    <div v-else class="absolute inset-0 z-[60] bg-bg-1">
       <!-- 当前客服的会话内容。 -->
       <ConversationView
         ref="conversationViewRef"
@@ -45,6 +46,7 @@
         :uploading-media="uploadingImage"
         :highlight-message-id="highlightMessageId"
         :highlight-keyword="highlightKeyword"
+        :keyboard-visible="keyboardVisible"
         :mode="mode"
         :draft="draft"
         :reply-target="replyTarget"
@@ -116,7 +118,16 @@
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import type { AutoReplyItem } from '@/api/interface/chat'
-import { nextTick, onActivated, onDeactivated, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ChatImagePreview from './components/chat-image-preview.vue'
@@ -184,6 +195,39 @@ const previewMode = ref<'compose' | 'viewer'>('viewer')
 const pendingMediaFiles = ref<File[]>([])
 const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
+const visualViewportHeight = ref<number | null>(null)
+const visualViewportWidth = ref<number | null>(null)
+const maximumVisualViewportHeight = ref(0)
+
+/**
+ * iOS/Android 软键盘不一定会缩小 layout viewport。使用 visualViewport 高度限制会话层，
+ * 让 Header 固定在顶部，输入框始终贴住键盘上沿。
+ */
+const syncVisualViewportHeight = () => {
+  const viewport = window.visualViewport
+  if (!viewport) {
+    visualViewportHeight.value = null
+    return
+  }
+
+  // 横竖屏切换会改变宽度；此时重置基准高度，避免误判为键盘弹出。
+  if (
+    visualViewportWidth.value !== null &&
+    Math.abs(viewport.width - visualViewportWidth.value) > 1
+  ) {
+    maximumVisualViewportHeight.value = viewport.height
+  } else {
+    maximumVisualViewportHeight.value = Math.max(maximumVisualViewportHeight.value, viewport.height)
+  }
+  visualViewportWidth.value = viewport.width
+  visualViewportHeight.value = viewport.height
+}
+const chatViewportStyle = computed(() =>
+  visualViewportHeight.value ? { height: `${visualViewportHeight.value}px` } : undefined
+)
+const keyboardVisible = computed(
+  () => maximumVisualViewportHeight.value - (visualViewportHeight.value ?? 0) > 120
+)
 
 /** 关闭快捷问题层并清空当前分类。 */
 const closeQuickIssue = () => {
@@ -212,7 +256,8 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 /** 退出当前会话，清理仅属于会话页的临时交互状态。 */
 const handleConversationBack = async () => {
   await leaveConversation()
-  await loadConversations()
+  // 保留已有列表并在后台刷新，返回列表时不重新显示骨架屏。
+  await loadConversations({ silent: true })
   highlightMessageId.value = ''
   highlightKeyword.value = ''
   quickIssueVisible.value = false
@@ -347,7 +392,15 @@ const handleComposerFocus = () => {
 
 /** 首次进入客服页时并行请求在线客服和自动回复分类。 */
 onMounted(() => {
+  syncVisualViewportHeight()
+  window.visualViewport?.addEventListener('resize', syncVisualViewportHeight)
+  window.visualViewport?.addEventListener('scroll', syncVisualViewportHeight)
   void initialize()
+})
+
+onBeforeUnmount(() => {
+  window.visualViewport?.removeEventListener('resize', syncVisualViewportHeight)
+  window.visualViewport?.removeEventListener('scroll', syncVisualViewportHeight)
 })
 
 // 再次进入时先展示已缓存的客服列表，后台静默更新，避免整页重新显示加载占位。
