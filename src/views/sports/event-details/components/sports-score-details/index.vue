@@ -2,6 +2,7 @@
   <SportsScoreDetailsH5
     v-if="isMobile"
     :market-lines="marketLines"
+    :odds-format="oddsFormat"
     :selected-wager-selection-id="selectedWagerSelectionId"
     :show-empty="showEmpty"
     @pick="emit('pick', $event)"

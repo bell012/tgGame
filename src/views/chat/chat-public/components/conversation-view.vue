@@ -34,6 +34,7 @@
 
     <!-- 快捷问题入口。 -->
     <QuickIssueBar
+      v-if="issues.length"
       :display-mode="props.displayMode"
       :issues="issues"
       @select="$emit('issue', $event)"
@@ -49,24 +50,41 @@
       @emoji="$emit('emoji')"
       @media="$emit('media')"
       @focus="$emit('composer-focus')"
+      @interact="$emit('composer-interact')"
       @cancel-reply="$emit('cancel-reply')"
     />
 
-    <!-- 表情面板。 -->
-    <EmojiPanel
-      v-if="mode === 'emoji'"
-      :has-emoji="hasEmoji"
-      @select="$emit('emoji-select', $event)"
-      @delete="$emit('emoji-delete')"
-      @send="$emit('send')"
-    />
-    <!-- 图片选择面板。 -->
-    <ImagePickerPanel
-      v-else-if="mode === 'media'"
-      :display-mode="props.displayMode"
-      @photo="$emit('photo', $event)"
-      @camera="$emit('camera', $event)"
-    />
+    <!--
+      功能面板共用一个高度容器，切换时只平滑改变容器高度，
+      防止 ImagePickerPanel 卸载与 EmojiPanel 挂载之间让消息列表短暂上跳。
+    -->
+    <div
+      class="chat-composer-panel"
+      :class="{
+        'chat-composer-panel--emoji': mode === 'emoji',
+        'chat-composer-panel--media': mode === 'media'
+      }"
+    >
+      <!-- 表情面板：H5 采用底部抽屉效果，PC 使用较轻的上浮淡入。 -->
+      <Transition :name="props.displayMode === 'pc' ? 'emoji-panel-pc' : 'emoji-panel-h5'">
+        <EmojiPanel
+          v-if="mode === 'emoji'"
+          :display-mode="props.displayMode"
+          :has-emoji="hasEmoji"
+          @select="$emit('emoji-select', $event)"
+          @delete="$emit('emoji-delete')"
+          @send="$emit('send')"
+          @close="$emit('emoji-close')"
+        />
+      </Transition>
+      <!-- 图片选择面板。 -->
+      <ImagePickerPanel
+        v-if="mode === 'media'"
+        :display-mode="props.displayMode"
+        @photo="$emit('photo', $event)"
+        @camera="$emit('camera', $event)"
+      />
+    </div>
 
     <!-- 图片或视频上传期间覆盖当前会话，并在屏幕中线展示 Loading。 -->
     <div
@@ -147,8 +165,10 @@ defineEmits<{
   'update:draft': [value: string]
   send: []
   emoji: []
+  'emoji-close': []
   media: []
   'composer-focus': []
+  'composer-interact': []
   'cancel-reply': []
   'emoji-select': [emoji: string]
   'emoji-delete': []
@@ -167,3 +187,75 @@ defineExpose({
   scrollToMessage: (messageId: string) => messageListRef.value?.scrollToMessage(messageId)
 })
 </script>
+
+<style scoped>
+.chat-composer-panel {
+  height: 0;
+  flex: 0 0 auto;
+  overflow: hidden;
+  transition: height 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: height;
+}
+
+.chat-composer-panel--emoji {
+  height: 284px;
+}
+
+.chat-composer-panel--media {
+  height: 239px;
+}
+
+.emoji-panel-h5-enter-active,
+.emoji-panel-h5-leave-active,
+.emoji-panel-pc-enter-active,
+.emoji-panel-pc-leave-active {
+  will-change: opacity, transform;
+}
+
+.emoji-panel-h5-enter-active,
+.emoji-panel-h5-leave-active {
+  transition:
+    opacity 160ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.emoji-panel-h5-enter-from,
+.emoji-panel-h5-leave-to {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.emoji-panel-h5-enter-to,
+.emoji-panel-h5-leave-from,
+.emoji-panel-pc-enter-to,
+.emoji-panel-pc-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.emoji-panel-pc-enter-active,
+.emoji-panel-pc-leave-active {
+  transition:
+    opacity 150ms ease-out,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.emoji-panel-pc-enter-from,
+.emoji-panel-pc-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emoji-panel-h5-enter-active,
+  .emoji-panel-h5-leave-active,
+  .emoji-panel-pc-enter-active,
+  .emoji-panel-pc-leave-active {
+    transition-duration: 1ms;
+  }
+
+  .chat-composer-panel {
+    transition-duration: 1ms;
+  }
+}
+</style>

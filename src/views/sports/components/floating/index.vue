@@ -39,19 +39,23 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useThemeStore } from '@/stores/theme'
 import historyIcon from '@/static/img/sports/float-history.png'
 import betSlipIcon from '@/static/img/sports/float-betslip.png'
+import historyLightIcon from '@/static/img/sports/float-history-light.png'
+import betSlipLightIcon from '@/static/img/sports/float-betslip-light.png'
 
 const props = withDefaults(defineProps<{ betCount: number; historyCount?: number }>(), {
   historyCount: 0
 })
 const { t } = useI18n()
+const themeStore = useThemeStore()
 const emit = defineEmits<{ select: [entry: 'history' | 'bet-slip'] }>()
 
 const entries = computed(() => [
   {
     key: 'history' as const,
-    icon: historyIcon,
+    icon: themeStore.theme === 'dark' ? historyIcon : historyLightIcon,
     count: props.historyCount,
     label:
       props.historyCount > 0
@@ -60,7 +64,7 @@ const entries = computed(() => [
   },
   {
     key: 'bet-slip' as const,
-    icon: betSlipIcon,
+    icon: themeStore.theme === 'dark' ? betSlipIcon : betSlipLightIcon,
     count: props.betCount,
     label: t('sports.betSlip.selectionCount', { count: props.betCount })
   }

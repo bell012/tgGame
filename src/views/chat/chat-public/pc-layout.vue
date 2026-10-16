@@ -55,12 +55,15 @@
       @update:draft="setDraft"
       @send="handleSend"
       @emoji="toggleEmoji"
+      @emoji-close="handleEmojiPanelClose"
       @media="toggleMedia"
+      @composer-focus="handleComposerFocus"
+      @composer-interact="closeQuickIssue"
       @cancel-reply="cancelReply"
       @emoji-select="handleEmojiSelect"
       @emoji-delete="handleEmojiDelete"
-      @photo="openMediaPreview"
-      @camera="openMediaPreview"
+      @photo="sendSelectedMedia"
+      @camera="sendSelectedMedia"
       @view-image="openImageViewer"
       @view-video="openVideoViewer"
     />
@@ -191,6 +194,12 @@ const pcPreviewUrls = ref<string[]>([])
 const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 
+/** 关闭快捷问题层并清空当前分类。 */
+const closeQuickIssue = () => {
+  quickIssueVisible.value = false
+  activeIssue.value = null
+}
+
 /** 选择 PC 客服后读取缓存并建立当前客服的 Socket 连接。 */
 const handleConversationSelect = async (conversation: ConversationItem) => {
   highlightMessageId.value = ''
@@ -294,11 +303,28 @@ const handleEmojiDelete = () => {
   mode.value = 'emoji'
 }
 
-/** 打开 PC 端多张图片或视频的发送预览，用户确认后再上传。 */
-const openMediaPreview = (files: File[]) => {
-  pendingMediaFiles.value = files.slice(0, 9)
-  pcPreviewImage.value = ''
-  pcPreviewUrls.value = []
+/** 点击表情面板以外的区域时收起面板，保留当前草稿内容。 */
+const handleEmojiPanelClose = () => {
+  if (mode.value === 'emoji') {
+    mode.value = draft.value.trim() ? 'typing' : 'idle'
+  }
+}
+
+/** 用户点回输入框时，收起与键盘互斥的表情或媒体面板。 */
+const handleComposerFocus = () => {
+  closeQuickIssue()
+  if (mode.value === 'emoji' || mode.value === 'media') {
+    mode.value = draft.value.trim() ? 'typing' : 'idle'
+  }
+}
+
+/** 暂时跳过发送前预览：相册或相机选中媒体后立即依次上传发送。 */
+const sendSelectedMedia = async (files: File[]) => {
+  mode.value = 'idle'
+  for (const file of files.slice(0, 9)) {
+    await sendMediaFile(file)
+  }
+  scrollToBottom()
 }
 
 /** 关闭 PC 媒体发送预览，并清空尚未发送的文件。 */
@@ -332,7 +358,7 @@ const openVideoViewer = (message: ChatMessage) => {
 
 /** 从 PC 待发送媒体列表中移除用户取消的文件。 */
 const removePendingMedia = (index: number) => {
-  pendingMediaFiles.value.splice(index, 1)
+  pendingMediaFiles.value = pendingMediaFiles.value.filter((_, itemIndex) => itemIndex !== index)
   if (!pendingMediaFiles.value.length) closeMediaPreview()
 }
 

@@ -1,19 +1,26 @@
 <template>
   <section class="w-full min-w-0 font-inter text-text-1" data-testid="sports-score-details">
     <div
-      class="scrollbar-none flex touch-pan-x items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      ref="scrollRef"
+      class="scrollbar-none flex touch-pan-x items-center gap-2 overflow-x-auto overflow-y-hidden pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      :class="isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'"
       role="tablist"
       aria-label="Market categories"
+      @pointerdown="onDragStart"
+      @pointermove="onDragMove"
+      @pointerup="onDragEnd"
+      @pointercancel="onDragEnd"
+      @selectstart.prevent
     >
       <button
         v-for="tab in filterTabs"
         :key="tab.key"
         type="button"
         role="tab"
+        :data-filter-key="tab.key"
         :aria-selected="activeFilter === tab.key"
         class="group inline-flex h-[33px] shrink-0 items-center gap-1.5 rounded-[32px] border-0 p-2 text-sm font-bold transition-colors"
         :class="activeFilter === tab.key ? 'bg-bg-2' : 'bg-transparent'"
-        @click="activeFilter = tab.key"
       >
         <span
           class="transition-colors"
@@ -235,7 +242,7 @@
 <script setup lang="ts">
 import CaretUp from '@/static/svg/sports/caret-up.svg?component'
 import type { SportMarketLine, SportWagerSelection } from '@/api/interface/sport'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 import BetSlipPc from '@/views/sports/components/bet-slip/pc.vue'
@@ -319,6 +326,79 @@ const toggleBetSlip = () => {
 const COLLAPSED_ROW_LIMIT = 3
 
 const activeFilter = ref<ScoreDetailsFilterKey>('all')
+const scrollRef = ref<HTMLElement | null>(null)
+const isDragging = ref(false)
+
+let dragStartX = 0
+let dragStartScrollLeft = 0
+let pendingFilterKey = ''
+const dragThreshold = 6
+
+const centerFilterTab = async (key: ScoreDetailsFilterKey) => {
+  await nextTick()
+  const root = scrollRef.value
+  if (!root) {
+    return
+  }
+  const tab =
+    Array.from(root.querySelectorAll<HTMLElement>('[data-filter-key]')).find(
+      item => item.dataset.filterKey === key
+    ) ?? null
+  tab?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+}
+
+const selectFilter = (key: ScoreDetailsFilterKey) => {
+  activeFilter.value = key
+  void centerFilterTab(key)
+}
+
+const onDragStart = (event: PointerEvent) => {
+  if (event.pointerType === 'mouse' && event.button !== 0) {
+    return
+  }
+
+  const element = scrollRef.value
+  if (!element) {
+    return
+  }
+
+  isDragging.value = true
+  dragStartX = event.clientX
+  dragStartScrollLeft = element.scrollLeft
+  pendingFilterKey =
+    (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-filter-key]')?.dataset
+      .filterKey ?? ''
+  element.setPointerCapture?.(event.pointerId)
+}
+
+const onDragMove = (event: PointerEvent) => {
+  const element = scrollRef.value
+  if (!isDragging.value || !element) {
+    return
+  }
+
+  const distance = event.clientX - dragStartX
+  if (Math.abs(distance) > dragThreshold) {
+    event.preventDefault()
+  }
+
+  element.scrollLeft = dragStartScrollLeft - distance
+}
+
+const onDragEnd = (event: PointerEvent) => {
+  const element = scrollRef.value
+  if (element?.hasPointerCapture?.(event.pointerId)) {
+    element.releasePointerCapture(event.pointerId)
+  }
+
+  const distance = event.clientX - dragStartX
+  if (Math.abs(distance) <= dragThreshold && pendingFilterKey) {
+    selectFilter(pendingFilterKey as ScoreDetailsFilterKey)
+  }
+
+  isDragging.value = false
+  pendingFilterKey = ''
+}
 
 const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? [], props.oddsFormat))
 

@@ -1,6 +1,6 @@
 <template>
   <!-- 输入框上方的引用回复预览。 -->
-  <div class="flex items-center gap-[8px] border-t border-opacity-10 bg-bg-2 px-[10px] py-[7px]">
+  <div class="flex items-center gap-[8px] bg-bg-2 px-[10px] py-[7px] border-b border-opacity-10">
     <!-- 被引用消息摘要。 -->
     <div class="min-w-0 flex flex-1 items-center gap-[8px] pl-[8px]">
       <!-- 图片或视频引用在摘要右侧展示 35px 缩略图。 -->
