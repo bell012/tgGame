@@ -97,6 +97,17 @@
     height: calc(env(safe-area-inset-top, 0px) + 40px);
   }
 
+  /* Safari 26 采样贴顶 fixed 的不透明背景，伪元素和半透明蒙层都不算。 */
+  .ios-status-bar-tint {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: max(env(safe-area-inset-top, 0px), 4px);
+    pointer-events: none;
+    z-index: 2147483000;
+  }
+
   * {
     margin: 0;
     padding: 0;

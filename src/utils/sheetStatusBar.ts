@@ -14,6 +14,45 @@ let scanScheduled = false
 let observer: MutationObserver | null = null
 
 const STATUS_BAR_MASK_COLOR_VAR = '--sheet-status-bar-color'
+const IOS_STATUS_BAR_TINT_CLASS = 'ios-status-bar-tint'
+
+let iosStatusBarTint: HTMLElement | null = null
+let iosBodyBackgroundApplied = false
+
+/** iOS 浏览器都走 WebKit，Safari 26 起电池栏改采样页面实色。 */
+const isIosBrowser = () => {
+  const ua = navigator.userAgent
+  if (/iPad|iPhone|iPod/.test(ua)) {
+    return true
+  }
+  return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1
+}
+
+const applyIosStatusBarTint = (color: string) => {
+  if (!isIosBrowser()) {
+    return
+  }
+
+  if (!iosStatusBarTint || !iosStatusBarTint.isConnected) {
+    iosStatusBarTint = document.createElement('div')
+    iosStatusBarTint.className = IOS_STATUS_BAR_TINT_CLASS
+    iosStatusBarTint.setAttribute('aria-hidden', 'true')
+    document.body.appendChild(iosStatusBarTint)
+  }
+
+  iosStatusBarTint.style.backgroundColor = color
+  document.body.style.backgroundColor = color
+  iosBodyBackgroundApplied = true
+}
+
+const clearIosStatusBarTint = () => {
+  iosStatusBarTint?.remove()
+  iosStatusBarTint = null
+  if (iosBodyBackgroundApplied) {
+    document.body.style.removeProperty('background-color')
+    iosBodyBackgroundApplied = false
+  }
+}
 
 type Rgb = { r: number; g: number; b: number; a: number }
 
@@ -163,6 +202,7 @@ const restoreIdleStatusBar = () => {
   previousThemeColor = null
   maskApplied = false
   document.documentElement.style.removeProperty(STATUS_BAR_MASK_COLOR_VAR)
+  clearIosStatusBarTint()
 }
 
 const applyTopmostMask = (mask: HTMLElement) => {
@@ -172,18 +212,14 @@ const applyTopmostMask = (mask: HTMLElement) => {
     return
   }
 
-  const meta = themeColorMeta()
-  if (!meta) {
-    return
-  }
-
   if (!maskApplied) {
-    previousThemeColor = meta.getAttribute('content')
+    previousThemeColor = themeColorMeta()?.getAttribute('content') ?? null
     maskApplied = true
   }
 
   writeThemeColor(backgroundColor)
   document.documentElement.style.setProperty(STATUS_BAR_MASK_COLOR_VAR, backgroundColor)
+  applyIosStatusBarTint(backgroundColor)
 }
 
 const scanFullScreenMasks = () => {
