@@ -3,7 +3,9 @@ import { useCheckInModalStore } from '@/stores/checkInModal'
 import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency, getLocaleFromRouteParam } from '@/utils/locale'
 import { storeToRefs } from 'pinia'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import { homePopVisitState } from '@/utils/homePopVisit'
+import { getPopupContext, isPopupContextCurrent } from '@/utils/popupContext'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { loadActiveCheckInDataList } from './checkInData'
@@ -27,7 +29,8 @@ export const useCheckInAutoPopup = () => {
   const { acctInfo, userInfo } = storeToRefs(userStore)
   const isChecking = ref(false)
   const lastCheckedKey = ref('')
-  const homeEntryId = ref(0)
+  const homeEntryId = computed(() => homePopVisitState.id)
+  const openedIds = ref<number[]>([])
   // 本次弹窗打开时使用的语言。语言从默认英文切到路由语言后，要按新语言重算队列。
   const localeAtOpen = ref('')
 
@@ -41,7 +44,7 @@ export const useCheckInAutoPopup = () => {
     return String(userInfo.value?.memberId || acctInfo.value?.memberId || '').trim()
   })
 
-  const loginToken = computed(() => String(userInfo.value?.tradeToken ?? ''))
+  const loginSessionId = computed(() => getPopupContext().loginSessionId)
 
   // 当前币种，用于匹配活动 config 中的币种配置。
   const activeCurrency = computed(() => {
@@ -91,8 +94,19 @@ export const useCheckInAutoPopup = () => {
     }
 
     const requestEntryId = homeEntryId.value
+    const context = getPopupContext()
+    if (!isPopupContextCurrent(context)) return
+    const requestCurrency = activeCurrency.value
+    const requestLocale = String(locale.value)
+    const requestChannel = activeChannelId.value
+    const isRequestCurrent = () =>
+      isPopupContextCurrent(context) &&
+      requestCurrency === activeCurrency.value &&
+      requestLocale === String(locale.value) &&
+      requestChannel === activeChannelId.value
     const checkKey = [
       activeMemberId.value,
+      context.loginSessionId,
       activeCurrency.value,
       locale.value,
       activeChannelId.value,
@@ -116,12 +130,14 @@ export const useCheckInAutoPopup = () => {
         excludeTodaySigned: true
       })
 
-      if (!isHomeRoute.value || requestEntryId !== homeEntryId.value || !isLoggedIn.value) {
+      if (!isRequestCurrent() || !isLoggedIn.value) {
         return
       }
 
       const eligibleQueue = checkInDataQueue.filter(item =>
-        shouldShowCheckInAutoPopup(item.activity, activeMemberId.value, loginToken.value)
+        localeChangedWhileOpen
+          ? openedIds.value.includes(Number(item.activity.rowId))
+          : shouldShowCheckInAutoPopup(item.activity, context)
       )
 
       if (eligibleQueue.length === 0) {
@@ -134,9 +150,7 @@ export const useCheckInAutoPopup = () => {
       setOpenedCheckInActivityIds(
         eligibleQueue.map(item => Number(item.activity.rowId)).filter(id => id > 0)
       )
-      eligibleQueue.forEach(item => {
-        markCheckInAutoPopupShown(item.activity, activeMemberId.value, loginToken.value)
-      })
+
       localeAtOpen.value = String(locale.value)
 
       // 先关掉再打开，让弹窗用新的活动名单重新加载。同步开关会被合并成一次 true，队列不会刷新。
@@ -145,58 +159,38 @@ export const useCheckInAutoPopup = () => {
         await nextTick()
       }
 
-      if (!isHomeRoute.value || requestEntryId !== homeEntryId.value || !isLoggedIn.value) {
+      if (!isRequestCurrent() || !isLoggedIn.value) {
         return
       }
 
       checkInModalStore.openModal()
+      openedIds.value = eligibleQueue.map(item => Number(item.activity.rowId))
+      eligibleQueue.forEach(item => markCheckInAutoPopupShown(item.activity, context))
     } catch (error) {
+      lastCheckedKey.value = ''
       console.error(error)
     } finally {
       isChecking.value = false
+      if (!isRequestCurrent() && isHomeRoute.value) void runAutoPopupCheck()
     }
   }
 
-  // 从往返缓存恢复页面时，内存里的本次访问记录还在。记一次新的首页访问，高频活动可以再弹。
-  const handlePageShow = (event: PageTransitionEvent) => {
-    if (!event.persisted || !isHomeRoute.value) {
-      return
-    }
-
-    lastCheckedKey.value = ''
-    homeEntryId.value += 1
-  }
-
-  onMounted(() => {
-    window.addEventListener('pageshow', handlePageShow)
-  })
-
-  onUnmounted(() => {
-    window.removeEventListener('pageshow', handlePageShow)
-  })
-
-  // 进入首页记一次访问；离开首页关掉已经打开的自动弹窗。
+  // 公共访问标识负责返回首页及往返缓存恢复；这里仅负责关窗。
   watch(
-    isHomeRoute,
-    (onHome, wasOnHome) => {
-      if (!onHome) {
-        if (checkInModalStore.visible) {
-          checkInModalStore.closeModal()
-        }
-        return
-      }
-
-      if (!wasOnHome) {
-        homeEntryId.value += 1
-      }
+    [isHomeRoute, activeMemberId, loginSessionId],
+    () => {
+      if (checkInModalStore.visible) checkInModalStore.closeModal()
+      openedIds.value = []
+      lastCheckedKey.value = ''
     },
-    { immediate: true }
+    { flush: 'sync' }
   )
 
   watch(
     [
       isLoggedIn,
       activeMemberId,
+      loginSessionId,
       activeCurrency,
       () => locale.value,
       () => route.params.locale,
