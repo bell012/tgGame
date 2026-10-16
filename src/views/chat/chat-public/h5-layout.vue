@@ -2,7 +2,8 @@
   <!-- H5 客服页面根容器。 -->
   <div
     class="chat-public-h5 fixed inset-x-0 top-0 flex flex-col overflow-hidden bg-bg-1 sm:hidden"
-    :class="activeConversation ? 'bottom-0 z-[60]' : 'chat-public-h5-with-tab z-20'"
+    :class="activeConversation ? 'bottom-auto z-[60]' : 'chat-public-h5-with-tab z-20'"
+    :style="activeConversation ? chatViewportStyle : undefined"
   >
     <!-- 未选择会话时的客服列表页面。 -->
     <template v-if="!activeConversation">
@@ -31,11 +32,7 @@
     </template>
 
     <!-- 已选择会话时的对话内容层。 -->
-    <div
-      v-else
-      class="absolute inset-x-0 top-0 bottom-auto z-[60] bg-bg-1"
-      :style="chatViewportStyle"
-    >
+    <div v-else class="absolute inset-0 z-[60] bg-bg-1">
       <!-- 当前客服的会话内容。 -->
       <ConversationView
         ref="conversationViewRef"
@@ -121,6 +118,7 @@
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import type { AutoReplyItem } from '@/api/interface/chat'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import {
   computed,
   nextTick,
@@ -199,38 +197,47 @@ const pendingMediaFiles = ref<File[]>([])
 const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 const visualViewportHeight = ref<number | null>(null)
-const visualViewportWidth = ref<number | null>(null)
+const layoutViewportWidth = ref<number | null>(null)
+const visualViewportOffsetTop = ref(0)
 const maximumVisualViewportHeight = ref(0)
 
 /**
- * iOS/Android 软键盘不一定会缩小 layout viewport。使用 visualViewport 高度限制会话层，
- * 让 Header 固定在顶部，输入框始终贴住键盘上沿。
+ * iOS/Android 软键盘不一定会缩小 layout viewport。让固定容器覆盖可视视口，
+ * 保持 Header 在可见区域顶部，输入框在键盘上沿。
  */
-const syncVisualViewportHeight = () => {
+const syncVisualViewport = () => {
   const viewport = window.visualViewport
   if (!viewport) {
     visualViewportHeight.value = null
     return
   }
 
-  // 横竖屏切换会改变宽度；此时重置基准高度，避免误判为键盘弹出。
-  if (
-    visualViewportWidth.value !== null &&
-    Math.abs(viewport.width - visualViewportWidth.value) > 1
-  ) {
+  // 用布局视口宽度识别横竖屏切换；可视视口宽度也会随 Safari 缩放而变化。
+  const width = document.documentElement.clientWidth
+  if (layoutViewportWidth.value !== null && Math.abs(width - layoutViewportWidth.value) > 1) {
     maximumVisualViewportHeight.value = viewport.height
   } else {
     maximumVisualViewportHeight.value = Math.max(maximumVisualViewportHeight.value, viewport.height)
   }
-  visualViewportWidth.value = viewport.width
+  layoutViewportWidth.value = width
   visualViewportHeight.value = viewport.height
+  visualViewportOffsetTop.value = viewport.offsetTop
 }
 const chatViewportStyle = computed(() =>
-  visualViewportHeight.value ? { height: `${visualViewportHeight.value}px` } : undefined
+  visualViewportHeight.value
+    ? {
+        top: `${Math.max(0, visualViewportOffsetTop.value)}px`,
+        height: `${visualViewportHeight.value}px`
+      }
+    : { height: '100%' }
 )
 const keyboardVisible = computed(
   () => maximumVisualViewportHeight.value - (visualViewportHeight.value ?? 0) > 120
 )
+
+// 会话层是固定覆盖页。锁住底层文档，避免 iOS 为聚焦输入框滚动首页/路由背景；
+// 未启用 preventTouchMove，MessageList 仍保留自己的原生纵向滚动。
+usePageScrollLock(() => Boolean(activeConversation.value))
 
 /** 关闭快捷问题层并清空当前分类。 */
 const closeQuickIssue = () => {
@@ -395,15 +402,15 @@ const handleComposerFocus = () => {
 
 /** 首次进入客服页时并行请求在线客服和自动回复分类。 */
 onMounted(() => {
-  syncVisualViewportHeight()
-  window.visualViewport?.addEventListener('resize', syncVisualViewportHeight)
-  window.visualViewport?.addEventListener('scroll', syncVisualViewportHeight)
+  syncVisualViewport()
+  window.visualViewport?.addEventListener('resize', syncVisualViewport)
+  window.visualViewport?.addEventListener('scroll', syncVisualViewport)
   void initialize()
 })
 
 onBeforeUnmount(() => {
-  window.visualViewport?.removeEventListener('resize', syncVisualViewportHeight)
-  window.visualViewport?.removeEventListener('scroll', syncVisualViewportHeight)
+  window.visualViewport?.removeEventListener('resize', syncVisualViewport)
+  window.visualViewport?.removeEventListener('scroll', syncVisualViewport)
 })
 
 // 再次进入时先展示已缓存的客服列表，后台静默更新，避免整页重新显示加载占位。
