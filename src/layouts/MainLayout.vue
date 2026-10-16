@@ -364,11 +364,11 @@ watch(
     if (!mainAreaRoute.value || !isBottomTabRoute(mainAreaRoute.value)) return
 
     let cancelled = false
-    const animations: Animation[] = []
+    const animationCleanups: Array<() => void> = []
     onCleanup(() => {
       cancelled = true
       // 快速连续切换、离开 Tab 或卸载布局时取消旧动画，不排队等待退场。
-      animations.forEach(animation => animation.cancel())
+      animationCleanups.forEach(cleanup => cleanup())
     })
     await nextTick()
     // 连续快速点击时只恢复最终目标页，避免旧任务覆盖新页面的位置。
@@ -379,7 +379,7 @@ watch(
 
     // 快照动画负责整屏滑入滑出；抽屉进出期间也不叠加 Tab 动画。
     if (isBottomTabSnapshotActive() || slideRouteStack.value.length > 0) return
-    // 普通降级动画仅在不同 Tab 之间播放；首屏、语言切换和页内筛选保持即时更新。
+    // 安卓直接播放合成滑动；仅在不同 Tab 之间播放，首屏、语言切换和页内筛选即时更新。
     if (fromTabIndex < 0 || toTabIndex < 0 || fromTabIndex === toTabIndex) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
@@ -388,16 +388,27 @@ watch(
     targets?.forEach(element => {
       if (typeof element.animate !== 'function') return
 
+      // 只在本次滑动期间提示浏览器准备变换层，结束或中断后恢复，避免长列表常驻额外图层。
+      const previousWillChange = element.style.willChange
+      element.style.willChange = 'transform'
       const animation = element.animate(
-        [{ transform: `translateX(${offset})` }, { transform: 'translateX(0)' }],
+        [{ transform: `translate3d(${offset}, 0, 0)` }, { transform: 'translate3d(0, 0, 0)' }],
         {
           duration: 300,
           easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
         }
       )
-      // 动画只改变合成属性，结束后移除效果，不留下 transform 或永久合成层。
-      animation.onfinish = () => animation.cancel()
-      animations.push(animation)
+      let cleaned = false
+      const cleanup = () => {
+        if (cleaned) return
+        cleaned = true
+        animation.onfinish = null
+        animation.cancel()
+        element.style.willChange = previousWillChange
+      }
+      // 同步清理旧动画的图层提示，防止快速切换时旧回调覆盖新动画的状态。
+      animation.onfinish = cleanup
+      animationCleanups.push(cleanup)
     })
   },
   { immediate: true }
