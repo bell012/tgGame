@@ -2,11 +2,11 @@
   <Transition name="bottom-sheet" appear @after-leave="handleAfterLeave">
     <div
       v-if="visible"
-      class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1"
+      class="fixed inset-0 z-[9999] flex items-center justify-center bg-mask-60-1 px-4"
       @click.self="close"
     >
       <div
-        class="bottom-sheet-panel w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-t-xl overflow-hidden"
+        class="bottom-sheet-panel w-[327px] max-w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-xl overflow-hidden"
       >
         <div class="bg-bg-2 relative flex flex-1 items-center justify-center pt-2.5 pb-2.5">
           <span class="text-text-1 font-semibold">{{ $t('home.ExclusivePromotions') }} </span>
@@ -108,7 +108,7 @@
           </div>
         </div>
         <!-- 底部多选框 -->
-        <div class="bg-bg-2 pl-3.5 pt-2 pb-1">
+        <div class="bg-bg-2 px-3.5 py-[8px]">
           <label
             class="checkbox-wrap inline-flex cursor-pointer items-center gap-2"
             :class="{ 'checkbox-checked': checked }"
@@ -515,6 +515,12 @@ onDeactivated(() => {
 })
 </script>
 <style lang="scss" scoped>
+// 居中弹窗使用轻缩放进出，覆盖底部抽屉的位移动画。
+.bottom-sheet-enter-from .bottom-sheet-panel,
+.bottom-sheet-leave-to .bottom-sheet-panel {
+  transform: scale(0.96);
+}
+
 @keyframes slideshow-indicator-fill {
   from {
     transform: scaleX(0);
