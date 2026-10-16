@@ -156,7 +156,7 @@ const resolvedPageSize = computed(() => {
   )
 })
 const getProviderOptionValue = (item: GamePlatformOption) => {
-  return String(item.brandCode ?? '').trim() || String(item.platformCode ?? '').trim()
+  return String(item.platformCode ?? '').trim()
 }
 
 const getProviderOptionLabel = (item: GamePlatformOption) => {
@@ -196,7 +196,7 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
   return {
     ...baseOptions,
     ...sortOptionMap[selectedSort.value],
-    brandCodes: selectedProviders.value
+    platformCodes: selectedProviders.value
   }
 })
 const hideSortFilter = computed(() => {

@@ -22,6 +22,9 @@ export const useLocaleStore = defineStore('locale', () => {
   // 当前语言（zh 或 eng）
   const currentLanguage = ref<Locale>(getStoredLocale())
 
+  // 仅表示本次刷新已应用站点默认配置并完成语言路由切换，不从本地存储恢复。
+  const isSiteDefaultsReady = ref(false)
+
   // 当前货币（none、USD、CNY）
   const currentCurrency = ref<string>(localStorage.getItem('currency') || 'none')
 
@@ -87,7 +90,7 @@ export const useLocaleStore = defineStore('locale', () => {
 
   // 页面刷新初始化时，以 /sy/dlicgh 的默认语言为准；默认货币只在本地没有选择时兜底。
   // 登录用户的当前货币以后端 /acct/queryAcctInfo 返回的 currency 为准。
-  const applySiteDefaults = (siteConfig?: SiteConfig | null) => {
+  const applySiteDefaults = async (siteConfig?: SiteConfig | null) => {
     const baseSiteConfig = siteConfig?.baseSiteConfig
     const defaultLanguage = normalizeSiteDefaultLanguage(baseSiteConfig?.defaultLanguageCode)
     const defaultCurrency = normalizeSiteDefaultCurrency(baseSiteConfig?.defaultCurrency)
@@ -97,11 +100,22 @@ export const useLocaleStore = defineStore('locale', () => {
       currentLanguage.value = defaultLanguage
       i18n.global.locale.value = getLanguageCode(defaultLanguage) as Locale
       localStorage.setItem('language', defaultLanguage)
-      switchLanguage(defaultLanguage)
     }
 
     if (defaultCurrency && currentCurrency.value === 'none') {
       setCurrency(defaultCurrency)
+    }
+
+    try {
+      // 公告必须等这次导航结束后才能显示，避免先弹出，再被首页重新挂载移除。
+      if (defaultLanguage) {
+        await switchLanguage(defaultLanguage)
+      }
+    } catch (error) {
+      console.error('applySiteDefaults language navigation failed', error)
+    } finally {
+      // 配置缺失或导航失败时也结束等待，允许按当前语言继续处理公告。
+      isSiteDefaultsReady.value = true
     }
   }
 
@@ -133,6 +147,7 @@ export const useLocaleStore = defineStore('locale', () => {
 
   return {
     currentLanguage,
+    isSiteDefaultsReady,
     currentCurrency,
     actualCurrency,
     initLanguage,
