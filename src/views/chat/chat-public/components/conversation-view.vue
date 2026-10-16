@@ -44,6 +44,7 @@
     <ChatComposer
       :display-mode="props.displayMode"
       :model-value="draft"
+      :keyboard-visible="props.keyboardVisible"
       :reply-target="replyTarget"
       @update:model-value="$emit('update:draft', $event)"
       @send="$emit('send')"
@@ -132,6 +133,7 @@ const props = withDefaults(
     loadingOlderMessages?: boolean
     uploadingMedia?: boolean
     typing?: boolean
+    keyboardVisible?: boolean
     highlightMessageId?: string
     highlightKeyword?: string
     displayMode?: 'h5' | 'pc'
@@ -143,6 +145,7 @@ const props = withDefaults(
     hasMoreCachedMessages: false,
     loadingOlderMessages: false,
     uploadingMedia: false,
+    keyboardVisible: false,
     highlightMessageId: '',
     highlightKeyword: ''
   }

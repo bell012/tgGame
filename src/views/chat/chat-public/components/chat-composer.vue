@@ -1,6 +1,11 @@
 <template>
   <!-- 消息编辑器整体容器。 -->
-  <div data-chat-composer class="shrink-0 bg-bg-2" @pointerdown="$emit('interact')">
+  <div
+    data-chat-composer
+    class="shrink-0 bg-bg-2"
+    :class="{ 'chat-composer--keyboard-visible': props.keyboardVisible }"
+    @pointerdown="$emit('interact')"
+  >
     <!-- 引用回复预览区域。 -->
     <ReplyPreview v-if="replyTarget" :target="replyTarget" @close="$emit('cancel-reply')" />
 
@@ -107,6 +112,7 @@ const props = withDefaults(
     modelValue: string
     replyTarget?: ChatReplyTarget | null
     displayMode?: 'h5' | 'pc'
+    keyboardVisible?: boolean
   }>(),
   { displayMode: 'h5' }
 )
@@ -306,6 +312,14 @@ onMounted(() => {
 }
 
 .chat-composer-bottom-safe {
-  height: calc(33px + var(--app-shell-bottom-safe-offset));
+  height: calc(33px + env(safe-area-inset-bottom, 0px));
+  min-height: 33px;
+  flex-shrink: 0;
+}
+
+/* 键盘展开时取消固定安全区留白，让输入框紧贴键盘上沿。 */
+.chat-composer--keyboard-visible .chat-composer-bottom-safe {
+  height: 0;
+  min-height: 0;
 }
 </style>
