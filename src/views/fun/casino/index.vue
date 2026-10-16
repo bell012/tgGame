@@ -2,6 +2,7 @@
   <div
     ref="pageRootRef"
     class="casino-page max-w-[1340px] mx-auto py-3 sm:py-4 w-full font-['Inter']"
+    data-tab-transition="slide"
     :style="casinoPageStyle"
   >
     <HomeCarouselImg

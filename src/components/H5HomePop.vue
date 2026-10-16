@@ -2,11 +2,11 @@
   <Transition name="bottom-sheet" appear @after-leave="handleAfterLeave">
     <div
       v-if="visible"
-      class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1"
+      class="fixed inset-0 z-[9999] flex items-center justify-center bg-mask-60-1 px-4"
       @click.self="close"
     >
       <div
-        class="bottom-sheet-panel w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-t-xl overflow-hidden"
+        class="bottom-sheet-panel w-[327px] max-w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-xl overflow-hidden"
       >
         <div class="bg-bg-2 relative flex flex-1 items-center justify-center pt-2.5 pb-2.5">
           <span class="text-text-1 font-semibold">{{ $t('home.ExclusivePromotions') }} </span>
@@ -108,7 +108,7 @@
           </div>
         </div>
         <!-- 底部多选框 -->
-        <div class="bg-bg-2 pl-3.5 pt-2 pb-1">
+        <div class="bg-bg-2 px-3.5 py-[8px]">
           <label
             class="checkbox-wrap inline-flex cursor-pointer items-center gap-2"
             :class="{ 'checkbox-checked': checked }"
@@ -128,7 +128,7 @@ import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, onMounted, ref } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
@@ -140,6 +140,7 @@ import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
 import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
+import { homePopVisitState } from '@/utils/homePopVisit'
 
 const emit = defineEmits<{
   close: []
@@ -190,8 +191,11 @@ const swipeRef = ref<SwipeInstance>()
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const checked = ref(false)
-const visible = ref(true)
-usePageScrollLock(() => true)
+// 公告加载完成且存在可展示内容后再打开，避免先出现空弹窗。
+const visible = ref(false)
+let isDisposed = false
+// 仅在弹窗可见时锁定页面滚动，关闭后恢复。
+usePageScrollLock(() => visible.value)
 const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
 }))
@@ -402,7 +406,8 @@ const isSuppressedNow = () => {
 }
 
 const fetchNoticeList = async () => {
-  if (isSuppressedNow()) {
+  // 同一次首页访问已展示过，或处于勾选“不再显示”的抑制期时，直接结束。
+  if (homePopVisitState.hasShown || isSuppressedNow()) {
     closeWithoutSuppress()
     return
   }
@@ -418,18 +423,38 @@ const fetchNoticeList = async () => {
         size: 50
       }
     })
+    // 请求返回时组件可能已因路由切换被卸载，忽略旧实例的响应。
+    if (isDisposed) {
+      return
+    }
+    // 请求期间其他实例可能已经展示，返回后再次判断，避免并发重复弹出。
+    if (homePopVisitState.hasShown || isSuppressedNow()) {
+      closeWithoutSuppress()
+      return
+    }
     const records = Array.isArray(res?.result?.records) ? res.result.records : []
     const filtered = sortNoticeRecords(records).filter(item => shouldShowNoticeByRule(item))
+    noticeList.value = filtered
+    // 没有有效展示内容时直接通知父组件移除，无需等待关闭动画。
+    if (list.value.length === 0) {
+      closeWithoutSuppress()
+      return
+    }
+    // 记录本次访问已展示，后续首页重新挂载也不会再次弹出。
+    homePopVisitState.hasShown = true
     filtered.forEach(item => {
       markNoticeShownByRule(item)
     })
-    noticeList.value = filtered
-    if (noticeList.value.length === 0) {
-      close()
-    }
+    visible.value = true
   } catch (error) {
+    // 已卸载实例不再更新弹窗或向父组件发送关闭事件。
+    if (isDisposed) {
+      return
+    }
     noticeList.value = []
     console.error('queryNoticeMsg failed', error)
+    // 请求失败时移除弹窗组件，避免残留空弹窗。
+    closeWithoutSuppress()
   } finally {
     currentIndex.value = 0
     progressKey.value += 1
@@ -476,14 +501,26 @@ const next = () => {
 }
 
 onMounted(() => {
-  if (isSuppressedNow()) {
-    closeWithoutSuppress()
-    return
-  }
   void fetchNoticeList()
+})
+
+onBeforeUnmount(() => {
+  // 标记实例已卸载，阻止未完成请求继续处理展示逻辑。
+  isDisposed = true
+})
+
+onDeactivated(() => {
+  // 首页进入缓存时立即忽略未完成的公告请求，防止后台页面占用本次弹窗次数。
+  isDisposed = true
 })
 </script>
 <style lang="scss" scoped>
+// 居中弹窗使用轻缩放进出，覆盖底部抽屉的位移动画。
+.bottom-sheet-enter-from .bottom-sheet-panel,
+.bottom-sheet-leave-to .bottom-sheet-panel {
+  transform: scale(0.96);
+}
+
 @keyframes slideshow-indicator-fill {
   from {
     transform: scaleX(0);

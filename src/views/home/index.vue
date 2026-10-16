@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="home mx-auto max-w-[1248px] py-2 sm:py-4">
+  <div class="home mx-auto max-w-[1248px] py-2 sm:py-4" data-tab-transition="slide">
     <div style="height: 55px" class="mb-2.5 sm:hidden"></div>
 
     <HomeCarouselImg
@@ -310,7 +310,15 @@ import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
 import { storeToRefs } from 'pinia'
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import LazySection from './components/LazySection.vue'
@@ -533,6 +541,20 @@ const getQuerySlideshow = async () => {
 onMounted(async () => {
   void maybeAutoOpenTicketActivity()
   await Promise.allSettled([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
+})
+
+// 首页被缓存后，再次进入仍按公告原有规则判断弹窗；列表与轮播数据继续复用。
+let hasActivatedHome = false
+onActivated(() => {
+  if (hasActivatedHome) {
+    showH5HomePop.value = true
+    void maybeAutoOpenTicketActivity()
+  }
+  hasActivatedHome = true
+})
+onDeactivated(() => {
+  // 离开首页时移除弹窗，避免它随缓存页面保留到下一次访问。
+  showH5HomePop.value = false
 })
 
 watch(

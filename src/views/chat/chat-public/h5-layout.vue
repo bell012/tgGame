@@ -116,7 +116,7 @@
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import type { AutoReplyItem } from '@/api/interface/chat'
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { nextTick, onActivated, onDeactivated, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ChatImagePreview from './components/chat-image-preview.vue'
@@ -350,6 +350,26 @@ onMounted(() => {
   void initialize()
 })
 
+// 再次进入时先展示已缓存的客服列表，后台静默更新，避免整页重新显示加载占位。
+let hasActivated = false
+onActivated(() => {
+  if (hasActivated) {
+    void loadConversations({ silent: true })
+  }
+  hasActivated = true
+})
+
+onDeactivated(() => {
+  // 页面进入缓存也要结束当前会话，提交已读并断开 Socket、心跳，避免后台持续运行。
+  leaveConversation()
+  closeRedPacketSuccess()
+  closeQuickIssue()
+  searchVisible.value = false
+  closeImagePreview()
+  previewVideo.value = ''
+  resetAfterSend()
+})
+
 /** 在缓存加载、发送或服务端推送新增消息后保持最新消息可见。 */
 watch(
   () => messages.value[messages.value.length - 1]?.id,
@@ -366,6 +386,11 @@ watch(
 <style scoped>
 :global(body:has(.chat-public-h5) .bottom-tab-bar) {
   background: var(--color-background-level-2);
+}
+
+/* 客服列表由抽屉承载时底栏仍可点击；进入具体会话后恢复层级，由会话覆盖底栏。 */
+:global(body:has(.chat-public-h5-with-tab) .bottom-tab-bar) {
+  z-index: 200;
 }
 
 :global(body:has(.chat-public-h5) .bottom-tab-bar .tab-item) {

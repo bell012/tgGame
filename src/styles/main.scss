@@ -12,6 +12,8 @@
 .drawer-slide-enter-active,
 .drawer-slide-leave-active {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 只在进出期间提升合成层，结束后自动释放。 */
+  will-change: transform;
 }
 
 .drawer-slide-enter-from,
@@ -22,6 +24,74 @@
 .drawer-slide-enter-to,
 .drawer-slide-leave-from {
   transform: translateX(0);
+}
+
+/* Tab 使用旧、新画面的整屏快照同步滑动，真实组件继续复用 KeepAlive。 */
+html[data-bottom-tab-motion='left'] {
+  --tab-enter-offset: 100%;
+  --tab-leave-offset: -100%;
+}
+
+html[data-bottom-tab-motion='right'] {
+  --tab-enter-offset: -100%;
+  --tab-leave-offset: 100%;
+}
+
+html[data-bottom-tab-motion] .bottom-tab-bar {
+  view-transition-name: bottom-tabs;
+}
+
+html[data-bottom-tab-motion]::view-transition {
+  /* 连续点击可直接进入最新目标，无需等上一段动画结束。 */
+  pointer-events: none;
+}
+
+html[data-bottom-tab-motion]::view-transition-group(root),
+html[data-bottom-tab-motion]::view-transition-group(bottom-tabs) {
+  animation: none;
+}
+
+html[data-bottom-tab-motion]::view-transition-old(root),
+html[data-bottom-tab-motion]::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+html[data-bottom-tab-motion]::view-transition-old(root) {
+  animation-name: bottom-tab-leave;
+}
+
+html[data-bottom-tab-motion]::view-transition-new(root) {
+  animation-name: bottom-tab-enter;
+}
+
+/* 底栏保持原位，直接显示新选中态，图标与文字仍在同一帧点亮。 */
+html[data-bottom-tab-motion]::view-transition-old(bottom-tabs) {
+  display: none;
+}
+
+html[data-bottom-tab-motion]::view-transition-new(bottom-tabs) {
+  animation: none;
+}
+
+@keyframes bottom-tab-enter {
+  from {
+    transform: translateX(var(--tab-enter-offset));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes bottom-tab-leave {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--tab-leave-offset));
+  }
 }
 
 /* 标签切换滑动：点右侧向左滑出，点左侧向右滑出 */
@@ -131,6 +201,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .drawer-slide-enter-active,
+  .drawer-slide-leave-active,
   .fade-accordion-enter-active,
   .fade-accordion-leave-active,
   .bottom-sheet-enter-active,

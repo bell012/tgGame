@@ -4,14 +4,14 @@
       <button
         v-for="menu in menus"
         :key="menu.id"
+        type="button"
         class="tab-item"
-        @click="menu.handler"
+        @click="handleTabClick(menu)"
         :class="{ active: menu.active }"
       >
         <component
           :is="bottomTabBarIcons[menu.icon]"
-          class="mb-[6px] h-[20px] w-[20px] fill-current [&_path]:fill-current"
-          :class="menu.active ? 'text-theme-primary' : 'text-icon-2'"
+          class="tab-icon mb-[6px] h-[20px] w-[20px] fill-current [&_path]:fill-current"
         />
         <p class="text-xs font-[700]">{{ menu.name }}</p>
       </button>
@@ -20,19 +20,62 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { bottomTabBarIcons } from '@/static/svg/bottom_tab_bar'
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import { useLayoutStore } from '@/stores/layout'
-import { navigateTo } from '@/utils/router'
-import { stripLocalePrefix } from '@/utils/locale'
+import { navigateBottomTab } from '@/utils/bottomTabTransition'
+import { stripLocalePrefix, withLocalePrefix } from '@/utils/locale'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const layoutStore = useLayoutStore()
 const { open: openOnlineCustomer } = useOnlineCustomerService()
+// 图标与文字共用同一份路由选中态，避免各自计算和切换颜色。
+const currentPath = computed(() => stripLocalePrefix(route.path))
+
+// 空闲时逐个预取 Tab 页的代码，减少首次点击时等待路由模块下载的时间。
+// 这里只加载模块，不挂载页面，也不主动请求页面业务数据。
+let stopPreloading = false
+let cancelScheduledPreload: (() => void) | undefined
+const pendingPreloadPaths = ['/', '/explore', '/casino', '/sports', '/chat-public']
+
+const scheduleNextPreload = () => {
+  if (stopPreloading || !pendingPreloadPaths.length) return
+
+  const preload = async () => {
+    cancelScheduledPreload = undefined
+    if (stopPreloading) return
+    const path = pendingPreloadPaths.shift()!
+    const target = router.resolve(withLocalePrefix(path, route.params.locale as string | undefined))
+    try {
+      const loader = target.matched[target.matched.length - 1]?.components?.default
+      if (typeof loader === 'function') {
+        await (loader as () => Promise<unknown>)()
+      }
+    } catch {
+      // 预取失败不打断操作，正式进入路由时由路由器重新加载。
+    }
+    scheduleNextPreload()
+  }
+
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(() => void preload())
+    cancelScheduledPreload = () => window.cancelIdleCallback(id)
+  } else {
+    const id = window.setTimeout(() => void preload(), 300)
+    cancelScheduledPreload = () => window.clearTimeout(id)
+  }
+}
+
+onMounted(scheduleNextPreload)
+onBeforeUnmount(() => {
+  stopPreloading = true
+  cancelScheduledPreload?.()
+})
 
 const menus = computed(() => [
   {
@@ -40,7 +83,7 @@ const menus = computed(() => [
     name: t('home.home'),
     icon: 'home',
     route: '/',
-    handler: () => navigateTo('/'),
+    handler: () => navigateBottomTab('/'),
     active: isActive('/', true)
   },
   {
@@ -48,7 +91,7 @@ const menus = computed(() => [
     name: t('bottom_tab_bar.explore'),
     icon: 'explore',
     route: '/explore',
-    handler: () => navigateTo('/explore'),
+    handler: () => navigateBottomTab('/explore'),
     active: isActive('/explore', true)
   },
   {
@@ -56,7 +99,7 @@ const menus = computed(() => [
     name: t('bottom_tab_bar.casino'),
     icon: 'casino',
     route: '/casino',
-    handler: () => navigateTo('/casino'),
+    handler: () => navigateBottomTab('/casino'),
     active: isActive('/casino')
   },
   {
@@ -64,7 +107,7 @@ const menus = computed(() => [
     name: t('bottom_tab_bar.sports'),
     icon: 'sports',
     route: '/sports',
-    handler: () => navigateTo('/sports'),
+    handler: () => navigateBottomTab('/sports'),
     active: isActive('/sports')
   },
   {
@@ -84,17 +127,20 @@ function handleChatClick() {
   openOnlineCustomer()
 }
 
+function handleTabClick(menu: (typeof menus.value)[number]) {
+  // 重复点击当前 Tab 不再导航，也不重复请求客服模式。
+  if (menu.active) return
+  menu.handler()
+}
+
 /**
  * 判断某个 path 是否激活
  * @param path 父路径，例如 '/a'
  * @param exact 是否精确匹配（默认 false）
  */
 const isActive = (path: string, exact = false) => {
-  const currentPath = stripLocalePrefix(route.path)
-  return computed(() => {
-    if (exact) return currentPath === path
-    return currentPath === path || currentPath.startsWith(path + '/')
-  }).value
+  if (exact) return currentPath.value === path
+  return currentPath.value === path || currentPath.value.startsWith(path + '/')
 }
 </script>
 
@@ -120,7 +166,13 @@ const isActive = (path: string, exact = false) => {
   flex: 1;
   padding: 6px;
   color: var(--color-text-level-2);
-  transition: color 0.2s;
+  /* 图标与文字从按钮继承颜色，并在同一帧更新，避免一方渐变、一方立即变色。 */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.tab-icon {
+  color: inherit;
 }
 
 .tab-item.active {
