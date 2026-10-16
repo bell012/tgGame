@@ -128,7 +128,7 @@ import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
@@ -140,6 +140,7 @@ import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
 import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
+import { homePopVisitState } from '@/utils/homePopVisit'
 
 const emit = defineEmits<{
   close: []
@@ -190,8 +191,11 @@ const swipeRef = ref<SwipeInstance>()
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const checked = ref(false)
-const visible = ref(true)
-usePageScrollLock(() => true)
+// 公告加载完成且存在可展示内容后再打开，避免先出现空弹窗。
+const visible = ref(false)
+let isDisposed = false
+// 仅在弹窗可见时锁定页面滚动，关闭后恢复。
+usePageScrollLock(() => visible.value)
 const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
 }))
@@ -402,7 +406,8 @@ const isSuppressedNow = () => {
 }
 
 const fetchNoticeList = async () => {
-  if (isSuppressedNow()) {
+  // 同一次首页访问已展示过，或处于勾选“不再显示”的抑制期时，直接结束。
+  if (homePopVisitState.hasShown || isSuppressedNow()) {
     closeWithoutSuppress()
     return
   }
@@ -418,18 +423,38 @@ const fetchNoticeList = async () => {
         size: 50
       }
     })
+    // 请求返回时组件可能已因路由切换被卸载，忽略旧实例的响应。
+    if (isDisposed) {
+      return
+    }
+    // 请求期间其他实例可能已经展示，返回后再次判断，避免并发重复弹出。
+    if (homePopVisitState.hasShown || isSuppressedNow()) {
+      closeWithoutSuppress()
+      return
+    }
     const records = Array.isArray(res?.result?.records) ? res.result.records : []
     const filtered = sortNoticeRecords(records).filter(item => shouldShowNoticeByRule(item))
+    noticeList.value = filtered
+    // 没有有效展示内容时直接通知父组件移除，无需等待关闭动画。
+    if (list.value.length === 0) {
+      closeWithoutSuppress()
+      return
+    }
+    // 记录本次访问已展示，后续首页重新挂载也不会再次弹出。
+    homePopVisitState.hasShown = true
     filtered.forEach(item => {
       markNoticeShownByRule(item)
     })
-    noticeList.value = filtered
-    if (noticeList.value.length === 0) {
-      close()
-    }
+    visible.value = true
   } catch (error) {
+    // 已卸载实例不再更新弹窗或向父组件发送关闭事件。
+    if (isDisposed) {
+      return
+    }
     noticeList.value = []
     console.error('queryNoticeMsg failed', error)
+    // 请求失败时移除弹窗组件，避免残留空弹窗。
+    closeWithoutSuppress()
   } finally {
     currentIndex.value = 0
     progressKey.value += 1
@@ -476,11 +501,12 @@ const next = () => {
 }
 
 onMounted(() => {
-  if (isSuppressedNow()) {
-    closeWithoutSuppress()
-    return
-  }
   void fetchNoticeList()
+})
+
+onBeforeUnmount(() => {
+  // 标记实例已卸载，阻止未完成请求继续处理展示逻辑。
+  isDisposed = true
 })
 </script>
 <style lang="scss" scoped>
