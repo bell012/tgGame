@@ -2,8 +2,7 @@
   <!-- H5 客服页面根容器。 -->
   <div
     class="chat-public-h5 fixed inset-x-0 top-0 flex flex-col overflow-hidden bg-bg-1 sm:hidden"
-    :class="activeConversation ? 'bottom-auto z-[60]' : 'chat-public-h5-with-tab z-20'"
-    :style="activeConversation ? chatViewportStyle : undefined"
+    :class="activeConversation ? 'bottom-0 z-[60]' : 'chat-public-h5-with-tab z-20'"
   >
     <!-- 未选择会话时的客服列表页面。 -->
     <template v-if="!activeConversation">
@@ -32,7 +31,11 @@
     </template>
 
     <!-- 已选择会话时的对话内容层。 -->
-    <div v-else class="absolute inset-0 z-[60] bg-bg-1">
+    <div
+      v-else
+      class="absolute inset-x-0 top-0 bottom-auto z-[60] bg-bg-1"
+      :style="chatViewportStyle"
+    >
       <!-- 当前客服的会话内容。 -->
       <ConversationView
         ref="conversationViewRef"
