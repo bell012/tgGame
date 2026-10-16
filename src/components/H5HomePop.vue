@@ -2,11 +2,11 @@
   <Transition name="bottom-sheet" appear @after-leave="handleAfterLeave">
     <div
       v-if="visible"
-      class="fixed inset-0 z-[9999] flex items-center justify-center bg-mask-60-1 px-4"
+      class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1"
       @click.self="close"
     >
       <div
-        class="bottom-sheet-panel w-[327px] max-w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-xl overflow-hidden"
+        class="bottom-sheet-panel w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-t-xl overflow-hidden"
       >
         <div class="bg-bg-2 relative flex flex-1 items-center justify-center pt-2.5 pb-2.5">
           <span class="text-text-1 font-semibold">{{ $t('home.ExclusivePromotions') }} </span>
@@ -108,7 +108,7 @@
           </div>
         </div>
         <!-- 底部多选框 -->
-        <div class="bg-bg-2 px-3.5 py-[8px]">
+        <div class="bg-bg-2 px-3.5 pt-[10px] pb-[20px]">
           <label
             class="checkbox-wrap inline-flex cursor-pointer items-center gap-2"
             :class="{ 'checkbox-checked': checked }"
@@ -127,8 +127,9 @@ import Api from '@/api'
 import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { useLocaleStore } from '@/stores/locale'
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeUnmount, onDeactivated, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
@@ -147,6 +148,7 @@ const emit = defineEmits<{
 }>()
 const authModalStore = useAuthModalStore()
 const userStore = useUserStore()
+const localeStore = useLocaleStore()
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 const loginToken = computed(() => String(userInfo.value?.tradeToken ?? ''))
@@ -500,9 +502,18 @@ const next = () => {
   swipeRef.value?.next()
 }
 
-onMounted(() => {
+let hasStartedNoticeRequest = false
+const startNoticeAfterInitialization = () => {
+  // 刷新时先等站点默认语言及路由稳定，再请求并展示，避免安卓上先显示后被初始化关闭。
+  // 组件已停用或本实例已经开始请求时跳过，防止旧实例和就绪通知重复触发。
+  if (isDisposed || hasStartedNoticeRequest || !localeStore.isSiteDefaultsReady) return
+  hasStartedNoticeRequest = true
   void fetchNoticeList()
-})
+}
+
+watch(() => localeStore.isSiteDefaultsReady, startNoticeAfterInitialization, { flush: 'post' })
+// 切换 Tab 再次进入首页时初始化已完成，直接沿用原有公告展示规则。
+onMounted(startNoticeAfterInitialization)
 
 onBeforeUnmount(() => {
   // 标记实例已卸载，阻止未完成请求继续处理展示逻辑。
@@ -515,12 +526,6 @@ onDeactivated(() => {
 })
 </script>
 <style lang="scss" scoped>
-// 居中弹窗使用轻缩放进出，覆盖底部抽屉的位移动画。
-.bottom-sheet-enter-from .bottom-sheet-panel,
-.bottom-sheet-leave-to .bottom-sheet-panel {
-  transform: scale(0.96);
-}
-
 @keyframes slideshow-indicator-fill {
   from {
     transform: scaleX(0);

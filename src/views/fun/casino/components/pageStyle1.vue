@@ -4,13 +4,19 @@
   </div>
 
   <template v-else>
-    <casinoGameModule
+    <!-- 首屏外的分组接近视口时再创建，避免首次进入同时初始化所有卡片、图片和字号测量。 -->
+    <LazySection
       v-for="(item, index) in lobbyButtons"
-      :key="index"
-      :module="item"
-      view-all-mode="casino"
-    />
-    <template v-if="!hideLatestBet">
+      :key="item.sysGameTypeCode || index"
+      :eager="!deferOffscreenSections || index < 2"
+      root-margin="120px 0px"
+    >
+      <casinoGameModule :module="item" view-all-mode="casino" />
+      <template #placeholder>
+        <casinoGameModule loading />
+      </template>
+    </LazySection>
+    <LazySection v-if="!hideLatestBet" :eager="!deferOffscreenSections" root-margin="120px 0px">
       <div class="mt-2 flex h-8 items-center sm:mt-6">
         <h2 class="flex items-center text-base font-bold text-text-1 sm:text-xl">
           {{ t('casino.latest_bet') }}
@@ -50,7 +56,12 @@
           />
         </Transition>
       </div>
-    </template>
+      <template #placeholder>
+        <div class="mt-2 h-8 w-32 rounded bg-bg-2 animate-pulse" />
+        <div class="mt-2 h-[39px] rounded-lg bg-bg-2 animate-pulse" />
+        <div class="mt-3 h-[520px] rounded-lg bg-bg-2 animate-pulse" />
+      </template>
+    </LazySection>
   </template>
 </template>
 
@@ -61,6 +72,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
 import casinoGameModule from './casinoGameModule.vue'
 import LatestBetTable from '@/components/common/latestBetTable.vue'
+import LazySection from '@/views/home/components/LazySection.vue'
 
 const props = defineProps<{
   modules?: CasinoLobbyButtonItem[]
@@ -70,6 +82,10 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+// 仅安卓推迟首屏外分组和最新投注表格的创建，iOS 保持原来的首次渲染时机。
+const deferOffscreenSections = computed(
+  () => isMobile.value && typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
+)
 const hideLatestBet = computed(() => Boolean(props.hideLatestBet))
 
 const lobbyButtons = computed<CasinoLobbyButtonItem[]>(() => {

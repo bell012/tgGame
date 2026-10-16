@@ -4,9 +4,40 @@ import { getCurrentLocale, navigateTo } from '@/utils/router'
 import { withLocalePrefix } from '@/utils/locale'
 
 const TAB_NAMES = ['Home', 'explore', 'casino', 'sports']
+const tabModuleRequests = new WeakMap<object, Promise<void>>()
+
+/** 空闲预取与手指按下时的优先预取共用任务，只加载代码，不提前挂载页面或触发业务接口。 */
+export const preloadBottomTabRoute = (path: string): Promise<void> => {
+  const target = router.resolve(withLocalePrefix(path, getCurrentLocale()))
+  const record = target.matched[target.matched.length - 1]
+  const loader = record?.components?.default
+  if (typeof loader !== 'function') return Promise.resolve()
+
+  const pending = tabModuleRequests.get(loader)
+  if (pending) return pending
+
+  const request = Promise.resolve()
+    .then(() => (loader as () => Promise<unknown>)())
+    .then(() => {})
+    .catch(error => {
+      // 失败后允许正式导航或下一次预取重试。
+      tabModuleRequests.delete(loader)
+      throw error
+    })
+  tabModuleRequests.set(loader, request)
+  return request
+}
+
 const getTabIndex = (name: unknown) => {
   const normalizedName = String(name || '').replace(/^Locale/, '')
   return TAB_NAMES.indexOf(normalizedName === 'casinoTabKey' ? 'casino' : normalizedName)
+}
+
+const shouldUseSnapshotTransition = () => {
+  // 安卓使用直接合成滑动：导航不再等待整屏快照捕获，减少点击后的停顿。
+  // iOS 保留现有快照动画；不支持快照的浏览器也使用相同的直接滑动流程。
+  const isAndroid = /Android/i.test(navigator.userAgent)
+  return !isAndroid && typeof document.startViewTransition === 'function'
 }
 
 let activeTransition: ViewTransition | null = null
@@ -31,7 +62,7 @@ export const cancelUnrelatedTabTransition = (fullPath: string) => {
   }
 }
 
-/** 使用浏览器快照做整屏滑动，真实页面仍只激活一次，不同时布局两个长列表。 */
+/** 按平台选择动画方式，页面始终复用缓存，避免同时布局两个长列表。 */
 export const navigateBottomTab = async (path: string) => {
   cancelBottomTabTransition()
   const version = navigationVersion
@@ -41,14 +72,14 @@ export const navigateBottomTab = async (path: string) => {
   const toIndex = getTabIndex(to.name)
 
   // slideTransition 始终交给原来的抽屉流程，客服也遵循相同规则。
-  // 旧版 WebView 使用布局中的普通滑动降级，不影响正常导航。
+  // 安卓与旧版 WebView 直接导航，由布局播放完整横向滑入，不等待快照准备。
   if (
     from.meta.slideTransition ||
     to.meta.slideTransition ||
     fromIndex < 0 ||
     toIndex < 0 ||
     fromIndex === toIndex ||
-    typeof document.startViewTransition !== 'function' ||
+    !shouldUseSnapshotTransition() ||
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
   ) {
     return navigateTo(path)

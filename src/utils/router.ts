@@ -112,5 +112,6 @@ export const switchLanguage = (locale: Locale) => {
     return
   }
 
-  router.replace(newPath)
+  // 返回导航任务，供刷新初始化等待语言路由真正切换完成。
+  return router.replace(newPath)
 }

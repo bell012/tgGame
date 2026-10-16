@@ -118,9 +118,14 @@
     <teleport to="body" v-if="isMobile && slideRouteStack.length > 0">
       <!-- 渲染所有滑动路由栈 -->
       <template v-for="(item, index) in slideRouteStack" :key="item.path">
-        <transition name="drawer-slide" @after-leave="removeClosedDrawer(item.path)">
+        <transition
+          name="drawer-slide"
+          :css="item.animate"
+          @after-leave="removeClosedDrawer(item.path)"
+        >
           <div
             v-if="item.showDrawer"
+            data-route-drawer
             class="fixed inset-0 overflow-hidden bg-bg-1"
             :style="{ zIndex: 99 + index }"
           >
@@ -139,6 +144,7 @@
 
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useNativeHistoryTransition } from '@/composables/useNativeHistoryTransition'
 import { useCheckInModalStore } from '@/stores/checkInModal'
 import { useLayoutStore } from '@/stores/layout'
 import { usePromotionsStore } from '@/stores/promotions'
@@ -195,6 +201,10 @@ const hasViewportModeInitialized = ref(false)
 
 const route = useRoute()
 const router = useRouter()
+const consumeNativeHistoryTransition = useNativeHistoryTransition(
+  router,
+  () => isMobile.value && route.meta?.slideTransition === true
+)
 
 // 离开当前目标路由时中止快照动画，避免与抽屉或下一次导航叠加。
 const removeTabTransitionGuard = router.beforeEach(to => {
@@ -221,6 +231,7 @@ interface SlideRouteItem {
   path: string
   route: RouteLocationNormalizedLoaded
   showDrawer: boolean
+  animate: boolean
 }
 
 interface NotificationPanelDetail {
@@ -364,11 +375,11 @@ watch(
     if (!mainAreaRoute.value || !isBottomTabRoute(mainAreaRoute.value)) return
 
     let cancelled = false
-    const animations: Animation[] = []
+    const animationCleanups: Array<() => void> = []
     onCleanup(() => {
       cancelled = true
       // 快速连续切换、离开 Tab 或卸载布局时取消旧动画，不排队等待退场。
-      animations.forEach(animation => animation.cancel())
+      animationCleanups.forEach(cleanup => cleanup())
     })
     await nextTick()
     // 连续快速点击时只恢复最终目标页，避免旧任务覆盖新页面的位置。
@@ -379,7 +390,7 @@ watch(
 
     // 快照动画负责整屏滑入滑出；抽屉进出期间也不叠加 Tab 动画。
     if (isBottomTabSnapshotActive() || slideRouteStack.value.length > 0) return
-    // 普通降级动画仅在不同 Tab 之间播放；首屏、语言切换和页内筛选保持即时更新。
+    // 安卓直接播放合成滑动；仅在不同 Tab 之间播放，首屏、语言切换和页内筛选即时更新。
     if (fromTabIndex < 0 || toTabIndex < 0 || fromTabIndex === toTabIndex) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
@@ -388,16 +399,27 @@ watch(
     targets?.forEach(element => {
       if (typeof element.animate !== 'function') return
 
+      // 只在本次滑动期间提示浏览器准备变换层，结束或中断后恢复，避免长列表常驻额外图层。
+      const previousWillChange = element.style.willChange
+      element.style.willChange = 'transform'
       const animation = element.animate(
-        [{ transform: `translateX(${offset})` }, { transform: 'translateX(0)' }],
+        [{ transform: `translate3d(${offset}, 0, 0)` }, { transform: 'translate3d(0, 0, 0)' }],
         {
           duration: 300,
           easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
         }
       )
-      // 动画只改变合成属性，结束后移除效果，不留下 transform 或永久合成层。
-      animation.onfinish = () => animation.cancel()
-      animations.push(animation)
+      let cleaned = false
+      const cleanup = () => {
+        if (cleaned) return
+        cleaned = true
+        animation.onfinish = null
+        animation.cancel()
+        element.style.willChange = previousWillChange
+      }
+      // 同步清理旧动画的图层提示，防止快速切换时旧回调覆盖新动画的状态。
+      animation.onfinish = cleanup
+      animationCleanups.push(cleanup)
     })
   },
   { immediate: true }
@@ -478,6 +500,8 @@ watch(
   () => ({ fullPath: route.fullPath, isMobileDevice: isMobile.value }),
   async ({ fullPath, isMobileDevice }, previousValue) => {
     const newPath = String(fullPath)
+    // iOS 右滑已由浏览器完成动画，此次仅同步抽屉栈；按钮返回仍播放 CSS 动画。
+    const animateDrawer = !consumeNativeHistoryTransition(newPath)
     const currentRouteSnapshot = resolveRouteSnapshot(newPath)
     const previousRouteSnapshot = previousValue?.fullPath
       ? resolveRouteSnapshot(String(previousValue.fullPath))
@@ -503,11 +527,18 @@ watch(
     if (!shouldSlide || !isMobileDevice) {
       backgroundRouteSnapshot.value = currentRouteSnapshot
 
+      if (!animateDrawer) {
+        // 原生返回直接卸载整个过渡组件，避免旧抽屉节点再走一轮 leave。
+        slideRouteStack.value = []
+        return
+      }
+
       if (slideRouteStack.value.length === 0) {
         return
       }
 
       for (const item of slideRouteStack.value) {
+        item.animate = animateDrawer
         item.showDrawer = false
       }
 
@@ -541,11 +572,17 @@ watch(
     }
 
     if (backgroundRouteSnapshot.value.fullPath === newPath) {
+      if (!animateDrawer) {
+        slideRouteStack.value = []
+        return
+      }
+
       if (slideRouteStack.value.length === 0) {
         return
       }
 
       for (const item of slideRouteStack.value) {
+        item.animate = animateDrawer
         item.showDrawer = false
       }
 
@@ -554,11 +591,29 @@ watch(
 
     const existingIndex = slideRouteStack.value.findIndex(item => item.path === newPath)
 
+    if (!animateDrawer) {
+      // 原生历史动画已经展示目标页：一次渲染内还原栈，直接移除其上的过渡组件。
+      // 目标不在当前栈时直接以打开状态挂载，不再先隐藏、nextTick 后再触发入场。
+      if (existingIndex === -1) {
+        slideRouteStack.value = [
+          { path: newPath, route: currentRouteSnapshot, showDrawer: true, animate: false }
+        ]
+      } else {
+        const targetItem = slideRouteStack.value[existingIndex]
+        targetItem.route = currentRouteSnapshot
+        targetItem.showDrawer = true
+        targetItem.animate = false
+        slideRouteStack.value = slideRouteStack.value.slice(0, existingIndex + 1)
+      }
+      return
+    }
+
     if (existingIndex === -1) {
       const newItem: SlideRouteItem = {
         path: newPath,
         route: currentRouteSnapshot,
-        showDrawer: false
+        showDrawer: false,
+        animate: animateDrawer
       }
 
       slideRouteStack.value.push(newItem)
@@ -574,9 +629,12 @@ watch(
       }
     } else {
       slideRouteStack.value[existingIndex].route = currentRouteSnapshot
+      slideRouteStack.value[existingIndex].animate = animateDrawer
+      slideRouteStack.value[existingIndex].showDrawer = true
 
       const itemsToRemove = slideRouteStack.value.slice(existingIndex + 1)
       for (const item of itemsToRemove) {
+        item.animate = animateDrawer
         item.showDrawer = false
       }
     }
