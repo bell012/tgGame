@@ -128,7 +128,7 @@ import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, onMounted, ref } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
@@ -506,6 +506,11 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   // 标记实例已卸载，阻止未完成请求继续处理展示逻辑。
+  isDisposed = true
+})
+
+onDeactivated(() => {
+  // 首页进入缓存时立即忽略未完成的公告请求，防止后台页面占用本次弹窗次数。
   isDisposed = true
 })
 </script>

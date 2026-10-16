@@ -17,7 +17,8 @@
     </header>
     <div :style="{ height: `${navigationHeight}px` }" aria-hidden="true"></div>
 
-    <div class="filter-slide-stage">
+    <!-- Tab 入场只移动赛事内容，顶部固定导航和投注弹层保持原位。 -->
+    <div class="filter-slide-stage" data-tab-transition="slide">
       <Transition :name="filterSlideName">
         <div :key="matchSlideKey" class="filter-slide-pane">
           <div
