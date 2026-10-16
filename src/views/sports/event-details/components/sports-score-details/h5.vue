@@ -247,7 +247,11 @@ import doubleIcon from './img/double.svg?url'
 import downIcon from './img/down.svg?url'
 import pinIcon from './img/top.svg?url'
 import upIcon from './img/up.svg?url'
-import { buildScoreDetailsFilterTabs, mapMarketLinesToCards } from './map-market-lines'
+import {
+  buildScoreDetailsFilterTabs,
+  mapMarketLinesToCards,
+  type EventDetailsOddsFormat
+} from './map-market-lines'
 import type { DualColumnMarketCard, ScoreDetailsFilterKey, ScoreDetailsMarketCard } from './types'
 
 const { t } = useI18n()
@@ -255,10 +259,12 @@ const { t } = useI18n()
 const props = withDefaults(
   defineProps<{
     marketLines?: SportMarketLine[]
+    oddsFormat?: EventDetailsOddsFormat
     selectedWagerSelectionId?: number
     showEmpty?: boolean
   }>(),
   {
+    oddsFormat: 1,
     showEmpty: false
   }
 )
@@ -273,7 +279,7 @@ const pinnedMarketOrder = ref<string[]>([])
 const openSectionIds = ref<Set<string>>(new Set())
 const expandedMarketIds = ref<Set<string>>(new Set())
 
-const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? []))
+const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? [], props.oddsFormat))
 
 const filterTabs = computed(() =>
   buildScoreDetailsFilterTabs(props.marketLines ?? [], t('sports.eventDetails.filterAll'))

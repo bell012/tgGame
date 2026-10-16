@@ -9,7 +9,7 @@
   <div
     ref="pageRootRef"
     class="min-h-[200px] w-full min-w-0 bg-bg-1 font-inter text-text-1"
-    :class="isMobile ? '' : 'px-5 pb-6'"
+    :class="isMobile ? 'h-full min-h-0 overflow-y-auto overscroll-contain' : 'px-5 pb-6'"
   >
     <template v-if="isMobile">
       <MatchHeader
@@ -20,12 +20,67 @@
       />
       <SportsScoreDetails
         v-if="hasScoreDetailsMarkets || !isEventDetailsLoading"
-        class="mt-4 pl-3.5 pb-24"
+        class="mt-4 pl-3.5"
         :market-lines="scoreDetailsMarketLines"
+        :odds-format="oddsFormat"
         :selected-wager-selection-id="selectedWagerSelectionId"
         :show-empty="!hasScoreDetailsMarkets"
         @pick="pickOdds"
       />
+      <footer
+        v-if="hasScoreDetailsMarkets"
+        class="mt-8 flex flex-col items-center px-3.5 pb-24"
+        data-testid="event-details-odds-footer-h5"
+      >
+        <div class="flex items-center gap-3">
+          <span class="shrink-0 text-sm text-text-2">{{
+            t('sports.eventDetails.oddsFormatLabel')
+          }}</span>
+          <div ref="oddsFormatRoot" class="relative inline-block min-w-[140px]">
+            <button
+              type="button"
+              class="inline-flex h-9 w-full min-w-[140px] items-center justify-between gap-2 rounded-lg border-0 bg-bg-2 pl-4 pr-3 text-sm text-text-1"
+              :aria-expanded="isOddsFormatOpen"
+              aria-haspopup="listbox"
+              :aria-label="t('sports.eventDetails.oddsFormatLabel')"
+              @click.stop="toggleOddsFormat"
+            >
+              <span>{{ selectedOddsFormatLabel }}</span>
+              <ChevronIcon
+                class="h-2 w-2 shrink-0 text-text-1 transition-transform"
+                :class="{ 'rotate-180': isOddsFormatOpen }"
+                aria-hidden="true"
+              />
+            </button>
+            <div
+              v-if="isOddsFormatOpen"
+              class="absolute left-0 top-[calc(100%+8px)] z-30 max-h-[320px] w-full min-w-full overflow-y-auto rounded-xl bg-bg-2 px-4 py-3 shadow-[0_6px_30px_rgba(0,0,0,0.4)] [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
+              role="listbox"
+              :aria-label="t('sports.eventDetails.oddsFormatOptionsAria')"
+            >
+              <button
+                v-for="option in oddsFormatOptions"
+                :key="option.value"
+                type="button"
+                role="option"
+                :aria-selected="oddsFormat === option.value"
+                class="flex w-full border-0 bg-transparent py-2.5 text-left"
+                @click="selectOddsFormat(option.value)"
+              >
+                <span
+                  class="min-w-0 flex-1 truncate text-[12px] font-bold"
+                  :class="oddsFormat === option.value ? 'text-theme-primary' : 'text-text-1'"
+                >
+                  {{ option.label }}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <p class="mt-6 max-w-[640px] text-center text-xs leading-relaxed text-text-3">
+          {{ t('sports.eventDetails.oddsFormatDisclaimer') }}
+        </p>
+      </footer>
       <ShoppingCartFab
         :count="cartCount"
         :aria-label="t('sports.eventDetails.betSlipFab')"
