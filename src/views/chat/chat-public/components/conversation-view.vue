@@ -50,6 +50,7 @@
       @emoji="$emit('emoji')"
       @media="$emit('media')"
       @focus="$emit('composer-focus')"
+      @interact="$emit('composer-interact')"
       @cancel-reply="$emit('cancel-reply')"
     />
 
@@ -167,6 +168,7 @@ defineEmits<{
   'emoji-close': []
   media: []
   'composer-focus': []
+  'composer-interact': []
   'cancel-reply': []
   'emoji-select': [emoji: string]
   'emoji-delete': []

@@ -1,6 +1,6 @@
 <template>
   <!-- 消息编辑器整体容器。 -->
-  <div data-chat-composer class="shrink-0 bg-bg-2">
+  <div data-chat-composer class="shrink-0 bg-bg-2" @pointerdown="$emit('interact')">
     <!-- 引用回复预览区域。 -->
     <ReplyPreview v-if="replyTarget" :target="replyTarget" @close="$emit('cancel-reply')" />
 
@@ -117,6 +117,7 @@ const emit = defineEmits<{
   emoji: []
   media: []
   focus: []
+  interact: []
   'cancel-reply': []
 }>()
 

@@ -61,6 +61,7 @@
         @emoji-close="handleEmojiPanelClose"
         @media="toggleMedia"
         @composer-focus="handleComposerFocus"
+        @composer-interact="closeQuickIssue"
         @cancel-reply="cancelReply"
         @emoji-select="handleEmojiSelect"
         @emoji-delete="handleEmojiDelete"
@@ -183,6 +184,12 @@ const previewMode = ref<'compose' | 'viewer'>('viewer')
 const pendingMediaFiles = ref<File[]>([])
 const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
+
+/** 关闭快捷问题层并清空当前分类。 */
+const closeQuickIssue = () => {
+  quickIssueVisible.value = false
+  activeIssue.value = null
+}
 
 /** 在消息新增或切换会话后，将消息区域滚动到最底部。 */
 const scrollToBottom = () => {
@@ -332,6 +339,7 @@ const handleEmojiPanelClose = () => {
 
 /** 用户点回输入框时，收起与软键盘互斥的功能面板。 */
 const handleComposerFocus = () => {
+  closeQuickIssue()
   if (mode.value === 'emoji' || mode.value === 'media') {
     mode.value = draft.value.trim() ? 'typing' : 'idle'
   }

@@ -5,10 +5,10 @@
     class="z-[100] flex items-end"
     :class="
       props.displayMode === 'pc'
-        ? 'absolute inset-x-0 bottom-[64px] max-h-[calc(100%-64px)] bg-bg-5'
+        ? 'absolute inset-x-0 top-0 bottom-[64px]'
         : 'fixed inset-0 bg-mask-60-1'
     "
-    @click.self="$emit('close')"
+    @pointerdown.self="$emit('close')"
   >
     <!-- 快捷问题内容面板。 -->
     <section

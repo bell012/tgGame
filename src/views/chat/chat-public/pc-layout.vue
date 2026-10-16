@@ -58,6 +58,7 @@
       @emoji-close="handleEmojiPanelClose"
       @media="toggleMedia"
       @composer-focus="handleComposerFocus"
+      @composer-interact="closeQuickIssue"
       @cancel-reply="cancelReply"
       @emoji-select="handleEmojiSelect"
       @emoji-delete="handleEmojiDelete"
@@ -193,6 +194,12 @@ const pcPreviewUrls = ref<string[]>([])
 const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 
+/** 关闭快捷问题层并清空当前分类。 */
+const closeQuickIssue = () => {
+  quickIssueVisible.value = false
+  activeIssue.value = null
+}
+
 /** 选择 PC 客服后读取缓存并建立当前客服的 Socket 连接。 */
 const handleConversationSelect = async (conversation: ConversationItem) => {
   highlightMessageId.value = ''
@@ -305,6 +312,7 @@ const handleEmojiPanelClose = () => {
 
 /** 用户点回输入框时，收起与键盘互斥的表情或媒体面板。 */
 const handleComposerFocus = () => {
+  closeQuickIssue()
   if (mode.value === 'emoji' || mode.value === 'media') {
     mode.value = draft.value.trim() ? 'typing' : 'idle'
   }
