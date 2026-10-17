@@ -3,6 +3,7 @@
  */
 
 import request from '@/utils/request'
+import { startPopupLoginSession } from '@/utils/popupSession'
 import type {
   LoginSetResponse,
   LoginForm,
@@ -38,14 +39,16 @@ export function getLoginAndRegisterSetting(data: {}): Promise<LoginSetResponse> 
  * @param data 登录表单数据
  * @returns Promise<LoginResponse>
  */
-export function login(data: LoginForm): Promise<LoginResponse> {
-  return request({
+export async function login(data: LoginForm): Promise<LoginResponse> {
+  const response = await request<unknown, LoginResponse>({
     url: '/mc/loginMember',
     method: 'post',
     data,
     showSuccessToast: false, // 显示成功轻提示
     showErrorToast: true // 显示失败轻提示
   })
+  if (response.code === 'C2') startPopupLoginSession(String(response.result?.memberId ?? ''))
+  return response
 }
 
 /**
@@ -53,14 +56,17 @@ export function login(data: LoginForm): Promise<LoginResponse> {
  * @param data 注册表单数据
  * @returns Promise<RegisterResponse>
  */
-export function register(data: RegisterForm): Promise<RegisterResponse> {
-  return request({
+export async function register(data: RegisterForm): Promise<RegisterResponse> {
+  const response = await request<unknown, RegisterResponse>({
     url: '/mc/newMember',
     method: 'post',
     data,
     showSuccessToast: false,
     showErrorToast: true
   })
+  if (response.code === 'C2' && response.result?.tradeToken)
+    startPopupLoginSession(String(response.result.memberId ?? ''))
+  return response
 }
 
 /**

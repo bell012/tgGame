@@ -289,7 +289,12 @@
     </div>
   </div>
 
-  <H5HomePop v-if="shouldShowH5HomePop" class="sm:hidden" @close="closeH5HomePop" />
+  <H5HomePop
+    v-if="shouldShowH5HomePop"
+    :key="homePopupScope"
+    class="sm:hidden"
+    @close="closeH5HomePop"
+  />
   <CommonFooter class="hidden sm:block" />
 </template>
 
@@ -309,6 +314,8 @@ import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
+import { homePopVisitState } from '@/utils/homePopVisit'
+import { getPopupContext } from '@/utils/popupContext'
 import { storeToRefs } from 'pinia'
 import {
   computed,
@@ -381,6 +388,7 @@ const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
 const showH5HomePop = ref(true)
+const homePopupScope = computed(() => JSON.stringify(getPopupContext()))
 const shouldShowH5HomePop = computed(() => isMobile.value && showH5HomePop.value)
 const gameData = ref<HomeGameSection[]>([])
 const rawGameData = ref<GameDataItem[]>([])
@@ -539,7 +547,6 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
-  void maybeAutoOpenTicketActivity()
   await Promise.allSettled([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
 })
 
@@ -548,7 +555,6 @@ let hasActivatedHome = false
 onActivated(() => {
   if (hasActivatedHome) {
     showH5HomePop.value = true
-    void maybeAutoOpenTicketActivity()
   }
   hasActivatedHome = true
 })
@@ -564,8 +570,19 @@ watch(
       return
     }
     void fetchHomeFavoritesModule()
-    void maybeAutoOpenTicketActivity()
   }
+)
+
+watch(
+  homePopupScope,
+  () => {
+    if (!homePopVisitState.isHome) return
+    homePopVisitState.hasShown = false
+    showH5HomePop.value = true
+    void maybeAutoOpenTicketActivity()
+  },
+  // 在新账号/新访问的公告组件挂载前重置，避免被旧 hasShown 提前关闭。
+  { immediate: true, flush: 'pre' }
 )
 </script>
 

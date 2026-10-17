@@ -126,9 +126,7 @@
 import Api from '@/api'
 import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
-import { useUserStore } from '@/stores/user'
 import { useLocaleStore } from '@/stores/locale'
-import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
@@ -142,16 +140,22 @@ import RightIcon from '@/static/svg/right-icon.svg?component'
 import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { homePopVisitState } from '@/utils/homePopVisit'
+import { getPopupContext, isPopupContextCurrent } from '@/utils/popupContext'
+import {
+  markPopupShown,
+  shouldShowPopup,
+  resolvePopupMode,
+  popupKey,
+  readPopupStorage,
+  writePopupStorage,
+  type PopupFrequencyContext
+} from '@/utils/popupFrequency'
 
 const emit = defineEmits<{
   close: []
 }>()
 const authModalStore = useAuthModalStore()
-const userStore = useUserStore()
 const localeStore = useLocaleStore()
-const { userInfo } = storeToRefs(userStore)
-const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
-const loginToken = computed(() => String(userInfo.value?.tradeToken ?? ''))
 const { locale } = useI18n()
 const HOME_POP_STORAGE_PREFIX = 'home_pop_notice'
 const HOME_POP_SUPPRESS_KEY = `${HOME_POP_STORAGE_PREFIX}:suppress_until`
@@ -305,100 +309,17 @@ const handleGameJump = (item: HomePopItem) => {
   navigateToName('gameDetail', { params: { rowId: gameRowId } })
 }
 
-const getNoticeRowId = (item: QueryNoticeMsgItem) => String(Number(item.rowId ?? 0))
-
-const getTodayKey = () => {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-const getNoticePopWay = (item: QueryNoticeMsgItem) => {
-  const beforeWay = Number(item.loginBeforePopWay ?? 0)
-  const afterWay = Number(item.loginAfterPopWay ?? 0)
-  return isLogin.value ? afterWay : beforeWay
-}
-
-const shouldShowNoticeByRule = (item: QueryNoticeMsgItem) => {
-  const rowId = getNoticeRowId(item)
-  if (!rowId || rowId === '0') {
-    return false
-  }
-
-  const popWay = getNoticePopWay(item)
-
-  // 未登录：1 只弹一次，2 每次进入首页都弹
-  if (!isLogin.value) {
-    if (popWay === 2) {
-      return true
-    }
-    if (popWay === 1) {
-      const key = `${HOME_POP_STORAGE_PREFIX}:guest:once:${rowId}`
-      return localStorage.getItem(key) !== '1'
-    }
-    return false
-  }
-
-  // 已登录：1 每日一次，2 每次登录，3 只弹一次，4 每次进入首页都弹
-  if (popWay === 4) {
-    return true
-  }
-  if (popWay === 3) {
-    const key = `${HOME_POP_STORAGE_PREFIX}:login:once:${rowId}`
-    return localStorage.getItem(key) !== '1'
-  }
-  if (popWay === 1) {
-    const key = `${HOME_POP_STORAGE_PREFIX}:login:daily:${rowId}`
-    return localStorage.getItem(key) !== getTodayKey()
-  }
-  if (popWay === 2) {
-    const key = `${HOME_POP_STORAGE_PREFIX}:login:session:${rowId}`
-    return localStorage.getItem(key) !== loginToken.value
-  }
-
-  return false
-}
-
-const markNoticeShownByRule = (item: QueryNoticeMsgItem) => {
-  const rowId = getNoticeRowId(item)
-  if (!rowId || rowId === '0') {
-    return
-  }
-
-  const popWay = getNoticePopWay(item)
-
-  if (!isLogin.value) {
-    if (popWay === 1) {
-      const key = `${HOME_POP_STORAGE_PREFIX}:guest:once:${rowId}`
-      localStorage.setItem(key, '1')
-    }
-    return
-  }
-
-  if (popWay === 3) {
-    const key = `${HOME_POP_STORAGE_PREFIX}:login:once:${rowId}`
-    localStorage.setItem(key, '1')
-    return
-  }
-
-  if (popWay === 1) {
-    const key = `${HOME_POP_STORAGE_PREFIX}:login:daily:${rowId}`
-    localStorage.setItem(key, getTodayKey())
-    return
-  }
-
-  if (popWay === 2) {
-    const key = `${HOME_POP_STORAGE_PREFIX}:login:session:${rowId}`
-    if (loginToken.value) {
-      localStorage.setItem(key, loginToken.value)
-    }
-  }
-}
+const noticeOptions = (item: QueryNoticeMsgItem, context: PopupFrequencyContext) => ({
+  ...context,
+  key: popupKey('notice', item.rowId),
+  mode: resolvePopupMode(
+    context.memberId ? item.loginAfterPopWay : item.loginBeforePopWay,
+    context.memberId ? 'authenticated' : 'guest'
+  )
+})
 
 const getSuppressUntil = () => {
-  const raw = localStorage.getItem(HOME_POP_SUPPRESS_KEY)
+  const raw = readPopupStorage(HOME_POP_SUPPRESS_KEY)
   const value = Number(raw ?? 0)
   return Number.isFinite(value) ? value : 0
 }
@@ -408,6 +329,8 @@ const isSuppressedNow = () => {
 }
 
 const fetchNoticeList = async () => {
+  const context = getPopupContext()
+  if (!isPopupContextCurrent(context)) return
   // 同一次首页访问已展示过，或处于勾选“不再显示”的抑制期时，直接结束。
   if (homePopVisitState.hasShown || isSuppressedNow()) {
     closeWithoutSuppress()
@@ -426,7 +349,7 @@ const fetchNoticeList = async () => {
       }
     })
     // 请求返回时组件可能已因路由切换被卸载，忽略旧实例的响应。
-    if (isDisposed) {
+    if (isDisposed || !isPopupContextCurrent(context)) {
       return
     }
     // 请求期间其他实例可能已经展示，返回后再次判断，避免并发重复弹出。
@@ -435,7 +358,9 @@ const fetchNoticeList = async () => {
       return
     }
     const records = Array.isArray(res?.result?.records) ? res.result.records : []
-    const filtered = sortNoticeRecords(records).filter(item => shouldShowNoticeByRule(item))
+    const filtered = sortNoticeRecords(records).filter(item =>
+      shouldShowPopup(noticeOptions(item, context))
+    )
     noticeList.value = filtered
     // 没有有效展示内容时直接通知父组件移除，无需等待关闭动画。
     if (list.value.length === 0) {
@@ -444,10 +369,13 @@ const fetchNoticeList = async () => {
     }
     // 记录本次访问已展示，后续首页重新挂载也不会再次弹出。
     homePopVisitState.hasShown = true
-    filtered.forEach(item => {
-      markNoticeShownByRule(item)
-    })
     visible.value = true
+    const displayedIds = new Set(list.value.map(item => item.rowId))
+    filtered
+      .filter(item => displayedIds.has(Number(item.rowId)))
+      .forEach(item => {
+        markPopupShown(noticeOptions(item, context))
+      })
   } catch (error) {
     // 已卸载实例不再更新弹窗或向父组件发送关闭事件。
     if (isDisposed) {
@@ -468,7 +396,7 @@ const close = () => {
     return
   }
   if (checked.value) {
-    localStorage.setItem(HOME_POP_SUPPRESS_KEY, String(Date.now() + HOME_POP_SUPPRESS_MS))
+    writePopupStorage(HOME_POP_SUPPRESS_KEY, String(Date.now() + HOME_POP_SUPPRESS_MS))
   }
   visible.value = false
 }

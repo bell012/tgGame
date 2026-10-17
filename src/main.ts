@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'
+import { initHomePopupVisits } from './utils/homePopVisit'
 import i18n from './i18n'
 import App from './App.vue'
 import SmartImage from '@/components/common/SmartImage.vue'
@@ -25,6 +26,7 @@ const pinia = createPinia()
 
 app.component('SmartImage', SmartImage)
 app.use(pinia)
+initHomePopupVisits(router)
 app.use(router)
 app.use(i18n)
 
