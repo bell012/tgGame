@@ -319,14 +319,14 @@ onMounted(() => {
 }
 
 .chat-composer-bottom-safe {
-  height: calc(33px + env(safe-area-inset-bottom, 0px));
-  min-height: 33px;
+  height: calc(10px + env(safe-area-inset-bottom, 0px));
+  min-height: 10px;
   flex-shrink: 0;
 }
 
 /* 键盘展开时取消固定安全区留白，让输入框紧贴键盘上沿。 */
-.chat-composer--keyboard-visible .chat-composer-bottom-safe {
+/* .chat-composer--keyboard-visible .chat-composer-bottom-safe {
   height: 0;
   min-height: 0;
-}
+} */
 </style>
