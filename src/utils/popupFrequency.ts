@@ -18,7 +18,7 @@ export const resolvePopupMode = (value: unknown, phase: PopupPhase): PopupMode =
   const modes: Partial<Record<number, PopupMode>> =
     phase === 'guest'
       ? { 1: 'once', 2: 'frequent' }
-      : { 1: 'daily', 2: 'each-login', 4: 'frequent' }
+      : { 1: 'daily', 2: 'each-login', 3: 'once', 4: 'frequent' }
   return modes[Number(value)] ?? 'none'
 }
 

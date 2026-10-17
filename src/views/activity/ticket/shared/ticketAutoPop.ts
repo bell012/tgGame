@@ -11,20 +11,22 @@ import type { TicketGameId } from './types'
 
 /**
  * unusedTicketPopWay：未使用票券自动弹窗方式
- * 0 不弹窗、1 每日一次、2 每次登录、4 高频（每次进入/刷新首页）
+ * 0 不弹窗、1 每日一次、2 每次登录、3 只弹一次、4 高频（每次进入/刷新首页）
  */
 export const TICKET_POP_WAY = {
   NONE: 0,
   DAILY: 1,
   EACH_LOGIN: 2,
+  ONCE: 3,
   FREQUENT: 4
 } as const
 
-/** 弹窗优先级权重（越大越优先）：高频 > 每次登录 > 每日一次 > 不弹 */
+/** 弹窗优先级权重（越大越优先）：高频 > 每次登录 > 每日一次 > 仅一次 > 不弹 */
 const POP_WAY_PRIORITY: Record<number, number> = {
   [TICKET_POP_WAY.FREQUENT]: 4,
   [TICKET_POP_WAY.EACH_LOGIN]: 3,
   [TICKET_POP_WAY.DAILY]: 2,
+  [TICKET_POP_WAY.ONCE]: 1,
   [TICKET_POP_WAY.NONE]: 0
 }
 

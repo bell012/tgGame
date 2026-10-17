@@ -473,7 +473,7 @@ export interface MbTicketListForm {
   type?: number // 票券类型：1现金票券 Cash Voucher 2红包票券 Red Packet Voucher 3砸金蛋票券 Golden Egg Voucher
   // 4转盘票券 Lucky Spin Voucher 6盲盒票券  Mystery Box Voucher
   distributionType?: number // 派发方式  0直接派发  1联动派发
-  unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 4高频弹窗
+  unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
   status?: any // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
   startReceiveTime?: number // 领取开始时间
   endReceiveTime?: number // 领取结束时间
@@ -504,7 +504,7 @@ export interface RecordForm {
   type?: number // 票券类型：1现金票券 Cash Voucher 2红包票券 Red Packet Voucher 3砸金蛋票券 Golden Egg Voucher
   // 4转盘票券 Lucky Spin Voucher 6盲盒票券  Mystery Box Voucher
   distributionType?: number // 派发方式  0直接派发  1联动派发
-  unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 4高频弹窗
+  unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
   status?: number // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
   startReceiveTime?: number // 领取开始时间
   endReceiveTime?: number // 领取结束时间

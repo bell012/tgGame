@@ -20,6 +20,7 @@ const options = {
 - `0`：不弹窗（`none`）。
 - `1`：每日一次（`daily`），按设备本地自然日。
 - `2`：每次登录（`each-login`），刷新不算重新登录。
+- `3`：只弹一次（`once`），本地持久记录。
 - `4`：高频（`frequent`），每次进入、刷新或返回首页一次，同次访问不重复。
 
 登录前 `guest`：`1` 只弹一次，`2` 高频，其他值不弹。未知配置均按不弹处理。
@@ -108,8 +109,8 @@ const goldenEgg = { rowId: 303, type: 3, unusedTicketPopWay: 2 }
 // 大转盘：每次首页访问
 const luckySpin = { rowId: 304, type: 4, unusedTicketPopWay: 4 }
 
-// 盲盒：不弹窗
-const mysteryBox = { rowId: 306, type: 6, unusedTicketPopWay: 0 }
+// 盲盒：只弹一次
+const mysteryBox = { rowId: 306, type: 6, unusedTicketPopWay: 3 }
 ```
 
 五种玩法都按下面方式转换公共参数，**不按玩法另设命名空间**：
@@ -126,7 +127,7 @@ const options = {
 
 实际票券 ID 使用 `rowId ?? ticketId`：只有 `rowId` 为 `null/undefined` 才回退。缺少有效 ID 不自动展示。修改频率只改 `unusedTicketPopWay`，不改 `type` 或 key。
 
-票券仅登录后自动展示。优先级为：高频 > 每次登录 > 每日一次 > 不弹窗。当前仅判断排序后的第一条；该条受限时不继续找下一条。
+票券仅登录后自动展示。优先级为：高频 > 每次登录 > 每日一次 > 只弹一次 > 不弹窗。当前仅判断排序后的第一条；该条受限时不继续找下一条。
 
 用户点击按钮手动打开时，按需选择一个调用，不记录自动展示次数：
 
