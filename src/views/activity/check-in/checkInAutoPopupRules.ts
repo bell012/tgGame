@@ -12,7 +12,6 @@ export const CHECK_IN_POP_WAY = {
   NONE: 0,
   DAILY: 1,
   EACH_LOGIN: 2,
-  ONCE: 3,
   /** 高频：每次进入或刷新首页都弹，不写本地次数。 */
   EACH_HOME_VISIT: 4
 } as const

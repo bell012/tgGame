@@ -47,7 +47,7 @@ test('backend mappings and unknown values', () => {
   assert.equal(api.resolvePopupMode(2, 'guest'), 'frequent')
   assert.equal(api.resolvePopupMode(1, 'authenticated'), 'daily')
   assert.equal(api.resolvePopupMode('2', 'authenticated'), 'each-login')
-  assert.equal(api.resolvePopupMode(3, 'authenticated'), 'once')
+  assert.equal(api.resolvePopupMode(3, 'authenticated'), 'none')
   assert.equal(api.resolvePopupMode(4, 'authenticated'), 'frequent')
   assert.equal(api.resolvePopupMode(99, 'authenticated'), 'none')
   assert.equal(api.resolvePopupMode(true, 'authenticated'), 'none')
