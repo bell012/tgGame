@@ -119,6 +119,8 @@
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import type { AutoReplyItem } from '@/api/interface/chat'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
 import {
   computed,
   nextTick,
@@ -144,6 +146,12 @@ import type { ChatMessage, ConversationItem, QuickIssue } from './types'
 
 const { t } = useI18n()
 const router = useRouter()
+const userStore = useUserStore()
+const { acctInfo, userInfo } = storeToRefs(userStore)
+const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId))
+// 仅处理“以游客身份进入当前客服页后登录”的场景；已登录用户进入后切换账号不关闭页面。
+const enteredAsGuest = ref(!isLoggedIn.value)
+let hasClosedAfterGuestLogin = false
 const {
   conversations,
   messages,
@@ -234,6 +242,15 @@ const chatViewportStyle = computed(() =>
 const keyboardVisible = computed(
   () => maximumVisualViewportHeight.value - (visualViewportHeight.value ?? 0) > 120
 )
+
+// 游客会话的 Socket 使用 TEMP_* 身份。登录后关闭当前客服页，避免同一会话中混用游客与会员身份。
+watch(isLoggedIn, loggedIn => {
+  if (!enteredAsGuest.value || !loggedIn || hasClosedAfterGuestLogin) return
+
+  hasClosedAfterGuestLogin = true
+  leaveConversation()
+  router.back()
+})
 
 // 会话层是固定覆盖页。锁住底层文档，避免 iOS 为聚焦输入框滚动首页/路由背景；
 // 未启用 preventTouchMove，MessageList 仍保留自己的原生纵向滚动。
