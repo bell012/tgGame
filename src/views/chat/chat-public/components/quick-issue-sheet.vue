@@ -7,7 +7,7 @@
       :class="
         props.displayMode === 'pc'
           ? 'absolute inset-x-0 top-0 bottom-[64px]'
-          : 'fixed inset-0 bg-mask-60-1'
+          : 'fixed inset-0 bg-mask-20'
       "
       @pointerdown.self="$emit('close')"
     >
