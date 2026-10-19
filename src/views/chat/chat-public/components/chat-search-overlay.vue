@@ -96,20 +96,18 @@
           :class="props.displayMode === 'pc' ? 'gap-[10px]' : 'gap-[20px]'"
         >
           <!-- 单条搜索结果：头像、昵称、消息预览、时间与分割线。 -->
-          <div
-            v-for="result in searchResults"
-            :key="result.id"
-            class="flex flex-col items-end"
-            :class="props.displayMode === 'pc' ? 'gap-[16px]' : 'gap-[17px]'"
-          >
+          <div v-for="result in searchResults" :key="result.id">
             <button
               type="button"
-              class="flex w-full items-center text-left"
-              :class="props.displayMode === 'pc' ? 'h-[40px] gap-[10px]' : 'h-[42.67px] gap-[9px]'"
+              class="flex w-full items-start text-left"
+              :class="props.displayMode === 'pc' ? 'gap-[10px]' : 'gap-[9px]'"
               @click="$emit('locate', result.id, query.trim())"
             >
               <!-- 每条结果展示该消息发送者的头像，接口未返回时使用本地默认头像。 -->
-              <span class="size-[40px] shrink-0 overflow-hidden rounded-full">
+              <span
+                class="size-[40px] shrink-0 overflow-hidden rounded-full"
+                :class="props.displayMode === 'pc' ? '' : 'mt-[1.335px]'"
+              >
                 <img
                   :src="resolveChatMediaUrl(result.authorAvatar) || avatarUrl"
                   alt=""
@@ -117,69 +115,75 @@
                 />
               </span>
 
-              <!-- 昵称、消息预览与时间。 -->
-              <span
-                class="flex min-w-0 flex-1 items-start"
-                :class="props.displayMode === 'pc' ? 'gap-[10px]' : 'gap-[2px]'"
-              >
+              <!-- 内容列包含昵称、消息预览、时间与分割线，确保左侧对齐。 -->
+              <span class="flex min-w-0 flex-1 flex-col">
                 <span
-                  class="flex min-w-0 flex-1 flex-col items-start"
-                  :class="props.displayMode === 'pc' ? 'gap-[4px]' : 'gap-[10px]'"
+                  class="flex min-w-0 items-start"
+                  :class="
+                    props.displayMode === 'pc' ? 'h-[40px] gap-[10px]' : 'h-[42.67px] gap-[2px]'
+                  "
                 >
-                  <strong
-                    class="max-w-full truncate text-text-1"
-                    :class="
-                      props.displayMode === 'pc'
-                        ? 'text-[14px] font-[700] leading-[17px]'
-                        : 'text-[15px] font-[500] leading-[18px]'
-                    "
-                  >
-                    {{
-                      decodeAuthorName(result.authorName) ||
-                      (result.direction === 'outgoing'
-                        ? t('chatPublic.you')
-                        : t('chatPublic.customerServiceList'))
-                    }}
-                  </strong>
-                  <!-- 搜索结果内容，并高亮当前匹配的关键字。 -->
                   <span
-                    class="w-full truncate text-text-2"
+                    class="flex min-w-0 flex-1 flex-col items-start"
+                    :class="props.displayMode === 'pc' ? 'gap-[4px]' : 'gap-[10px]'"
+                  >
+                    <strong
+                      class="max-w-full truncate text-text-1"
+                      :class="
+                        props.displayMode === 'pc'
+                          ? 'text-[14px] font-[700] leading-[17px]'
+                          : 'text-[15px] font-[500] leading-[18px]'
+                      "
+                    >
+                      {{
+                        decodeAuthorName(result.authorName) ||
+                        (result.direction === 'outgoing'
+                          ? t('chatPublic.you')
+                          : t('chatPublic.customerServiceList'))
+                      }}
+                    </strong>
+                    <!-- 搜索结果内容，并高亮当前匹配的关键字。 -->
+                    <span
+                      class="w-full truncate text-text-2"
+                      :class="
+                        props.displayMode === 'pc'
+                          ? 'text-[12px] font-[400] leading-[15px]'
+                          : 'text-[12px] font-[400] leading-[14.67px]'
+                      "
+                    >
+                      <template
+                        v-for="(part, index) in getChatTextHighlightParts(
+                          getSearchResultText(result),
+                          query
+                        )"
+                        :key="index"
+                      >
+                        <span :class="part.matched ? 'text-theme-primary' : ''">{{
+                          part.text
+                        }}</span>
+                      </template>
+                    </span>
+                  </span>
+                  <time
+                    class="shrink-0 whitespace-nowrap text-text-3"
                     :class="
                       props.displayMode === 'pc'
                         ? 'text-[12px] font-[400] leading-[15px]'
                         : 'text-[12px] font-[400] leading-[14.67px]'
                     "
                   >
-                    <template
-                      v-for="(part, index) in getChatTextHighlightParts(
-                        getSearchResultText(result),
-                        query
-                      )"
-                      :key="index"
-                    >
-                      <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
-                    </template>
-                  </span>
+                    {{ formatChatMessageTime(result.timestamp) }}
+                    {{ getChatTimePeriod(result.timestamp) }}
+                  </time>
                 </span>
-                <time
-                  class="shrink-0 whitespace-nowrap text-text-3"
-                  :class="
-                    props.displayMode === 'pc'
-                      ? 'text-[12px] font-[400] leading-[15px]'
-                      : 'text-[12px] font-[400] leading-[14.67px]'
-                  "
-                >
-                  {{ formatChatMessageTime(result.timestamp) }}
-                  {{ getChatTimePeriod(result.timestamp) }}
-                </time>
+
+                <!-- 分割线属于内容列，左侧天然与昵称、消息预览和时间列对齐。 -->
+                <span
+                  class="mt-[17px] h-px w-full bg-opacity-6"
+                  :class="props.displayMode === 'pc' ? 'mt-[16px]' : ''"
+                ></span>
               </span>
             </button>
-
-            <!-- 搜索结果分割线。 -->
-            <span
-              class="h-px bg-opacity-6"
-              :class="props.displayMode === 'pc' ? 'w-[306px]' : 'w-[298px]'"
-            ></span>
           </div>
         </div>
 
