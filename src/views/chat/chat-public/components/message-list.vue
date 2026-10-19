@@ -74,17 +74,33 @@
     <div
       v-if="focusedMessage"
       ref="replyActionRef"
-      class="fixed z-[75] -translate-x-1/2 rounded-[8px] bg-bg-2 px-[18px] py-[10px] shadow-xl"
+      class="fixed z-[75] h-[43.72px] w-[54.33px] -translate-x-1/2"
       :style="actionStyle"
     >
-      <button type="button" class="text-[13px] text-text-1" @click="handleReplyClick">
-        {{ t('chatPublic.reply') }}
+      <!-- SVG 画板预留了边距；按 1/3 缩放后与浮层实际可视区域对齐。 -->
+      <component
+        :is="theme === 'dark' ? ReplyDarkIcon : ReplyLightIcon"
+        aria-hidden="true"
+        class="pointer-events-none absolute -left-[13.33px] -top-[12px] h-[70.67px] w-[81px] max-w-none"
+      />
+      <button
+        type="button"
+        class="absolute left-0 top-0 z-10 flex h-[36px] w-full items-center justify-center"
+        @click="handleReplyClick"
+      >
+        <span class="text-[13px] font-[400] leading-[15.67px] text-text-1">
+          {{ t('chatPublic.reply') }}
+        </span>
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import ReplyDarkIcon from '@/static/svg/chat/public/reply-dark.svg?component'
+import ReplyLightIcon from '@/static/svg/chat/public/reply-light.svg?component'
+import { useThemeStore } from '@/stores/theme'
+import { storeToRefs } from 'pinia'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getMessagePreview } from '../shared'
@@ -126,6 +142,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const themeStore = useThemeStore()
+const { theme } = storeToRefs(themeStore)
 
 const scrollRef = ref<HTMLElement | null>(null)
 const replyActionRef = ref<HTMLElement | null>(null)
