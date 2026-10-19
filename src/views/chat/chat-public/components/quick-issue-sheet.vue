@@ -7,7 +7,7 @@
       :class="
         props.displayMode === 'pc'
           ? 'absolute inset-x-0 top-0 bottom-[64px]'
-          : 'fixed inset-0 bg-mask-20'
+          : 'quick-issue-sheet--h5 fixed inset-0 bg-mask-20'
       "
       @pointerdown.self="$emit('close')"
     >
@@ -106,9 +106,15 @@ const { t } = useI18n()
 </script>
 
 <style scoped>
-.quick-issue-sheet-enter-active,
-.quick-issue-sheet-leave-active {
+.quick-issue-sheet--h5.quick-issue-sheet-enter-active,
+.quick-issue-sheet--h5.quick-issue-sheet-leave-active {
   transition: opacity 180ms ease;
+  will-change: opacity;
+}
+
+.quick-issue-sheet--h5.quick-issue-sheet-enter-from,
+.quick-issue-sheet--h5.quick-issue-sheet-leave-to {
+  opacity: 0;
 }
 
 .quick-issue-sheet-enter-active > section,
@@ -117,19 +123,14 @@ const { t } = useI18n()
   will-change: transform;
 }
 
-.quick-issue-sheet-enter-from,
-.quick-issue-sheet-leave-to {
-  opacity: 0;
-}
-
 .quick-issue-sheet-enter-from > section,
 .quick-issue-sheet-leave-to > section {
   transform: translateY(100%);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .quick-issue-sheet-enter-active,
-  .quick-issue-sheet-leave-active,
+  .quick-issue-sheet--h5.quick-issue-sheet-enter-active,
+  .quick-issue-sheet--h5.quick-issue-sheet-leave-active,
   .quick-issue-sheet-enter-active > section,
   .quick-issue-sheet-leave-active > section {
     transition-duration: 1ms;
