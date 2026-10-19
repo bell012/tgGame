@@ -46,10 +46,10 @@
         :uploading-media="uploadingImage"
         :highlight-message-id="highlightMessageId"
         :highlight-keyword="highlightKeyword"
-        :keyboard-visible="keyboardVisible"
         :mode="mode"
         :draft="draft"
         :reply-target="replyTarget"
+        :keyboard-covered-distance="keyboardCoveredDistance"
         @back="handleConversationBack"
         @search="searchVisible = true"
         @reply="startReply"
@@ -62,6 +62,7 @@
         @emoji="toggleEmoji"
         @emoji-close="handleEmojiPanelClose"
         @media="toggleMedia"
+        @composer-keyboard-intent="beginKeyboardViewportSession(true)"
         @composer-focus="handleComposerFocus"
         @composer-interact="closeQuickIssue"
         @cancel-reply="cancelReply"
@@ -205,9 +206,17 @@ const pendingMediaFiles = ref<File[]>([])
 const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 const visualViewportHeight = ref<number | null>(null)
+const layoutViewportHeight = ref<number | null>(null)
 const layoutViewportWidth = ref<number | null>(null)
 const visualViewportOffsetTop = ref(0)
-const maximumVisualViewportHeight = ref(0)
+const keyboardViewportBaselineHeight = ref<number | null>(null)
+const keyboardViewportBaselineBottom = ref<number | null>(null)
+const keyboardLayoutBaselineHeight = ref<number | null>(null)
+const hasObservedKeyboardViewportCover = ref(false)
+let visualViewportFrame: number | null = null
+
+const getVisualViewportBottom = (viewport: VisualViewport) =>
+  Math.max(0, viewport.offsetTop) + viewport.height
 
 /**
  * iOS/Android 软键盘不一定会缩小 layout viewport。让固定容器覆盖可视视口，
@@ -215,33 +224,98 @@ const maximumVisualViewportHeight = ref(0)
  */
 const syncVisualViewport = () => {
   const viewport = window.visualViewport
-  if (!viewport) {
-    visualViewportHeight.value = null
-    return
-  }
-
   // 用布局视口宽度识别横竖屏切换；可视视口宽度也会随 Safari 缩放而变化。
   const width = document.documentElement.clientWidth
-  if (layoutViewportWidth.value !== null && Math.abs(width - layoutViewportWidth.value) > 1) {
-    maximumVisualViewportHeight.value = viewport.height
-  } else {
-    maximumVisualViewportHeight.value = Math.max(maximumVisualViewportHeight.value, viewport.height)
+  const orientationChanged =
+    layoutViewportWidth.value !== null && Math.abs(width - layoutViewportWidth.value) > 1
+
+  if (orientationChanged) {
+    keyboardViewportBaselineHeight.value = null
+    keyboardViewportBaselineBottom.value = null
+    keyboardLayoutBaselineHeight.value = null
+    hasObservedKeyboardViewportCover.value = false
   }
+
   layoutViewportWidth.value = width
-  visualViewportHeight.value = viewport.height
-  visualViewportOffsetTop.value = viewport.offsetTop
+  layoutViewportHeight.value = window.innerHeight
+  visualViewportHeight.value = viewport?.height ?? null
+  visualViewportOffsetTop.value = viewport?.offsetTop ?? 0
+
+  if (keyboardCoveredDistance.value > 1) {
+    hasObservedKeyboardViewportCover.value = true
+  } else if (hasObservedKeyboardViewportCover.value) {
+    // 视觉视口和布局视口均恢复后才结束跟踪，避免 offsetTop 上移误判为收键盘。
+    keyboardViewportBaselineHeight.value = null
+    keyboardViewportBaselineBottom.value = null
+    keyboardLayoutBaselineHeight.value = null
+    hasObservedKeyboardViewportCover.value = false
+  }
 }
-const chatViewportStyle = computed(() =>
-  visualViewportHeight.value
-    ? {
-        top: `${Math.max(0, visualViewportOffsetTop.value)}px`,
-        height: `${visualViewportHeight.value}px`
-      }
+
+/** 将同一帧内的 resize / scroll 合并，避免视口和安全区分两次重排。 */
+const scheduleVisualViewportSync = () => {
+  if (visualViewportFrame !== null) return
+
+  visualViewportFrame = window.requestAnimationFrame(() => {
+    visualViewportFrame = null
+    syncVisualViewport()
+  })
+}
+
+/** 聚焦时锁定本轮键盘弹出前的视口尺寸。 */
+const beginKeyboardViewportSession = (resetBaseline = false) => {
+  const viewport = window.visualViewport
+
+  // 已经处于展开状态时不可改写基线，否则会让安全区重新出现。
+  if (hasObservedKeyboardViewportCover.value) return
+  // pointerdown 已先记录基线时，后续 focus 只能作为兜底，不能覆盖首帧位置。
+  if (!resetBaseline && keyboardLayoutBaselineHeight.value !== null) return
+
+  // focus 可能晚于首个 viewport 事件；保留上一次同步到的键盘前尺寸。
+  keyboardViewportBaselineHeight.value = viewport
+    ? Math.max(viewport.height, visualViewportHeight.value ?? 0)
+    : null
+  keyboardViewportBaselineBottom.value = viewport
+    ? Math.max(
+        getVisualViewportBottom(viewport),
+        visualViewportOffsetTop.value + (visualViewportHeight.value ?? 0)
+      )
+    : null
+  keyboardLayoutBaselineHeight.value = Math.max(window.innerHeight, layoutViewportHeight.value ?? 0)
+  hasObservedKeyboardViewportCover.value = false
+}
+
+const keyboardCoveredDistance = computed(() => {
+  const visualHeightDrop =
+    keyboardViewportBaselineHeight.value !== null && visualViewportHeight.value !== null
+      ? keyboardViewportBaselineHeight.value - visualViewportHeight.value
+      : 0
+  const visualBottomDrop =
+    keyboardViewportBaselineBottom.value !== null && visualViewportHeight.value !== null
+      ? keyboardViewportBaselineBottom.value -
+        (Math.max(0, visualViewportOffsetTop.value) + visualViewportHeight.value)
+      : 0
+  const layoutHeightDrop =
+    keyboardLayoutBaselineHeight.value !== null && layoutViewportHeight.value !== null
+      ? keyboardLayoutBaselineHeight.value - layoutViewportHeight.value
+      : 0
+
+  return Math.max(0, visualHeightDrop, visualBottomDrop, layoutHeightDrop)
+})
+
+const chatViewportStyle = computed(() => {
+  const visualHeight = visualViewportHeight.value
+  const layoutHeight = layoutViewportHeight.value
+
+  // 某些 WebView 只更新 innerHeight；此时用布局视口定位输入框和安全区。
+  if (layoutHeight !== null && (visualHeight === null || layoutHeight + 1 < visualHeight)) {
+    return { top: '0px', height: `${layoutHeight}px` }
+  }
+
+  return visualHeight !== null
+    ? { top: `${Math.max(0, visualViewportOffsetTop.value)}px`, height: `${visualHeight}px` }
     : { height: '100%' }
-)
-const keyboardVisible = computed(
-  () => maximumVisualViewportHeight.value - (visualViewportHeight.value ?? 0) > 120
-)
+})
 
 // 游客会话的 Socket 使用 TEMP_* 身份。登录后关闭当前客服页，避免同一会话中混用游客与会员身份。
 watch(isLoggedIn, loggedIn => {
@@ -411,6 +485,7 @@ const handleEmojiPanelClose = () => {
 
 /** 用户点回输入框时，收起与软键盘互斥的功能面板。 */
 const handleComposerFocus = () => {
+  beginKeyboardViewportSession()
   closeQuickIssue()
   if (mode.value === 'emoji' || mode.value === 'media') {
     mode.value = draft.value.trim() ? 'typing' : 'idle'
@@ -420,14 +495,19 @@ const handleComposerFocus = () => {
 /** 首次进入客服页时并行请求在线客服和自动回复分类。 */
 onMounted(() => {
   syncVisualViewport()
-  window.visualViewport?.addEventListener('resize', syncVisualViewport)
-  window.visualViewport?.addEventListener('scroll', syncVisualViewport)
+  window.visualViewport?.addEventListener('resize', scheduleVisualViewportSync)
+  window.visualViewport?.addEventListener('scroll', scheduleVisualViewportSync)
+  window.addEventListener('resize', scheduleVisualViewportSync)
   void initialize()
 })
 
 onBeforeUnmount(() => {
-  window.visualViewport?.removeEventListener('resize', syncVisualViewport)
-  window.visualViewport?.removeEventListener('scroll', syncVisualViewport)
+  if (visualViewportFrame !== null) {
+    window.cancelAnimationFrame(visualViewportFrame)
+  }
+  window.visualViewport?.removeEventListener('resize', scheduleVisualViewportSync)
+  window.visualViewport?.removeEventListener('scroll', scheduleVisualViewportSync)
+  window.removeEventListener('resize', scheduleVisualViewportSync)
 })
 
 // 再次进入时先展示已缓存的客服列表，后台静默更新，避免整页重新显示加载占位。

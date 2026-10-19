@@ -44,12 +44,13 @@
     <ChatComposer
       :display-mode="props.displayMode"
       :model-value="draft"
-      :keyboard-visible="props.keyboardVisible"
+      :keyboard-covered-distance="props.keyboardCoveredDistance"
       :reply-target="replyTarget"
       @update:model-value="$emit('update:draft', $event)"
       @send="$emit('send')"
       @emoji="$emit('emoji')"
       @media="$emit('media')"
+      @keyboard-intent="$emit('composer-keyboard-intent')"
       @focus="$emit('composer-focus')"
       @interact="$emit('composer-interact')"
       @cancel-reply="$emit('cancel-reply')"
@@ -133,7 +134,7 @@ const props = withDefaults(
     loadingOlderMessages?: boolean
     uploadingMedia?: boolean
     typing?: boolean
-    keyboardVisible?: boolean
+    keyboardCoveredDistance?: number
     highlightMessageId?: string
     highlightKeyword?: string
     displayMode?: 'h5' | 'pc'
@@ -145,7 +146,7 @@ const props = withDefaults(
     hasMoreCachedMessages: false,
     loadingOlderMessages: false,
     uploadingMedia: false,
-    keyboardVisible: false,
+    keyboardCoveredDistance: 0,
     highlightMessageId: '',
     highlightKeyword: ''
   }
@@ -171,6 +172,7 @@ defineEmits<{
   'emoji-close': []
   media: []
   'composer-focus': []
+  'composer-keyboard-intent': []
   'composer-interact': []
   'cancel-reply': []
   'emoji-select': [emoji: string]
