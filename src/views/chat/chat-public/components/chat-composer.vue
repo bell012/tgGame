@@ -19,7 +19,7 @@
           contenteditable="true"
           role="textbox"
           aria-multiline="false"
-          class="chat-composer-input chat-composer-input--pc h-[36px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap bg-transparent font-pingfang text-[14px] font-[400] leading-[36px] text-text-1 outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
+          class="chat-composer-input chat-composer-input--pc h-[36px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap bg-transparent font-pingfang text-[14px] font-[400] text-text-1 outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
           :data-placeholder="t('chatPublic.inputPlaceholder')"
           @input="handleInput"
           @compositionend="handleCompositionEnd"
@@ -61,7 +61,7 @@
         contenteditable="true"
         role="textbox"
         aria-multiline="false"
-        class="chat-composer-input chat-composer-input--h5 h-[36px] min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-[30px] border bg-bg-1 px-[12px] text-[14px] leading-[36px] text-text-1 outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
+        class="chat-composer-input chat-composer-input--h5 h-[36px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap rounded-[30px] border bg-bg-1 px-[12px] text-[14px] text-text-1 outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
         :class="hasDraft ? 'border-theme-primary' : 'border-opacity-6'"
         :data-placeholder="t('chatPublic.inputPlaceholder')"
         @input="handleInput"
@@ -337,22 +337,33 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.chat-composer-input {
+  /* 36px 外框中保留 1px 上下视觉留白，文字的行框保持稳定。 */
+  line-height: 34px;
+}
+
 .chat-composer-input:empty::before {
+  display: inline-block;
+  line-height: 34px;
   pointer-events: none;
 }
 
 .chat-composer-input--pc :deep([data-chat-composer-emoji]) {
-  display: inline-block;
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
   font-size: 23px;
-  line-height: 23px;
-  vertical-align: middle;
+  line-height: 1;
+  vertical-align: top;
 }
 
 .chat-composer-input--h5 :deep([data-chat-composer-emoji]) {
-  display: inline-block;
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
   font-size: 20px;
-  line-height: 20px;
-  vertical-align: middle;
+  line-height: 1;
+  vertical-align: top;
 }
 
 /* 仅在连续 emoji 之间留白；文字与 emoji 相邻时不改变原有字距。 */
