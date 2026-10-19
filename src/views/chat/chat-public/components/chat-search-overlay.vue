@@ -184,10 +184,7 @@
         </div>
 
         <!-- PC 设计稿在结果列表末尾展示结束文案。 -->
-        <p
-          v-if="props.displayMode === 'pc'"
-          class="mt-[42px] w-full text-center text-[12px] font-[400] leading-[15px] text-text-3"
-        >
+        <p class="mt-[42px] w-full text-center text-[12px] font-[400] leading-[15px] text-text-3">
           {{ t('chatPublic.noMore') }}
         </p>
       </section>
