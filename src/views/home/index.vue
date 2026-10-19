@@ -289,12 +289,7 @@
     </div>
   </div>
 
-  <H5HomePop
-    v-if="shouldShowH5HomePop"
-    :key="homePopupScope"
-    class="sm:hidden"
-    @close="closeH5HomePop"
-  />
+  <H5HomePop v-if="shouldShowH5HomePop" :key="homePopupScope" @close="closeH5HomePop" />
   <CommonFooter class="hidden sm:block" />
 </template>
 
@@ -317,15 +312,7 @@ import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
 import { homePopVisitState } from '@/utils/homePopVisit'
 import { getPopupContext } from '@/utils/popupContext'
 import { storeToRefs } from 'pinia'
-import {
-  computed,
-  defineAsyncComponent,
-  onActivated,
-  onDeactivated,
-  onMounted,
-  ref,
-  watch
-} from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import LazySection from './components/LazySection.vue'
@@ -389,7 +376,9 @@ const isMobile = useIsMobile()
 
 const showH5HomePop = ref(true)
 const homePopupScope = computed(() => JSON.stringify(getPopupContext()))
-const shouldShowH5HomePop = computed(() => isMobile.value && showH5HomePop.value)
+const shouldShowH5HomePop = computed(
+  () => isMobile.value && homePopVisitState.isHome && showH5HomePop.value
+)
 const gameData = ref<HomeGameSection[]>([])
 const rawGameData = ref<GameDataItem[]>([])
 const querySlideshowList = ref<QuerySlideshowItem[]>([])
@@ -550,19 +539,6 @@ onMounted(async () => {
   await Promise.allSettled([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
 })
 
-// 首页被缓存后，再次进入仍按公告原有规则判断弹窗；列表与轮播数据继续复用。
-let hasActivatedHome = false
-onActivated(() => {
-  if (hasActivatedHome) {
-    showH5HomePop.value = true
-  }
-  hasActivatedHome = true
-})
-onDeactivated(() => {
-  // 离开首页时移除弹窗，避免它随缓存页面保留到下一次访问。
-  showH5HomePop.value = false
-})
-
 watch(
   () => isLogin.value,
   isNowLogin => {
@@ -581,7 +557,7 @@ watch(
     showH5HomePop.value = true
     void maybeAutoOpenTicketActivity()
   },
-  // 在新账号/新访问的公告组件挂载前重置，避免被旧 hasShown 提前关闭。
+  // 统一由账号/首页访问变化创建新弹窗，避免缓存激活钩子再次启用已关闭的旧实例。
   { immediate: true, flush: 'pre' }
 )
 </script>
