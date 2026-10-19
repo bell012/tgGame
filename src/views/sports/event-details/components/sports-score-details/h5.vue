@@ -60,7 +60,7 @@
 
     <div v-else class="mt-3 flex flex-col gap-2 pr-3.5">
       <article
-        v-for="market in visibleMarkets"
+        v-for="(market, marketIndex) in visibleMarkets"
         :key="market.id"
         class="overflow-hidden rounded-lg bg-bg-2"
       >
@@ -98,15 +98,40 @@
         </header>
 
         <div v-if="isSectionOpen(market.id)" class="px-2.5 pb-3.5 pt-3.5">
-          <template v-if="market.kind === 'dual-column'">
-            <div
-              v-if="market.leftHeader || market.rightHeader"
-              class="mb-3 grid grid-cols-2 gap-2 text-center text-xs leading-4 text-text-2"
-            >
-              <span class="truncate">{{ market.leftHeader }}</span>
-              <span class="truncate">{{ market.rightHeader }}</span>
+          <div
+            v-if="marketIndex === 0 && hasTeamNames"
+            class="mb-3 grid grid-cols-2 gap-2 text-sm font-bold leading-[18px] text-text-1"
+            data-testid="sports-score-details-h5-teams"
+          >
+            <div class="flex min-w-0 items-center gap-1.5">
+              <img
+                v-if="homeTeamLogo"
+                class="h-5 w-5 shrink-0 rounded-full object-contain"
+                :src="homeTeamLogo"
+                alt=""
+                draggable="false"
+                aria-hidden="true"
+              />
+              <span class="line-clamp-2 min-w-0 break-words" :title="homeTeamName">
+                {{ homeTeamName }}
+              </span>
             </div>
+            <div class="flex min-w-0 items-center justify-end gap-1.5">
+              <span class="line-clamp-2 min-w-0 break-words text-right" :title="awayTeamName">
+                {{ awayTeamName }}
+              </span>
+              <img
+                v-if="awayTeamLogo"
+                class="h-5 w-5 shrink-0 rounded-full object-contain"
+                :src="awayTeamLogo"
+                alt=""
+                draggable="false"
+                aria-hidden="true"
+              />
+            </div>
+          </div>
 
+          <template v-if="market.kind === 'dual-column'">
             <div class="flex flex-col gap-2">
               <div
                 v-for="(row, rowIndex) in getDualColumnRows(market)"
@@ -137,7 +162,9 @@
                     <span class="text-sm font-bold tabular-nums">--</span>
                   </template>
                   <template v-else>
-                    <span class="truncate text-sm font-normal">{{ row.left.line }}</span>
+                    <span class="truncate text-sm font-normal">{{
+                      formatCellLine(market.leftHeader, row.left.line)
+                    }}</span>
                     <span class="shrink-0 text-sm font-bold tabular-nums">{{ row.left.odds }}</span>
                   </template>
                 </button>
@@ -165,7 +192,9 @@
                     <span class="text-sm font-bold tabular-nums">--</span>
                   </template>
                   <template v-else>
-                    <span class="truncate text-sm font-normal">{{ row.right.line }}</span>
+                    <span class="truncate text-sm font-normal">{{
+                      formatCellLine(market.rightHeader, row.right.line)
+                    }}</span>
                     <span class="shrink-0 text-sm font-bold tabular-nums">{{
                       row.right.odds
                     }}</span>
@@ -221,7 +250,7 @@
                   <span class="text-sm font-bold tabular-nums">--</span>
                 </template>
                 <template v-else>
-                  <span class="truncate text-sm font-normal">{{ option.label }}</span>
+                  <span class="truncate text-sm font-normal">{{ formatLabel(option.label) }}</span>
                   <span class="shrink-0 text-sm font-bold tabular-nums">{{ option.odds }}</span>
                 </template>
               </button>
@@ -254,7 +283,27 @@ import {
 } from './map-market-lines'
 import type { DualColumnMarketCard, ScoreDetailsFilterKey, ScoreDetailsMarketCard } from './types'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+const isEnglishLocale = computed(() => String(locale.value).toLowerCase().startsWith('en'))
+
+/** 英文只取首字母（Over → O），其它语言保留完整文案。 */
+const formatLabel = (value: string) => {
+  const text = value.trim()
+  return isEnglishLocale.value ? text.charAt(0).toUpperCase() : text
+}
+
+const formatCellLine = (header: string, line: string) => {
+  const text = header.trim()
+  if (!text) {
+    return line
+  }
+  if (text === line.trim()) {
+    return formatLabel(line)
+  }
+  const label = formatLabel(text)
+  return line ? `${label} ${line}` : label
+}
 
 const props = withDefaults(
   defineProps<{
@@ -262,6 +311,10 @@ const props = withDefaults(
     oddsFormat?: EventDetailsOddsFormat
     selectedWagerSelectionId?: number
     showEmpty?: boolean
+    homeTeamName?: string
+    awayTeamName?: string
+    homeTeamLogo?: string
+    awayTeamLogo?: string
   }>(),
   {
     oddsFormat: 1,
@@ -278,6 +331,8 @@ const activeFilter = ref<ScoreDetailsFilterKey>('all')
 const pinnedMarketOrder = ref<string[]>([])
 const openSectionIds = ref<Set<string>>(new Set())
 const expandedMarketIds = ref<Set<string>>(new Set())
+
+const hasTeamNames = computed(() => Boolean(props.homeTeamName || props.awayTeamName))
 
 const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? [], props.oddsFormat))
 
