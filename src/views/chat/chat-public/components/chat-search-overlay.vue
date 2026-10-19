@@ -52,7 +52,7 @@
           ref="inputRef"
           v-model="query"
           type="search"
-          class="min-w-0 flex-1 bg-transparent text-[14px] text-text-1 outline-none placeholder:text-text-2 [&::-webkit-search-cancel-button]:appearance-none"
+          class="min-w-0 flex-1 bg-transparent text-[14px] text-text-1 caret-theme-primary outline-none placeholder:text-text-2 [&::-webkit-search-cancel-button]:appearance-none"
           :class="props.displayMode === 'pc' ? 'font-pingfang leading-[20px]' : ''"
           :placeholder="t('chatPublic.search')"
         />
