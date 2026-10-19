@@ -89,7 +89,7 @@
     <div
       ref="bottomSafeRef"
       v-if="props.displayMode === 'h5'"
-      class="chat-composer-bottom-safe bg-red-500"
+      class="chat-composer-bottom-safe bg-bg-2"
       :class="`chat-composer-bottom-safe--${webRuntimeEnvironment}`"
       :style="bottomSafeStyle"
     />
