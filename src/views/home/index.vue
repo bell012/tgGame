@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="home mx-auto max-w-[1248px] py-2 sm:py-4">
+  <div class="home mx-auto max-w-[1248px] py-2 sm:py-4" data-tab-transition="slide">
     <div style="height: 55px" class="mb-2.5 sm:hidden"></div>
 
     <HomeCarouselImg
@@ -289,7 +289,7 @@
     </div>
   </div>
 
-  <H5HomePop v-if="shouldShowH5HomePop" class="sm:hidden" @close="closeH5HomePop" />
+  <H5HomePop v-if="shouldShowH5HomePop" :key="homePopupScope" @close="closeH5HomePop" />
   <CommonFooter class="hidden sm:block" />
 </template>
 
@@ -309,6 +309,8 @@ import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
+import { homePopVisitState } from '@/utils/homePopVisit'
+import { getPopupContext } from '@/utils/popupContext'
 import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -373,7 +375,10 @@ const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
 const showH5HomePop = ref(true)
-const shouldShowH5HomePop = computed(() => isMobile.value && showH5HomePop.value)
+const homePopupScope = computed(() => JSON.stringify(getPopupContext()))
+const shouldShowH5HomePop = computed(
+  () => isMobile.value && homePopVisitState.isHome && showH5HomePop.value
+)
 const gameData = ref<HomeGameSection[]>([])
 const rawGameData = ref<GameDataItem[]>([])
 const querySlideshowList = ref<QuerySlideshowItem[]>([])
@@ -531,7 +536,6 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
-  void maybeAutoOpenTicketActivity()
   await Promise.allSettled([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
 })
 
@@ -542,8 +546,19 @@ watch(
       return
     }
     void fetchHomeFavoritesModule()
-    void maybeAutoOpenTicketActivity()
   }
+)
+
+watch(
+  homePopupScope,
+  () => {
+    if (!homePopVisitState.isHome) return
+    homePopVisitState.hasShown = false
+    showH5HomePop.value = true
+    void maybeAutoOpenTicketActivity()
+  },
+  // 统一由账号/首页访问变化创建新弹窗，避免缓存激活钩子再次启用已关闭的旧实例。
+  { immediate: true, flush: 'pre' }
 )
 </script>
 

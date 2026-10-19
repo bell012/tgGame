@@ -55,7 +55,20 @@ export interface UseAdaptiveTextTypographyOptions {
 
 let sharedMeasurementElement: HTMLSpanElement | null = null
 const fontLoadPromises = new Map<string, Promise<FontFace[]>>()
+const typographyCache = new Map<string, ResolvedAdaptiveTypography>()
+const MAX_TYPOGRAPHY_CACHE_SIZE = 512
 const CHINESE_TEXT_PATTERN = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/
+
+// 字体加载完成后旧的兜底字体测量不再适用，统一清理；缓存数量有限，避免长期增长。
+const clearTypographyCache = () => typographyCache.clear()
+if (typeof document !== 'undefined' && document.fonts) {
+  document.fonts.addEventListener('loadingdone', clearTypographyCache)
+}
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    document.fonts?.removeEventListener('loadingdone', clearTypographyCache)
+  })
+}
 
 /** 根据后台返回的名称内容判断应使用中文还是英文字体配置。 */
 const resolveTypographyLanguage = (text: unknown): AdaptiveTypographyLanguage =>
@@ -132,7 +145,7 @@ const getMeasurementElement = () => {
   const element = document.createElement('span')
   element.setAttribute('aria-hidden', 'true')
   element.style.cssText =
-    'position:fixed;left:-99999px;top:0;display:block;box-sizing:border-box;visibility:hidden;pointer-events:none;padding:0;border:0;white-space:normal;'
+    'position:fixed;left:-99999px;top:0;display:block;box-sizing:border-box;visibility:hidden;pointer-events:none;padding:0;border:0;white-space:normal;contain:layout style;'
   document.body.appendChild(element)
   sharedMeasurementElement = element
 
@@ -158,7 +171,7 @@ const createResolvedTypography = (
 /** 判断当前字号下的文字能否在指定宽度和最大行数内完整显示。 */
 const isTypographyFitted = (
   text: string,
-  target: HTMLElement,
+  targetStyle: CSSStyleDeclaration,
   availableWidth: number,
   maxLines: number,
   typography: ResolvedAdaptiveTypography
@@ -168,7 +181,6 @@ const isTypographyFitted = (
     return true
   }
 
-  const targetStyle = window.getComputedStyle(target)
   measurementElement.textContent = text
   measurementElement.style.width = `${availableWidth}px`
   measurementElement.style.fontFamily = typography.fontFamily
@@ -249,18 +261,43 @@ export const useAdaptiveTextTypography = (options: UseAdaptiveTextTypographyOpti
     const target = options.targetRef.value
     const text = String(toValue(options.text) ?? '').trim()
     const rawPreset = selectedPreset.value
+    const targetWidth = target?.clientWidth ?? 0
 
-    if (!target || target.clientWidth <= 0) {
+    if (!target || targetWidth <= 0) {
       typography.value = createResolvedTypography(rawPreset, rawPreset.maxFontSize, 'max', false)
       return
     }
 
-    const preset = scalePreset(rawPreset, target.clientWidth)
-    const availableWidth = Math.max(
-      target.clientWidth - Math.max(preset.horizontalPadding || 0, 0),
-      1
-    )
+    const preset = scalePreset(rawPreset, targetWidth)
+    const availableWidth = Math.max(targetWidth - Math.max(preset.horizontalPadding || 0, 0), 1)
     const maxLines = resolveMaxLines()
+    // 每个名称只读取一次样式，避免逐级尝试字号时反复读取页面的计算样式。
+    const targetStyle = window.getComputedStyle(target)
+    const cacheKey = JSON.stringify([
+      text,
+      availableWidth,
+      maxLines,
+      preset,
+      targetStyle.textTransform,
+      targetStyle.textAlign,
+      targetStyle.wordBreak,
+      targetStyle.overflowWrap
+    ])
+    // 同一卡片的普通标题、悬浮标题和其他页面可复用测量；字体未就绪时不缓存结果。
+    const cached = isFontReady.value ? typographyCache.get(cacheKey) : undefined
+    if (cached) {
+      typography.value = { ...cached }
+      return
+    }
+    const applyTypography = (value: ResolvedAdaptiveTypography) => {
+      typography.value = value
+      if (!isFontReady.value) return
+      if (typographyCache.size >= MAX_TYPOGRAPHY_CACHE_SIZE) {
+        const oldestKey = typographyCache.keys().next().value
+        if (oldestKey !== undefined) typographyCache.delete(oldestKey)
+      }
+      typographyCache.set(cacheKey, { ...value })
+    }
     const candidates = createFontSizeCandidates(preset)
 
     for (const fontSize of candidates) {
@@ -272,13 +309,13 @@ export const useAdaptiveTextTypography = (options: UseAdaptiveTextTypographyOpti
             : 'adaptive'
       const candidate = createResolvedTypography(preset, fontSize, tier, false)
 
-      if (!text || isTypographyFitted(text, target, availableWidth, maxLines, candidate)) {
-        typography.value = candidate
+      if (!text || isTypographyFitted(text, targetStyle, availableWidth, maxLines, candidate)) {
+        applyTypography(candidate)
         return
       }
     }
 
-    typography.value = createResolvedTypography(preset, preset.minFontSize, 'min', true)
+    applyTypography(createResolvedTypography(preset, preset.minFontSize, 'min', true))
   }
 
   /** 将多次连续触发的字体计算合并到下一帧执行。 */

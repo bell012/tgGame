@@ -1,5 +1,11 @@
 import type { MbTicketRecord } from '@/api/interface/activity'
-import { getTodayKey } from '@/utils/date'
+import {
+  markPopupShown,
+  shouldShowPopup,
+  resolvePopupMode,
+  popupKey,
+  type PopupFrequencyContext
+} from '@/utils/popupFrequency'
 import { TICKET_TYPE_TO_GAME_ID } from './mappers/mbTicketMapper'
 import type { TicketGameId } from './types'
 
@@ -24,8 +30,6 @@ const POP_WAY_PRIORITY: Record<number, number> = {
   [TICKET_POP_WAY.NONE]: 0
 }
 
-const STORAGE_PREFIX = 'ticket_auto_pop:login'
-
 const getPopWay = (record: MbTicketRecord) => Number(record.unusedTicketPopWay ?? 0)
 
 const getPriority = (record: MbTicketRecord) => POP_WAY_PRIORITY[getPopWay(record)] ?? 0
@@ -36,46 +40,17 @@ const getAutoPopId = (record: MbTicketRecord) => String(record.rowId ?? record.t
 const getGameId = (record: MbTicketRecord): TicketGameId | undefined =>
   TICKET_TYPE_TO_GAME_ID[Number(record.type)]
 
-const dailyKey = (id: string) => `${STORAGE_PREFIX}:daily:${id}`
-const sessionKey = (id: string) => `${STORAGE_PREFIX}:session:${id}`
-const onceKey = (id: string) => `${STORAGE_PREFIX}:once:${id}`
+const optionsFor = (record: MbTicketRecord, context: PopupFrequencyContext) => ({
+  ...context,
+  key: popupKey('ticket', getAutoPopId(record)),
+  mode: resolvePopupMode(getPopWay(record), 'authenticated')
+})
 
-/** 按 unusedTicketPopWay + localStorage 判断该票券当前是否应自动弹出 */
-export const shouldAutoPopByRule = (record: MbTicketRecord, loginToken: string): boolean => {
-  const id = getAutoPopId(record)
-  if (!id) return false
+export const shouldAutoPopByRule = (record: MbTicketRecord, context: PopupFrequencyContext) =>
+  Boolean(context.memberId) && shouldShowPopup(optionsFor(record, context))
 
-  switch (getPopWay(record)) {
-    case TICKET_POP_WAY.FREQUENT:
-      return true
-    case TICKET_POP_WAY.EACH_LOGIN:
-      return Boolean(loginToken) && localStorage.getItem(sessionKey(id)) !== loginToken
-    case TICKET_POP_WAY.DAILY:
-      return localStorage.getItem(dailyKey(id)) !== getTodayKey()
-    case TICKET_POP_WAY.ONCE:
-      return localStorage.getItem(onceKey(id)) !== '1'
-    default:
-      return false
-  }
-}
-
-/** 实际弹出后写入对应去重标记（高频无需记录） */
-export const markAutoPopShown = (record: MbTicketRecord, loginToken: string): void => {
-  const id = getAutoPopId(record)
-  if (!id) return
-
-  switch (getPopWay(record)) {
-    case TICKET_POP_WAY.EACH_LOGIN:
-      if (loginToken) localStorage.setItem(sessionKey(id), loginToken)
-      return
-    case TICKET_POP_WAY.DAILY:
-      localStorage.setItem(dailyKey(id), getTodayKey())
-      return
-    case TICKET_POP_WAY.ONCE:
-      localStorage.setItem(onceKey(id), '1')
-      return
-    default:
-  }
+export const markAutoPopShown = (record: MbTicketRecord, context: PopupFrequencyContext) => {
+  if (context.memberId) markPopupShown(optionsFor(record, context))
 }
 
 /** 按优先级稳定降序排序（同权重保持接口原始顺序） */
@@ -99,7 +74,7 @@ export interface TicketAutoPopResolution {
 /** 解析自动弹窗结果：排序整表 + 选中项 + 是否触发 */
 export const resolveTicketAutoPop = (
   records: MbTicketRecord[],
-  loginToken: string
+  context: PopupFrequencyContext
 ): TicketAutoPopResolution => {
   const sortedRecords = sortRecordsByPopPriority(records)
   const topRecord = sortedRecords[0] ?? null
@@ -109,7 +84,7 @@ export const resolveTicketAutoPop = (
     topRecord &&
     gameId &&
     getPopWay(topRecord) !== TICKET_POP_WAY.NONE &&
-    shouldAutoPopByRule(topRecord, loginToken)
+    shouldAutoPopByRule(topRecord, context)
   )
 
   return { sortedRecords, topRecord, gameId, shouldAutoPop }

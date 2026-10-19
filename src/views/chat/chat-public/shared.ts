@@ -106,6 +106,85 @@ export const getChatPlainText = (value: unknown) => {
   return (documentNode.body.textContent || '').replace(/\n{3,}/g, '\n\n').trim()
 }
 
+/**
+ * 对客服端消息做严格白名单过滤后再用于 v-html。
+ *
+ * 用户发送的消息不会调用此方法，始终以 Vue 文本插值展示。这里仍然过滤客服端内容，
+ * 防止后台录入或第三方数据意外带入脚本、事件属性和危险链接。
+ */
+export const sanitizeChatRichText = (value: unknown) => {
+  const source = String(value ?? '').trim()
+  if (!source) return ''
+
+  if (typeof DOMParser === 'undefined' || typeof document === 'undefined') {
+    return source.replace(/[&<>"']/g, character => {
+      const entities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }
+      return entities[character] || character
+    })
+  }
+
+  const parser = new DOMParser()
+  // 某些服务端会把 HTML 实体编码后再下发；只对服务端富文本解码一次，再统一过滤。
+  const decodedSource = /&(?:lt|#0*60);/i.test(source)
+    ? parser.parseFromString(source, 'text/html').body.textContent || source
+    : source
+  const input = parser.parseFromString(decodedSource, 'text/html')
+  const output = document.implementation.createHTMLDocument('')
+  const allowedTags = new Set(['P', 'STRONG', 'B', 'EM', 'I', 'BR', 'A', 'UL', 'OL', 'LI'])
+  const discardedTags = new Set([
+    'SCRIPT',
+    'STYLE',
+    'TEMPLATE',
+    'NOSCRIPT',
+    'IFRAME',
+    'OBJECT',
+    'EMBED'
+  ])
+
+  const sanitizeNode = (node: Node, parent: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      parent.appendChild(output.createTextNode(node.textContent || ''))
+      return
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) return
+
+    const element = node as HTMLElement
+    // 与纯文本预览保持一致，忽略服务端用于 H5 系统提示的隐藏节点。
+    if (element.id === 'h5SysMsg' || discardedTags.has(element.tagName)) return
+
+    const target = allowedTags.has(element.tagName)
+      ? output.createElement(element.tagName.toLowerCase())
+      : parent
+
+    if (element.tagName === 'A' && target instanceof HTMLAnchorElement) {
+      const href = element.getAttribute('href') || ''
+      try {
+        const url = new URL(href, window.location.origin)
+        if (url.protocol === 'https:' || url.protocol === 'http:') {
+          target.href = url.href
+          target.target = '_blank'
+          target.rel = 'noopener noreferrer'
+        }
+      } catch {
+        // 无效链接降级为普通文本链接标签。
+      }
+    }
+
+    Array.from(element.childNodes).forEach(child => sanitizeNode(child, target))
+    if (target !== parent) parent.appendChild(target)
+  }
+
+  Array.from(input.body.childNodes).forEach(node => sanitizeNode(node, output.body))
+  return output.body.innerHTML
+}
+
 /** 格式化消息列表和气泡中使用的本地时分。 */
 export const formatChatTime = (timestamp = Date.now()) =>
   new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })

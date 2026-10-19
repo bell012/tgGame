@@ -2,6 +2,7 @@
   <div
     ref="pageRootRef"
     class="search-container sm:flex sm:min-h-0 sm:flex-1 sm:flex-col pb-[100px]"
+    data-tab-transition="slide"
     :style="mobileStyle"
   >
     <div class="shrink-0" :class="{ 'search-filter-panel': isMobile }">
@@ -112,6 +113,8 @@
 import {
   computed,
   nextTick,
+  onActivated,
+  onDeactivated,
   onMounted,
   onUnmounted,
   provide,
@@ -536,6 +539,19 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  resizeObserver?.disconnect()
+})
+
+// 缓存页重新显示后再计算横向分类栏尺寸，避免用脱离文档时的零宽度更新按钮状态。
+onActivated(() => {
+  nextTick(() => {
+    if (tabScrollRef.value) {
+      resizeObserver?.observe(tabScrollRef.value)
+    }
+    updateScrollState()
+  })
+})
+onDeactivated(() => {
   resizeObserver?.disconnect()
 })
 </script>

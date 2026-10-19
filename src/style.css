@@ -97,6 +97,30 @@
     height: calc(env(safe-area-inset-top, 0px) + 40px);
   }
 
+  /* 根画布同样参与 Safari 顶部区域取色。覆盖主题初始化的内联背景，
+     关闭蒙层移除 class 后自然恢复最新主题，不保存过期的主题颜色。 */
+  html.ios-mask-status-active,
+  html.ios-mask-status-active body {
+    background-color: var(--sheet-status-bar-color) !important;
+  }
+
+  /* WebKit 在距视口顶部 10 CSS px 处取色，4px 色条无法被命中。
+     大写 PX 避免 pxtorem 将取样高度随根字号缩小。
+     空元素的 text 裁剪保留可取样背景色，不在页面上绘制遮挡条。 */
+  .ios-status-bar-tint {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* prettier-ignore */
+    height: 12PX;
+    background-color: var(--tint-color);
+    -webkit-background-clip: text;
+    background-clip: text;
+    pointer-events: none;
+    z-index: 2147483000;
+  }
+
   * {
     margin: 0;
     padding: 0;

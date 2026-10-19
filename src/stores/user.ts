@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { POPUP_FREQUENCY_STORAGE_PREFIX } from '@/utils/popupFrequency'
+import { clearPopupLoginSession } from '@/utils/popupSession'
 import { ref } from 'vue'
 import Api from '@/api'
 import { SITE_CONFIG_STORAGE_KEY, useSiteConfigStore } from '@/stores/siteConfig'
@@ -355,6 +357,7 @@ export const useUserStore = defineStore('user', () => {
    * 清除所有用户相关的本地状态，但保留基础偏好设置和按账号隔离的通知缓存
    */
   const clearUserSessionData = () => {
+    clearPopupLoginSession()
     invalidateBalanceRefresh()
     clearStorageExcept(
       [
@@ -371,6 +374,11 @@ export const useUserStore = defineStore('user', () => {
       [
         ...NOTIFICATION_CACHE_STORAGE_PREFIXES,
         ...PLAYED_GAMES_CACHE_STORAGE_PREFIXES,
+        POPUP_FREQUENCY_STORAGE_PREFIX,
+        'ticket_auto_pop:',
+        'checkInAutoPopup:',
+        'home_pop_notice:login:',
+        'home_pop_notice:guest:',
         'sportsAcceptAnyOdds:'
       ]
     )

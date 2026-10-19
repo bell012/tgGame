@@ -2,7 +2,8 @@
   <!-- H5 客服页面根容器。 -->
   <div
     class="chat-public-h5 fixed inset-x-0 top-0 flex flex-col overflow-hidden bg-bg-1 sm:hidden"
-    :class="activeConversation ? 'bottom-0 z-[60]' : 'chat-public-h5-with-tab z-20'"
+    :class="activeConversation ? 'bottom-auto z-[60]' : 'chat-public-h5-with-tab z-20'"
+    :style="activeConversation ? chatViewportStyle : undefined"
   >
     <!-- 未选择会话时的客服列表页面。 -->
     <template v-if="!activeConversation">
@@ -31,7 +32,7 @@
     </template>
 
     <!-- 已选择会话时的对话内容层。 -->
-    <div v-else class="fixed inset-0 z-[60] bg-bg-1">
+    <div v-else class="absolute inset-0 z-[60] bg-bg-1">
       <!-- 当前客服的会话内容。 -->
       <ConversationView
         ref="conversationViewRef"
@@ -48,6 +49,7 @@
         :mode="mode"
         :draft="draft"
         :reply-target="replyTarget"
+        :keyboard-covered-distance="keyboardCoveredDistance"
         @back="handleConversationBack"
         @search="searchVisible = true"
         @reply="startReply"
@@ -60,6 +62,7 @@
         @emoji="toggleEmoji"
         @emoji-close="handleEmojiPanelClose"
         @media="toggleMedia"
+        @composer-keyboard-intent="beginKeyboardViewportSession(true)"
         @composer-focus="handleComposerFocus"
         @composer-interact="closeQuickIssue"
         @cancel-reply="cancelReply"
@@ -116,7 +119,19 @@
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import type { AutoReplyItem } from '@/api/interface/chat'
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ChatImagePreview from './components/chat-image-preview.vue'
@@ -132,6 +147,12 @@ import type { ChatMessage, ConversationItem, QuickIssue } from './types'
 
 const { t } = useI18n()
 const router = useRouter()
+const userStore = useUserStore()
+const { acctInfo, userInfo } = storeToRefs(userStore)
+const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId))
+// 仅处理“以游客身份进入当前客服页后登录”的场景；已登录用户进入后切换账号不关闭页面。
+const enteredAsGuest = ref(!isLoggedIn.value)
+let hasClosedAfterGuestLogin = false
 const {
   conversations,
   messages,
@@ -184,6 +205,130 @@ const previewMode = ref<'compose' | 'viewer'>('viewer')
 const pendingMediaFiles = ref<File[]>([])
 const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
+const visualViewportHeight = ref<number | null>(null)
+const layoutViewportHeight = ref<number | null>(null)
+const layoutViewportWidth = ref<number | null>(null)
+const visualViewportOffsetTop = ref(0)
+const keyboardViewportBaselineHeight = ref<number | null>(null)
+const keyboardViewportBaselineBottom = ref<number | null>(null)
+const keyboardLayoutBaselineHeight = ref<number | null>(null)
+const hasObservedKeyboardViewportCover = ref(false)
+let visualViewportFrame: number | null = null
+
+const getVisualViewportBottom = (viewport: VisualViewport) =>
+  Math.max(0, viewport.offsetTop) + viewport.height
+
+/**
+ * iOS/Android 软键盘不一定会缩小 layout viewport。让固定容器覆盖可视视口，
+ * 保持 Header 在可见区域顶部，输入框在键盘上沿。
+ */
+const syncVisualViewport = () => {
+  const viewport = window.visualViewport
+  // 用布局视口宽度识别横竖屏切换；可视视口宽度也会随 Safari 缩放而变化。
+  const width = document.documentElement.clientWidth
+  const orientationChanged =
+    layoutViewportWidth.value !== null && Math.abs(width - layoutViewportWidth.value) > 1
+
+  if (orientationChanged) {
+    keyboardViewportBaselineHeight.value = null
+    keyboardViewportBaselineBottom.value = null
+    keyboardLayoutBaselineHeight.value = null
+    hasObservedKeyboardViewportCover.value = false
+  }
+
+  layoutViewportWidth.value = width
+  layoutViewportHeight.value = window.innerHeight
+  visualViewportHeight.value = viewport?.height ?? null
+  visualViewportOffsetTop.value = viewport?.offsetTop ?? 0
+
+  if (keyboardCoveredDistance.value > 1) {
+    hasObservedKeyboardViewportCover.value = true
+  } else if (hasObservedKeyboardViewportCover.value) {
+    // 视觉视口和布局视口均恢复后才结束跟踪，避免 offsetTop 上移误判为收键盘。
+    keyboardViewportBaselineHeight.value = null
+    keyboardViewportBaselineBottom.value = null
+    keyboardLayoutBaselineHeight.value = null
+    hasObservedKeyboardViewportCover.value = false
+  }
+}
+
+/** 将同一帧内的 resize / scroll 合并，避免视口和安全区分两次重排。 */
+const scheduleVisualViewportSync = () => {
+  if (visualViewportFrame !== null) return
+
+  visualViewportFrame = window.requestAnimationFrame(() => {
+    visualViewportFrame = null
+    syncVisualViewport()
+  })
+}
+
+/** 聚焦时锁定本轮键盘弹出前的视口尺寸。 */
+const beginKeyboardViewportSession = (resetBaseline = false) => {
+  const viewport = window.visualViewport
+
+  // 已经处于展开状态时不可改写基线，否则会让安全区重新出现。
+  if (hasObservedKeyboardViewportCover.value) return
+  // pointerdown 已先记录基线时，后续 focus 只能作为兜底，不能覆盖首帧位置。
+  if (!resetBaseline && keyboardLayoutBaselineHeight.value !== null) return
+
+  // focus 可能晚于首个 viewport 事件；保留上一次同步到的键盘前尺寸。
+  keyboardViewportBaselineHeight.value = viewport
+    ? Math.max(viewport.height, visualViewportHeight.value ?? 0)
+    : null
+  keyboardViewportBaselineBottom.value = viewport
+    ? Math.max(
+        getVisualViewportBottom(viewport),
+        visualViewportOffsetTop.value + (visualViewportHeight.value ?? 0)
+      )
+    : null
+  keyboardLayoutBaselineHeight.value = Math.max(window.innerHeight, layoutViewportHeight.value ?? 0)
+  hasObservedKeyboardViewportCover.value = false
+}
+
+const keyboardCoveredDistance = computed(() => {
+  const visualHeightDrop =
+    keyboardViewportBaselineHeight.value !== null && visualViewportHeight.value !== null
+      ? keyboardViewportBaselineHeight.value - visualViewportHeight.value
+      : 0
+  const visualBottomDrop =
+    keyboardViewportBaselineBottom.value !== null && visualViewportHeight.value !== null
+      ? keyboardViewportBaselineBottom.value -
+        (Math.max(0, visualViewportOffsetTop.value) + visualViewportHeight.value)
+      : 0
+  const layoutHeightDrop =
+    keyboardLayoutBaselineHeight.value !== null && layoutViewportHeight.value !== null
+      ? keyboardLayoutBaselineHeight.value - layoutViewportHeight.value
+      : 0
+
+  return Math.max(0, visualHeightDrop, visualBottomDrop, layoutHeightDrop)
+})
+
+const chatViewportStyle = computed(() => {
+  const visualHeight = visualViewportHeight.value
+  const layoutHeight = layoutViewportHeight.value
+
+  // 某些 WebView 只更新 innerHeight；此时用布局视口定位输入框和安全区。
+  if (layoutHeight !== null && (visualHeight === null || layoutHeight + 1 < visualHeight)) {
+    return { top: '0px', height: `${layoutHeight}px` }
+  }
+
+  return visualHeight !== null
+    ? { top: `${Math.max(0, visualViewportOffsetTop.value)}px`, height: `${visualHeight}px` }
+    : { height: '100%' }
+})
+
+// 游客会话的 Socket 使用 TEMP_* 身份。登录后关闭当前客服页，避免同一会话中混用游客与会员身份。
+watch(isLoggedIn, loggedIn => {
+  if (!enteredAsGuest.value || !loggedIn || hasClosedAfterGuestLogin) return
+
+  hasClosedAfterGuestLogin = true
+  leaveConversation()
+  router.back()
+})
+
+// 会话层是固定覆盖页。锁住底层文档，避免 iOS 为聚焦输入框滚动首页/路由背景；
+// 未启用 preventTouchMove，MessageList 仍保留自己的原生纵向滚动。
+usePageScrollLock(() => Boolean(activeConversation.value))
 
 /** 关闭快捷问题层并清空当前分类。 */
 const closeQuickIssue = () => {
@@ -212,7 +357,8 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 /** 退出当前会话，清理仅属于会话页的临时交互状态。 */
 const handleConversationBack = async () => {
   await leaveConversation()
-  await loadConversations()
+  // 保留已有列表并在后台刷新，返回列表时不重新显示骨架屏。
+  await loadConversations({ silent: true })
   highlightMessageId.value = ''
   highlightKeyword.value = ''
   quickIssueVisible.value = false
@@ -339,6 +485,7 @@ const handleEmojiPanelClose = () => {
 
 /** 用户点回输入框时，收起与软键盘互斥的功能面板。 */
 const handleComposerFocus = () => {
+  beginKeyboardViewportSession()
   closeQuickIssue()
   if (mode.value === 'emoji' || mode.value === 'media') {
     mode.value = draft.value.trim() ? 'typing' : 'idle'
@@ -347,7 +494,40 @@ const handleComposerFocus = () => {
 
 /** 首次进入客服页时并行请求在线客服和自动回复分类。 */
 onMounted(() => {
+  syncVisualViewport()
+  window.visualViewport?.addEventListener('resize', scheduleVisualViewportSync)
+  window.visualViewport?.addEventListener('scroll', scheduleVisualViewportSync)
+  window.addEventListener('resize', scheduleVisualViewportSync)
   void initialize()
+})
+
+onBeforeUnmount(() => {
+  if (visualViewportFrame !== null) {
+    window.cancelAnimationFrame(visualViewportFrame)
+  }
+  window.visualViewport?.removeEventListener('resize', scheduleVisualViewportSync)
+  window.visualViewport?.removeEventListener('scroll', scheduleVisualViewportSync)
+  window.removeEventListener('resize', scheduleVisualViewportSync)
+})
+
+// 再次进入时先展示已缓存的客服列表，后台静默更新，避免整页重新显示加载占位。
+let hasActivated = false
+onActivated(() => {
+  if (hasActivated) {
+    void loadConversations({ silent: true })
+  }
+  hasActivated = true
+})
+
+onDeactivated(() => {
+  // 页面进入缓存也要结束当前会话，提交已读并断开 Socket、心跳，避免后台持续运行。
+  leaveConversation()
+  closeRedPacketSuccess()
+  closeQuickIssue()
+  searchVisible.value = false
+  closeImagePreview()
+  previewVideo.value = ''
+  resetAfterSend()
 })
 
 /** 在缓存加载、发送或服务端推送新增消息后保持最新消息可见。 */
@@ -366,6 +546,11 @@ watch(
 <style scoped>
 :global(body:has(.chat-public-h5) .bottom-tab-bar) {
   background: var(--color-background-level-2);
+}
+
+/* 客服列表由抽屉承载时底栏仍可点击；进入具体会话后恢复层级，由会话覆盖底栏。 */
+:global(body:has(.chat-public-h5-with-tab) .bottom-tab-bar) {
+  z-index: 200;
 }
 
 :global(body:has(.chat-public-h5) .bottom-tab-bar .tab-item) {

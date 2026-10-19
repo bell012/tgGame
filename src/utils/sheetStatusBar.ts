@@ -5,6 +5,9 @@ const MASK_SELECTOR = [
   '.bg-mask-40',
   '.bg-mask-60-1',
   '.bg-mask-80-2',
+  '.bg-mask-96-3',
+  '.bg-mask-100-4',
+  '.bg-black\\/30',
   '.sheet-safe-mask'
 ].join(',')
 
@@ -14,6 +17,45 @@ let scanScheduled = false
 let observer: MutationObserver | null = null
 
 const STATUS_BAR_MASK_COLOR_VAR = '--sheet-status-bar-color'
+const IOS_STATUS_BAR_TINT_CLASS = 'ios-status-bar-tint'
+
+let iosStatusBarTint: HTMLElement | null = null
+const IOS_MASK_ACTIVE_CLASS = 'ios-mask-status-active'
+
+/** 同时提供页面根背景和顶部实色，兼容 Safari 的浏览器区域取色。 */
+const isIosBrowser = () => {
+  const ua = navigator.userAgent
+  if (/iPad|iPhone|iPod/.test(ua)) {
+    return true
+  }
+  return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1
+}
+
+const applyIosStatusBarTint = (color: string) => {
+  if (!isIosBrowser()) {
+    return
+  }
+
+  if (!iosStatusBarTint || !iosStatusBarTint.isConnected) {
+    iosStatusBarTint = document.createElement('div')
+    iosStatusBarTint.className = IOS_STATUS_BAR_TINT_CLASS
+    iosStatusBarTint.setAttribute('aria-hidden', 'true')
+    document.body.appendChild(iosStatusBarTint)
+  }
+
+  if (iosStatusBarTint.style.getPropertyValue('--tint-color') !== color) {
+    iosStatusBarTint.style.setProperty('--tint-color', color)
+  }
+  if (!document.documentElement.classList.contains(IOS_MASK_ACTIVE_CLASS)) {
+    document.documentElement.classList.add(IOS_MASK_ACTIVE_CLASS)
+  }
+}
+
+const clearIosStatusBarTint = () => {
+  iosStatusBarTint?.remove()
+  iosStatusBarTint = null
+  document.documentElement.classList.remove(IOS_MASK_ACTIVE_CLASS)
+}
 
 type Rgb = { r: number; g: number; b: number; a: number }
 
@@ -34,6 +76,8 @@ export const syncIdleStatusBarColor = (color: string) => {
   }
   if (maskApplied) {
     previousThemeColor = color
+    // 主题变量已更新，重新合成当前蒙层覆盖顶部背景后的实际颜色。
+    scheduleMaskScan()
     return
   }
   writeThemeColor(color)
@@ -92,13 +136,30 @@ const composite = (base: Rgb, overlay: Rgb) => {
   return `#${red}${green}${blue}`
 }
 
-/** 蒙层盖在顶栏上的实色。theme-color 不认透明色。 */
-const maskStatusBarColor = (mask: Rgb) => {
-  const top = parseColor(cssVar('--color-background-level-5'))
-  if (!top || mask.a <= 0) {
+/** 按绘制顺序合成所有可见蒙层，不能只将最上层叠在未遮罩的顶栏上。 */
+const maskStatusBarColor = (masks: HTMLElement[]) => {
+  let color = parseColor(cssVar('--color-background-level-5'))
+  if (!color) {
     return ''
   }
-  return composite(top, mask)
+  let applied = false
+  for (const mask of masks) {
+    const style = getComputedStyle(mask)
+    const overlay = parseColor(style.backgroundColor)
+    if (!overlay || overlay.a <= 0) continue
+    const opacity = Number.parseFloat(style.opacity)
+    const alpha = overlay.a * (Number.isFinite(opacity) ? opacity : 1)
+    if (alpha <= 0) continue
+    // 中间结果保留小数，避免多层混合时累积取整误差。
+    color = {
+      r: overlay.r * alpha + color.r * (1 - alpha),
+      g: overlay.g * alpha + color.g * (1 - alpha),
+      b: overlay.b * alpha + color.b * (1 - alpha),
+      a: 1
+    }
+    applied = true
+  }
+  return applied ? composite(color, { r: 0, g: 0, b: 0, a: 0 }) : ''
 }
 
 const isMobileViewport = () => window.matchMedia(MOBILE_MASK_QUERY).matches
@@ -129,28 +190,11 @@ const stackingZIndex = (element: HTMLElement) => {
   return Number.isFinite(zIndex) ? zIndex : 0
 }
 
-const topmostFullScreenMask = () => {
-  let best: HTMLElement | null = null
-  let bestZIndex = -Infinity
-
-  document.querySelectorAll(MASK_SELECTOR).forEach(element => {
-    if (!isFullScreenMask(element)) {
-      return
-    }
-
-    const zIndex = stackingZIndex(element)
-    const isLater =
-      best !== null &&
-      zIndex === bestZIndex &&
-      Boolean(element.compareDocumentPosition(best) & Node.DOCUMENT_POSITION_PRECEDING)
-    if (!best || zIndex > bestZIndex || isLater) {
-      best = element
-      bestZIndex = zIndex
-    }
-  })
-
-  return best
-}
+// querySelectorAll 已按 DOM 顺序排列；稳定排序保留同层级的绘制顺序。
+const visibleFullScreenMasks = () =>
+  Array.from(document.querySelectorAll(MASK_SELECTOR))
+    .filter(isFullScreenMask)
+    .sort((a, b) => stackingZIndex(a) - stackingZIndex(b))
 
 const restoreIdleStatusBar = () => {
   if (!maskApplied) {
@@ -163,27 +207,29 @@ const restoreIdleStatusBar = () => {
   previousThemeColor = null
   maskApplied = false
   document.documentElement.style.removeProperty(STATUS_BAR_MASK_COLOR_VAR)
+  clearIosStatusBarTint()
 }
 
-const applyTopmostMask = (mask: HTMLElement) => {
-  const overlay = parseColor(getComputedStyle(mask).backgroundColor)
-  const backgroundColor = overlay ? maskStatusBarColor(overlay) : ''
+const applyMasks = (masks: HTMLElement[]) => {
+  const backgroundColor = maskStatusBarColor(masks)
   if (!backgroundColor) {
-    return
-  }
-
-  const meta = themeColorMeta()
-  if (!meta) {
+    restoreIdleStatusBar()
     return
   }
 
   if (!maskApplied) {
-    previousThemeColor = meta.getAttribute('content')
+    previousThemeColor = themeColorMeta()?.getAttribute('content') ?? null
     maskApplied = true
   }
 
   writeThemeColor(backgroundColor)
-  document.documentElement.style.setProperty(STATUS_BAR_MASK_COLOR_VAR, backgroundColor)
+  // 监听器也会收到自身 style 写入；相同值不重复写，避免逐帧自触发。
+  if (
+    document.documentElement.style.getPropertyValue(STATUS_BAR_MASK_COLOR_VAR) !== backgroundColor
+  ) {
+    document.documentElement.style.setProperty(STATUS_BAR_MASK_COLOR_VAR, backgroundColor)
+  }
+  applyIosStatusBarTint(backgroundColor)
 }
 
 const scanFullScreenMasks = () => {
@@ -192,13 +238,13 @@ const scanFullScreenMasks = () => {
     return
   }
 
-  const mask = topmostFullScreenMask()
-  if (!mask) {
+  const masks = visibleFullScreenMasks()
+  if (!masks.length) {
     restoreIdleStatusBar()
     return
   }
 
-  applyTopmostMask(mask)
+  applyMasks(masks)
 }
 
 const scheduleMaskScan = () => {
@@ -227,7 +273,18 @@ export const startMobileMaskStatusBar = () => {
     attributeFilter: ['class', 'style', 'hidden']
   })
 
+  // body 的子树变化无法捕获 html 上的主题 class 切换。
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'style']
+  })
+
   window.addEventListener('resize', scheduleMaskScan)
+  // CSS 过渡本身不产生 DOM mutation，结束后必须同步最终颜色。
+  document.addEventListener('transitionend', scheduleMaskScan, true)
+  document.addEventListener('transitioncancel', scheduleMaskScan, true)
+  document.addEventListener('animationend', scheduleMaskScan, true)
+  window.visualViewport?.addEventListener('resize', scheduleMaskScan)
   window.matchMedia(MOBILE_MASK_QUERY).addEventListener('change', scheduleMaskScan)
   scheduleMaskScan()
 }

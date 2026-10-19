@@ -24,6 +24,7 @@
           @input="handleInput"
           @compositionend="handleCompositionEnd"
           @compositionstart="handleCompositionStart"
+          @pointerdown="handleInputPointerDown"
           @focus="handleInputFocus"
           @keydown.enter.prevent="$emit('send')"
         ></div>
@@ -66,6 +67,7 @@
         @input="handleInput"
         @compositionend="handleCompositionEnd"
         @compositionstart="handleCompositionStart"
+        @pointerdown="handleInputPointerDown"
         @focus="handleInputFocus"
         @keydown.enter.prevent="$emit('send')"
       ></div>
@@ -84,7 +86,13 @@
     </div>
 
     <!-- H5 底部安全区域留白。 -->
-    <div v-if="props.displayMode === 'h5'" class="chat-composer-bottom-safe bg-bg-2" />
+    <div
+      ref="bottomSafeRef"
+      v-if="props.displayMode === 'h5'"
+      class="chat-composer-bottom-safe bg-bg-2"
+      :class="`chat-composer-bottom-safe--${webRuntimeEnvironment}`"
+      :style="bottomSafeStyle"
+    />
   </div>
 </template>
 
@@ -95,20 +103,23 @@ import chatMoreImage from '@/static/img/chat/public/chat-more.png'
 import chatSendButtonImage from '@/static/img/chat/public/chat-send-button.png'
 import chatSendIconImage from '@/static/img/chat/public/chat-send-icon.png'
 import EmojiIcon from '@/static/svg/chat/public/emoji.svg?component'
+import { getWebRuntimeEnvironment } from '@/utils/runtime-environment'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatReplyTarget } from '../types'
 import ReplyPreview from './reply-preview.vue'
 
 const { t } = useI18n()
+const webRuntimeEnvironment = getWebRuntimeEnvironment()
 
 const props = withDefaults(
   defineProps<{
     modelValue: string
     replyTarget?: ChatReplyTarget | null
     displayMode?: 'h5' | 'pc'
+    keyboardCoveredDistance?: number
   }>(),
-  { displayMode: 'h5' }
+  { displayMode: 'h5', keyboardCoveredDistance: 0 }
 )
 
 const emit = defineEmits<{
@@ -117,12 +128,16 @@ const emit = defineEmits<{
   emoji: []
   media: []
   focus: []
+  'keyboard-intent': []
   interact: []
   'cancel-reply': []
 }>()
 
 /** H5 与 PC 当前渲染的单行富文本输入框，用于独立控制 emoji 视觉尺寸。 */
 const inputRef = ref<HTMLElement | null>(null)
+/** 键盘弹出前，按当前环境样式实际渲染出的安全区高度。 */
+const bottomSafeRef = ref<HTMLElement | null>(null)
+const bottomSafeBaseHeight = ref(0)
 const isComposing = ref(false)
 const isRestoringInputSelection = ref(false)
 
@@ -131,6 +146,30 @@ const emojiPattern =
 
 /** 判断输入框是否存在可发送的非空内容。 */
 const hasDraft = computed(() => props.modelValue.trim().length > 0)
+
+/**
+ * 保留环境类和页面样式直接设置的 height：只在键盘开始前读取一次实际高度。
+ * 键盘已展开时该元素可能已被压缩为 0，不能再用它覆盖本轮基线。
+ */
+const captureBottomSafeHeight = () => {
+  if (props.displayMode !== 'h5' || props.keyboardCoveredDistance > 1) return
+
+  const height = bottomSafeRef.value?.getBoundingClientRect().height ?? 0
+  if (height > 0) bottomSafeBaseHeight.value = height
+}
+
+/**
+ * 静态状态不写内联高度，让 `.chat-composer-bottom-safe--*` 的页面配置正常生效；
+ * 键盘运动期间才基于测得的安全区高度连续收缩，避免额外的跳跃。
+ */
+const bottomSafeStyle = computed(() => {
+  if (props.keyboardCoveredDistance <= 0 || bottomSafeBaseHeight.value <= 0) return undefined
+
+  return {
+    height: `${Math.max(0, bottomSafeBaseHeight.value - props.keyboardCoveredDistance)}px`,
+    minHeight: '0px'
+  }
+})
 
 /** 取得光标在可编辑文本中的 Unicode 代码单元偏移量。 */
 const getCaretOffset = () => {
@@ -147,8 +186,8 @@ const getCaretOffset = () => {
   return beforeRange.toString().length
 }
 
-/** 重建表情与文字节点，并把光标放回指定的文本偏移处。 */
-const renderInputValue = (value: string, caretOffset = value.length) => {
+/** 重建表情与文字节点；只有用户已聚焦输入框时才恢复光标。 */
+const renderInputValue = (value: string, caretOffset = value.length, restoreSelection = false) => {
   const element = inputRef.value
   if (!element) return
 
@@ -168,6 +207,9 @@ const renderInputValue = (value: string, caretOffset = value.length) => {
   emojiPattern.lastIndex = 0
 
   element.replaceChildren(fragment)
+
+  // iOS 会将 contenteditable 的程序化选区视作一次聚焦，导致刚进入会话便弹出键盘。
+  if (!restoreSelection) return
 
   const selection = window.getSelection()
   if (!selection) return
@@ -217,7 +259,7 @@ const handleInput = (event: Event) => {
   const value = (event.currentTarget as HTMLElement).textContent ?? ''
   const caretOffset = getCaretOffset()
   emit('update:modelValue', value)
-  renderInputValue(value, caretOffset)
+  renderInputValue(value, caretOffset, true)
 }
 
 /** 输入法组合结束后再格式化，避免打断中文等组合输入。 */
@@ -231,9 +273,24 @@ const handleCompositionStart = () => {
   isComposing.value = true
 }
 
+/**
+ * 在原生 focus 前记录键盘弹出基线。
+ * Android 上用系统返回键收起键盘后，contenteditable 仍可能保持 focus；
+ * 此时再次点击不会触发 focus，需借助 pointerdown 重新开启跟踪。
+ */
+const handleInputPointerDown = () => {
+  if (props.displayMode === 'h5' && !isRestoringInputSelection.value) {
+    captureBottomSafeHeight()
+    emit('keyboard-intent')
+  }
+}
+
 /** 用户重新点回输入框时通知上层关闭与键盘互斥的功能面板。 */
 const handleInputFocus = () => {
-  if (!isRestoringInputSelection.value) emit('focus')
+  if (!isRestoringInputSelection.value) {
+    captureBottomSafeHeight()
+    emit('focus')
+  }
 }
 
 /** 打开表情面板前收起原生键盘，避免键盘与面板同时占用屏幕。 */
@@ -257,7 +314,11 @@ const scrollInputToEnd = async () => {
   }
 
   if (inputRef.value.textContent !== props.modelValue) {
-    renderInputValue(props.modelValue)
+    renderInputValue(
+      props.modelValue,
+      props.modelValue.length,
+      document.activeElement === inputRef.value
+    )
   }
   inputRef.value.scrollLeft = inputRef.value.scrollWidth
 }
@@ -306,6 +367,24 @@ onMounted(() => {
 }
 
 .chat-composer-bottom-safe {
-  height: calc(33px + var(--app-shell-bottom-safe-offset));
+  height: calc(1px + env(safe-area-inset-bottom, 0px));
+  min-height: 1px;
+  flex-shrink: 0;
+}
+
+.chat-composer-bottom-safe--android-web {
+  height: calc(15px + env(safe-area-inset-bottom, 0px));
+}
+
+.chat-composer-bottom-safe--ios-web {
+  height: calc(1px + env(safe-area-inset-bottom, 0px));
+}
+
+.chat-composer-bottom-safe--ios-bookmark {
+  height: calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+.chat-composer-bottom-safe--desktop-web {
+  height: calc(1px + env(safe-area-inset-bottom, 0px));
 }
 </style>
