@@ -14,6 +14,7 @@
     <template v-if="isMobile">
       <MatchHeader
         :model="matchHeaderModel"
+        :sport-key="selectedSportKey"
         :live-stream-url="liveStreamUrl"
         :animation-url="animationUrl"
         @back="onBack"
