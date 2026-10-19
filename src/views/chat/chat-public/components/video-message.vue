@@ -66,7 +66,7 @@
         type="button"
         class="absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
         :class="
-          props.displayMode === 'pc' ? '-left-[52px] size-[36px]' : '-left-[20px] size-[12px]'
+          props.displayMode === 'pc' ? '-left-[52px] size-[36px]' : '-left-[34px] size-[26px]'
         "
         :aria-label="t('chatPublic.retry')"
         @click="$emit('retry', props.message)"
@@ -74,8 +74,8 @@
         <img
           :src="messageRetryIcon"
           alt=""
-          class="object-contain"
-          :class="props.displayMode === 'pc' ? 'size-[36px]' : 'size-[12px]'"
+          class="block object-contain"
+          :class="props.displayMode === 'pc' ? 'size-[36px]' : 'size-[24px]'"
         />
       </button>
     </div>
