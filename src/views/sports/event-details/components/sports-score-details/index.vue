@@ -5,6 +5,10 @@
     :odds-format="oddsFormat"
     :selected-wager-selection-id="selectedWagerSelectionId"
     :show-empty="showEmpty"
+    :home-team-name="homeTeamName"
+    :away-team-name="awayTeamName"
+    :home-team-logo="homeTeamLogo"
+    :away-team-logo="awayTeamLogo"
     @pick="emit('pick', $event)"
   />
   <SportsScoreDetailsPc
@@ -31,6 +35,10 @@ withDefaults(
     oddsFormat?: EventDetailsOddsFormat
     selectedWagerSelectionId?: number
     showEmpty?: boolean
+    homeTeamName?: string
+    awayTeamName?: string
+    homeTeamLogo?: string
+    awayTeamLogo?: string
     betSlipPage?: SportsPageState
     matchId?: string
   }>(),
