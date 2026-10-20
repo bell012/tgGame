@@ -78,7 +78,9 @@
           : 'border-[color:var(--color-opacity-10)]'
       "
     >
-      <DepositTokenIcon class="w-6 h-6 mr-3 text-theme-primary" />
+      <span class="mr-3 inline-flex min-w-6 shrink-0 text-xl leading-6 text-theme-primary">
+        {{ getCurrencySymbol(getCurrentCurrency()) }}
+      </span>
       <input
         type="number"
         v-model.number="amount"
@@ -194,7 +196,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
+import { getCurrentCurrency, getCurrencySymbol } from '@/utils/locale'
 import { nextTick, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositFiatFlow } from '../shared'

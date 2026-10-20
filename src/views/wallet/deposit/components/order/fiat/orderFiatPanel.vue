@@ -46,9 +46,9 @@
         <!-- 金额展示区域 -->
         <div class="w-full flex items-center justify-center">
           <!-- 金额图标 -->
-          <div class="w-4 mr-1">
-            <FiatOrderAmountIcon class="w-4 h-[21px]" />
-          </div>
+          <span class="mr-1 shrink-0 text-[21px] leading-[21px] text-text-1">
+            {{ fiatCurrencySymbol }}
+          </span>
           <p class="text-2xl font-bold leading-normal capitalize text-text-1">
             {{ fiatDisplayAmount }}
           </p>
@@ -75,10 +75,10 @@
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { getOrderStatusColorStyle, getOrderStatusText } from '@/constants/orderStatus'
 import CloseIcon from '@/static/svg/close.svg?component'
-import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
+import { getCurrencySymbol } from '@/utils/locale'
 import { navigateToName } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
 import { computed } from 'vue'
@@ -103,6 +103,7 @@ const compactRows = (rows: Array<DetailRowItem | null>) =>
 
 const fiatOrderInfo = computed(() => props.orderInfo)
 const fiatDisplayAmount = computed(() => Number(fiatOrderInfo.value.amount ?? 0))
+const fiatCurrencySymbol = computed(() => getCurrencySymbol(fiatOrderInfo.value.currency))
 
 // 获取法币订单状态样式
 const getFiatStatusStyle = (status: number | string | undefined) =>

@@ -76,7 +76,9 @@
           : 'border-[color:var(--color-opacity-10)]'
       "
     >
-      <DepositTokenIcon class="w-6 h-6 mr-3 text-theme-primary" />
+      <span class="mr-3 inline-flex min-w-6 shrink-0 text-xl leading-6 text-theme-primary">
+        {{ getCurrencySymbol(getCurrentCurrency()) }}
+      </span>
       <!-- 充值金额输入框 -->
       <input
         type="number"
@@ -215,7 +217,7 @@ import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
+import { getCurrentCurrency, getCurrencySymbol } from '@/utils/locale'
 import { nextTick, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositFiatFlow } from '../shared'
