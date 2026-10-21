@@ -551,6 +551,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       (mode.value === 'single'
         ? submittableSingles.value.length > 0
         : outcomes.value.length >= 2 &&
+          outcomes.value.length <= MAX_SELECTIONS &&
           parlayEligible.value &&
           outcomes.value.every(canUseSelection) &&
           submittableCombos.value.length > 0)
@@ -570,6 +571,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       : formatMoney(potentialReturn.value)
   )
   const validationError = computed(() => {
+    if (mode.value === 'parlay' && selections.value.length > MAX_SELECTIONS)
+      return t('sports.betSelectionLimit', { count: MAX_SELECTIONS })
     if (mode.value === 'parlay' && selections.value.length < 2)
       return selections.value.length ? t('sports.betParlayNeedTwo') : ''
     const selectionError = checkedSelections.value.find(
