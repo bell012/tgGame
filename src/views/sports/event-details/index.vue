@@ -2,6 +2,7 @@
   <PcStickyNavigation v-if="!isMobile" @height-change="pcNavigationHeight = $event">
     <SportsNavigation
       standalone
+      class="!px-5"
       :selected-sport-id="selectedSportId"
       :counts="sportNavigationCounts"
       @change="onSportNavigationChange"
