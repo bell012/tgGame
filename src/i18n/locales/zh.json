@@ -2571,6 +2571,33 @@
     "repaymentFreeTitle": "免还款借呗",
     "repaymentFreeDesc": "无需还款，VIP 等级越高，可借额度越高",
     "gameType": "游戏类型",
+    "loanPop": {
+      "title": "借款成功！",
+      "accept": "确定",
+      "desc": "已存入您的借呗余额。"
+    },
+    "records": {
+      "all": "全部",
+      "loans": "借款",
+      "transfers": "转出",
+      "type": "类型",
+      "time": "时间",
+      "amount": "金额",
+      "loanAmount": "借款金额",
+      "loanTransferOut": "借款转出",
+      "refreshing": "刷新中..."
+    },
+    "transferSuccess": {
+      "title": "转出成功",
+      "desc": "借款余额已转入您的账户余额。"
+    },
+    "transferPop": {
+      "title": "转出",
+      "loanBalance": "借款余额",
+      "transferableBalance": "可转出余额",
+      "transferAll": "全部转出",
+      "desc": "借款余额将转入您的账户余额。转出后，借款余额将清零，下周一可再次借款。"
+    },
     "rules": {
       "rule1": "所有借款均无需还款。",
       "rule2": "使用借款赢得的奖金，最多可转出与原借款金额相等的部分。",

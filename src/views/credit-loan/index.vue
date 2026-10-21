@@ -1,7 +1,11 @@
 <template>
   <div>
     <!-- H5 -->
-    <div v-if="isMobile" class="fixed inset-0 flex flex-col overflow-hidden bg-bg-1">
+    <LoanRecords
+      v-if="isMobile && activeNavKey === 'loan-records'"
+      @back="activeNavKey = 'credit-loan'"
+    />
+    <div v-else-if="isMobile" class="fixed inset-0 flex flex-col overflow-hidden bg-bg-1">
       <H5Header
         :title="activeNavTab.label"
         show-sort
@@ -52,6 +56,7 @@
               <button
                 type="button"
                 class="ml-auto h-9 shrink-0 rounded-lg bg-theme-primary px-4 text-sm font-[700] text-text-4"
+                @click="showTransferPop = true"
               >
                 {{ t('creditLoan.transfer') }}
               </button>
@@ -67,6 +72,7 @@
               <button
                 type="button"
                 class="mt-3 h-10 w-full rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
+                @click="showLoanPop = true"
               >
                 {{ t('creditLoan.borrowNow') }}
               </button>
@@ -174,8 +180,8 @@
               </div>
               <button
                 type="button"
-                class="ml-auto h-11 w-[280px] shrink-0 rounded-lg bg-theme-primary text-sm font-[700] text-text-4 disabled:cursor-not-allowed disabled:opacity-50"
-                :disabled="loanBalance <= 0"
+                class="ml-auto h-11 w-[280px] shrink-0 rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
+                @click="showTransferPop = true"
               >
                 {{ t('creditLoan.transfer') }}
               </button>
@@ -191,6 +197,7 @@
               <button
                 type="button"
                 class="mt-4 h-11 w-full max-w-[400px] rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
+                @click="showLoanPop = true"
               >
                 {{ t('creditLoan.borrowNow') }}
               </button>
@@ -245,6 +252,10 @@
             <CreditLoanDetails v-else :rules="loanRules" />
           </section>
 
+          <section v-else-if="activeNavKey === 'loan-records'" class="min-w-0 flex-1">
+            <LoanRecords />
+          </section>
+
           <section v-else class="flex min-w-0 flex-1 flex-col rounded-[12px] bg-bg-2 py-10">
             <ThemedEmptyState
               :dark-image="defaultImgDark"
@@ -258,6 +269,15 @@
         </div>
       </div>
     </main>
+
+    <LoanPop v-model:visible="showLoanPop" :amount="availableCredit" />
+    <TransferOutPop
+      v-model:visible="showTransferPop"
+      :loan-balance="loanBalance"
+      :transferable-balance="transferableBalance"
+      @transfer-all="showTransferSuccess = true"
+    />
+    <TransferOutSuccess v-model:visible="showTransferSuccess" />
   </div>
 </template>
 
@@ -276,6 +296,10 @@ import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import CreditLoanGameGrid from './components/CreditLoanGameGrid.vue'
 import CreditLoanDetails from './components/CreditLoanDetails.vue'
+import LoanPop from './components/loan-pop.vue'
+import TransferOutPop from './components/transfer-out-pop.vue'
+import TransferOutSuccess from './components/transfer-out-success.vue'
+import LoanRecords from './loan-records/index.vue'
 import { CREDIT_LOAN_RULE_HIGHLIGHTS, type CreditLoanRuleItem } from './mock'
 import coinIcon from './img/yongjin.svg?url'
 import MoreIcon from './img/more.svg?component'
@@ -296,8 +320,12 @@ const activeContentKey = ref<ContentTabKey>('game-lobby')
 const activeGameTypeCode = ref('')
 const showMoreMenu = ref(false)
 const showFilterPopup = ref(false)
+const showLoanPop = ref(false)
+const showTransferPop = ref(false)
+const showTransferSuccess = ref(false)
 
 const loanBalance = ref(0)
+const transferableBalance = ref(0)
 const availableCredit = ref(0)
 
 const navTabs = computed<{ key: NavTabKey; label: string; icon: Component }[]>(() => [

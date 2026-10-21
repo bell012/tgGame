@@ -2591,6 +2591,33 @@
     "repaymentFreeTitle": "Repayment-Free Loan",
     "repaymentFreeDesc": "No repayment required. Higher VIP levels unlock higher borrowing limits",
     "gameType": "Game Type",
+    "loanPop": {
+      "title": "Loan Approved!",
+      "accept": "Accept",
+      "desc": "Credited to your Jiebei balance."
+    },
+    "records": {
+      "all": "All",
+      "loans": "Loans",
+      "transfers": "Transfers",
+      "type": "Type",
+      "time": "Time",
+      "amount": "Amount",
+      "loanAmount": "Loan Amount",
+      "loanTransferOut": "Loan Transfer Out",
+      "refreshing": "Refreshing..."
+    },
+    "transferSuccess": {
+      "title": "Transfer Successful",
+      "desc": "Loan balance transferred to your account balance."
+    },
+    "transferPop": {
+      "title": "Transfer",
+      "loanBalance": "Loan Balance",
+      "transferableBalance": "Transferable Balance",
+      "transferAll": "Transfer All",
+      "desc": "Your loan balance will be transferred to your account balance. After transfer, your loan balance will reset to zero and you can borrow again next Monday."
+    },
     "rules": {
       "rule1": "All loans are repayment-free.",
       "rule2": "Winnings made using borrowed funds can be transferred out up to the original loan amount.",
