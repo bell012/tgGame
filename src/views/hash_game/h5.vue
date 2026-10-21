@@ -101,7 +101,7 @@
             <button
               type="button"
               class="flex w-full items-center gap-[6px] text-left text-[14px] text-text-1"
-              @click="recordsMenuOpen = false"
+              @click="openGameRules"
             >
               <RulesIcon class="size-[17px] text-icon-1" />
               <span>{{ t('hashGame.gameRules') }}</span>
@@ -579,6 +579,7 @@ import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import { ref } from 'vue'
+import { navigateTo } from '@/utils/router'
 import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
@@ -655,5 +656,10 @@ const handleEscape = () => {
 const openRecentBets = () => {
   recordsMenuOpen.value = false
   recentBetsOpen.value = true
+}
+
+const openGameRules = () => {
+  recordsMenuOpen.value = false
+  void navigateTo('/hash-game/rules')
 }
 </script>

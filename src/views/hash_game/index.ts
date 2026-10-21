@@ -14,6 +14,7 @@ type RoadmapMode = 'size' | 'parity'
 type BetKey = 'big' | 'small' | 'odd' | 'even'
 type ChipOption = { id: number; value: number; hue: number }
 type ChipDraft = { id: number; value: string; hue: number }
+export const HASH_GAME_PERIOD_OPTIONS = [6, 15, 30, 45] as const
 export type RecentBetRecord = {
   id: string
   block: string
@@ -99,7 +100,7 @@ export const useHashGamePage = () => {
   usePageScrollLock(() => true)
 
   const selectedPeriod = ref(15)
-  const periodOptions = [6, 15, 30, 45]
+  const periodOptions = HASH_GAME_PERIOD_OPTIONS
   const periodsOpen = ref(false)
   const periodTriggerRef = ref<HTMLElement | null>(null)
   const periodMenuRef = ref<HTMLElement | null>(null)

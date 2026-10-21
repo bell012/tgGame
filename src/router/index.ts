@@ -149,7 +149,19 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/hash_game/index.vue'),
     meta: {
       title: 'Hash Games',
-      fullScreen: true,
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'hash-game/rules',
+    name: 'hashGameRules',
+    component: () => import('@/views/hash_game/rules.vue'),
+    meta: {
+      title: 'Game Rules',
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -163,7 +175,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/hash_game/bet-detail.vue'),
     meta: {
       title: 'Bet Details',
-      slideTransition: true,
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
