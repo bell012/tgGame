@@ -990,6 +990,13 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       }
     },
     {
+      id: 'credit-loan',
+      name: t('menu.credit-loan'),
+      icon: newSideIcons.creditLoanIcon,
+      groupKey: 'credit-loan',
+      handler: () => navigateTo('/credit-loan')
+    },
+    {
       id: 'vip-center',
       name: t('menu.vip-center'),
       icon: newSideIcons.vipCenterIcon,

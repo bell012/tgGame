@@ -271,6 +271,20 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'credit-loan',
+    name: 'creditLoan',
+    component: () => import('@/views/credit-loan/index.vue'),
+    meta: {
+      title: 'Credit Loan',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'referral',
     name: 'referral',
     component: () => import('@/views/referral/index.vue'),

@@ -2554,5 +2554,30 @@
     "luckySpinVoucher": "转盘票券",
     "mysteryBoxVoucher": "盲盒票券",
     "claimNow": "立即领取"
+  },
+  "creditLoan": {
+    "title": "借呗",
+    "loanRecords": "借款记录",
+    "bettingRecords": "投注记录",
+    "loanBalance": "借款余额：",
+    "transfer": "转出",
+    "availableCredit": "可用额度 (USD)",
+    "borrowNow": "立即借款",
+    "slogan": "少还款，多充值，多推荐，多畅玩！",
+    "gameLobby": "游戏大厅",
+    "loanDetails": "借款详情",
+    "all": "全部",
+    "empty": "暂无数据",
+    "repaymentFreeTitle": "免还款借呗",
+    "repaymentFreeDesc": "无需还款，VIP 等级越高，可借额度越高",
+    "gameType": "游戏类型",
+    "rules": {
+      "rule1": "所有借款均无需还款。",
+      "rule2": "使用借款赢得的奖金，最多可转出与原借款金额相等的部分。",
+      "rule3": "VIP 等级越高，可借额度越高。",
+      "rule4": "借款额度每周一更新。",
+      "rule5": "借款余额于每周日 23:59 清零，借款额度将于次周一恢复。",
+      "rule6": "本活动旨在回馈真实玩家，多账号申请或协同套利将被封号处理。"
+    }
   }
 }

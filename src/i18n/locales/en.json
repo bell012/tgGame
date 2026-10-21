@@ -2574,5 +2574,30 @@
     "luckySpinVoucher": "Lucky Spin Voucher",
     "mysteryBoxVoucher": "Mystery Box Voucher",
     "claimNow": "Claim Now"
+  },
+  "creditLoan": {
+    "title": "Credit Loan",
+    "loanRecords": "Loan Records",
+    "bettingRecords": "Betting Records",
+    "loanBalance": "Loan Balance :",
+    "transfer": "Transfer",
+    "availableCredit": "Available Credit (USD)",
+    "borrowNow": "Borrow Now",
+    "slogan": "Repay less, recharge more, refer more, play more!",
+    "gameLobby": "Game Lobby",
+    "loanDetails": "Loan Details",
+    "all": "All",
+    "empty": "No data",
+    "repaymentFreeTitle": "Repayment-Free Loan",
+    "repaymentFreeDesc": "No repayment required. Higher VIP levels unlock higher borrowing limits",
+    "gameType": "Game Type",
+    "rules": {
+      "rule1": "All loans are repayment-free.",
+      "rule2": "Winnings made using borrowed funds can be transferred out up to the original loan amount.",
+      "rule3": "The higher your VIP level, the higher your borrowing limit.",
+      "rule4": "Your borrowing limit is updated every Monday.",
+      "rule5": "Your loan balance resets every Sunday at 23:59, and your borrowing limit is restored the following Monday.",
+      "rule6": "This promotion is intended to reward genuine players. Multiple-account applications or coordinated arbitrage will result in account closure."
+    }
   }
 }
