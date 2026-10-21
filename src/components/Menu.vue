@@ -922,7 +922,7 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
     {
       id: 'hashGame',
       name: t('menu.hashGame'),
-      icon: newSideIcons.sportsIcon,
+      icon: newSideIcons.hashGame,
       handler: () => navigateTo('/hash-game'),
       groupKey: 'hashGame'
     },
