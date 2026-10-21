@@ -117,6 +117,7 @@ const MAX_CACHED_STREAMS = 3
 const props = defineProps<{
   liveStreamUrl: string
   animationUrl: string
+  navigationHeight: number
 }>()
 
 const { t } = useI18n()
@@ -146,7 +147,7 @@ watch(
   { immediate: true }
 )
 
-const stickTop = computed(() => layoutStore.TOPNAV_HEIGHT + 24)
+const stickTop = computed(() => layoutStore.TOPNAV_HEIGHT + props.navigationHeight)
 
 const updatePin = () => {
   const anchor = anchorRef.value
@@ -170,6 +171,8 @@ watch(pinned, () => {
   floating.value = false
   requestAnimationFrame(updatePin)
 })
+
+watch(stickTop, updatePin, { flush: 'post' })
 
 watch(isLoggedIn, () => {
   if (!floating.value) return
