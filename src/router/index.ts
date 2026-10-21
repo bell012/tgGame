@@ -144,6 +144,20 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'hash-game',
+    name: 'hashGame',
+    component: () => import('@/views/hash_game/index.vue'),
+    meta: {
+      title: 'Hash Games',
+      fullScreen: true,
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'sports',
     name: 'sports',
     component: () => import('@/views/sports/index.vue'),

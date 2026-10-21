@@ -169,29 +169,33 @@
           <div v-if="props.mode === 'parlay'" class="mt-[10px] flex flex-col gap-[10px]">
             <div v-for="parlay in props.parlays" :key="parlay.id" class="min-w-0">
               <div
-                class="mx-[9px] flex min-h-[60px] items-center gap-3 rounded-xl bg-bg-4 py-[9px] pl-[9px] pr-1.5"
+                class="mx-[9px] grid min-h-[60px] grid-cols-[minmax(0,1fr)_209px] items-center gap-1.5 rounded-xl bg-bg-4 py-2 pl-[9px] pr-1.5"
               >
-                <span class="flex shrink-0 items-center gap-3 text-base font-bold">
-                  {{ parlay.label }}
-                  <span v-if="parlay.odds !== undefined" class="tabular-nums text-theme-primary"
-                    >@{{ parlay.odds.toFixed(2) }}</span
+                <!-- 组合信息在左侧换行，金额框保持统一宽度，不随赔率长度收缩。 -->
+                <div class="flex min-w-0 items-center gap-3">
+                  <span
+                    class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 break-all text-base font-bold"
                   >
-                </span>
-                <div class="flex min-w-0 flex-1 items-center gap-1.5">
-                  <span class="shrink-0 text-base">{{ parlay.combinationCount }}x</span>
-                  <StakeInput
-                    class="flex-1"
-                    :value="parlay.stake"
-                    :currency-symbol="props.currencySymbol"
-                    :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
-                    :error="parlay.stakeError"
-                    :placeholder="parlay.limitText"
-                    :disabled="isSubmitting"
-                    @update="emit('parlayStake', parlay.id, $event)"
-                    @focus="emit('focusStake', parlay.id, 'parlay')"
-                    @max="emit('max', parlay.id, 'parlay')"
-                  />
+                    <span>{{ parlay.label }}</span>
+                    <span v-if="parlay.odds !== undefined" class="tabular-nums text-theme-primary">
+                      @{{ parlay.odds.toFixed(2) }}
+                    </span>
+                  </span>
+                  <span class="shrink-0 text-base tabular-nums"
+                    >{{ parlay.combinationCount }}x</span
+                  >
                 </div>
+                <StakeInput
+                  :value="parlay.stake"
+                  :currency-symbol="props.currencySymbol"
+                  :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
+                  :error="parlay.stakeError"
+                  :placeholder="parlay.limitText"
+                  :disabled="isSubmitting"
+                  @update="emit('parlayStake', parlay.id, $event)"
+                  @focus="emit('focusStake', parlay.id, 'parlay')"
+                  @max="emit('max', parlay.id, 'parlay')"
+                />
               </div>
             </div>
           </div>

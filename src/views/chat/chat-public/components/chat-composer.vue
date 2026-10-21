@@ -1,11 +1,6 @@
 <template>
   <!-- 消息编辑器整体容器。 -->
-  <div
-    data-chat-composer
-    class="shrink-0 bg-bg-2"
-    :class="{ 'chat-composer--keyboard-visible': props.keyboardVisible }"
-    @pointerdown="$emit('interact')"
-  >
+  <div data-chat-composer class="shrink-0 bg-bg-2" @pointerdown="$emit('interact')">
     <!-- 引用回复预览区域。 -->
     <ReplyPreview v-if="replyTarget" :target="replyTarget" @close="$emit('cancel-reply')" />
 
@@ -24,11 +19,12 @@
           contenteditable="true"
           role="textbox"
           aria-multiline="false"
-          class="chat-composer-input chat-composer-input--pc h-[36px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap bg-transparent font-pingfang text-[14px] font-[400] leading-[36px] text-text-1 outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
+          class="chat-composer-input chat-composer-input--pc h-[36px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap bg-transparent font-pingfang text-[14px] font-[400] text-text-1 caret-theme-primary outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
           :data-placeholder="t('chatPublic.inputPlaceholder')"
           @input="handleInput"
           @compositionend="handleCompositionEnd"
           @compositionstart="handleCompositionStart"
+          @pointerdown="handleInputPointerDown"
           @focus="handleInputFocus"
           @keydown.enter.prevent="$emit('send')"
         ></div>
@@ -65,12 +61,13 @@
         contenteditable="true"
         role="textbox"
         aria-multiline="false"
-        class="chat-composer-input chat-composer-input--h5 h-[36px] min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-[30px] border bg-bg-1 px-[12px] text-[14px] leading-[36px] text-text-1 outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
+        class="chat-composer-input chat-composer-input--h5 h-[36px] min-w-0 flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap rounded-[30px] border bg-bg-1 px-[12px] text-[14px] text-text-1 caret-theme-primary outline-none empty:before:text-text-3 empty:before:content-[attr(data-placeholder)]"
         :class="hasDraft ? 'border-theme-primary' : 'border-opacity-6'"
         :data-placeholder="t('chatPublic.inputPlaceholder')"
         @input="handleInput"
         @compositionend="handleCompositionEnd"
         @compositionstart="handleCompositionStart"
+        @pointerdown="handleInputPointerDown"
         @focus="handleInputFocus"
         @keydown.enter.prevent="$emit('send')"
       ></div>
@@ -89,7 +86,13 @@
     </div>
 
     <!-- H5 底部安全区域留白。 -->
-    <div v-if="props.displayMode === 'h5'" class="chat-composer-bottom-safe bg-bg-2" />
+    <div
+      ref="bottomSafeRef"
+      v-if="props.displayMode === 'h5'"
+      class="chat-composer-bottom-safe bg-bg-2"
+      :class="`chat-composer-bottom-safe--${webRuntimeEnvironment}`"
+      :style="bottomSafeStyle"
+    />
   </div>
 </template>
 
@@ -100,21 +103,23 @@ import chatMoreImage from '@/static/img/chat/public/chat-more.png'
 import chatSendButtonImage from '@/static/img/chat/public/chat-send-button.png'
 import chatSendIconImage from '@/static/img/chat/public/chat-send-icon.png'
 import EmojiIcon from '@/static/svg/chat/public/emoji.svg?component'
+import { getWebRuntimeEnvironment } from '@/utils/runtime-environment'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatReplyTarget } from '../types'
 import ReplyPreview from './reply-preview.vue'
 
 const { t } = useI18n()
+const webRuntimeEnvironment = getWebRuntimeEnvironment()
 
 const props = withDefaults(
   defineProps<{
     modelValue: string
     replyTarget?: ChatReplyTarget | null
     displayMode?: 'h5' | 'pc'
-    keyboardVisible?: boolean
+    keyboardCoveredDistance?: number
   }>(),
-  { displayMode: 'h5' }
+  { displayMode: 'h5', keyboardCoveredDistance: 0 }
 )
 
 const emit = defineEmits<{
@@ -123,12 +128,16 @@ const emit = defineEmits<{
   emoji: []
   media: []
   focus: []
+  'keyboard-intent': []
   interact: []
   'cancel-reply': []
 }>()
 
 /** H5 与 PC 当前渲染的单行富文本输入框，用于独立控制 emoji 视觉尺寸。 */
 const inputRef = ref<HTMLElement | null>(null)
+/** 键盘弹出前，按当前环境样式实际渲染出的安全区高度。 */
+const bottomSafeRef = ref<HTMLElement | null>(null)
+const bottomSafeBaseHeight = ref(0)
 const isComposing = ref(false)
 const isRestoringInputSelection = ref(false)
 
@@ -137,6 +146,30 @@ const emojiPattern =
 
 /** 判断输入框是否存在可发送的非空内容。 */
 const hasDraft = computed(() => props.modelValue.trim().length > 0)
+
+/**
+ * 保留环境类和页面样式直接设置的 height：只在键盘开始前读取一次实际高度。
+ * 键盘已展开时该元素可能已被压缩为 0，不能再用它覆盖本轮基线。
+ */
+const captureBottomSafeHeight = () => {
+  if (props.displayMode !== 'h5' || props.keyboardCoveredDistance > 1) return
+
+  const height = bottomSafeRef.value?.getBoundingClientRect().height ?? 0
+  if (height > 0) bottomSafeBaseHeight.value = height
+}
+
+/**
+ * 静态状态不写内联高度，让 `.chat-composer-bottom-safe--*` 的页面配置正常生效；
+ * 键盘运动期间才基于测得的安全区高度连续收缩，避免额外的跳跃。
+ */
+const bottomSafeStyle = computed(() => {
+  if (props.keyboardCoveredDistance <= 0 || bottomSafeBaseHeight.value <= 0) return undefined
+
+  return {
+    height: `${Math.max(0, bottomSafeBaseHeight.value - props.keyboardCoveredDistance)}px`,
+    minHeight: '0px'
+  }
+})
 
 /** 取得光标在可编辑文本中的 Unicode 代码单元偏移量。 */
 const getCaretOffset = () => {
@@ -240,9 +273,24 @@ const handleCompositionStart = () => {
   isComposing.value = true
 }
 
+/**
+ * 在原生 focus 前记录键盘弹出基线。
+ * Android 上用系统返回键收起键盘后，contenteditable 仍可能保持 focus；
+ * 此时再次点击不会触发 focus，需借助 pointerdown 重新开启跟踪。
+ */
+const handleInputPointerDown = () => {
+  if (props.displayMode === 'h5' && !isRestoringInputSelection.value) {
+    captureBottomSafeHeight()
+    emit('keyboard-intent')
+  }
+}
+
 /** 用户重新点回输入框时通知上层关闭与键盘互斥的功能面板。 */
 const handleInputFocus = () => {
-  if (!isRestoringInputSelection.value) emit('focus')
+  if (!isRestoringInputSelection.value) {
+    captureBottomSafeHeight()
+    emit('focus')
+  }
 }
 
 /** 打开表情面板前收起原生键盘，避免键盘与面板同时占用屏幕。 */
@@ -289,22 +337,33 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.chat-composer-input {
+  /* 36px 外框中保留 1px 上下视觉留白，文字的行框保持稳定。 */
+  line-height: 34px;
+}
+
 .chat-composer-input:empty::before {
+  display: inline-block;
+  line-height: 34px;
   pointer-events: none;
 }
 
 .chat-composer-input--pc :deep([data-chat-composer-emoji]) {
-  display: inline-block;
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
   font-size: 23px;
-  line-height: 23px;
-  vertical-align: middle;
+  line-height: 1;
+  vertical-align: top;
 }
 
 .chat-composer-input--h5 :deep([data-chat-composer-emoji]) {
-  display: inline-block;
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
   font-size: 20px;
-  line-height: 20px;
-  vertical-align: middle;
+  line-height: 1;
+  vertical-align: top;
 }
 
 /* 仅在连续 emoji 之间留白；文字与 emoji 相邻时不改变原有字距。 */
@@ -319,14 +378,24 @@ onMounted(() => {
 }
 
 .chat-composer-bottom-safe {
-  height: calc(33px + env(safe-area-inset-bottom, 0px));
-  min-height: 33px;
+  height: calc(1px + env(safe-area-inset-bottom, 0px));
+  min-height: 1px;
   flex-shrink: 0;
 }
 
-/* 键盘展开时取消固定安全区留白，让输入框紧贴键盘上沿。 */
-.chat-composer--keyboard-visible .chat-composer-bottom-safe {
-  height: 0;
-  min-height: 0;
+.chat-composer-bottom-safe--android-web {
+  height: calc(15px + env(safe-area-inset-bottom, 0px));
+}
+
+.chat-composer-bottom-safe--ios-web {
+  height: calc(1px + env(safe-area-inset-bottom, 0px));
+}
+
+.chat-composer-bottom-safe--ios-bookmark {
+  height: calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+.chat-composer-bottom-safe--desktop-web {
+  height: calc(1px + env(safe-area-inset-bottom, 0px));
 }
 </style>

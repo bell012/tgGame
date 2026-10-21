@@ -220,9 +220,9 @@
           <!-- 法币金额展示区域 -->
           <div class="w-full flex items-center justify-center">
             <!-- 法币金额图标容器 -->
-            <div class="w-4 mr-1">
-              <FiatOrderAmountIcon class="w-4 h-[21px]" />
-            </div>
+            <span class="mr-1 shrink-0 text-[21px] leading-[21px] text-text-1">
+              {{ fiatCurrencySymbol }}
+            </span>
             <p class="text-2xl font-bold leading-normal capitalize text-text-1">
               {{ fiatDisplayAmount }}
             </p>
@@ -263,12 +263,11 @@ import { getOrderStatusColorStyle, getOrderStatusText } from '@/constants/orderS
 import CloseIcon from '@/static/svg/close.svg?component'
 import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdown.svg?component'
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
-import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
-
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { formatTimestamp } from '@/utils/date'
+import { getCurrencySymbol } from '@/utils/locale'
 import QRCode from 'qrcode'
 import { globalShowToast } from '@/utils/toast'
 import { CountDown } from 'vant'
@@ -349,6 +348,7 @@ const cryptoDisplayAmount = computed(() => {
   return Number.isFinite(amount) ? amount : 0
 })
 const fiatDisplayAmount = computed(() => Number(fiatOrderInfo.value?.amount ?? 0))
+const fiatCurrencySymbol = computed(() => getCurrencySymbol(fiatOrderInfo.value?.currency))
 const uploadProofOrderId = computed(() => {
   const rawOrderId = rawOrderInfo.value.orderId
   if (rawOrderId !== undefined && rawOrderId !== null && String(rawOrderId).trim()) {

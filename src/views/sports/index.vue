@@ -101,8 +101,10 @@
         v-if="!isMobile"
         :collect-only="collectOnly"
         :collect-pending="collectPending"
+        :search-keyword="page.searchInput.value"
         @filter-change="handleMatchFilterChange"
         @collect-change="handleCollectChange"
+        @search-change="page.handleSearchChange"
       />
     </section>
 

@@ -5,13 +5,13 @@
     <div class="flex gap-[36px]">
       <button
         type="button"
-        class="flex w-[60px] flex-col items-center gap-[10px]"
+        class="flex min-w-[60px] flex-col items-center gap-[10px]"
         @click="openPhotoPicker"
       >
         <span class="flex size-[60px] items-center justify-center rounded-[10px] bg-bg-2">
           <AlbumIcon class="size-[26px]" />
         </span>
-        <span class="text-[12px] text-text-1">{{ t('chatPublic.photo') }}</span>
+        <span class="whitespace-nowrap text-[12px] text-text-1">{{ t('chatPublic.photo') }}</span>
       </button>
       <button
         v-if="props.displayMode === 'h5'"
@@ -22,7 +22,9 @@
         <span class="flex size-[60px] items-center justify-center rounded-[10px] bg-bg-2">
           <CameraIcon class="size-[26px]" />
         </span>
-        <span class="text-[12px] text-text-1">{{ t('chatPublic.takePhoto') }}</span>
+        <span class="whitespace-nowrap text-[12px] text-text-1">{{
+          t('chatPublic.takePhoto')
+        }}</span>
       </button>
     </div>
 

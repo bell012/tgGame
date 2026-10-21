@@ -14,6 +14,7 @@
     <template v-if="isMobile">
       <MatchHeader
         :model="matchHeaderModel"
+        :sport-key="selectedSportKey"
         :live-stream-url="liveStreamUrl"
         :animation-url="animationUrl"
         @back="onBack"
@@ -25,6 +26,10 @@
         :odds-format="oddsFormat"
         :selected-wager-selection-id="selectedWagerSelectionId"
         :show-empty="!hasScoreDetailsMarkets"
+        :home-team-name="matchHeaderModel?.home.name"
+        :away-team-name="matchHeaderModel?.away.name"
+        :home-team-logo="matchHeaderModel?.home.logo"
+        :away-team-logo="matchHeaderModel?.away.logo"
         @pick="pickOdds"
       />
       <footer

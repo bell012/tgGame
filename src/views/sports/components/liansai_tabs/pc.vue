@@ -1,12 +1,12 @@
 <!-- pc联赛tabs -->
 <template>
   <section ref="leagueTabsRef" class="relative flex h-[40px] w-full items-center overflow-visible">
-    <div class="flex h-10 flex-none items-center rounded-[18px] bg-bg-9">
+    <div class="flex h-10 flex-none items-center gap-1.5 rounded-full bg-bg-9 p-0.5">
       <button
         v-for="item in filterTabs"
         :key="item.key"
         type="button"
-        class="inline-flex h-10 flex-none items-center justify-center rounded-[18px] border-0 px-[20px] text-[16px] font-bold transition-colors"
+        class="inline-flex h-9 flex-none items-center justify-center rounded-full border-0 px-5 text-base font-bold transition-colors"
         :class="getFilterButtonClass(item.key)"
         @click="onFilterTabClick(item.key)"
       >
@@ -43,6 +43,8 @@
     <button
       type="button"
       class="ml-[8px] inline-flex h-10 w-10 flex-[0_0_42px] items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors hover:bg-opacity-6"
+      :aria-label="t('sports.leagueTabs.selectLeague')"
+      :aria-expanded="isLeaguePopupOpen"
       @click="toggleLeaguePopup"
     >
       <triangleIcon class="h-3 w-3 text-icon-2" />

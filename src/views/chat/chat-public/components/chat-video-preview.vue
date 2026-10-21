@@ -133,21 +133,21 @@
     <!-- H5 端中央播放或暂停操作。 -->
     <button
       type="button"
-      class="absolute left-1/2 top-1/2 flex size-[46px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-mask-40 text-[20px] text-text-1"
+      class="absolute left-1/2 top-1/2 flex size-[60px] -translate-x-1/2 -translate-y-1/2 items-center justify-center"
       :aria-label="isPlaying ? t('chatPublic.pauseVideo') : t('chatPublic.playVideo')"
       @click="togglePlay"
     >
-      {{ isPlaying ? 'Ⅱ' : '▶' }}
+      <VideoPlayPauseIcon v-if="!isPlaying" class="size-full" />
     </button>
 
     <!-- H5 端播放进度和底部操作栏。 -->
     <footer
-      class="absolute inset-x-0 bottom-3 h-[84px] bg-common-0 px-[22px] pt-[18px] text-text-1"
+      class="absolute inset-x-0 bottom-[33px] h-[94px] bg-common-0 px-[22px] pt-[18px] text-text-1"
     >
       <div class="flex items-center gap-4">
         <button
           type="button"
-          class="text-[20px] leading-none"
+          class="text-[20px] leading-none w-[25px] text-left"
           :aria-label="isPlaying ? t('chatPublic.pauseVideo') : t('chatPublic.playVideo')"
           @click="togglePlay"
         >
@@ -156,31 +156,35 @@
         <span class="w-[40px] text-[11px]">{{ formatDuration(currentTime) }}</span>
         <input
           :aria-label="t('chatPublic.videoProgress')"
-          class="h-[4px] min-w-0 flex-1 accent-common-100"
+          class="h5-video-progress h-[4px] min-w-0 flex-1"
           type="range"
           min="0"
           :max="duration || 0"
           :value="currentTime"
+          :style="{ '--video-progress': `${progressPercent}%` }"
           @input="seekVideo"
         />
         <span class="w-[40px] text-right text-[11px]">{{ formatDuration(duration) }}</span>
       </div>
-      <button
-        type="button"
-        class="absolute bottom-[16px] left-[18px] text-[24px] leading-none"
-        :aria-label="t('chatPublic.close')"
-        @click="closePreview"
-      >
-        ×
-      </button>
-      <button
-        type="button"
-        class="absolute bottom-[12px] right-[18px] flex size-[30px] items-center justify-center"
-        :aria-label="t('chatPublic.download')"
-        @click="handleDownload"
-      >
-        <ChatMediaDownload class="size-[22px] text-text-1" />
-      </button>
+      <div class="absolute bottom-[0px] left-0 h-[50px] w-full">
+        <button
+          type="button"
+          class="absolute bottom-[16px] left-[22px] text-[36px] leading-none"
+          :aria-label="t('chatPublic.close')"
+          @click="closePreview"
+        >
+          <CloseIcon class="size-[18px] text-text-1" />
+        </button>
+
+        <button
+          type="button"
+          class="absolute bottom-[12px] right-[18px] flex size-[30px] items-center justify-center"
+          :aria-label="t('chatPublic.download')"
+          @click="handleDownload"
+        >
+          <ChatMediaDownload class="size-[18px] text-text-1" />
+        </button>
+      </div>
     </footer>
   </div>
 </template>
@@ -327,5 +331,58 @@ onBeforeUnmount(() => videoRef.value?.pause())
   width: 0;
   height: 0;
   border: 0;
+}
+
+/* H5 视频控制条：自定义圆点尺寸与待播放轨道色，不影响 PC 控制条。 */
+.h5-video-progress {
+  --h5-video-progress-thumb-size: 10px;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-common-100) 0%,
+    var(--color-common-100) var(--video-progress),
+    var(--color-opacity-30) var(--video-progress),
+    var(--color-opacity-30) 100%
+  );
+  outline: none;
+}
+
+.h5-video-progress::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.h5-video-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--h5-video-progress-thumb-size);
+  height: var(--h5-video-progress-thumb-size);
+  margin-top: -3px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-common-100);
+}
+
+.h5-video-progress::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-opacity-30);
+}
+
+.h5-video-progress::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-common-100);
+}
+
+.h5-video-progress::-moz-range-thumb {
+  width: var(--h5-video-progress-thumb-size);
+  height: var(--h5-video-progress-thumb-size);
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-common-100);
 }
 </style>

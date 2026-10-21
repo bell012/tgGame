@@ -274,9 +274,19 @@ import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import LiveLoginGate from '../match-media-panel/live-login-gate.vue'
 import LiveAnimation from '../match-media-panel/live-animation.vue'
 import LivePlayer from '../match-media-panel/live-player.vue'
+import americanFootballBg from './icon/american-football-back.png?url'
 import animationIcon from './icon/animation.svg?url'
 import backIcon from './icon/back.svg?url'
-import bgLayer1 from './icon/bg-layer-1.png?url'
+import badmintonBg from './icon/badminton-back.png?url'
+import baseballBg from './icon/baseball-back.png?url'
+import basketballBg from './icon/basketball-back.png?url'
+import defaultBg from './icon/bg-layer-1.png?url'
+import boxingBg from './icon/boxing-back.png?url'
+import carRacingBg from './icon/car-racing-back.png?url'
+import footballBg from './icon/football-back.png?url'
+import tableTennisBg from './icon/table-tennis-back.png?url'
+import tennisBg from './icon/tennis-back.png?url'
+import volleyballBg from './icon/volleyball-back.png?url'
 import cornerIcon from './icon/corner.svg?url'
 import htIcon from './icon/ht.svg?url'
 import videoIcon from './icon/video.svg?url'
@@ -284,9 +294,24 @@ import type { MatchHeaderView, MatchHeaderViewModel } from './types'
 
 const props = defineProps<{
   model?: MatchHeaderViewModel
+  /** 球种 key，对应 sportItems 中的 key。 */
+  sportKey?: string
   liveStreamUrl?: string
   animationUrl?: string
 }>()
+
+const sportBackgrounds: Record<string, string> = {
+  football: footballBg,
+  basketball: basketballBg,
+  tennis: tennisBg,
+  badminton: badmintonBg,
+  'ping-pong': tableTennisBg,
+  volleyball: volleyballBg,
+  'american-football': americanFootballBg,
+  boxing: boxingBg,
+  'auto-racing': carRacingBg,
+  baseball: baseballBg
+}
 
 const emit = defineEmits<{
   back: []
@@ -296,6 +321,7 @@ const { t } = useI18n()
 const { isLoggedIn } = useRequireLoginAction()
 const match = computed(() => props.model)
 const isLive = computed(() => match.value?.phase === 'live')
+const bgLayer1 = computed(() => sportBackgrounds[props.sportKey ?? ''] ?? defaultBg)
 
 const view = ref<MatchHeaderView>('info')
 
