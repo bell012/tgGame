@@ -493,6 +493,7 @@ import newSideIcons from '@/static/svg/side/newIcon'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { usePromotionsStore } from '@/stores/promotions'
+import { useRedPacketPanelStore } from '@/stores/redPacketPanel'
 import { useThemeStore } from '@/stores/theme'
 import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
 import { openLuckySpin } from '@/utils/openLuckySpin'
@@ -548,6 +549,7 @@ const mobileMenuStyle = computed(() => {
 const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
 const promotionsStore = usePromotionsStore()
+const redPacketPanelStore = useRedPacketPanelStore()
 const { groups: promotionGroups } = storeToRefs(promotionsStore)
 const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
 
@@ -968,6 +970,16 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
         if (defaultGroupCode) {
           return navigateTo(`/promotions/${defaultGroupCode}`)
         }
+      }
+    },
+    {
+      id: 'red-packet',
+      name: t('menu.red-packet'),
+      icon: newSideIcons.luckyRedEnvelopeIcon,
+      groupKey: 'red-packet',
+      handler: () => {
+        if (isMobile.value) return navigateTo('/red-packet')
+        redPacketPanelStore.open()
       }
     },
     {

@@ -203,6 +203,20 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'red-packet',
+    name: 'redPacket',
+    component: () => import('@/views/activity/red-packet/index.vue'),
+    meta: {
+      title: '红包领取',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'about',
     name: 'about',
     component: () => import('@/views/about/index.vue'),
