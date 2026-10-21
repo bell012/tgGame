@@ -392,7 +392,7 @@ export interface SportsBetHistoryWager {
   bss: number
   br: number
   bts: number
-  prid: number | null
+  prid: number | string | null
   bbp: number | null
   btbba: number
   noc: number
