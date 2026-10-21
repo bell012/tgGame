@@ -467,6 +467,7 @@
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :balance-text="currentBalanceText"
+      :period="selectedPeriod"
       :bets="recentBets"
       :summary="recentBetSummary"
     />

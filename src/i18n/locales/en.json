@@ -46,6 +46,11 @@
     "betBlock": "Bet Block",
     "betSelection": "Bet Selection",
     "profitLoss": "P/L",
+    "game": "Game",
+    "betId": "Bet ID",
+    "resultBlock": "Result Block",
+    "blockHash": "Block Hash",
+    "betTime": "Bet Time",
     "back": "Back",
     "chat": "Chat",
     "close": "Close"

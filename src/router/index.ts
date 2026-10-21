@@ -158,6 +158,19 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'hash-game/bet-details/:id',
+    name: 'hashGameBetDetails',
+    component: () => import('@/views/hash_game/bet-detail.vue'),
+    meta: {
+      title: 'Bet Details',
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'sports',
     name: 'sports',
     component: () => import('@/views/sports/index.vue'),

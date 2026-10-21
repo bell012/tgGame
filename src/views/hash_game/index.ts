@@ -15,10 +15,13 @@ type BetKey = 'big' | 'small' | 'odd' | 'even'
 type ChipOption = { id: number; value: number; hue: number }
 type ChipDraft = { id: number; value: string; hue: number }
 export type RecentBetRecord = {
+  id: string
   block: string
+  blockHash: string
   selection: 'odd' | 'even'
   betAmount: number
   profitLoss: number
+  betTime: string
 }
 export type RecentBetSummary = {
   betCount: number
@@ -27,10 +30,13 @@ export type RecentBetSummary = {
 }
 
 const MOCK_RECENT_BETS: RecentBetRecord[] = Array.from({ length: 12 }, (_, index) => ({
+  id: `ts0768456746746746${index}`,
   block: '85598756',
+  blockHash: '89hf84947772d6a3bca88102f7c6943d',
   selection: index % 2 === 0 ? 'odd' : 'even',
   betAmount: 876.98,
-  profitLoss: index % 2 === 1 ? 100 : -1
+  profitLoss: index % 2 === 1 ? 1000 : -1,
+  betTime: '12/18/2026 11:14:15 AM'
 }))
 const MOCK_RECENT_BET_SUMMARY: RecentBetSummary = {
   betCount: 1,

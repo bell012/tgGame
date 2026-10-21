@@ -46,6 +46,11 @@
     "betBlock": "投注区块",
     "betSelection": "投注选项",
     "profitLoss": "盈亏",
+    "game": "游戏",
+    "betId": "投注编号",
+    "resultBlock": "开奖结果区块",
+    "blockHash": "区块哈希",
+    "betTime": "投注时间",
     "back": "返回",
     "chat": "聊天",
     "close": "关闭"

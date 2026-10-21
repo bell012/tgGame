@@ -20,7 +20,7 @@
             <button
               type="button"
               class="flex items-center gap-[2px] text-[14px] text-text-3"
-              @click="emit('update:visible', false)"
+              @click="openBetHistory"
             >
               {{ t('hashGame.more') }} <RightArrowIcon class="size-[14px] text-text-3" />
             </button>
@@ -45,7 +45,7 @@
                 </span>
                 <span>{{ summary.betCount }}</span>
                 <span>{{ currencySymbol }}{{ summary.betAmount.toFixed(2) }}</span>
-                <span>{{ currencySymbol }}{{ summary.todayProfitLoss.toFixed(2) }}</span>
+                <span>{{ formatSignedAmount(summary.todayProfitLoss) }}</span>
               </div>
             </div>
 
@@ -61,8 +61,13 @@
               <div class="rounded-b-[8px] bg-bg-2">
                 <div
                   v-for="(bet, index) in bets"
-                  :key="`${bet.block}-${index}`"
-                  class="grid grid-cols-4 px-[12px] py-[7px] items-center text-center text-[12px] text-text-2"
+                  :key="bet.id"
+                  class="grid grid-cols-4 px-[12px] py-[7px] items-center text-center text-[12px] text-text-2 cursor-pointer"
+                  role="button"
+                  tabindex="0"
+                  @click="openBetDetail(bet)"
+                  @keydown.enter.prevent="openBetDetail(bet)"
+                  @keydown.space.prevent="openBetDetail(bet)"
                 >
                   <span class="text-left">{{ bet.block }}</span>
                   <span>{{ t(`hashGame.${bet.selection}`) }}</span>
@@ -71,7 +76,7 @@
                   >
                   <span
                     class="flex items-center justify-end whitespace-nowrap"
-                    :class="bet.profitLoss >= 0 ? 'text-theme-primary' : 'text-assistRed'"
+                    :class="bet.profitLoss >= 0 ? 'text-theme-primary' : 'text-secondary-2'"
                   >
                     {{ bet.profitLoss >= 0 ? '+' : '-' }}{{ currencySymbol
                     }}{{ Math.abs(bet.profitLoss).toFixed(2) }}
@@ -92,6 +97,7 @@ import RightArrowIcon from '@/static/svg/hash_game/jiantou_you2.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RecentBetRecord, RecentBetSummary } from '../index'
+import { navigateTo } from '@/utils/router'
 
 const props = withDefaults(
   defineProps<{
@@ -99,6 +105,7 @@ const props = withDefaults(
     currencyCode: string
     currencyIcon: string
     balanceText: string
+    period: number
     bets: RecentBetRecord[]
     summary: RecentBetSummary
     topOffset?: number
@@ -113,4 +120,26 @@ const currencySymbol = computed(() => {
   const match = props.balanceText.match(/^[^\d\s]+/)
   return match?.[0] ?? `${props.currencyCode} `
 })
+
+const formatSignedAmount = (amount: number) =>
+  `${amount < 0 ? '-' : '+'}${currencySymbol.value}${Math.abs(amount).toFixed(2)}`
+
+const openBetHistory = () => {
+  emit('update:visible', false)
+  void navigateTo('/bet-history')
+}
+
+const openBetDetail = (bet: RecentBetRecord) => {
+  emit('update:visible', false)
+  void navigateTo(`/hash-game/bet-details/${bet.id}`, {
+    state: {
+      hashGameBet: JSON.stringify({
+        ...bet,
+        period: props.period,
+        currencyCode: props.currencyCode,
+        currencyIcon: props.currencyIcon
+      })
+    }
+  })
+}
 </script>
