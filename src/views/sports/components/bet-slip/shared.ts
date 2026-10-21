@@ -1,4 +1,5 @@
-export const MAX_SELECTIONS = 8
+/** 共用投注单最多保留 10 场赛事，切换串关或再次投注时沿用同一上限。 */
+export const MAX_SELECTIONS = 10
 /** 空输入按 0 处理，拒绝负数、指数和超过两位的小数。 */
 export const parseSportsStake = (raw: string): number | null => {
   const value = raw.trim()

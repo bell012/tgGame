@@ -1,11 +1,13 @@
 <template>
-  <SportsNavigation
-    v-if="!isMobile"
-    standalone
-    :selected-sport-id="selectedSportId"
-    :counts="sportNavigationCounts"
-    @change="onSportNavigationChange"
-  />
+  <PcStickyNavigation v-if="!isMobile" @height-change="pcNavigationHeight = $event">
+    <SportsNavigation
+      standalone
+      class="!px-5"
+      :selected-sport-id="selectedSportId"
+      :counts="sportNavigationCounts"
+      @change="onSportNavigationChange"
+    />
+  </PcStickyNavigation>
   <div
     ref="pageRootRef"
     class="min-h-[200px] w-full min-w-0 bg-bg-1 font-inter text-text-1"
@@ -141,7 +143,11 @@
               :message="t('sports.eventDetails.noBettingMarkets')"
             />
           </div>
-          <MatchMediaPanel :live-stream-url="liveStreamUrl" :animation-url="animationUrl" />
+          <MatchMediaPanel
+            :live-stream-url="liveStreamUrl"
+            :animation-url="animationUrl"
+            :navigation-height="pcNavigationHeight"
+          />
         </div>
       </template>
       <footer
@@ -220,6 +226,7 @@ import { mapEventDetailTabItems } from './components/event-detailsd-tabs/map-ite
 import MatchDetails from './components/match-details/index.vue'
 import MatchHeader from './components/match-header/index.vue'
 import MatchMediaPanel from './components/match-media-panel/index.vue'
+import PcStickyNavigation from './components/PcStickyNavigation.vue'
 import {
   animationLanguageCode,
   buildAnimationUrl
@@ -263,6 +270,7 @@ const { sportCounts } = storeToRefs(sportsStore)
 const sportNavigationCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
+const pcNavigationHeight = ref(0)
 const activeMatchId = ref('')
 const targetEventId = ref('')
 const selectedSportId = ref(sportItems[0]?.sportId ?? 1)
