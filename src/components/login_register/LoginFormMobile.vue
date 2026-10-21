@@ -127,7 +127,10 @@
               </div> -->
 
                   <template v-if="activeTab === 'signin'">
-                    <div v-if="loginMethodTabs.length > 0" class="flex gap-6 mb-[20px]">
+                    <div
+                      v-if="loginMethodTabs.length > 0"
+                      class="auth-method-tabs auth-method-tabs-mobile flex gap-6 mb-[20px]"
+                    >
                       <button
                         v-for="method in loginMethodTabs"
                         :key="method.key"
@@ -136,11 +139,11 @@
                         @click="handleSigninMethodClick(method.key, setActiveLoginMethod)"
                       >
                         <span>{{ method.label }}</span>
-                        <div
-                          v-if="activeLoginMethod === method.key"
-                          class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
-                        ></div>
                       </button>
+                      <div
+                        class="auth-method-indicator auth-method-indicator-mobile"
+                        :class="{ 'is-phone': activeLoginMethod === 'phone' }"
+                      ></div>
                     </div>
                     <!-- 账号 -->
                     <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
@@ -359,7 +362,10 @@
                   </template>
 
                   <template v-else-if="activeTab === 'signup'">
-                    <div v-if="signupMethodTabs.length > 0" class="flex gap-6 mb-[20px]">
+                    <div
+                      v-if="signupMethodTabs.length > 0"
+                      class="auth-method-tabs auth-method-tabs-mobile flex gap-6 mb-[20px]"
+                    >
                       <button
                         v-for="method in signupMethodTabs"
                         :key="method.key"
@@ -368,11 +374,11 @@
                         @click="handleSignupMethodClick(method.key, setActiveSignupMethod)"
                       >
                         <span>{{ method.label }}</span>
-                        <div
-                          v-if="activeSignupMethod === method.key"
-                          class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
-                        ></div>
                       </button>
+                      <div
+                        class="auth-method-indicator auth-method-indicator-mobile"
+                        :class="{ 'is-phone': activeSignupMethod === 'phone' }"
+                      ></div>
                     </div>
 
                     <!-- 账号 -->

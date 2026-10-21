@@ -200,6 +200,41 @@ html[data-bottom-tab-motion]::view-transition-new(bottom-tabs) {
   transform: translateY(0);
 }
 
+/* 登录/注册的用户与手机 tab 滑动动画。 */
+.auth-method-tabs {
+  position: relative;
+}
+
+.auth-method-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: var(--color-theme-level-1);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.auth-method-indicator-desktop {
+  width: 4rem;
+  height: 4px;
+  border-radius: 10px;
+}
+
+.auth-method-indicator-mobile {
+  width: 3.5rem;
+  height: 3px;
+  border-radius: 4px;
+}
+
+.auth-method-indicator-desktop.is-phone {
+  transform: translateX(6rem);
+}
+
+.auth-method-indicator-mobile.is-phone {
+  transform: translateX(5rem);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .drawer-slide-enter-active,
   .drawer-slide-leave-active,
@@ -212,7 +247,8 @@ html[data-bottom-tab-motion]::view-transition-new(bottom-tabs) {
   .filter-slide-left-enter-active,
   .filter-slide-left-leave-active,
   .filter-slide-right-enter-active,
-  .filter-slide-right-leave-active {
+  .filter-slide-right-leave-active,
+  .auth-method-indicator {
     transition-duration: 0.01ms;
   }
 }

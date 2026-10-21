@@ -63,7 +63,10 @@
       }"
     >
       <div class="w-full h-full flex flex-col">
-        <div v-if="activeTab === 'signin'" class="flex gap-8 mb-[24px]">
+        <div
+          v-if="activeTab === 'signin'"
+          class="auth-method-tabs auth-method-tabs-desktop flex gap-8 mb-[24px]"
+        >
           <button
             v-for="method in loginMethodTabs"
             :key="method.key"
@@ -72,14 +75,15 @@
             @click="handleSigninMethodClick(method.key, setActiveLoginMethod)"
           >
             <span>{{ method.label }}</span>
-            <div
-              v-if="activeLoginMethod === method.key"
-              class="absolute bottom-0 left-0 right-0 h-[4px] bg-theme-primary rounded-[10px]"
-            ></div>
           </button>
+          <div
+            v-if="loginMethodTabs.length"
+            class="auth-method-indicator auth-method-indicator-desktop"
+            :class="{ 'is-phone': activeLoginMethod === 'phone' }"
+          ></div>
         </div>
 
-        <div v-else class="flex gap-8 mb-[24px]">
+        <div v-else class="auth-method-tabs auth-method-tabs-desktop flex gap-8 mb-[24px]">
           <button
             v-for="method in signupMethodTabs"
             :key="method.key"
@@ -88,11 +92,12 @@
             @click="handleSignupMethodClick(method.key, setActiveSignupMethod)"
           >
             <span>{{ method.label }}</span>
-            <div
-              v-if="activeSignupMethod === method.key"
-              class="absolute bottom-0 left-0 right-0 h-[4px] bg-theme-primary rounded-[10px]"
-            ></div>
           </button>
+          <div
+            v-if="signupMethodTabs.length"
+            class="auth-method-indicator auth-method-indicator-desktop"
+            :class="{ 'is-phone': activeSignupMethod === 'phone' }"
+          ></div>
         </div>
 
         <div class="flex-1 flex flex-col relative">
