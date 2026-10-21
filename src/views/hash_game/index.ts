@@ -14,6 +14,29 @@ type RoadmapMode = 'size' | 'parity'
 type BetKey = 'big' | 'small' | 'odd' | 'even'
 type ChipOption = { id: number; value: number; hue: number }
 type ChipDraft = { id: number; value: string; hue: number }
+export type RecentBetRecord = {
+  block: string
+  selection: 'odd' | 'even'
+  betAmount: number
+  profitLoss: number
+}
+export type RecentBetSummary = {
+  betCount: number
+  betAmount: number
+  todayProfitLoss: number
+}
+
+const MOCK_RECENT_BETS: RecentBetRecord[] = Array.from({ length: 12 }, (_, index) => ({
+  block: '85598756',
+  selection: index % 2 === 0 ? 'odd' : 'even',
+  betAmount: 876.98,
+  profitLoss: index % 2 === 1 ? 100 : -1
+}))
+const MOCK_RECENT_BET_SUMMARY: RecentBetSummary = {
+  betCount: 1,
+  betAmount: 183.91,
+  todayProfitLoss: -876.98
+}
 
 // H5、PC 共用筹码配置，面额与配色保持在同一项中。
 const CHIP_OPTIONS = [
@@ -289,6 +312,8 @@ export const useHashGamePage = () => {
     mockRound,
     hashParts,
     mockBet,
+    recentBets: MOCK_RECENT_BETS,
+    recentBetSummary: MOCK_RECENT_BET_SUMMARY,
     resultLabels,
     resultColumns,
     betOptions,
