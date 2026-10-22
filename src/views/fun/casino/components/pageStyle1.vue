@@ -46,7 +46,7 @@
         </button>
       </div>
       <div
-        class="filter-slide-stage mt-3 overflow-hidden rounded-lg h-[520px] sm:h-[430px] sm:rounded-xl"
+        class="filter-slide-stage mt-3 overflow-hidden rounded-lg h-[430px] sm:h-[430px] sm:rounded-xl"
       >
         <Transition :name="slideName">
           <LatestBetTable
@@ -59,7 +59,7 @@
       <template #placeholder>
         <div class="mt-2 h-8 w-32 rounded bg-bg-2 animate-pulse" />
         <div class="mt-2 h-[39px] rounded-lg bg-bg-2 animate-pulse" />
-        <div class="mt-3 h-[520px] rounded-lg bg-bg-2 animate-pulse" />
+        <div class="mt-3 h-[430px] rounded-lg bg-bg-2 animate-pulse" />
       </template>
     </LazySection>
   </template>
