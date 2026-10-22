@@ -22,7 +22,7 @@
       <Transition :name="filterSlideName">
         <div :key="matchSlideKey" class="filter-slide-pane">
           <div
-            v-if="page.homepageError.value"
+            v-if="!emptyLeagueFilter && page.homepageError.value"
             class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
             role="status"
           >
@@ -109,7 +109,7 @@
                 :collect-pending="page.collectPending.value"
                 :search-keyword="page.searchInput.value"
                 @filter-change="page.handleLeagueSortChange"
-                @league-filter="page.handleLeagueFilter"
+                @league-filter="handleLeagueFilter"
                 @collect-change="page.handleCollectChange"
                 @search-change="page.handleSearchChange"
               />
@@ -249,14 +249,14 @@
             </template>
           </section>
           <p
-            v-if="page.homepageLoading.value"
+            v-if="!emptyLeagueFilter && page.homepageLoading.value"
             class="mx-[14px] py-6 text-center text-xs text-text-2"
             role="status"
           >
             {{ page.sportsLoadingText.value }}
           </p>
           <ThemedEmptyState
-            v-else-if="!groups.length && !page.homepageError.value"
+            v-else-if="emptyLeagueFilter || (!groups.length && !page.homepageError.value)"
             :dark-image="emptyImage"
             :light-image="emptyImageLight"
             :message="page.sportsEmptyText.value"
@@ -295,6 +295,8 @@ import { useI18n } from 'vue-i18n'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIntersectionObserver } from '@/composables/useIntersectionObserver'
 import { useLayoutStore } from '@/stores/layout'
+import { useLocaleStore } from '@/stores/locale'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { stripLocalePrefix } from '@/utils/locale'
 import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import leagueIcon from '@/static/svg/sports/liansai_tabs/icon1.svg?url'
@@ -314,16 +316,32 @@ import type { SportsPageState } from '../../index'
 import { useMatchVisibility } from '../../composables/useMatchVisibility'
 import type { OddsSelectPayload } from '../match-odds/types'
 import LeagueTabs_H5 from '../liansai_tabs/H5.vue'
+import type { LeagueFilterPayload } from '../liansai_tabs'
 import Floating from '../floating/index.vue'
 
 const props = defineProps<{ page: SportsPageState }>()
 const { t } = useI18n()
 const idPrefix = useId()
 const layoutStore = useLayoutStore()
+const localeStore = useLocaleStore()
+const siteConfigStore = useSiteConfigStore()
 const route = useRoute()
 const navigationHeader = ref<HTMLElement | null>(null)
 const navigationHeight = ref(layoutStore.TOPNAV_HEIGHT + layoutStore.BOTTOM_TAB_HEIGHT + 56)
 const activeSport = computed(() => props.page.selectedSportKey.value)
+// 区分明确的空结果与全部联赛；已选联赛被清理后不能回退到全部。
+const appliedLeagueIds = ref<number[] | null>(
+  props.page.competitionIds.value.length ? [...props.page.competitionIds.value] : null
+)
+const emptyLeagueFilter = computed(
+  () =>
+    appliedLeagueIds.value !== null &&
+    (!appliedLeagueIds.value.length || !props.page.competitionIds.value.length)
+)
+const handleLeagueFilter = (payload: LeagueFilterPayload) => {
+  appliedLeagueIds.value = payload.isAllSelected ? null : [...payload.ids]
+  if (payload.isAllSelected || payload.ids.length) props.page.handleLeagueFilter(payload)
+}
 const liveStrip = ref<HTMLElement | null>(null)
 const expandedGroups = ref<Record<string, boolean>>({})
 const expandNewGroups = ref(true)
@@ -336,6 +354,19 @@ const FILTER_TAB_ORDER = ['rolling', 'today', 'early', 'parlay'] as const
 const filterSlideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
 const matchSlideKey = computed(
   () => `${props.page.selectedSportId.value}:${props.page.selectedFilterKey.value}`
+)
+// 与共用查询条件同步重置；排序、收藏及轮询清理联赛不解除已确认的空筛选。
+watch(
+  [
+    matchSlideKey,
+    () => props.page.keyword.value,
+    () => localeStore.currentLanguage,
+    () => siteConfigStore.getConfigString('IM.im_app_url')
+  ],
+  () => {
+    appliedLeagueIds.value = null
+  },
+  { flush: 'sync' }
 )
 const { vMatchVisibility } = useMatchVisibility({
   enabled: () => !props.page.betSlipOpen.value && stripLocalePrefix(route.path) === '/sports',
@@ -358,7 +389,7 @@ onScopeDispose(() => navigationObserver?.disconnect())
 
 const activeSportLabel = computed(() => props.page.selectedSportLabel.value)
 const matches = computed(() => props.page.matches.value)
-const liveMatches = computed(() => props.page.liveMatches.value)
+const liveMatches = computed(() => (emptyLeagueFilter.value ? [] : props.page.liveMatches.value))
 const liveStripCaption = (match: SportsMatch) => {
   const line = pickOverUnderOrFirstMarketLine(match.MarketLines)[0]
   if (!line) return ''
@@ -366,6 +397,7 @@ const liveStripCaption = (match: SportsMatch) => {
   return line.BetTypeName
 }
 const groups = computed(() => {
+  if (emptyLeagueFilter.value) return []
   const result = new Map<string, { id: string; name: string; matches: SportsMatch[] }>()
   // 预览没有赛事的联赛也保留标题，展开时补查。
   for (const league of props.page.displayLeagueGroups.value) {
