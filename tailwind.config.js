@@ -66,6 +66,7 @@ export default {
         'secondary-8': 'var(--color-secondary-level-8)',
         'secondary-9': 'var(--color-secondary-level-9)',
         'secondary-10': 'var(--color-secondary-level-10)',
+        'secondary-11': 'var(--color-secondary-level-11)',
         assistGreen: 'var(--color-assist-green)',
         assistRed: 'var(--color-assist-red)',
         assistOrange: 'var(--color-assist-orange)',

@@ -57,6 +57,7 @@
   --color-secondary-level-8: #24acff;
   --color-secondary-level-9: rgba(255, 152, 34, 0.15);
   --color-secondary-level-10: #ffd117;
+  --color-secondary-level-11: #1fdcbc;
 
   /* ========== 辅助色 (Assist) ========== */
   --color-assist-red: #ff3636;
@@ -141,6 +142,7 @@
   --color-secondary-level-8: #24acff;
   --color-secondary-level-9: rgba(255, 152, 34, 0.15);
   --color-secondary-level-10: #ffd117;
+  --color-secondary-level-11: #1fdcbc;
 
   /* ========== 辅助色 (Assist) - 浅色模式 ========== */
   --color-assist-red: #ff3636;
