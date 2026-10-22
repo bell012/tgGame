@@ -14,6 +14,36 @@ type RoadmapMode = 'size' | 'parity'
 type BetKey = 'big' | 'small' | 'odd' | 'even'
 type ChipOption = { id: number; value: number; hue: number }
 type ChipDraft = { id: number; value: string; hue: number }
+export const HASH_GAME_PERIOD_OPTIONS = [6, 15, 30, 45] as const
+export type RecentBetRecord = {
+  id: string
+  block: string
+  blockHash: string
+  selection: 'odd' | 'even'
+  betAmount: number
+  profitLoss: number
+  betTime: string
+}
+export type RecentBetSummary = {
+  betCount: number
+  betAmount: number
+  todayProfitLoss: number
+}
+
+const MOCK_RECENT_BETS: RecentBetRecord[] = Array.from({ length: 12 }, (_, index) => ({
+  id: `ts0768456746746746${index}`,
+  block: '85598756',
+  blockHash: '89hf84947772d6a3bca88102f7c6943d',
+  selection: index % 2 === 0 ? 'odd' : 'even',
+  betAmount: 876.98,
+  profitLoss: index % 2 === 1 ? 1000 : -1,
+  betTime: '12/18/2026 11:14:15 AM'
+}))
+const MOCK_RECENT_BET_SUMMARY: RecentBetSummary = {
+  betCount: 1,
+  betAmount: 183.91,
+  todayProfitLoss: -876.98
+}
 
 // H5、PC 共用筹码配置，面额与配色保持在同一项中。
 const CHIP_OPTIONS = [
@@ -70,7 +100,7 @@ export const useHashGamePage = () => {
   usePageScrollLock(() => true)
 
   const selectedPeriod = ref(15)
-  const periodOptions = [6, 15, 30, 45]
+  const periodOptions = HASH_GAME_PERIOD_OPTIONS
   const periodsOpen = ref(false)
   const periodTriggerRef = ref<HTMLElement | null>(null)
   const periodMenuRef = ref<HTMLElement | null>(null)
@@ -289,6 +319,8 @@ export const useHashGamePage = () => {
     mockRound,
     hashParts,
     mockBet,
+    recentBets: MOCK_RECENT_BETS,
+    recentBetSummary: MOCK_RECENT_BET_SUMMARY,
     resultLabels,
     resultColumns,
     betOptions,
