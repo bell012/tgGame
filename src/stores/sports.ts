@@ -960,6 +960,7 @@ export const useSportsStore = defineStore('sports', () => {
   })
   let betInfoGeneration = 0
   let betInfoController: AbortController | undefined
+  let betInfoOwner: symbol | undefined
   // 所有报价入口共用 3 秒发送间隔；取消查询、关闭投注单不会重置冷却时间。
   let lastBetInfoSentAt = 0
   const waitForBetInfoSlot = async (signal: AbortSignal) => {
@@ -977,10 +978,13 @@ export const useSportsStore = defineStore('sports', () => {
       })
     }
   }
-  const cancelBetInfo = () => {
+  const cancelBetInfo = (owner?: symbol) => {
+    // 页面只取消自己的报价；账号切换等全局清理不传归属标识。
+    if (owner !== undefined && owner !== betInfoOwner) return
     betInfoGeneration += 1
     betInfoController?.abort()
     betInfoController = undefined
+    betInfoOwner = undefined
     betInfoState.params = null
     betInfoState.response = null
     betInfoState.data = null
@@ -988,7 +992,10 @@ export const useSportsStore = defineStore('sports', () => {
     betInfoState.error = null
   }
   // 选项先加入；报价时才取凭据，获取失败不删除选项。
-  const fetchBetInfo = async (query: SportsBetInfoQuery): Promise<GetBetInfoResponse | null> => {
+  const fetchBetInfo = async (
+    query: SportsBetInfoQuery,
+    owner?: symbol
+  ): Promise<GetBetInfoResponse | null> => {
     cancelBetInfo()
     if (!isLoggedIn.value || !query.WagerSelectionInfos.length) return null
     if (!getBaseUrl()) {
@@ -1000,6 +1007,7 @@ export const useSportsStore = defineStore('sports', () => {
     const context = sportsAuth.contextVersion
     const controller = new AbortController()
     betInfoController = controller
+    betInfoOwner = owner
     const isCurrent = () =>
       !controller.signal.aborted &&
       generation === betInfoGeneration &&

@@ -93,7 +93,7 @@
         :aria-label="t('sports.eventDetails.betSlipFab')"
         @click="openBetSlip"
       />
-      <BetSlipH5 :page="betSlipPage" />
+      <BetSlipH5 :page="betSlipPage" @add-event="addBetEvent" />
     </template>
     <template v-else>
       <p
@@ -220,6 +220,7 @@ import emptyImageLight from '@/static/img/explore/default_white.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { globalShowToast } from '@/utils/toast'
+import { navigateTo } from '@/utils/router'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import EventDetailsTabs from './components/event-detailsd-tabs/index.vue'
 import { mapEventDetailTabItems } from './components/event-detailsd-tabs/map-items'
@@ -537,5 +538,9 @@ const onSportNavigationChange = (index: number, key: string) => {
 
 const onBack = () => {
   router.back()
+}
+
+const addBetEvent = () => {
+  void navigateTo('/sports', { replace: true })
 }
 </script>

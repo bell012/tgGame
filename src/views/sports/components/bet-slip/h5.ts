@@ -21,7 +21,7 @@ export const applySportsKeyboardKey = (raw: string, key: string, replace = false
   return parseSportsStake(next) === null ? raw : next
 }
 
-export const useSportsH5Bet = (page: SportsPageState) => {
+export const useSportsH5Bet = (page: SportsPageState, onAddEvent?: () => void) => {
   const { t } = useI18n()
   const keyboardOpen = ref(false)
   const quickAmounts = ref([20, 50, 100, 200, 500, 1000])
@@ -158,7 +158,11 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     cancelEdit()
     replaceNextKey = true
   }
-  const addEvent = () => close()
+  const addEvent = () => {
+    if (busy.value) return
+    close()
+    onAddEvent?.()
+  }
   const changeMode = () => {
     if (busy.value) return
     if (page.mode.value === 'single') {
@@ -166,7 +170,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
         page.setMode('parlay', true) &&
         !page.selections.value.some(item => item.betStatus === 'unavailable')
       )
-        close()
+        addEvent()
     } else {
       page.setMode('single')
       keyboardOpen.value = true

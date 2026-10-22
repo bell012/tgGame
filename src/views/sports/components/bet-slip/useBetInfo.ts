@@ -91,6 +91,7 @@ export const useBetInfo = ({
     Boolean(userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId)
   )
   let generation = 0
+  const requestOwner = Symbol('sports-bet-info')
   let retryTimer: ReturnType<typeof setTimeout> | undefined
   let finishRetry: ((continueQuery: boolean) => void) | undefined
   const enabled = () =>
@@ -108,7 +109,7 @@ export const useBetInfo = ({
     retryTimer = undefined
     finishRetry?.(false)
     finishRetry = undefined
-    sportsStore.cancelBetInfo()
+    sportsStore.cancelBetInfo(requestOwner)
     loading.value = false
     ready.value = false
     state.value = credentialsBlocked.value ? 'credentials-unavailable' : 'idle'
@@ -138,7 +139,7 @@ export const useBetInfo = ({
         WagerType: mode.value === 'single' ? 1 : 2,
         WagerSelectionInfos: selections
       } as const
-      let response = await sportsStore.fetchBetInfo(params)
+      let response = await sportsStore.fetchBetInfo(params, requestOwner)
       if (current !== generation) return
       // 380 且仍开盘时，按接口规则间隔 5 秒重查一次。
       if (
@@ -155,7 +156,7 @@ export const useBetInfo = ({
           }, 5000)
         })
         if (!continueQuery || current !== generation || !enabled()) return
-        response = await sportsStore.fetchBetInfo(params)
+        response = await sportsStore.fetchBetInfo(params, requestOwner)
       }
       if (current !== generation) return
       ready.value = false

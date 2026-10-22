@@ -298,6 +298,7 @@ import type { SportsPageState } from '../../index'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ page: SportsPageState }>()
+const emit = defineEmits<{ addEvent: [] }>()
 const { t } = useI18n()
 const panel = ref<HTMLElement | null>(null)
 const titleId = useId()
@@ -327,7 +328,7 @@ const {
   removeSelection,
   clear,
   submit
-} = useSportsH5Bet(props.page)
+} = useSportsH5Bet(props.page, () => emit('addEvent'))
 const selections = computed(() => displayed.value.selections)
 const parlays = computed(() => displayed.value.parlays)
 const mode = computed(() => displayed.value.mode)
