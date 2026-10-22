@@ -1,4 +1,5 @@
 import { onMounted, onScopeDispose } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { isMobileViewport } from '@/composables/useMediaQuery'
@@ -37,6 +38,7 @@ export const getTeamLogoUrl = (id: string | number | null | undefined): string =
 
 export const useSportsPage = () => {
   const sportsStore = useSportsStore()
+  const { unreadBetHistoryCount } = storeToRefs(sportsStore)
   const { requireLogin } = useRequireLoginAction()
   const { t } = useI18n()
   const { refreshTargets, ...betSlip } = useBetSlip({
@@ -148,6 +150,7 @@ export const useSportsPage = () => {
   return {
     ...pageData,
     ...betSlip,
+    unreadBetHistoryCount,
     handleMatchFavorite,
     isMatchFavoritePending,
     setMatchExpanded,

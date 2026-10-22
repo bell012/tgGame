@@ -520,6 +520,7 @@ watch(getCredentialOwner, () => {
 })
 
 onMounted(() => {
+  sportsStore.markBetHistoryViewed()
   void fetchSportsBetHistory()
 })
 onScopeDispose(() => {

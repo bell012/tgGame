@@ -370,6 +370,51 @@ export const useSportsStore = defineStore('sports', () => {
   const isLoggedIn = computed(() =>
     Boolean(userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId)
   )
+  const unreadBetHistoryCount = ref(0)
+  const betHistoryStorageKey = computed(() => {
+    const memberId = userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId
+    return isLoggedIn.value && memberId != null && String(memberId).trim()
+      ? `sports_unread_bet_history:${memberId}`
+      : ''
+  })
+  // 本地存储不可用时仍保留当前会话各账号的计数，不影响下单结果处理。
+  const betHistoryCounts = new Map<string, number>()
+  const unsavedBetHistoryKeys = new Set<string>()
+  const readBetHistoryCount = (key: string): number => {
+    if (!key) return 0
+    if (unsavedBetHistoryKeys.has(key)) return betHistoryCounts.get(key) ?? 0
+    try {
+      const count = Number(localStorage.getItem(key))
+      const value = Number.isSafeInteger(count) && count >= 0 ? count : 0
+      betHistoryCounts.set(key, value)
+      return value
+    } catch {
+      return betHistoryCounts.get(key) ?? 0
+    }
+  }
+  const saveBetHistoryCount = (key: string, count: number) => {
+    if (!key) return
+    betHistoryCounts.set(key, count)
+    try {
+      localStorage.setItem(key, String(count))
+      unsavedBetHistoryKeys.delete(key)
+    } catch {
+      unsavedBetHistoryKeys.add(key)
+      // 保存失败仅影响刷新后的恢复，不中断投注或查看历史。
+    }
+    if (key === betHistoryStorageKey.value) unreadBetHistoryCount.value = count
+  }
+  // 切换账号只切换展示的计数，不删除其他账号尚未查看的记录。
+  watch(
+    betHistoryStorageKey,
+    key => {
+      unreadBetHistoryCount.value = readBetHistoryCount(key)
+    },
+    { immediate: true, flush: 'sync' }
+  )
+  const markBetHistoryViewed = () => {
+    saveBetHistoryCount(betHistoryStorageKey.value, 0)
+  }
   const oddsTypeEnum: Readonly<Record<SportsOddsType, string>> = Object.freeze({
     1: '马来盘',
     2: '香港盘',
@@ -1043,6 +1088,7 @@ export const useSportsStore = defineStore('sports', () => {
     options: { updateBalance?: boolean } = {}
   ): Promise<PlaceBetResponse> => {
     const version = sportsSessionVersion.value
+    const historyStorageKey = betHistoryStorageKey.value
     const context = sportsAuth.contextVersion
     if (!isLoggedIn.value || !getBaseUrl() || !canSend())
       throw new SportsBetNotSentError('Sports session unavailable')
@@ -1068,6 +1114,24 @@ export const useSportsStore = defineStore('sports', () => {
         TimeStamp: Date.now()
       })
       if (isAuthExpired(response)) sportsAuth.clearCredentials(credentials)
+      if (historyStorageKey) {
+        // 仅累计明确成功的注单，同一响应中重复的注单号只计一次。
+        const confirmedIds = new Set(
+          (Array.isArray(response.wsis) ? response.wsis : [])
+            .filter(item => item && Number(item.bcs) === 2 && Number(item.bsm) === 100 && item.wid)
+            .map(item => item.wid)
+        )
+        if (confirmedIds.size) {
+          // 已发出的请求即使晚于账号切换返回，也只记入下单时的账号。
+          saveBetHistoryCount(
+            historyStorageKey,
+            Math.min(
+              Number.MAX_SAFE_INTEGER,
+              readBetHistoryCount(historyStorageKey) + confirmedIds.size
+            )
+          )
+        }
+      }
       if (options.updateBalance !== false && isSportsSuccess(response)) {
         const validBalance = typeof response.av === 'number' && Number.isFinite(response.av)
         finishBalanceUpdate({ amount: response.av, refresh: !validBalance })
@@ -3103,6 +3167,8 @@ export const useSportsStore = defineStore('sports', () => {
     fetchPopularSports,
     fetchCompetitionList,
     placeBet,
+    unreadBetHistoryCount,
+    markBetHistoryViewed,
     toggleFavouriteEvent,
     toggleFavouriteTarget,
     getEventFavourite,

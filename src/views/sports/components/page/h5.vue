@@ -271,6 +271,7 @@
       v-if="pageActive"
       v-show="!page.betSlipOpen.value"
       :bet-count="page.selections.value.length"
+      :history-count="page.unreadBetHistoryCount.value"
       @select="page.handleFloatingEntry"
     />
   </div>

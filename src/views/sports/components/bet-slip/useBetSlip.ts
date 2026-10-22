@@ -85,7 +85,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   const acceptAnyOdds = ref(true)
   const oddsPreferenceKey = computed(() => {
     const memberId = userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId
-    return memberId ? `sportsAcceptAnyOdds:${memberId}` : ''
+    return memberId ? `sports_accept_any_odds:${memberId}` : ''
   })
   watch(
     oddsPreferenceKey,
