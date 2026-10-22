@@ -127,20 +127,27 @@
               </div> -->
 
                   <template v-if="activeTab === 'signin'">
-                    <div v-if="loginMethodTabs.length > 0" class="flex gap-6 mb-[20px]">
+                    <div
+                      v-if="loginMethodTabs.length > 0"
+                      ref="methodTabsRef"
+                      class="auth-method-tabs auth-method-tabs-mobile flex gap-6 mb-[20px]"
+                    >
                       <button
                         v-for="method in loginMethodTabs"
                         :key="method.key"
+                        :data-method="method.key"
                         class="relative min-w-14 pb-1.5 text-base font-[700] font-inter transition-all duration-200 tab-button-new"
-                        :class="activeLoginMethod === method.key ? 'text-text-1' : 'text-text-2'"
+                        :class="
+                          activeLoginMethod === method.key ? 'text-text-1 is-active' : 'text-text-2'
+                        "
                         @click="handleSigninMethodClick(method.key, setActiveLoginMethod)"
                       >
                         <span>{{ method.label }}</span>
-                        <div
-                          v-if="activeLoginMethod === method.key"
-                          class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
-                        ></div>
                       </button>
+                      <div
+                        ref="methodIndicatorRef"
+                        class="auth-method-indicator auth-method-indicator-mobile"
+                      ></div>
                     </div>
                     <!-- 账号 -->
                     <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
@@ -359,20 +366,29 @@
                   </template>
 
                   <template v-else-if="activeTab === 'signup'">
-                    <div v-if="signupMethodTabs.length > 0" class="flex gap-6 mb-[20px]">
+                    <div
+                      v-if="signupMethodTabs.length > 0"
+                      ref="methodTabsRef"
+                      class="auth-method-tabs auth-method-tabs-mobile flex gap-6 mb-[20px]"
+                    >
                       <button
                         v-for="method in signupMethodTabs"
                         :key="method.key"
+                        :data-method="method.key"
                         class="relative min-w-14 pb-1.5 text-base font-[700] font-inter transition-all duration-200 tab-button-new"
-                        :class="activeSignupMethod === method.key ? 'text-text-1' : 'text-text-2'"
+                        :class="
+                          activeSignupMethod === method.key
+                            ? 'text-text-1 is-active'
+                            : 'text-text-2'
+                        "
                         @click="handleSignupMethodClick(method.key, setActiveSignupMethod)"
                       >
                         <span>{{ method.label }}</span>
-                        <div
-                          v-if="activeSignupMethod === method.key"
-                          class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
-                        ></div>
                       </button>
+                      <div
+                        ref="methodIndicatorRef"
+                        class="auth-method-indicator auth-method-indicator-mobile"
+                      ></div>
                     </div>
 
                     <!-- 账号 -->
@@ -677,7 +693,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, nextTick, onMounted, onUpdated, ref, watch } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CloseIcon from '@/static/svg/close.svg?component'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
@@ -698,7 +714,7 @@ import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import { navigateTo } from '@/utils/router'
 import type { LoginSetResult } from '@/api/interface/login_register'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 interface Props {
   visible: boolean
   defaultTab?: 'signin' | 'signup'
@@ -723,12 +739,29 @@ const emit = defineEmits<{
 
 const showDrawer = ref(false)
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
+const methodTabsRef = ref<HTMLElement | null>(null)
+const methodIndicatorRef = ref<HTMLElement | null>(null)
 const isH5BackgroundLoaded = ref(false)
 const isSigninAreaCodeDropdownOpen = ref(false)
 const isSignupAreaCodeDropdownOpen = ref(false)
 const signinAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 const signupAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 const showPolicySheet = ref(false)
+
+const updateMethodIndicatorPosition = () => {
+  const tabs = methodTabsRef.value
+  const indicator = methodIndicatorRef.value
+  const activeButton = tabs?.querySelector<HTMLElement>('.tab-button-new.is-active')
+  if (!tabs || !indicator || !activeButton) return
+
+  const centerOffset =
+    activeButton.offsetLeft + activeButton.offsetWidth / 2 - indicator.offsetWidth / 2
+  indicator.style.transform = `translateX(${centerOffset}px)`
+}
+
+onMounted(updateMethodIndicatorPosition)
+onUpdated(updateMethodIndicatorPosition)
+watch(locale, () => nextTick(updateMethodIndicatorPosition))
 
 usePageScrollLock(() => props.visible)
 
@@ -853,6 +886,7 @@ const handleSigninMethodClick = (
 ) => {
   setActiveLoginMethod(method)
   closeSigninAreaCodeDropdown()
+  nextTick(updateMethodIndicatorPosition)
 }
 
 /**
@@ -864,6 +898,7 @@ const handleSignupMethodClick = (
 ) => {
   setActiveSignupMethod(method)
   closeSignupAreaCodeDropdown()
+  nextTick(updateMethodIndicatorPosition)
 }
 
 /**

@@ -1,8 +1,8 @@
 <template>
   <div
     class="fixed inset-0 z-[60] h-screen overflow-hidden bg-bg-1 text-text-1"
-    @keydown.esc="closeOverlays"
-    @pointerdown.capture="handlePeriodOutsidePointerDown"
+    @keydown.esc.stop.prevent="handleEscape"
+    @pointerdown.capture="handleOutsidePointerDown"
   >
     <div class="relative w-full h-full flex flex-col">
       <header
@@ -70,12 +70,44 @@
         </div>
         <button
           type="button"
+          ref="recordsTriggerRef"
           class="flex size-[33px] items-center justify-center rounded-lg bg-opacity-6"
           :aria-label="t('hashGame.records')"
-          @click="openRecords"
+          :aria-expanded="recordsMenuOpen"
+          aria-controls="hash-game-records-menu"
+          @click.stop="recordsMenuOpen = !recordsMenuOpen"
         >
           <RecordsIcon class="w-[14px] h-[14px] text-icon-1" />
         </button>
+
+        <!-- 投注记录和游戏规则弹窗 -->
+        <Transition name="records-menu">
+          <section
+            v-if="recordsMenuOpen"
+            id="hash-game-records-menu"
+            ref="recordsMenuRef"
+            class="absolute right-[12px] top-full z-[30] mt-[0px] p-[18px] overflow-hidden rounded-[10px] border border-opacity-10 bg-bg-3"
+            :aria-label="t('hashGame.recordsMenu')"
+            @pointerdown.stop
+          >
+            <button
+              type="button"
+              class="flex w-full items-center gap-[6px] text-left text-[14px] text-text-1 mb-[18px]"
+              @click="openRecentBets"
+            >
+              <RecentIcon class="size-[17px] text-icon-1" />
+              <span>{{ t('hashGame.recentBets') }}</span>
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-[6px] text-left text-[14px] text-text-1"
+              @click="openGameRules"
+            >
+              <RulesIcon class="size-[17px] text-icon-1" />
+              <span>{{ t('hashGame.gameRules') }}</span>
+            </button>
+          </section>
+        </Transition>
       </header>
 
       <!-- 展开游戏类型 -->
@@ -429,7 +461,20 @@
       @select="selectCurrency"
     />
 
-    <!-- 编辑筹码 -->
+    <!-- 投注记录弹窗 -->
+    <RecentBetsPopup
+      v-model:visible="recentBetsOpen"
+      :currency-code="currentCurrencyCode"
+      :currency-icon="currentCurrencyIcon"
+      :balance-text="currentBalanceText"
+      :period="selectedPeriod"
+      :bets="recentBets"
+      :summary="recentBetSummary"
+    />
+
+    <!-- 历史投注 -->
+    <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
+
     <Teleport to="body">
       <Transition name="bottom-sheet">
         <div
@@ -521,6 +566,8 @@
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import RecordsIcon from '@/static/svg/sift.svg?component'
+import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
+import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
 import ArrowDownIcon from '@/static/svg/hash_game/jiantou_xia.svg?component'
 import CollapseIcon from '@/static/svg/hash_game/jiantou_shang2.svg?component'
 import RefreshIcon from '@/static/svg/hash_game/shauxin.svg?component'
@@ -533,9 +580,17 @@ import EditIcon from '@/static/svg/hash_game/bianji.svg?component'
 import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
+import RecentBetsPopup from './components/RecentBetsPopup.vue'
+import HistoryPopup from './components/HistoryPopup.vue'
+import { ref } from 'vue'
+import { navigateTo } from '@/utils/router'
 import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
+const recordsMenuOpen = ref(false)
+const recentBetsOpen = ref(false)
+const recordsMenuRef = ref<HTMLElement | null>(null)
+const recordsTriggerRef = ref<HTMLElement | null>(null)
 const {
   t,
   currentCurrencyCode,
@@ -563,6 +618,10 @@ const {
   mockRound,
   hashParts,
   mockBet,
+  recentBets,
+  historyPopupOpen,
+  historyRecords,
+  recentBetSummary,
   resultLabels,
   resultColumns,
   betOptions,
@@ -582,4 +641,31 @@ const {
   closeOverlays,
   handlePeriodOutsidePointerDown
 } = props.page
+
+const handleOutsidePointerDown = (event: PointerEvent) => {
+  handlePeriodOutsidePointerDown(event)
+  if (!recordsMenuOpen.value || !(event.target instanceof Node)) return
+  if (
+    recordsMenuRef.value?.contains(event.target) ||
+    recordsTriggerRef.value?.contains(event.target)
+  )
+    return
+  recordsMenuOpen.value = false
+}
+
+const handleEscape = () => {
+  recentBetsOpen.value = false
+  recordsMenuOpen.value = false
+  closeOverlays()
+}
+
+const openRecentBets = () => {
+  recordsMenuOpen.value = false
+  recentBetsOpen.value = true
+}
+
+const openGameRules = () => {
+  recordsMenuOpen.value = false
+  void navigateTo('/hash-game/rules')
+}
 </script>

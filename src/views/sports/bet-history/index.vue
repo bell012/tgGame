@@ -2,7 +2,7 @@
   <!-- 体育H5投注历史页面 -->
   <section
     v-if="isMobile"
-    class="sports-bet-history-mobile fixed inset-0 z-[60] flex flex-col overflow-hidden bg-bg-1 font-inter sm:hidden"
+    class="sports-bet-history-mobile fixed inset-0 z-[60] flex flex-col overflow-hidden bg-bg-1 font-inter"
   >
     <H5Header :title="t('betHistory.title')" :show-sort="true" @sort="openMobileFilter" />
 
@@ -12,15 +12,16 @@
           v-for="item in mobileHistoryList"
           :key="item.id"
           @click="openSportsBetDetails(item)"
-          class="relative overflow-hidden rounded-lg bg-bg-2"
+          class="relative overflow-hidden rounded-[10px] bg-bg-2"
         >
           <span
+            v-if="item.settled"
             :class="[
-              'absolute right-0 top-0 rounded-bl-[10px] px-[6px] py-[3px] text-[11px] font-normal leading-[13.333px]',
+              'absolute right-0 top-0 rounded-bl-[10px] px-[10px] py-[3px] text-[11px] font-normal leading-[13.333px]',
               item.statusBadgeClass
             ]"
           >
-            {{ item.statusLabel }}
+            {{ item.resultLabel }}
           </span>
 
           <div class="flex min-h-[85px] items-center gap-2.5 px-3.5 py-2.5">
@@ -41,6 +42,11 @@
             <div class="min-w-0 flex-1 self-start pt-[10.5px]">
               <h2 class="min-w-0 truncate text-[14px] font-bold leading-[17px] text-text-1">
                 {{ item.matchName }}
+                <span
+                  v-if="item.parlay"
+                  class="ml-1 rounded bg-theme-primary px-1 text-[11px] font-normal leading-[13.333px] text-text-4"
+                  >{{ t('sportsHistory.comboBadge') }}</span
+                >
               </h2>
               <div
                 class="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 leading-[17px]"
@@ -49,7 +55,7 @@
                   {{ t('betHistory.betAmount') }} : {{ item.betAmount }}
                 </p>
                 <p :class="['shrink-0 text-[14px] font-[700]', item.amountClass]">
-                  {{ item.resultLabel }} : {{ item.resultAmount }}
+                  {{ item.resultAmount }}
                 </p>
               </div>
             </div>
@@ -65,12 +71,23 @@
               <button
                 v-if="!item.settled"
                 type="button"
-                class="flex h-5 items-center justify-center rounded-[6px] bg-theme-primary px-[8px] text-[12px] font-[400] leading-4 text-text-4"
+                class="flex h-5 items-center justify-center rounded-[5px] px-[8px] text-[12px] font-[400] leading-4"
+                :class="
+                  item.cashOutAvailable ? 'bg-theme-primary text-text-4' : 'bg-bg-3 text-text-3'
+                "
+                :disabled="!item.cashOutAvailable || cashOut.submitting.value"
+                @click.stop="cashOut.open(item.raw)"
               >
-                {{ t('betHistory.earlySettlement') }}
+                {{ t('sportsHistory.cashOut') }}
               </button>
+              <span
+                class="text-xs"
+                :class="item.settled ? 'text-theme-primary' : 'text-secondary-7'"
+                >{{ item.statusLabel }}</span
+              >
               <button
                 type="button"
+                :aria-label="t('betDetails.title')"
                 class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-opacity-10"
               >
                 <ArrowRightIcon class="h-[12px] w-[12px] text-icon-2" />
@@ -147,101 +164,17 @@
       </div>
     </div>
 
-    <div v-if="mobileHistoryList.length > 0" class="mt-5 grid grid-cols-3 gap-4">
-      <article
+    <div v-if="mobileHistoryList.length > 0" class="mt-5 grid grid-cols-3 items-start gap-4">
+      <HistoryCardPc
         v-for="item in mobileHistoryList"
         :key="item.id"
-        class="flex min-h-[360px] flex-col rounded-[10px] bg-bg-2 px-[10px] pt-[10px] pb-[20px]"
-      >
-        <header class="flex items-center justify-between gap-4">
-          <div class="flex min-w-0 items-center gap-[8px]">
-            <div
-              class="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-bg-3"
-            >
-              <component
-                :is="item.sportIcon"
-                class="h-[30px] w-[30px] fill-current text-icon-2 [&_circle]:fill-current [&_path]:fill-current [&_rect]:fill-current"
-              />
-            </div>
-            <h2 class="min-w-0 truncate text-[18px] font-[700] text-text-1">
-              {{ t('betHistory.filterOptions.sports') }}
-            </h2>
-          </div>
-
-          <span
-            :class="[
-              'shrink-0 rounded-[14px] px-[15px] py-[2px] text-[13px] font-[400] text-common-100',
-              item.detailStatusBadgeClass
-            ]"
-          >
-            {{ item.statusLabel }}
-          </span>
-        </header>
-
-        <div class="mt-3.5 border-t border-opacity-10 pt-3.5">
-          <h3 class="truncate text-[14px] font-[700] text-text-1">{{ item.matchName }}</h3>
-          <p class="mt-2 truncate text-[12px] font-[400] text-text-2">{{ item.leagueName }}</p>
-        </div>
-
-        <section class="mt-[10px] rounded-[10px] bg-bg-3 p-[10px]">
-          <p class="text-[14px] font-[400] text-text-2">{{ item.marketName }}</p>
-          <p class="mt-[8px] truncate text-[14px] font-[400] text-text-1">
-            {{ item.selectionName }}
-            <span v-if="item.handicapText" class="ml-1">{{ item.handicapText }}</span>
-            <span class="ml-2">{{ item.oddsText }}</span>
-          </p>
-        </section>
-
-        <section class="my-[20px] space-y-[10px]">
-          <div class="flex items-center justify-between gap-4">
-            <span class="text-[14px] font-[400] text-text-3">{{ t('betDetails.currency') }}</span>
-            <span class="text-right text-[14px] font-[400] text-text-1">
-              {{ item.currency }}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between gap-4">
-            <span class="text-[14px] font-[400] text-text-3">
-              {{ t('betHistory.betAmount') }}
-            </span>
-            <span class="text-right text-[14px] font-[400] text-text-1">
-              {{ item.betAmount }}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between gap-4">
-            <span class="text-[14px] font-[400] text-text-3">{{ t('betDetails.winLoss') }}</span>
-            <span class="text-right text-[14px] font-[400] text-text-1">
-              {{ item.winLossText }}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between gap-4">
-            <span class="text-[14px] font-[400] text-text-3">{{ t('betDetails.orderNo') }}</span>
-            <span class="min-w-0 truncate text-right text-[14px] font-[400] text-text-1">
-              {{ item.orderNo }}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between gap-4">
-            <span class="text-[14px] font-[400] text-text-3">
-              {{ t('betDetails.createdAt') }}
-            </span>
-            <span class="text-right text-[14px] font-[400] text-text-1">
-              {{ item.createdAt }}
-            </span>
-          </div>
-        </section>
-
-        <button
-          v-if="!item.settled"
-          type="button"
-          class="mt-auto flex h-[40px] w-full items-center justify-center rounded-lg bg-theme-primary text-[14px] font-[400] text-text-4"
-          @click="openPcBuyBackSheet(item)"
-        >
-          {{ t('betDetails.confirm') }}
-        </button>
-      </article>
+        :item="item"
+        :confirming="cashOut.selected.value?.wid === item.raw.wid"
+        :submitting="cashOut.submitting.value"
+        @open="cashOut.open(item.raw)"
+        @close="cashOut.close"
+        @confirm="cashOut.submit"
+      />
     </div>
 
     <div v-else class="flex min-h-[calc(100vh-310px)] flex-col items-center justify-center pb-12">
@@ -265,11 +198,17 @@
   </section>
 
   <!-- 提前结算弹窗 -->
-  <SportsBuyBackSheet v-model:visible="showBuyBackSheet" :wager="selectedBuyBackWager" />
+  <SportsBuyBackSheet
+    :visible="isMobile && Boolean(cashOut.selected.value)"
+    :item="cashOutItem"
+    :submitting="cashOut.submitting.value"
+    @close="cashOut.close"
+    @confirm="cashOut.submit"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onScopeDispose, ref } from 'vue'
+import { computed, onMounted, onScopeDispose, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import CryptoJS from 'crypto-js'
@@ -287,17 +226,15 @@ import type { SportsCredentials } from '@/stores/sportsAuth'
 import { useUserStore } from '@/stores/user'
 import { globalShowToast } from '@/utils/toast'
 import { navigateTo } from '@/utils/router'
-import { formatUsDateTime12h } from '@/utils/date'
 import type { SportsBetHistoryResponse, SportsBetHistoryWager } from '@/api/interface/sport'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import SportsBuyBackSheet from '../components/SportsBuyBackSheet.vue'
-import {
-  findSportItemBySportId,
-  sportItems,
-  type SportItem
-} from '../components/sports-navigation/sport-items'
+import HistoryCardPc from './components/HistoryCardPc.vue'
+import { mapHistoryWager } from './shared'
+import type { HistoryWagerView } from './shared'
+import { useHistoryCashOut } from './useHistoryCashOut'
 
 type SportsBetHistoryStatus = 'settled' | 'unsettled'
 type SportsBetHistoryTime =
@@ -389,8 +326,6 @@ const requestSportsBetHistoryWithCredentialRetry = async (
 usePageScrollLock(() => isMobile.value)
 
 const showMobileFilterPopup = ref(false)
-const showBuyBackSheet = ref(false)
-const selectedBuyBackWager = ref<SportsBetHistoryWager | null>(null)
 const sportsBetHistoryList = ref<SportsBetHistoryWager[]>([])
 const filterValues = ref<SportsBetHistoryFilterValues>({
   status: 'unsettled',
@@ -432,107 +367,17 @@ const filterGroups = computed<FilterGroup[]>(() => {
   return groups
 })
 
-type SportsBetHistoryDisplayItem = {
-  id: string
-  sportIcon?: SportItem['icon']
-  raw: SportsBetHistoryWager
-  matchName: string
-  statusLabel: string
-  settled: boolean
-  betAmount: string
-  resultLabel: string
-  resultAmount: string
-  amountClass: string
-  statusBadgeClass: string
-  detailStatusBadgeClass: string
-  leagueName: string
-  marketName: string
-  selectionName: string
-  handicapText: string
-  oddsText: string
-  currency: string
-  winLossText: string
-  orderNo: string
-  createdAt: string
-}
-
-// 转成数字，兼容接口后续可能返回字符串或 null。
-const toSportsBetNumber = (value: number | string | null | undefined) => {
-  const numericValue = typeof value === 'number' ? value : Number(value)
-  return Number.isFinite(numericValue) ? numericValue : 0
-}
-
-// 金额展示统一保留两位小数。
-const formatSportsBetAmount = (value: number | string | null | undefined) =>
-  toSportsBetNumber(value).toFixed(2)
-
-// PC 详情金额展示去掉无意义的小数零，贴近详情页展示。
-const formatSportsBetDetailAmount = (value: number | string | null | undefined) => {
-  const fixed = toSportsBetNumber(value).toFixed(2)
-  return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed
-}
-
-// 赔率按接口原始数字展示，避免强制补零影响体育赔率阅读。
-const formatSportsBetOdds = (value: number | string | null | undefined) => {
-  const numericValue = toSportsBetNumber(value)
-  return numericValue ? String(numericValue) : '--'
-}
-
-// 根据接口金额字段判断注单是否已结算。
-const isSportsBetSettled = (item: SportsBetHistoryWager) =>
-  toSportsBetNumber(item.btbba) > 0 || toSportsBetNumber(item.mwla) !== 0
-
-// 未结算取 pp，已结算取 btbba；btbba 为 0 时回退 mwla。
-const getSportsBetResultAmount = (item: SportsBetHistoryWager) =>
-  isSportsBetSettled(item) ? (toSportsBetNumber(item.btbba) > 0 ? item.btbba : item.mwla) : item.pp
-
-// 生成带正负号的输赢金额文本。
-const formatWinLossText = (value: number | string | null | undefined) => {
-  const amount = toSportsBetNumber(value)
-  const prefix = amount > 0 ? '+' : amount < 0 ? '-' : ''
-  return `${prefix}${formatSportsBetDetailAmount(Math.abs(amount))}`
-}
-
-// 通过体育投注项 sid 找到 sportItems 中对应的图标。
-const getSportsBetIcon = (item: SportsBetHistoryWager) => {
-  return findSportItemBySportId(item.wil[0]?.sid)?.icon ?? sportItems[0]?.icon
-}
-
-// 将接口原始 wl 记录转换成 H5 卡片展示数据。
-const mapSportsBetHistoryItem = (item: SportsBetHistoryWager): SportsBetHistoryDisplayItem => {
-  const selection = item.wil[0]
-  const settled = isSportsBetSettled(item)
-  const resultAmount = getSportsBetResultAmount(item)
-  const resultNumber = toSportsBetNumber(resultAmount)
-
-  return {
-    id: String(item.wid),
-    sportIcon: getSportsBetIcon(item),
-    raw: item,
-    matchName: `${selection?.htn ?? '--'} VS ${selection?.atn ?? '--'}`,
-    statusLabel: settled
-      ? t('betHistory.filterOptions.settled')
-      : t('betHistory.filterOptions.unsettled'),
-    settled,
-    betAmount: formatSportsBetAmount(item.isa),
-    resultLabel: resultNumber < 0 ? t('betHistory.loss') : t('betHistory.win'),
-    resultAmount: formatSportsBetAmount(Math.abs(resultNumber)),
-    amountClass: resultNumber < 0 ? 'text-secondary-4' : 'text-secondary-2',
-    statusBadgeClass: settled ? 'bg-secondary-3 text-secondary-4' : 'bg-bg-3 text-text-2',
-    detailStatusBadgeClass: settled ? 'bg-secondary-4' : 'bg-secondary-7',
-    leagueName: selection?.cn ?? '--',
-    marketName: selection?.btn ?? '--',
-    selectionName: selection?.sen ?? '--',
-    handicapText: selection?.dih ? `(${selection.dih})` : '',
-    oddsText: `@ ${formatSportsBetOdds(selection?.o)}`,
-    currency: currentCurrencyCode.value,
-    winLossText: formatWinLossText(resultAmount),
-    orderNo: String(item.wid),
-    createdAt: formatUsDateTime12h(item.wcdt)
-  }
-}
-
-const mobileHistoryList = computed(() => sportsBetHistoryList.value.map(mapSportsBetHistoryItem))
+const mobileHistoryList = computed(() =>
+  sportsBetHistoryList.value.map(item => mapHistoryWager(item, currentCurrencyCode.value, t))
+)
+const cashOut = useHistoryCashOut(() => {
+  void fetchSportsBetHistory()
+})
+const cashOutItem = computed(() =>
+  cashOut.selected.value
+    ? mapHistoryWager(cashOut.selected.value, currentCurrencyCode.value, t)
+    : null
+)
 
 // 生成体育网关 TimeStamp
 const createSportsGatewayTimeStamp = () =>
@@ -582,6 +427,7 @@ const fetchSportsBetHistory = async () => {
     requestId === historyRequestId &&
     owner === getCredentialOwner() &&
     (context === undefined || context === sportsAuth.contextVersion)
+  cashOut.close()
   sportsBetHistoryList.value = []
 
   try {
@@ -601,34 +447,6 @@ const fetchSportsBetHistory = async () => {
       globalShowToast({ type: 'fail', message: t('sports.betLoginFailed') })
       return
     }
-    /*
-    let response: SportsBetHistoryResponse
-    if (settled) {
-      const params = {
-        ...resolveStatementDateRange(filterValues.value.time),
-        DateType: 2 as const,
-        StartTime: '12:00:00' as const,
-        EndTime: '11:59:59' as const,
-        ...authParams
-      }
-      console.log('已结算携带参数', params)
-      response = await Api.sport.getStatement(baseUrl, params)
-    } else {
-      const params = {
-        BetConfirmationStatus: [1, 2, 3, 4] as [1, 2, 3, 4],
-        ...authParams
-      }
-      console.log('未结算携带参数', params)
-      response = await Api.sport.getBetList(baseUrl, params)
-    }
-    if (!isCurrent() || !sportsAuth.isCredentialsCurrent(credentials)) return
-    console.log(settled ? '已结算响应数据' : '未结算响应数据', response)
-    if ([102, 202].includes(Number(response.stc))) {
-      sportsAuth.clearCredentials(credentials)
-      globalShowToast({ type: 'fail', message: t('sports.betLoginFailed') })
-      return
-    }
-    */
     sportsBetHistoryList.value = Array.isArray(response?.wl) ? response.wl : []
   } catch (error) {
     if (isCurrent()) {
@@ -644,18 +462,17 @@ const handleStartPlaying = () => {
 }
 
 // H5 点击投注记录右箭头进入体育投注详情
-const openSportsBetDetails = (item: SportsBetHistoryDisplayItem) => {
+const openSportsBetDetails = (item: HistoryWagerView) => {
   navigateTo(`/sports/bet-details/${item.id}`, {
     state: {
-      sportsBetData: JSON.stringify(item.raw)
+      sportsBetData: JSON.stringify(item.raw),
+      sportsBetOwner: JSON.stringify([
+        userStore.userInfo?.memberId,
+        userStore.acctInfo?.memberId,
+        currentCurrencyCode.value
+      ])
     }
   })
-}
-
-// PC 点击未结算卡片底部确认按钮时，打开共用提前结算弹窗。
-const openPcBuyBackSheet = (item: SportsBetHistoryDisplayItem) => {
-  selectedBuyBackWager.value = item.raw
-  showBuyBackSheet.value = true
 }
 
 // H5 点击右上角筛选图标时打开筛选弹窗。
@@ -696,6 +513,11 @@ const getDesktopFilterButtonClass = (active: boolean) => [
   'h-[40px] px-[30px] rounded-[32px] text-[14px] font-[400] transition-colors',
   active ? 'bg-bg-3 text-text-1 font-[700]' : 'bg-bg-9 text-text-2'
 ]
+
+// 账号或币种变化时丢弃旧订单与确认状态，避免跨钱包展示和提交。
+watch(getCredentialOwner, () => {
+  void fetchSportsBetHistory()
+})
 
 onMounted(() => {
   void fetchSportsBetHistory()

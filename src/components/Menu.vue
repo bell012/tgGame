@@ -922,7 +922,7 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
     {
       id: 'hashGame',
       name: t('menu.hashGame'),
-      icon: newSideIcons.sportsIcon,
+      icon: newSideIcons.hashGame,
       handler: () => navigateTo('/hash-game'),
       groupKey: 'hashGame'
     },
@@ -988,6 +988,13 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
         if (isMobile.value) return navigateTo('/red-packet')
         redPacketPanelStore.open()
       }
+    },
+    {
+      id: 'credit-loan',
+      name: t('menu.credit-loan'),
+      icon: newSideIcons.creditLoanIcon,
+      groupKey: 'credit-loan',
+      handler: () => navigateTo('/credit-loan')
     },
     {
       id: 'vip-center',
