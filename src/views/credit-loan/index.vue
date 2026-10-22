@@ -5,6 +5,10 @@
       v-if="isMobile && activeNavKey === 'loan-records'"
       @back="activeNavKey = 'credit-loan'"
     />
+    <BetHistory
+      v-else-if="isMobile && activeNavKey === 'betting-records'"
+      @back="activeNavKey = 'credit-loan'"
+    />
     <div v-else-if="isMobile" class="fixed inset-0 flex flex-col overflow-hidden bg-bg-1">
       <H5Header
         :title="activeNavTab.label"
@@ -256,15 +260,8 @@
             <LoanRecords />
           </section>
 
-          <section v-else class="flex min-w-0 flex-1 flex-col rounded-[12px] bg-bg-2 py-10">
-            <ThemedEmptyState
-              :dark-image="defaultImgDark"
-              :light-image="defaultImgLight"
-              :message="t('creditLoan.empty')"
-              container-class="mt-0"
-              image-class="w-[220px] h-[200px] object-contain mb-2.5"
-              text-class="text-xs text-center text-text-1"
-            />
+          <section v-else class="min-w-0 flex-1">
+            <BetHistory />
           </section>
         </div>
       </div>
@@ -300,6 +297,7 @@ import LoanPop from './components/loan-pop.vue'
 import TransferOutPop from './components/transfer-out-pop.vue'
 import TransferOutSuccess from './components/transfer-out-success.vue'
 import LoanRecords from './loan-records/index.vue'
+import BetHistory from './bet-history/index.vue'
 import { CREDIT_LOAN_RULE_HIGHLIGHTS, type CreditLoanRuleItem } from './mock'
 import coinIcon from './img/yongjin.svg?url'
 import MoreIcon from './img/more.svg?component'

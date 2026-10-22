@@ -2638,6 +2638,11 @@
       "loanTransferOut": "Loan Transfer Out",
       "refreshing": "Refreshing..."
     },
+    "betRecords": {
+      "loan": "Loan",
+      "pending": "Pending",
+      "completed": "Completed"
+    },
     "transferSuccess": {
       "title": "Transfer Successful",
       "desc": "Loan balance transferred to your account balance."

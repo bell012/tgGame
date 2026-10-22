@@ -2618,6 +2618,11 @@
       "loanTransferOut": "借款转出",
       "refreshing": "刷新中..."
     },
+    "betRecords": {
+      "loan": "借呗",
+      "pending": "待结算",
+      "completed": "已完成"
+    },
     "transferSuccess": {
       "title": "转出成功",
       "desc": "借款余额已转入您的账户余额。"
