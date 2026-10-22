@@ -247,14 +247,6 @@ html[data-bottom-tab-motion]::view-transition-new(bottom-tabs) {
   border-radius: 4px;
 }
 
-.auth-method-indicator-desktop.is-phone {
-  transform: translateX(6rem);
-}
-
-.auth-method-indicator-mobile.is-phone {
-  transform: translateX(5rem);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .drawer-slide-enter-active,
   .drawer-slide-leave-active,

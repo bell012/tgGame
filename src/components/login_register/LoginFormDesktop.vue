@@ -65,38 +65,45 @@
       <div class="w-full h-full flex flex-col">
         <div
           v-if="activeTab === 'signin'"
+          ref="methodTabsRef"
           class="auth-method-tabs auth-method-tabs-desktop flex gap-8 mb-[24px]"
         >
           <button
             v-for="method in loginMethodTabs"
             :key="method.key"
+            :data-method="method.key"
             class="relative min-w-16 pb-3 text-lg font-[700] font-inter transition-all duration-200 tab-button-new"
-            :class="activeLoginMethod === method.key ? 'text-text-1' : 'text-text-2'"
+            :class="activeLoginMethod === method.key ? 'text-text-1 is-active' : 'text-text-2'"
             @click="handleSigninMethodClick(method.key, setActiveLoginMethod)"
           >
             <span>{{ method.label }}</span>
           </button>
           <div
             v-if="loginMethodTabs.length"
+            ref="methodIndicatorRef"
             class="auth-method-indicator auth-method-indicator-desktop"
-            :class="{ 'is-phone': activeLoginMethod === 'phone' }"
           ></div>
         </div>
 
-        <div v-else class="auth-method-tabs auth-method-tabs-desktop flex gap-8 mb-[24px]">
+        <div
+          v-else
+          ref="methodTabsRef"
+          class="auth-method-tabs auth-method-tabs-desktop flex gap-8 mb-[24px]"
+        >
           <button
             v-for="method in signupMethodTabs"
             :key="method.key"
+            :data-method="method.key"
             class="relative min-w-16 pb-3 text-lg font-[700] font-inter transition-all duration-200 tab-button-new"
-            :class="activeSignupMethod === method.key ? 'text-text-1' : 'text-text-2'"
+            :class="activeSignupMethod === method.key ? 'text-text-1 is-active' : 'text-text-2'"
             @click="handleSignupMethodClick(method.key, setActiveSignupMethod)"
           >
             <span>{{ method.label }}</span>
           </button>
           <div
             v-if="signupMethodTabs.length"
+            ref="methodIndicatorRef"
             class="auth-method-indicator auth-method-indicator-desktop"
-            :class="{ 'is-phone': activeSignupMethod === 'phone' }"
           ></div>
         </div>
 
@@ -584,7 +591,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { nextTick, onMounted, onUpdated, ref, watch } from 'vue'
 import type { LoginSetResult } from '@/api/interface/login_register'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
@@ -600,7 +607,7 @@ import LoginPolicySheet from './LoginPolicySheet.vue'
 import PhoneAreaCodePopup from './PhoneAreaCodePopup.vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -621,11 +628,28 @@ const emit = defineEmits<{
 }>()
 
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
+const methodTabsRef = ref<HTMLElement | null>(null)
+const methodIndicatorRef = ref<HTMLElement | null>(null)
 const isSigninAreaCodeDropdownOpen = ref(false)
 const isSignupAreaCodeDropdownOpen = ref(false)
 const signinAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 const signupAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 const showPolicySheet = ref(false)
+
+const updateMethodIndicatorPosition = () => {
+  const tabs = methodTabsRef.value
+  const indicator = methodIndicatorRef.value
+  const activeButton = tabs?.querySelector<HTMLElement>('.tab-button-new.is-active')
+  if (!tabs || !indicator || !activeButton) return
+
+  const centerOffset =
+    activeButton.offsetLeft + activeButton.offsetWidth / 2 - indicator.offsetWidth / 2
+  indicator.style.transform = `translateX(${centerOffset}px)`
+}
+
+onMounted(updateMethodIndicatorPosition)
+onUpdated(updateMethodIndicatorPosition)
+watch(locale, () => nextTick(updateMethodIndicatorPosition))
 
 /**
  * 获取当前选中的手机号区号配置。
@@ -693,6 +717,7 @@ const handleSigninMethodClick = (
 ) => {
   setActiveLoginMethod(method)
   closeSigninAreaCodeDropdown()
+  nextTick(updateMethodIndicatorPosition)
 }
 
 /**
@@ -704,6 +729,7 @@ const handleSignupMethodClick = (
 ) => {
   setActiveSignupMethod(method)
   closeSignupAreaCodeDropdown()
+  nextTick(updateMethodIndicatorPosition)
 }
 
 watch(
