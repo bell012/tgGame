@@ -472,6 +472,9 @@
       :summary="recentBetSummary"
     />
 
+    <!-- 历史投注 -->
+    <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
+
     <Teleport to="body">
       <Transition name="bottom-sheet">
         <div
@@ -578,6 +581,7 @@ import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
+import HistoryPopup from './components/HistoryPopup.vue'
 import { ref } from 'vue'
 import { navigateTo } from '@/utils/router'
 import type { HashGamePageState } from './index'
@@ -615,6 +619,8 @@ const {
   hashParts,
   mockBet,
   recentBets,
+  historyPopupOpen,
+  historyRecords,
   recentBetSummary,
   resultLabels,
   resultColumns,

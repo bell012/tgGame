@@ -44,6 +44,8 @@
     "betAmount": "投注金额",
     "todayProfitLoss": "今日盈亏",
     "betBlock": "投注区块",
+    "result": "结果",
+    "actions": "操作",
     "betSelection": "投注选项",
     "profitLoss": "盈亏",
     "game": "游戏",

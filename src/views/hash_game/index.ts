@@ -29,6 +29,13 @@ export type RecentBetSummary = {
   betAmount: number
   todayProfitLoss: number
 }
+export type HashGameHistoryRecord = {
+  id: number
+  block: string
+  digit: string
+  outcome: 'evenSmall' | 'oddBig'
+  blockHash: string
+}
 
 const MOCK_RECENT_BETS: RecentBetRecord[] = Array.from({ length: 12 }, (_, index) => ({
   id: `ts0768456746746746${index}`,
@@ -44,6 +51,17 @@ const MOCK_RECENT_BET_SUMMARY: RecentBetSummary = {
   betAmount: 183.91,
   todayProfitLoss: -876.98
 }
+const MOCK_HASH_GAME_HISTORY: HashGameHistoryRecord[] = Array.from({ length: 24 }, (_, index) => {
+  const evenSmall = index % 2 === 0
+  const digit = evenSmall ? '2' : '7'
+  return {
+    id: index,
+    block: '85598756',
+    digit,
+    outcome: evenSmall ? 'evenSmall' : 'oddBig',
+    blockHash: `...8c14fc4fe${digit}`
+  }
+})
 
 // H5、PC 共用筹码配置，面额与配色保持在同一项中。
 const CHIP_OPTIONS = [
@@ -102,6 +120,7 @@ export const useHashGamePage = () => {
   const selectedPeriod = ref(15)
   const periodOptions = HASH_GAME_PERIOD_OPTIONS
   const periodsOpen = ref(false)
+  const historyPopupOpen = ref(false)
   const periodTriggerRef = ref<HTMLElement | null>(null)
   const periodMenuRef = ref<HTMLElement | null>(null)
   const currencyPopupOpen = ref(false)
@@ -150,6 +169,7 @@ export const useHashGamePage = () => {
 
   const closeOverlays = () => {
     periodsOpen.value = false
+    historyPopupOpen.value = false
     chipEditorOpen.value = false
     currencyPopupOpen.value = false
   }
@@ -225,7 +245,12 @@ export const useHashGamePage = () => {
   }
 
   const openRecords = () => {
-    void navigateTo('/bet-history')
+    periodsOpen.value = false
+    historyPopupOpen.value = true
+  }
+
+  const closeRecords = () => {
+    historyPopupOpen.value = false
   }
 
   // 筹码和选项仅作本地选择展示，不调用投注接口、不扣减余额。
@@ -302,6 +327,8 @@ export const useHashGamePage = () => {
     selectedPeriod,
     periodOptions,
     periodsOpen,
+    historyPopupOpen,
+    historyRecords: MOCK_HASH_GAME_HISTORY,
     periodTriggerRef,
     periodMenuRef,
     currencyPopupOpen,
@@ -330,6 +357,7 @@ export const useHashGamePage = () => {
     selectCurrency,
     handleBack,
     openRecords,
+    closeRecords,
     selectBet,
     cancelSelection,
     repeatSelection,
