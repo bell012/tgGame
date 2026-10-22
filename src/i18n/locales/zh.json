@@ -2554,5 +2554,36 @@
     "luckySpinVoucher": "转盘票券",
     "mysteryBoxVoucher": "盲盒票券",
     "claimNow": "立即领取"
+  },
+  "redPacketPanel": {
+    "empty": "暂无红包",
+    "emptySender": "TG Bonus Desk",
+    "emptyTime": "11/07 12:18",
+    "emptyMessage": "精彩福利即将到来，稍后再来领取你的红包。",
+    "loadFailed": "加载失败，",
+    "retry": "重试",
+    "congratulations": "恭喜",
+    "congratulationsExclaim": "恭喜您！",
+    "timeLeft": "剩余时间：",
+    "depositNow": "立即充值",
+    "betNow": "立即投注",
+    "claimNow": "立即领取",
+    "claimed": "已领取",
+    "credited": "已存入您的余额",
+    "expiredTitle": "哎呀！",
+    "expiredDesc": "红包已过期！",
+    "expiryDate": "过期时间：",
+    "soldOutTitle": "手慢了！",
+    "soldOutDesc": "红包已领完！",
+    "conditionLabel": {
+      "recharge": "充值金额：",
+      "loss": "亏损金额：",
+      "bet": "打码金额："
+    },
+    "conditionHint": {
+      "recharge": { "prefix": "充值满", "suffix": "可领取" },
+      "loss": { "prefix": "亏损满", "suffix": "可领取" },
+      "bet": { "prefix": "打码满", "suffix": "可领取" }
+    }
   }
 }

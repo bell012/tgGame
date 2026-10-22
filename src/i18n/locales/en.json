@@ -2574,5 +2574,36 @@
     "luckySpinVoucher": "Lucky Spin Voucher",
     "mysteryBoxVoucher": "Mystery Box Voucher",
     "claimNow": "Claim Now"
+  },
+  "redPacketPanel": {
+    "empty": "No red packets yet",
+    "emptySender": "TG Bonus Desk",
+    "emptyTime": "11/07 12:18",
+    "emptyMessage": "Something exciting is on the way. Come back soon to claim your bonus!",
+    "loadFailed": "Failed to load.",
+    "retry": "Retry",
+    "congratulations": "Congratulations",
+    "congratulationsExclaim": "Congratulations!",
+    "timeLeft": "Time Left:",
+    "depositNow": "Deposit Now",
+    "betNow": "Bet Now",
+    "claimNow": "Claim Now",
+    "claimed": "Claimed",
+    "credited": "Credited to your balance",
+    "expiredTitle": "Oops!",
+    "expiredDesc": "Bonus expired!",
+    "expiryDate": "Expiry Date:",
+    "soldOutTitle": "Too slow!",
+    "soldOutDesc": "All gone!",
+    "conditionLabel": {
+      "recharge": "Deposit Amount:",
+      "loss": "Loss Amount:",
+      "bet": "Bet Amount:"
+    },
+    "conditionHint": {
+      "recharge": { "prefix": "Bonus on", "suffix": "recharge." },
+      "loss": { "prefix": "Bonus on", "suffix": "loss." },
+      "bet": { "prefix": "Bonus on", "suffix": "bet." }
+    }
   }
 }
