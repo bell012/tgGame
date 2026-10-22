@@ -83,6 +83,9 @@ type SportsRequestError = {
   code?: number | string
 }
 
+/** 收藏查询未能确认当前会员身份，不能将返回列表当作已确认的收藏结果。 */
+class SportsFavouriteCredentialsError extends Error {}
+
 type SportsFavouriteResult =
   'success' | 'synced' | 'failed' | 'login-failed' | 'auth-expired' | 'stale'
 
@@ -327,9 +330,12 @@ const createSportsRequest = <Params, Response extends SportsResponse>(
           state.data = response
         }
         return response
-      } catch {
+      } catch (error) {
         if (currentGeneration === generation && !signal.aborted) {
-          state.error = { kind: 'network', message: 'Sports request failed' }
+          state.error = {
+            kind: error instanceof SportsFavouriteCredentialsError ? 'credentials' : 'network',
+            message: 'Sports request failed'
+          }
         }
         return null
       } finally {
@@ -463,7 +469,8 @@ export const useSportsStore = defineStore('sports', () => {
     if (options?.signal?.aborted || context !== sportsAuth.contextVersion)
       throw new Error('Stale sports request')
     const current = credentials && sportsAuth.isCredentialsCurrent(credentials) ? credentials : null
-    if (params.IsFavourite && !current) throw new Error('Sports credentials unavailable')
+    if (params.IsFavourite && !current)
+      throw new SportsFavouriteCredentialsError('Sports credentials unavailable')
     const query = { ...params }
     delete query.MemberCode
     const response = await sportsApi.getSportsV2(
@@ -475,6 +482,13 @@ export const useSportsStore = defineStore('sports', () => {
       options
     )
     if (current && isAuthExpired(response)) sportsAuth.clearCredentials(current)
+    if (
+      params.IsFavourite &&
+      isSportsSuccess(response) &&
+      (!current || !sportsAuth.isCredentialsCurrent(current) || revision < favouriteResetRevision)
+    ) {
+      throw new SportsFavouriteCredentialsError('Sports credentials changed during favourite query')
+    }
     if (
       !options?.signal?.aborted &&
       current &&
@@ -1571,9 +1585,12 @@ export const useSportsStore = defineStore('sports', () => {
         allSportsDataScope.value = scope
         allSportsDataContext.value = context
         return data
-      } catch {
+      } catch (error) {
         if (isCurrent()) {
-          allSportsState.error = { kind: 'network', message: 'All-league request failed' }
+          allSportsState.error = {
+            kind: error instanceof SportsFavouriteCredentialsError ? 'credentials' : 'network',
+            message: 'All-league request failed'
+          }
         }
         return null
       } finally {
@@ -2043,6 +2060,9 @@ export const useSportsStore = defineStore('sports', () => {
       (!keyword.value.trim()
         ? (competitionIds.value.map(id => getLeagueLoadState(id)?.error).find(Boolean) ?? null)
         : null)
+  )
+  const favouriteListNeedsRefresh = computed(
+    () => isFavourite.value && matchListError.value?.kind === 'credentials'
   )
   // 两种排序均为联赛总数，不当作赛事卡片数量参与本地分页。
   const eventsTotal = computed(() =>
@@ -2579,7 +2599,16 @@ export const useSportsStore = defineStore('sports', () => {
     return pending
   }
 
-  watch(getRefreshContext, cancelHomepageRefresh, { flush: 'sync' })
+  // 保留每次条件变化的失效记录；同一批更新切走再切回也必须重新接续查询。
+  const homepageQueryVersion = ref(0)
+  watch(
+    getRefreshContext,
+    () => {
+      cancelHomepageRefresh()
+      homepageQueryVersion.value += 1
+    },
+    { flush: 'sync' }
+  )
   watch(
     () =>
       JSON.stringify([getBaseUrl(), languageCode.value, market.value, sportsSessionVersion.value]),
@@ -3036,6 +3065,8 @@ export const useSportsStore = defineStore('sports', () => {
     matchListContext,
     matchListLoading,
     matchListError,
+    favouriteListNeedsRefresh,
+    homepageQueryVersion,
     allLeagueGroups,
     hotEvents,
     hotEventsLoading,
