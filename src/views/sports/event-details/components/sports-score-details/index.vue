@@ -19,6 +19,8 @@
     :odds-format="oddsFormat"
     :bet-slip-page="betSlipPage"
     :match-id="matchId"
+    :home-team-name="homeTeamName"
+    :away-team-name="awayTeamName"
   />
 </template>
 
@@ -46,7 +48,7 @@ withDefaults(
     matchId?: string
   }>(),
   {
-    oddsFormat: 1,
+    oddsFormat: 3,
     showEmpty: false
   }
 )

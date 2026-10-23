@@ -5,31 +5,44 @@
       :key="selection.WagerSelectionId"
       type="button"
       class="flex min-h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-lg px-3"
-      :class="isSelected(selection) ? 'bg-theme-primary text-text-4' : 'bg-bg-3 text-text-1'"
+      :class="
+        !isLocked(stripLine, selection) && isSelected(selection)
+          ? 'bg-theme-primary text-text-4'
+          : 'bg-bg-3 text-text-1'
+      "
+      :disabled="isLocked(stripLine, selection)"
       @click="onListSelect(stripLine, selection)"
     >
-      <span class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 text-[12px] font-normal">
-        <span class="min-w-0 max-w-full truncate" :title="selectionLabel(selection)">{{
-          selectionLabel(selection)
-        }}</span>
+      <img
+        v-if="isLocked(stripLine, selection)"
+        :src="lockIcon"
+        class="mx-auto size-[18px] object-contain"
+        alt=""
+      />
+      <template v-else>
+        <span class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 text-[12px] font-normal">
+          <span class="min-w-0 max-w-full truncate" :title="selectionLabel(selection)">{{
+            selectionLabel(selection)
+          }}</span>
+          <span
+            v-if="shouldShowHandicap(stripLine, selection)"
+            class="max-w-full shrink-0 break-words"
+            >{{ formatHandicap(selection.Handicap) }}</span
+          >
+        </span>
         <span
-          v-if="shouldShowHandicap(stripLine, selection)"
-          class="max-w-full shrink-0 break-words"
-          >{{ formatHandicap(selection.Handicap) }}</span
+          class="flex shrink-0 items-center text-[12px] font-bold"
+          :class="oddsNumberClass(selection)"
         >
-      </span>
-      <span
-        class="flex shrink-0 items-center text-[12px] font-bold"
-        :class="oddsNumberClass(selection)"
-      >
-        <component
-          v-if="oddsArrow(selection)"
-          :is="oddsArrow(selection)"
-          class="h-3 w-3 shrink-0"
-          aria-hidden="true"
-        />
-        {{ formatEuropeanOdds(selection) }}
-      </span>
+          <component
+            v-if="oddsArrow(selection)"
+            :is="oddsArrow(selection)"
+            class="h-3 w-3 shrink-0"
+            aria-hidden="true"
+          />
+          {{ displayOdds(selection) }}
+        </span>
+      </template>
     </button>
   </div>
 
@@ -58,10 +71,11 @@
           class="flex w-full min-w-0 flex-col items-center justify-center overflow-hidden rounded-[5px]"
           :title="selection ? selectionLabel(selection) : undefined"
           :class="cellClass(line, selection)"
+          :disabled="isLocked(line, selection)"
           @click="onListSelect(line, selection)"
         >
           <img
-            v-if="line.IsLocked"
+            v-if="isLocked(line, selection)"
             class="h-[18px] w-[18px] shrink-0 object-contain"
             :src="lockIcon"
             alt=""
@@ -92,9 +106,7 @@
                 class="h-3 w-3 shrink-0"
                 aria-hidden="true"
               />
-              <span class="max-w-full shrink-0 break-words">{{
-                formatEuropeanOdds(selection)
-              }}</span>
+              <span class="max-w-full shrink-0 break-words">{{ displayOdds(selection) }}</span>
             </span>
           </template>
         </button>
@@ -110,14 +122,18 @@ import OddsUpIcon from '@/static/svg/sports/h5-odds-up.svg?component'
 import OddsDownIcon from '@/static/svg/sports/h5-odds-down.svg?component'
 import lockIcon from '../../event-details/components/sports-score-details/img/bold.svg?url'
 import {
-  formatEuropeanOdds,
   formatHandicap,
   hasDisplayableCardOdds,
   isWagerSelected,
   MAX_CARD_SELECTIONS,
-  selectionLetterKey,
-  shouldShowHandicap
+  selectionLetterKey
 } from './display'
+import { useSportsOdds } from '../../composables/useSportsOdds'
+import { formatOdds, resolveSelectionOdds } from '../../shared/odds'
+import {
+  resolveSelectionName,
+  selectionNeedsHandicap as shouldShowHandicap
+} from '../../shared/selection-name'
 import { noteMarketLines, trendOf } from './odds-trend'
 import type { OddsSelectPayload, SportMarketLine, SportWagerSelection } from './types'
 
@@ -139,10 +155,24 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { oddsType } = useSportsOdds()
+const nameTeams = computed(() => ({
+  HomeTeam: t('sports.oddsHome'),
+  AwayTeam: t('sports.oddsAway')
+}))
+const displayOdds = (selection: SportWagerSelection) =>
+  resolveSelectionName(selection, nameTeams.value) === null
+    ? ''
+    : formatOdds(resolveSelectionOdds(selection, oddsType.value))
+const isLocked = (line: SportMarketLine, selection?: SportWagerSelection) =>
+  line.IsLocked || line.MarketlineStatusId !== 1 || !selection || displayOdds(selection) === ''
 
 const selectionLabel = (selection: SportWagerSelection) => {
+  if (/[{}]/.test(selection.SelectionName)) {
+    return resolveSelectionName(selection, nameTeams.value) ?? ''
+  }
   const key = selectionLetterKey(selection)
-  return key ? t(key) : selection.SelectionName
+  return key ? t(key) : (resolveSelectionName(selection, nameTeams.value) ?? '')
 }
 
 const isStrip = computed(() => props.layout === 'strip')
@@ -186,14 +216,17 @@ const oddsArrow = (selection: SportWagerSelection) => {
 watch(() => props.MarketLines, noteMarketLines, { deep: true, immediate: true })
 
 const onListSelect = (line: SportMarketLine, selection?: SportWagerSelection) => {
-  if (line.IsLocked || !selection || !hasDisplayableCardOdds(selection)) return
+  if (!selection || isLocked(line, selection)) return
   emit('select', { market: line, option: selection })
 }
 
 const cellClass = (line: SportMarketLine, selection?: SportWagerSelection) => {
   const compact = listCells(line).length >= 3
   const size = compact ? 'min-h-[37px] px-[3px] py-[3px]' : 'min-h-[58px] px-[5px] py-[7px]'
-  const tone = !line.IsLocked && selection && isSelected(selection) ? 'bg-theme-primary' : 'bg-bg-3'
+  const tone =
+    !isLocked(line, selection) && selection && isSelected(selection)
+      ? 'bg-theme-primary'
+      : 'bg-bg-3'
   return `${size} ${tone}`
 }
 </script>

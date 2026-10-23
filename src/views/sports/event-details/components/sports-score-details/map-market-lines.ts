@@ -1,13 +1,5 @@
-import type {
-  SportMarketLine,
-  SportWagerSelection,
-  SportsResponseOddsType
-} from '@/api/interface/sport'
-import {
-  formatHandicap,
-  hasFiniteOdds,
-  shouldShowHandicap
-} from '@/views/sports/components/match-odds/display'
+import type { SportMarketLine, SportWagerSelection, SportsOddsType } from '@/api/interface/sport'
+import { hasDisplayableCardOdds } from '@/views/sports/components/match-odds/display'
 import type {
   DualColumnMarketCard,
   OneXTwoMarketCard,
@@ -15,49 +7,41 @@ import type {
   ScoreDetailsMarketCard
 } from './types'
 
-const LEFT_SELECTION_IDS = new Set([1, 3, 5])
-const RIGHT_SELECTION_IDS = new Set([2, 4, 6, 7])
+import { formatOdds, resolveSelectionOdds } from '../../../shared/odds'
+import {
+  formatMarketName,
+  formatSelectionName,
+  type SelectionTeams
+} from '../../../shared/selection-name'
 
 /** 赛事详情页底部 Odds Format 可选盘型（含美式 6）。 */
-export type EventDetailsOddsFormat = 1 | 2 | 3 | 4 | 6
+export type EventDetailsOddsFormat = SportsOddsType
 
 /** 按底部 Odds Format 从 OddsList 取对应 OddsType 的 OddsValues.A。 */
 export const resolveOddsForFormat = (
   selection: SportWagerSelection,
   oddsFormat: EventDetailsOddsFormat
 ): string => {
-  const match = (selection.OddsList ?? []).find(
-    item => Number(item.OddsType) === (oddsFormat as SportsResponseOddsType)
-  )
-  const value = match?.OddsValues?.A
-  return value !== undefined && value !== '' ? value : ''
+  return formatOdds(resolveSelectionOdds(selection, oddsFormat))
 }
 
 const hasOddsForFormat = (selection: SportWagerSelection, oddsFormat: EventDetailsOddsFormat) =>
   resolveOddsForFormat(selection, oddsFormat) !== ''
 
-const formatLine = (line: SportMarketLine, selection: SportWagerSelection) => {
-  if (shouldShowHandicap(line, selection)) {
-    return formatHandicap(selection.Handicap)
-  }
-  return selection.SelectionName?.trim() ?? ''
-}
-
-const isOneXTwoLine = (line: SportMarketLine, selections: SportWagerSelection[]) =>
-  line.BetTypeId === 3 ||
-  (selections.length === 3 && selections.every(item => item.SelectionId >= 5))
+const isOneXTwoLine = (line: SportMarketLine) => line.BetTypeId === 3 || line.BetTypeId === 35
 
 const mapOneXTwo = (
   line: SportMarketLine,
   selections: SportWagerSelection[],
-  oddsFormat: EventDetailsOddsFormat
+  oddsFormat: EventDetailsOddsFormat,
+  teams: SelectionTeams
 ): OneXTwoMarketCard => ({
   id: String(line.MarketlineId),
   kind: '1x2',
-  title: line.BetTypeName,
+  title: formatMarketName(line, teams),
   betTypeName: line.BetTypeName,
   options: selections.map(selection => ({
-    label: selection.SelectionName,
+    label: formatSelectionName(line, selection, teams) ?? '',
     odds: resolveOddsForFormat(selection, oddsFormat),
     selection
   }))
@@ -66,92 +50,58 @@ const mapOneXTwo = (
 const mapDualColumn = (
   line: SportMarketLine,
   selections: SportWagerSelection[],
-  oddsFormat: EventDetailsOddsFormat
+  oddsFormat: EventDetailsOddsFormat,
+  teams: SelectionTeams
 ): DualColumnMarketCard => {
-  const leftSelections = selections.filter(item => LEFT_SELECTION_IDS.has(item.SelectionId))
-  const rightSelections = selections.filter(item => RIGHT_SELECTION_IDS.has(item.SelectionId))
-
-  const leftPool = leftSelections.length ? leftSelections : selections.slice(0, 1)
-  const rightPool = rightSelections.length
-    ? rightSelections
-    : selections.length > 1
-      ? selections.slice(1)
-      : []
-
-  const leftHeader = leftPool[0]?.SelectionName ?? ''
-  const rightHeader = rightPool[0]?.SelectionName ?? ''
-
-  const rightByHandicap = new Map(
-    rightPool.map(selection => [selection.Handicap, selection] as const)
-  )
-
-  const rows = leftPool.map((left, index) => {
-    const right = rightByHandicap.get(left.Handicap) ?? rightPool[index] ?? rightPool[0]
-    const emptyCell = { line: '', odds: '' as const, selection: undefined }
-    return {
-      left: {
-        line: formatLine(line, left),
-        odds: resolveOddsForFormat(left, oddsFormat),
-        selection: left
-      },
-      right: right
-        ? {
-            line: formatLine(line, right),
-            odds: resolveOddsForFormat(right, oddsFormat),
-            selection: right
-          }
-        : emptyCell
-    }
-  })
-
-  if (!rows.length && selections.length) {
-    const [only] = selections
-    rows.push({
-      left: {
-        line: formatLine(line, only),
-        odds: resolveOddsForFormat(only, oddsFormat),
-        selection: only
-      },
-      right: { line: '', odds: '', selection: undefined }
-    })
+  const cells = selections.map(selection => ({
+    line: formatSelectionName(line, selection, teams) ?? '',
+    odds: resolveOddsForFormat(selection, oddsFormat),
+    selection
+  }))
+  const rows: DualColumnMarketCard['rows'] = []
+  // 按接口顺序逐项展示，不按 Handicap 合并；同盘口值可以对应多个不同投注选项。
+  for (let index = 0; index < cells.length; index += 2) {
+    rows.push({ left: cells[index], right: cells[index + 1] ?? { line: '', odds: '' } })
   }
 
   return {
     id: String(line.MarketlineId),
     kind: 'dual-column',
-    title: line.BetTypeName,
+    title: formatMarketName(line, teams),
     betTypeName: line.BetTypeName,
-    leftHeader,
-    rightHeader,
+    leftHeader: '',
+    rightHeader: '',
     rows
   }
 }
 
 export const mapMarketLineToCard = (
   line: SportMarketLine,
-  oddsFormat: EventDetailsOddsFormat = 1
+  oddsFormat: EventDetailsOddsFormat = 3,
+  teams: SelectionTeams = {}
 ): ScoreDetailsMarketCard | null => {
   if (!line || !Number.isSafeInteger(line.MarketlineId)) {
     return null
   }
   const selections = (line.WagerSelections ?? []).filter(
-    item => hasOddsForFormat(item, oddsFormat) || hasFiniteOdds(item)
+    item => hasOddsForFormat(item, oddsFormat) || hasDisplayableCardOdds(item)
   )
   if (!selections.length) {
     return null
   }
-  if (isOneXTwoLine(line, selections)) {
-    return mapOneXTwo(line, selections, oddsFormat)
+  if (isOneXTwoLine(line)) {
+    return mapOneXTwo(line, selections, oddsFormat, teams)
   }
-  return mapDualColumn(line, selections, oddsFormat)
+  return mapDualColumn(line, selections, oddsFormat, teams)
 }
 
 export const mapMarketLinesToCards = (
   lines: readonly SportMarketLine[],
-  oddsFormat: EventDetailsOddsFormat = 1
+  oddsFormat: EventDetailsOddsFormat = 3,
+  teams: SelectionTeams = {}
 ): ScoreDetailsMarketCard[] =>
   (lines ?? []).flatMap(line => {
-    const card = mapMarketLineToCard(line, oddsFormat)
+    const card = mapMarketLineToCard(line, oddsFormat, teams)
     return card ? [card] : []
   })
 

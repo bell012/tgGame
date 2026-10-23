@@ -1,10 +1,27 @@
-import type { SportsBetInfoQuote, SportsBetInfoSelectionParams } from '@/api/interface/sport'
+import type {
+  SportsBetInfoQuote,
+  SportsBetInfoSelectionParams,
+  SportsOddsType
+} from '@/api/interface/sport'
 
 export const isBetInfoMarketClosed = (quote: SportsBetInfoQuote | null | undefined) =>
   Number(quote?.mlsid) === 2
 
 export const isBetInfoRetryable = (quote: SportsBetInfoQuote | null | undefined) =>
   Number(quote?.st) === 380 && Number(quote?.mlsid) === 1
+
+/** 只接受同盘型的可投或已更新报价；失败项即使带旧赔率也不能用于提交。 */
+export const isBetInfoQuoteUsable = (
+  quote: SportsBetInfoQuote | null | undefined,
+  oddsType: SportsOddsType
+) =>
+  Boolean(
+    quote &&
+    [100, 381].includes(Number(quote.st)) &&
+    Number(quote.mlsid) === 1 &&
+    Number(quote.ot) === oddsType &&
+    decimalOdds(quote.o, oddsType) !== null
+  )
 
 // 按选项 ID 关联报价；字段缺失不等于投注项失效。
 export const parseBetInfoItems = (

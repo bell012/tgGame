@@ -113,7 +113,7 @@
                           : ''
                     "
                   >
-                    @{{ selection.odds.toFixed(2) }}
+                    @{{ Number.isFinite(selection.odds) ? selection.odds.toFixed(2) : '--' }}
                     <OddsDownIcon
                       v-if="selection.trend"
                       class="h-5 w-5"

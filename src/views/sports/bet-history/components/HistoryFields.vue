@@ -47,7 +47,8 @@ const rows = computed(() => [
     ? [{ key: 'odds', label: t('sportsHistory.totalOdds'), value: props.item.totalOdds }]
     : []),
   { key: 'order', label: t('betDetails.orderNo'), value: props.item.orderNo },
-  { key: 'date', label: t('betDetails.createdAt'), value: props.item.createdAt }
+  { key: 'date', label: t('betDetails.createdAt'), value: props.item.createdAt },
+  { key: 'oddsType', label: t('sportsHistory.oddsType'), value: props.item.oddsTypeLabel }
 ])
 
 // 仅在剪贴板写入成功后反馈成功，不将缺失的 Clipboard API 当作已复制。

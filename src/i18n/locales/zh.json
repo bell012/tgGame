@@ -876,6 +876,7 @@
     "placeholder": "请选择"
   },
   "sportsHistory": {
+    "oddsType": "盘口",
     "confirmCashOut": "确定",
     "close": "关闭",
     "singleBet": "单关投注",
@@ -2349,12 +2350,19 @@
       "oddsFormatLabel": "盘口格式",
       "oddsFormatOptionsAria": "盘口格式选项",
       "oddsFormatDisclaimer": "我们虽尽力确保本网站所显示数据的准确性，但相关内容仅供参考，不应作为唯一依据。对于任何不准确之处，我们不承担任何责任。",
+      "oddsFormatShortTypes": {
+        "1": "马来盘",
+        "2": "香港盘",
+        "3": "欧洲盘",
+        "4": "印尼盘",
+        "6": "美式盘"
+      },
       "oddsFormatTypes": {
         "1": "马来盘",
         "2": "香港盘",
         "3": "欧洲盘",
         "4": "印尼盘",
-        "6": "美国盘"
+        "6": "美式盘"
       },
       "noBettingMarkets": "暂无可用盘口。",
       "matchEnded": "比赛已结束"

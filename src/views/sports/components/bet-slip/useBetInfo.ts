@@ -11,6 +11,7 @@ import {
 import type { Ref } from 'vue'
 import type {
   SportMarketLine,
+  SportsOddsType,
   SportsBetInfoSelectionParams,
   SportWagerSelection,
   SportsBetInfoQuote,
@@ -21,7 +22,15 @@ import { useUserStore } from '@/stores/user'
 import { useSportsAuthStore } from '@/stores/sportsAuth'
 import type { SportsBetMode } from '../../shared/types'
 import type { OddsTrend } from '../match-odds/types'
-import { decimalOdds, isBetInfoRetryable, parseBetInfoItems } from './bet-info'
+import {
+  decimalOdds,
+  isBetInfoMarketClosed,
+  isBetInfoQuoteUsable,
+  isBetInfoRetryable,
+  parseBetInfoItems
+} from './bet-info'
+
+import { resolveSelectionOdds, resolveParlayOdds } from '../../shared/odds'
 
 export type BetInfoSource = {
   sportId: number
@@ -32,29 +41,39 @@ export type BetInfoSource = {
   openParlay: boolean
 }
 
-export const buildBetInfoSelections = (sources: BetInfoSource[]): SportsBetInfoSelectionParams[] =>
-  sources.map(({ sportId, eventId, market, option, eventMarket }) => ({
-    RefId: option.WagerSelectionId,
-    SportId: sportId,
-    EventId: eventId,
-    BetTypeId: market.BetTypeId,
-    MarketlineId: market.MarketlineId,
-    WagerSelectionId: option.WagerSelectionId,
-    BetTypeSelectionId: option.SelectionId,
-    PeriodId: market.PeriodId,
-    Market: eventMarket,
-    MarketlineStatusId: market.MarketlineStatusId,
-    OutrightTeamId: 0,
-    OddsType: option.OddsType,
-    Odds: option.Odds,
-    Handicap: option.Handicap ?? null,
-    Specifiers: option.Specifiers ?? null,
-    PreBoostOdds: null
-  }))
+export const buildBetInfoSelections = (
+  sources: BetInfoSource[],
+  oddsType: SportsOddsType,
+  mode: SportsBetMode = 'single'
+): SportsBetInfoSelectionParams[] =>
+  sources.map(({ sportId, eventId, market, option, eventMarket }) => {
+    const odds =
+      mode === 'parlay' ? resolveParlayOdds(option) : resolveSelectionOdds(option, oddsType)
+    if (odds === null) throw new Error('Selected odds format unavailable')
+    return {
+      RefId: option.WagerSelectionId,
+      SportId: sportId,
+      EventId: eventId,
+      BetTypeId: market.BetTypeId,
+      MarketlineId: market.MarketlineId,
+      WagerSelectionId: option.WagerSelectionId,
+      BetTypeSelectionId: option.SelectionId,
+      PeriodId: market.PeriodId,
+      Market: eventMarket,
+      MarketlineStatusId: market.MarketlineStatusId,
+      OutrightTeamId: 0,
+      OddsType: mode === 'parlay' ? 3 : oddsType,
+      Odds: odds,
+      Handicap: option.Handicap ?? null,
+      Specifiers: option.Specifiers ?? null,
+      PreBoostOdds: null
+    }
+  })
 
 type BetInfoOptions = {
   open: Ref<boolean>
   mode: Ref<SportsBetMode>
+  oddsType: Ref<SportsOddsType>
   parlayEligible: Ref<boolean>
   /** 原始选择标识，不受后台盘口可用性检查影响。 */
   interactionKey: Ref<string>
@@ -65,6 +84,7 @@ type BetInfoOptions = {
 export const useBetInfo = ({
   open,
   mode,
+  oddsType,
   parlayEligible,
   interactionKey,
   selectionKey,
@@ -130,11 +150,17 @@ export const useBetInfo = ({
       state.value = 'idle'
       return
     }
-    const selections = buildBetInfoSelections(sources)
     loading.value = true
     state.value = 'loading'
     let credentialsUnavailable = false
     try {
+      // 单关可分别下注，缺少目标盘型的选项不能阻断其他单关的报价；串关必须完整。
+      const querySources =
+        mode.value === 'single'
+          ? sources.filter(source => resolveSelectionOdds(source.option, oddsType.value) !== null)
+          : sources
+      if (!querySources.length) throw new Error('Selected odds format unavailable')
+      const selections = buildBetInfoSelections(querySources, oddsType.value, mode.value)
       const params = {
         WagerType: mode.value === 'single' ? 1 : 2,
         WagerSelectionInfos: selections
@@ -190,12 +216,23 @@ export const useBetInfo = ({
             return quote ? [quote] : []
           })
         : next
-      if (quotes.value.some(isBetInfoRetryable)) {
-        error.value = 'sports.betInfoFailed'
-        return
-      }
       settings.value = Array.isArray(response.bs) ? response.bs.filter(Boolean) : []
-      ready.value = true
+      // 单关独立判断；明确失败的返回保留为失败项，不能回退成上一份可投报价。
+      ready.value =
+        mode.value === 'single'
+          ? quotes.value.some(quote => isBetInfoQuoteUsable(quote, oddsType.value))
+          : selections.every(selection =>
+              quotes.value.some(
+                quote =>
+                  quote.rid === selection.RefId && isBetInfoQuoteUsable(quote, oddsType.value)
+              )
+            )
+      if (
+        !ready.value &&
+        (!quotes.value.length || quotes.value.some(quote => !isBetInfoMarketClosed(quote)))
+      ) {
+        error.value = 'sports.betInfoFailed'
+      }
     } catch (failure) {
       if (current === generation) {
         ready.value = false
@@ -238,7 +275,14 @@ export const useBetInfo = ({
 
   // 重新打开、主动更换选项/模式或切换账号后允许重试；后台赔率变化不解锁。
   watch(
-    () => [open.value, mode.value, interactionKey.value, sportsAuth.contextVersion] as const,
+    () =>
+      [
+        open.value,
+        mode.value,
+        oddsType.value,
+        interactionKey.value,
+        sportsAuth.contextVersion
+      ] as const,
     () => {
       credentialsBlocked.value = false
     },
@@ -249,7 +293,12 @@ export const useBetInfo = ({
   watch(
     () =>
       [
-        JSON.stringify([mode.value, selectionKey.value, sportsStore.sportsSessionVersion]),
+        JSON.stringify([
+          mode.value,
+          oddsType.value,
+          selectionKey.value,
+          sportsStore.sportsSessionVersion
+        ]),
         open.value,
         loggedIn.value,
         active.value,
@@ -257,6 +306,8 @@ export const useBetInfo = ({
       ] as const,
     () => {
       cancel()
+      quotes.value = []
+      settings.value = []
       if (!enabled()) return
       const current = generation
       state.value = 'queued'

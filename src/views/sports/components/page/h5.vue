@@ -269,6 +269,7 @@
         </div>
       </Transition>
     </div>
+    <OddsFormat />
     <Floating
       v-if="pageActive"
       v-show="!page.betSlipOpen.value"
@@ -288,6 +289,7 @@
 
 <script setup lang="ts">
 import CollapseAllIcon from '@/static/svg/sports/h5-collapse-all.svg?component'
+import OddsFormat from '../odds-format/index.vue'
 import {
   computed,
   nextTick,

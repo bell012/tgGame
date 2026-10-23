@@ -28,6 +28,7 @@ import type { SportsRequestOptions } from '@/api/modules/sport'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+import { useSportsOddsStore } from '@/stores/sportsOdds'
 import { useSportsAuthStore } from '@/stores/sportsAuth'
 import { useSportsBalanceStore } from '@/stores/sportsBalance'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
@@ -268,9 +269,6 @@ const mergeSportEvents = (previous: SportEvent[], incoming: readonly SportEvent[
   incoming.forEach(event => merged.set(event.EventId, event))
   return reuseList(previous, [...merged.values()])
 }
-// 缺少主列表盘型参照时沿用当前网关已验证的马来盘默认值，不转换返回赔率。
-const DEFAULT_HOMEPAGE_ODDS_TYPE: SportsOddsType = 1
-
 /** 各接口独立处理并发和错误，避免并行加载时互相覆盖。 */
 const createSportsRequest = <Params, Response extends SportsResponse>(
   getBaseUrl: () => string,
@@ -365,6 +363,7 @@ export const useSportsStore = defineStore('sports', () => {
   const localeStore = useLocaleStore()
   const userStore = useUserStore()
   const sportsAuth = useSportsAuthStore()
+  const oddsPreference = useSportsOddsStore()
   const { currentCurrencyCode } = useDisplayCurrency()
   // 与导航及路由守卫保持相同的本站登录态判断。
   const isLoggedIn = computed(() =>
@@ -419,7 +418,8 @@ export const useSportsStore = defineStore('sports', () => {
     1: '马来盘',
     2: '香港盘',
     3: '欧洲盘',
-    4: '印尼盘'
+    4: '印尼盘',
+    6: '美式盘'
   })
   const languageKeys: Readonly<Partial<Record<string, SportsLanguageCode>>> = Object.freeze({
     eng: 'ENG',
@@ -1834,21 +1834,8 @@ export const useSportsStore = defineStore('sports', () => {
     for (const record of response.result ?? [])
       queueReappearedEvents(record.sportId, [record.eventId], revision)
   }
-  const getHomepageOddsType = (): SportsOddsType => {
-    // 独赢通常固定返回欧洲盘，不能用它推断让球/大小的显示盘型。
-    for (const group of allLeagueGroups.value) {
-      for (const event of group.Sports) {
-        for (const line of event.MarketLines ?? []) {
-          if (line.PeriodId !== 1 || (line.BetTypeId !== 1 && line.BetTypeId !== 2)) continue
-          for (const selection of line.WagerSelections ?? []) {
-            const type = selection.OddsType
-            if (type === 1 || type === 2 || type === 3 || type === 4) return type
-          }
-        }
-      }
-    }
-    return DEFAULT_HOMEPAGE_ODDS_TYPE
-  }
+  const getHomepageOddsType = (): SportsOddsType =>
+    market.value === 4 ? 3 : oddsPreference.preference
   /** 热门独立补查，只移除热门展示，不能把缺失结果当作普通赛事下架。 */
   const fetchMissingHotEvents = (): Promise<SportEvent[] | null> => {
     if (hotDetailsPending) return hotDetailsPending
@@ -2453,15 +2440,10 @@ export const useSportsStore = defineStore('sports', () => {
                   ?.group?.Sports.find(event => event.EventId === id)?.MarketLines ??
                 []
             )
-            const knownOddsType = knownLines
-              .filter(line => line.BetTypeId === 1 || line.BetTypeId === 2)
-              .flatMap(line => line.WagerSelections ?? [])
-              .map(selection => selection.OddsType)
-              .find(type => type === 1 || type === 2 || type === 3 || type === 4)
             const params: GetSelectedEventInfoParams = {
               SportId: sportId,
               EventIds: batch,
-              OddsType: knownOddsType ?? getHomepageOddsType(),
+              OddsType: getHomepageOddsType(),
               IsCombo: market.value === 4,
               IncludeGroupEvents: false,
               LanguageCode: languageCode.value,
@@ -2506,15 +2488,16 @@ export const useSportsStore = defineStore('sports', () => {
     eventId: number
     market: SportMarketLine
     wagerSelectionId: number
+    oddsType: SportsOddsType
   }) =>
     runHomepageRefresh(
-      `bet-selection:${selection.sportId}:${selection.eventId}:${selection.market.MarketlineId}:${selection.wagerSelectionId}`,
+      `bet-selection:${selection.sportId}:${selection.eventId}:${selection.market.MarketlineId}:${selection.wagerSelectionId}:${selection.oddsType}`,
       async (signal, isCurrent) => {
         if (isEventExpired(selection.sportId, selection.eventId)) return 'missing'
         const params: GetSelectedEventInfoParams = {
           SportId: selection.sportId,
           EventIds: [selection.eventId],
-          OddsType: getHomepageOddsType(),
+          OddsType: selection.oddsType,
           IsCombo: false,
           IncludeGroupEvents: false,
           LanguageCode: languageCode.value,

@@ -47,7 +47,10 @@
         <h3 class="text-sm font-bold leading-5 text-text-1">{{ market.title }}</h3>
 
         <template v-if="market.kind === 'dual-column'">
-          <div class="mt-3 grid grid-cols-2 gap-2 text-center text-xs leading-4 text-text-2">
+          <div
+            v-if="market.leftHeader || market.rightHeader"
+            class="mt-3 grid grid-cols-2 gap-2 text-center text-xs leading-4 text-text-2"
+          >
             <span class="truncate">{{ market.leftHeader }}</span>
             <span class="truncate">{{ market.rightHeader }}</span>
           </div>
@@ -61,10 +64,16 @@
                 type="button"
                 class="odds-option-btn"
                 :class="oddsButtonClass(row.left.selection, market.id)"
-                :disabled="isOddsButtonUnavailable(market.id)"
+                :disabled="isSelectionUnavailable(market.id, row.left.selection)"
                 @click="pickSelection(market.id, row.left.selection)"
               >
-                <template v-if="isMarketLocked(market.id)">
+                <template
+                  v-if="
+                    isMarketLocked(market.id) ||
+                    !row.left.selection ||
+                    resolveOddsForFormat(row.left.selection, oddsFormat) === ''
+                  "
+                >
                   <img
                     class="mx-auto h-[18px] w-[18px] object-contain"
                     :src="lockIcon"
@@ -82,13 +91,20 @@
                 </template>
               </button>
               <button
+                v-if="row.right.selection"
                 type="button"
                 class="odds-option-btn"
                 :class="oddsButtonClass(row.right.selection, market.id)"
-                :disabled="isOddsButtonUnavailable(market.id)"
+                :disabled="isSelectionUnavailable(market.id, row.right.selection)"
                 @click="pickSelection(market.id, row.right.selection)"
               >
-                <template v-if="isMarketLocked(market.id)">
+                <template
+                  v-if="
+                    isMarketLocked(market.id) ||
+                    !row.right.selection ||
+                    resolveOddsForFormat(row.right.selection, oddsFormat) === ''
+                  "
+                >
                   <img
                     class="mx-auto h-[18px] w-[18px] object-contain"
                     :src="lockIcon"
@@ -113,14 +129,20 @@
           <div class="mt-3 flex gap-2">
             <button
               v-for="option in market.options"
-              :key="option.label"
+              :key="option.selection?.WagerSelectionId ?? option.label"
               type="button"
               class="odds-option-btn flex-1"
               :class="oddsButtonClass(option.selection, market.id)"
-              :disabled="isOddsButtonUnavailable(market.id)"
+              :disabled="isSelectionUnavailable(market.id, option.selection)"
               @click="pickSelection(market.id, option.selection)"
             >
-              <template v-if="isMarketLocked(market.id)">
+              <template
+                v-if="
+                  isMarketLocked(market.id) ||
+                  !option.selection ||
+                  resolveOddsForFormat(option.selection, oddsFormat) === ''
+                "
+              >
                 <img
                   class="mx-auto h-[18px] w-[18px] object-contain"
                   :src="lockIcon"
@@ -254,10 +276,11 @@ import lockIcon from './img/bold.svg?url'
 import {
   buildScoreDetailsFilterTabs,
   mapMarketLinesToCards,
-  resolveOddsForFormat,
+  resolveOddsForFormat as readOddsForFormat,
   type EventDetailsOddsFormat
 } from './map-market-lines'
 import type { DualColumnMarketCard, ScoreDetailsFilterKey, ScoreDetailsMarketCard } from './types'
+import { resolveSelectionName } from '../../../shared/selection-name'
 
 const { t } = useI18n()
 
@@ -268,9 +291,11 @@ const props = withDefaults(
     oddsFormat?: EventDetailsOddsFormat
     betSlipPage?: SportsPageState
     matchId?: string
+    homeTeamName?: string
+    awayTeamName?: string
   }>(),
   {
-    oddsFormat: 1
+    oddsFormat: 3
   }
 )
 
@@ -403,7 +428,12 @@ const onDragEnd = (event: PointerEvent) => {
   pendingFilterKey = ''
 }
 
-const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? [], props.oddsFormat))
+const teams = computed(() => ({ HomeTeam: props.homeTeamName, AwayTeam: props.awayTeamName }))
+const resolveOddsForFormat = (selection: SportWagerSelection, format: EventDetailsOddsFormat) =>
+  resolveSelectionName(selection, teams.value) === null ? '' : readOddsForFormat(selection, format)
+const allMarkets = computed(() =>
+  mapMarketLinesToCards(props.marketLines ?? [], props.oddsFormat, teams.value)
+)
 
 const displayOdds = (selection?: SportWagerSelection) =>
   selection ? resolveOddsForFormat(selection, props.oddsFormat) : ''
@@ -479,11 +509,16 @@ const isMarketClosed = (marketLineId: string) =>
 const isOddsButtonUnavailable = (marketLineId: string) =>
   isMarketLocked(marketLineId) || isMarketClosed(marketLineId)
 
+const isSelectionUnavailable = (marketLineId: string, selection?: SportWagerSelection) =>
+  isOddsButtonUnavailable(marketLineId) ||
+  !selection ||
+  resolveOddsForFormat(selection, props.oddsFormat) === ''
+
 const pickSelection = (marketLineId: string, selection?: SportWagerSelection) => {
   if (!bettingEnabled.value || !props.betSlipPage || !props.matchId) {
     return
   }
-  if (!selection || isOddsButtonUnavailable(marketLineId)) {
+  if (!selection || isSelectionUnavailable(marketLineId, selection)) {
     return
   }
   const line = findMarketLine(marketLineId)
@@ -497,7 +532,7 @@ const oddsButtonClass = (selection?: SportWagerSelection, marketLineId?: string)
   if (!bettingEnabled.value) {
     return ''
   }
-  if (marketLineId && isOddsButtonUnavailable(marketLineId)) {
+  if (marketLineId && isSelectionUnavailable(marketLineId, selection)) {
     return 'odds-option-btn--unavailable'
   }
   return selection && isWagerSelected(selection, selectedWagerSelectionId.value)
@@ -509,10 +544,11 @@ const oddsButtonClass = (selection?: SportWagerSelection, marketLineId?: string)
 <style scoped>
 .odds-option-btn {
   display: flex;
-  height: 2.75rem;
+  min-height: 2.75rem;
   min-width: 0;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   border: 1px solid transparent;
   border-radius: 0.5rem;
   background-color: var(--color-background-level-3);
@@ -525,9 +561,10 @@ const oddsButtonClass = (selection?: SportWagerSelection, marketLineId?: string)
 }
 
 .odds-option-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+  white-space: normal;
   font-size: 0.875rem;
   font-weight: 400;
   color: var(--color-text-level-2);

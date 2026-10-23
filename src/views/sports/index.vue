@@ -178,6 +178,7 @@
       </nav>
     </section>
 
+    <OddsFormat />
     <CommonFooter />
 
     <BetSlipPc
@@ -223,6 +224,7 @@ import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
 import CommonFooter from '@/components/commonFooter.vue'
+import OddsFormat from './components/odds-format/index.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { stripLocalePrefix } from '@/utils/locale'
