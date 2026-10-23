@@ -41,20 +41,26 @@
             />
           </button>
           <MatchTime :match="match" class="min-w-0 truncate" />
-          <span
+          <button
             v-if="match.hasVideo"
-            class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
-            aria-hidden="true"
+            type="button"
+            class="relative flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4 before:absolute before:-inset-y-1 before:inset-x-0"
+            :aria-label="t('sports.video')"
+            data-testid="sports-h5-video"
+            @click.stop="emit('media', 'video')"
           >
-            <VideoIcon class="h-2 w-[7px]" />
-          </span>
-          <span
+            <VideoIcon class="h-2 w-[7px]" aria-hidden="true" />
+          </button>
+          <button
             v-if="match.hasAnimation"
-            class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
-            aria-hidden="true"
+            type="button"
+            class="relative flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4 before:absolute before:-inset-y-1 before:inset-x-0"
+            :aria-label="t('sports.animation')"
+            data-testid="sports-h5-animation"
+            @click.stop="emit('media', 'animation')"
           >
-            <AnimationIcon class="h-2.5 w-[15px]" />
-          </span>
+            <AnimationIcon class="h-2.5 w-[15px]" aria-hidden="true" />
+          </button>
         </div>
 
         <div class="mt-3 grid min-h-[119px] flex-1 grid-rows-2 gap-1">
@@ -132,6 +138,7 @@ const { t } = useI18n()
 const emit = defineEmits<{
   select: [payload: OddsSelectPayload]
   favorite: []
+  media: [mode: 'video' | 'animation']
 }>()
 
 const teams = computed(() => [

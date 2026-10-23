@@ -34,6 +34,9 @@ export type SportsMatch = {
   }
   hasVideo: boolean
   hasAnimation: boolean
+  /** 首页已有的播放信息；打开媒体弹窗不补查赛事。 */
+  liveStreamUrl?: string
+  brEventId?: number
   totalMarkets?: number
   /** 赛事自身的收藏状态，独立于列表的收藏置顶查询条件。 */
   IsFavourite: boolean

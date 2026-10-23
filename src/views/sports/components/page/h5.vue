@@ -189,6 +189,7 @@
                       :favorite-pending="page.isMatchFavoritePending(match.id)"
                       @favorite="page.handleMatchFavorite(match.id)"
                       @select="selectOdds(match.id, $event)"
+                      @media="mediaSelection = { match, mode: $event }"
                     />
                   </div>
                   <p
@@ -274,6 +275,13 @@
       :history-count="page.unreadBetHistoryCount.value"
       @select="page.handleFloatingEntry"
     />
+    <MatchMediaPopup
+      v-if="mediaSelection"
+      :key="`${mediaSelection.match.id}:${mediaSelection.mode}`"
+      :match="mediaSelection.match"
+      :mode="mediaSelection.mode"
+      @close="mediaSelection = null"
+    />
   </div>
 </template>
 
@@ -309,6 +317,7 @@ import MatchVersus from '../match-versus/index.vue'
 import MatchOdds from '../match-odds/index.vue'
 import { pickOverUnderOrFirstMarketLine } from '../match-odds/display'
 import MatchCardH5 from '../match-card/h5.vue'
+import MatchMediaPopup from '../match-media-popup/index.vue'
 import MatchTime from '../match-card/time.vue'
 import type { SportsMatch } from '../../shared/types'
 import { goToEventDetails } from '../../shared/event-details-navigation'
@@ -355,6 +364,14 @@ const filterSlideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-
 const matchSlideKey = computed(
   () => `${props.page.selectedSportId.value}:${props.page.selectedFilterKey.value}`
 )
+const mediaSelection = ref<{ match: SportsMatch; mode: 'video' | 'animation' } | null>(null)
+// 弹窗只使用点击时的播放信息；路由离开或首页停用后立即释放媒体。
+watch([() => route.fullPath, matchSlideKey, pageActive], () => {
+  mediaSelection.value = null
+})
+onDeactivated(() => {
+  mediaSelection.value = null
+})
 // 与共用查询条件同步重置；排序、收藏及轮询清理联赛不解除已确认的空筛选。
 watch(
   [

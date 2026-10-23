@@ -125,6 +125,7 @@
         type="button"
         class="flex h-6 w-6 items-center justify-center"
         aria-label="Fullscreen"
+        v-if="showFullscreen"
         @click="toggleFullscreen"
       >
         <svg
@@ -157,8 +158,9 @@ const props = withDefaults(
   defineProps<{
     src: string
     active?: boolean
+    showFullscreen?: boolean
   }>(),
-  { active: true }
+  { active: true, showFullscreen: true }
 )
 
 const { t } = useI18n()

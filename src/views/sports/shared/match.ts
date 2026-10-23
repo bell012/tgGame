@@ -7,6 +7,7 @@ import i18n from '@/i18n'
 import { formatSportsKickoff } from '@/utils/date'
 import { sportItems } from '../components/sports-navigation/sport-items'
 import type { SportsMatch } from './types'
+import { parseLiveStreamUrl } from '../event-details/components/match-media-panel/parse-live-stream'
 
 const getSportsText = (value: unknown): string =>
   typeof value === 'string'
@@ -224,6 +225,9 @@ export const mapSportsMatches = (
           Array.isArray(event.LiveStreamingUrl) &&
           event.LiveStreamingUrl.length > 0,
         hasAnimation: (event.BREventId ?? 0) > 0,
+        liveStreamUrl: parseLiveStreamUrl(event.LiveStreamingUrl),
+        brEventId:
+          Number.isSafeInteger(event.BREventId) && event.BREventId > 0 ? event.BREventId : 0,
         totalMarkets:
           Number.isInteger(event.TotalMarketLineCount) && event.TotalMarketLineCount >= 0
             ? event.TotalMarketLineCount
