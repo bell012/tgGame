@@ -2305,6 +2305,8 @@
       "collapseAllLeagues": "收起所有联赛",
       "matchPagination": "赛事分页"
     },
+    "video": "视频",
+    "animation": "动画",
     "noVideo": "暂无视频",
     "noAnimation": "暂无动画",
     "loadingAnimation": "正在加载动画",

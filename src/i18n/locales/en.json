@@ -2324,6 +2324,8 @@
       "collapseAllLeagues": "Collapse all leagues",
       "matchPagination": "Match pagination"
     },
+    "video": "Video",
+    "animation": "Animation",
     "noVideo": "No video available",
     "noAnimation": "No animation available",
     "loadingAnimation": "Loading animation",

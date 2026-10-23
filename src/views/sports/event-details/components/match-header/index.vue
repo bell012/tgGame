@@ -180,7 +180,7 @@
             draggable="false"
             aria-hidden="true"
           />
-          Video
+          {{ t('sports.video') }}
         </button>
         <span class="h-[13px] w-px shrink-0 bg-[#E7E7E7]" aria-hidden="true"></span>
         <button
@@ -195,7 +195,7 @@
             draggable="false"
             aria-hidden="true"
           />
-          Animation
+          {{ t('sports.animation') }}
         </button>
       </div>
     </div>
