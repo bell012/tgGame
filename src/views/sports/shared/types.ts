@@ -14,6 +14,8 @@ export type SportsMatch = {
   country?: string
   league: string
   kickoff: string
+  /** 接口原始 EventDate（毫秒时间戳字符串）；kickoff 是格式化后的展示文本。 */
+  eventDate?: string
   homeScore: string
   awayScore: string
   cornerScore?: string

@@ -1,3 +1,4 @@
+import { formatSportsEventDate } from '@/utils/date'
 import type { EventDetailTabItem } from './components/event-detailsd-tabs/types'
 import type { MatchHeaderViewModel } from './components/match-header/types'
 import type { SportsMatch } from '../shared/types'
@@ -53,7 +54,7 @@ export const mapEventDetailTabToMatchHeader = (
     },
     homeScore: item.home.score ?? 0,
     awayScore: item.away.score ?? 0,
-    kickoffText: item.rbTime || '—',
+    kickoffText: formatSportsEventDate(item.eventDate),
     durationText: '',
     phaseText,
     periodScoreText: '',
@@ -89,7 +90,7 @@ export const mapSportsMatchToMatchHeader = (
     },
     homeScore: parseScore(match.homeScore),
     awayScore: parseScore(match.awayScore),
-    kickoffText: match.kickoff || match.phase || '—',
+    kickoffText: formatSportsEventDate(match.eventDate || match.kickoff),
     durationText: '',
     phaseText,
     periodScoreText: '',

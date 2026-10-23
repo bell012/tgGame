@@ -16,6 +16,8 @@ export type EventDetailTabItem = {
   away: EventDetailTabTeam
   /** 滚球时间，对应接口 RBTime。 */
   rbTime: string
+  /** 开赛时间，对应接口 EventDate（毫秒时间戳字符串）。 */
+  eventDate: string
   isLive: boolean
   homeRedCard: number
   awayRedCard: number

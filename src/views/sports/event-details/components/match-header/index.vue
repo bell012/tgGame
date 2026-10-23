@@ -121,9 +121,15 @@
               </div>
             </template>
             <template v-else>
-              <p class="text-[22px] font-bold leading-none">VS</p>
-              <p class="text-xs leading-4 text-text-2">{{ match.kickoffText }}</p>
-              <p class="text-xs leading-4 text-text-2">{{ match.durationText }}</p>
+              <p
+                class="flex h-10 items-center text-[25px] font-bold leading-none text-theme-primary"
+              >
+                VS
+              </p>
+              <p class="text-[13px] font-normal leading-none text-white">{{ match.kickoffText }}</p>
+              <p v-if="match.durationText" class="text-xs leading-4 text-white/70">
+                {{ match.durationText }}
+              </p>
             </template>
           </div>
 

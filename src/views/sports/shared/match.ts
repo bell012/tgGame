@@ -184,6 +184,7 @@ export const mapSportsMatches = (
         league:
           getSportsText(event.Competition?.CompetitionName) || getSportsText(group.CompetitionName),
         kickoff: formatKickoff(event.EventDate),
+        eventDate: event.EventDate,
         // IsLive 仅表示支持滚球，赛事当前是否滚球以 Market 为准。
         live: event.Market === 3,
         Market: event.Market,

@@ -109,6 +109,7 @@ export function mapEventDetailTabItems(
           teamId: event.AwayTeamId
         },
         rbTime: event.RBTime?.trim() ?? '',
+        eventDate: getSportsText(event.EventDate),
         isLive: event.Market === 3,
         homeRedCard: parseCardCount(event.HomeRedCard),
         awayRedCard: parseCardCount(event.AwayRedCard),

@@ -76,7 +76,7 @@ export const sportsMatchToCompetitionGroups = (match: SportsMatch): SportCompeti
     Market: market,
     EventStatusId: 1,
     OrderNumber: 0,
-    EventDate: match.kickoff,
+    EventDate: match.eventDate ?? match.kickoff,
     GroundTypeId: 1,
     EventGroupId: 0,
     EventGroupTypeId: 0,

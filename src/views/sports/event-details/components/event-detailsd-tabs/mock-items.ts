@@ -9,6 +9,7 @@ export const EVENT_DETAIL_TAB_MOCK_ITEMS: EventDetailTabItem[] = [
     home: { name: 'West Ham United', score: 2, teamId: 0 },
     away: { name: 'Everton', score: 3, teamId: 0 },
     rbTime: "29' 1st Half",
+    eventDate: '1788087600000',
     isLive: true,
     homeRedCard: 0,
     awayRedCard: 0,
