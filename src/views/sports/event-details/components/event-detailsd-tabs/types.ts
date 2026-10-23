@@ -23,10 +23,12 @@ export type EventDetailTabItem = {
   homeYellowCard: number
   /** ExtraInfo.atycs */
   awayYellowCard: number
-  /** ExtraInfo.c15mhs */
+  /** RelatedScores 中 EventGroupTypeId=2 的主队角球数。 */
   homeCorners: number
-  /** ExtraInfo.c15mas */
+  /** RelatedScores 中 EventGroupTypeId=2 的客队角球数。 */
   awayCorners: number
+  /** RelatedScores 中 EventGroupTypeId=22 的上半场比分，如 `1-0`；没有则为空字符串。 */
+  halfTimeScore: string
   isFavourite: boolean
   /** LiveStreamingUrl 第一项的 m3u8 地址，没有则为空字符串。 */
   liveStreamUrl: string

@@ -33,8 +33,10 @@ const splitPhaseClock = (rbTime: string) => {
 
 export const mapEventDetailTabToMatchHeader = (
   item: EventDetailTabItem,
-  teamLogoUrl: (id: number) => string
+  teamLogoUrl: (id: number) => string,
+  sportId: number
 ): MatchHeaderViewModel => {
+  const isFootball = sportId === 1
   const { phaseText, clockText } = splitPhaseClock(item.rbTime)
   return {
     league: item.league,
@@ -56,9 +58,8 @@ export const mapEventDetailTabToMatchHeader = (
     phaseText,
     periodScoreText: '',
     clockText: clockText || item.rbTime,
-    cornerScore:
-      item.homeCorners || item.awayCorners ? `${item.homeCorners}-${item.awayCorners}` : '—',
-    halfTimeScore: '—'
+    cornerScore: isFootball ? `${item.homeCorners}-${item.awayCorners}` : '',
+    halfTimeScore: isFootball ? item.halfTimeScore : ''
   }
 }
 
@@ -93,7 +94,7 @@ export const mapSportsMatchToMatchHeader = (
     phaseText,
     periodScoreText: '',
     clockText: clockText || match.phase,
-    cornerScore: match.cornerScore ?? '—',
-    halfTimeScore: match.halfTimeScore ?? '—'
+    cornerScore: match.cornerScore ?? '',
+    halfTimeScore: match.halfTimeScore ?? ''
   }
 }

@@ -1,4 +1,8 @@
-import type { SportCompetitionGroup, SportEventExtraInfo } from '@/api/interface/sport'
+import type {
+  SportCompetitionGroup,
+  SportEventExtraInfo,
+  SportRelatedScore
+} from '@/api/interface/sport'
 import { parseLiveStreamUrl } from '../match-media-panel/parse-live-stream'
 import type { EventDetailTabItem } from './types'
 
@@ -35,11 +39,9 @@ const getSportsText = (value: unknown): string =>
 const parseExtraInfoStats = (raw: string) => {
   let homeYellowCard = 0
   let awayYellowCard = 0
-  let homeCorners = 0
-  let awayCorners = 0
   const text = raw?.trim()
   if (!text) {
-    return { homeYellowCard, awayYellowCard, homeCorners, awayCorners }
+    return { homeYellowCard, awayYellowCard }
   }
   try {
     const parsed = JSON.parse(text) as Partial<SportEventExtraInfo>
@@ -49,16 +51,26 @@ const parseExtraInfoStats = (raw: string) => {
     if (typeof parsed.atycs === 'number' && Number.isFinite(parsed.atycs)) {
       awayYellowCard = parsed.atycs
     }
-    if (typeof parsed.c15mhs === 'number' && Number.isFinite(parsed.c15mhs)) {
-      homeCorners = parsed.c15mhs
-    }
-    if (typeof parsed.c15mas === 'number' && Number.isFinite(parsed.c15mas)) {
-      awayCorners = parsed.c15mas
-    }
   } catch {
     // 非 JSON 或字段缺失时保持 0
   }
-  return { homeYellowCard, awayYellowCard, homeCorners, awayCorners }
+  return { homeYellowCard, awayYellowCard }
+}
+
+/** 足球 RelatedScores：2 角球、22 上半场，与首页 mapSportsMatches 保持一致。 */
+const findRelatedScore = (
+  scores: readonly SportRelatedScore[],
+  eventGroupTypeId: number
+): { home: number; away: number } | null => {
+  const score = scores.find(item => item?.EventGroupTypeId === eventGroupTypeId)
+  if (!score) {
+    return null
+  }
+  const home = getSportsText(score.HomeScore)
+  const away = getSportsText(score.AwayScore)
+  return /^\d+$/.test(home) && /^\d+$/.test(away)
+    ? { home: Number(home), away: Number(away) }
+    : null
 }
 
 /** 将 getSportsV2 联赛分组展平为详情页横向 Tab 列表项。 */
@@ -75,9 +87,10 @@ export function mapEventDetailTabItems(
       if (!event || !Number.isSafeInteger(event.EventId) || event.EventId <= 0) {
         continue
       }
-      const { homeYellowCard, awayYellowCard, homeCorners, awayCorners } = parseExtraInfoStats(
-        event.ExtraInfo
-      )
+      const { homeYellowCard, awayYellowCard } = parseExtraInfoStats(event.ExtraInfo)
+      const relatedScores = Array.isArray(event.RelatedScores) ? event.RelatedScores : []
+      const corners = findRelatedScore(relatedScores, 2)
+      const halfTime = findRelatedScore(relatedScores, 22)
       const competitionId = event.Competition?.CompetitionId ?? group.CompetitionId
       items.push({
         id: String(event.EventId),
@@ -101,8 +114,9 @@ export function mapEventDetailTabItems(
         awayRedCard: parseCardCount(event.AwayRedCard),
         homeYellowCard,
         awayYellowCard,
-        homeCorners,
-        awayCorners,
+        homeCorners: corners?.home ?? 0,
+        awayCorners: corners?.away ?? 0,
+        halfTimeScore: halfTime ? `${halfTime.home}-${halfTime.away}` : '',
         isFavourite: event.IsFavourite === true,
         liveStreamUrl: parseLiveStreamUrl(event.LiveStreamingUrl),
         brEventId:

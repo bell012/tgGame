@@ -440,7 +440,7 @@ const animationUrl = computed(() =>
 
 const matchHeaderModel = computed(() => {
   if (displayEvent.value) {
-    return mapEventDetailTabToMatchHeader(displayEvent.value, getTeamLogoUrl)
+    return mapEventDetailTabToMatchHeader(displayEvent.value, getTeamLogoUrl, selectedSportId.value)
   }
   if (
     canUseNavigationMatchFallback.value &&

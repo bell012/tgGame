@@ -93,8 +93,11 @@
                   <span>{{ match.phaseText }}</span>
                   <span>{{ match.clockText }}</span>
                 </p>
-                <div class="flex items-center gap-[14px] text-xs font-normal leading-4 mt-[10px]">
-                  <span class="inline-flex items-center gap-1.5">
+                <div
+                  v-if="match.cornerScore || match.halfTimeScore"
+                  class="flex items-center gap-[14px] text-xs font-normal leading-4 mt-[10px]"
+                >
+                  <span v-if="match.cornerScore" class="inline-flex items-center gap-1.5">
                     <img
                       class="h-[14px] w-[14px] shrink-0 object-contain"
                       :src="cornerIcon"
@@ -104,7 +107,7 @@
                     />
                     {{ match.cornerScore }}
                   </span>
-                  <span class="inline-flex items-center gap-[3px]">
+                  <span v-if="match.halfTimeScore" class="inline-flex items-center gap-[3px]">
                     <img
                       class="h-[14px] w-[14px] shrink-0 object-contain"
                       :src="htIcon"
