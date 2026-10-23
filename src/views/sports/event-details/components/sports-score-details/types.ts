@@ -38,7 +38,7 @@ export interface OneXTwoOption {
 
 export interface OneXTwoMarketCard extends ScoreDetailsMarketBase {
   id: string
-  kind: '1x2'
+  kind: '1x2' | 'selection-grid'
   title: string
   options: OneXTwoOption[]
   filters?: ScoreDetailsFilterKey[]

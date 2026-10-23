@@ -4,7 +4,6 @@
       ref="contentRef"
       class="fixed z-20 bg-bg-1"
       :style="{ top: `${layoutStore.TOPNAV_HEIGHT}px`, left: `${left}px`, width: `${width}px` }"
-      data-testid="event-details-pc-navigation"
     >
       <slot />
     </div>

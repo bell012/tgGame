@@ -1,7 +1,6 @@
 <template>
   <aside
     class="fixed bottom-0 right-6 z-30 flex max-h-[min(915px,calc(100dvh-84px))] w-[390px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-t-lg bg-bg-1 font-inter text-text-1 shadow-2xl 2xl:right-[120px]"
-    data-testid="sports-betslip"
     :data-state="panelState"
     :aria-label="t('sports.betSlip.title')"
     @keydown.esc.stop="collapse"
@@ -234,7 +233,6 @@
             :class="isSubmitting ? 'gap-[5px]' : 'gap-2.5'"
             :disabled="!props.canSubmit || isSubmitting"
             :aria-busy="isSubmitting"
-            data-testid="sports-pc-submit"
             @click="emit('submit')"
           >
             <Loading
@@ -297,7 +295,6 @@
       <div
         v-if="oddsSettingsOpen"
         class="absolute inset-0 z-20 flex items-end bg-mask-60-1 p-2"
-        data-testid="sports-pc-odds-mask"
         @click.self="closeOddsSettings"
       >
         <section
@@ -307,7 +304,6 @@
           role="dialog"
           :aria-label="t('sports.betSlip.oddsSettings')"
           tabindex="-1"
-          data-testid="sports-pc-odds-settings"
           @keydown.esc.stop="closeOddsSettings"
           @keydown.tab="trapOddsSettingsFocus"
         >

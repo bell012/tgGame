@@ -1,5 +1,6 @@
 import type { SportMarketLine, SportWagerSelection, SportsOddsType } from '@/api/interface/sport'
 import { hasDisplayableCardOdds } from '@/views/sports/components/match-odds/display'
+import { resolveSelectionLayout, type SelectionLayout } from './selection-layout'
 import type {
   DualColumnMarketCard,
   OneXTwoMarketCard,
@@ -29,21 +30,19 @@ export const resolveOddsForFormat = (
 const hasOddsForFormat = (selection: SportWagerSelection, oddsFormat: EventDetailsOddsFormat) =>
   resolveOddsForFormat(selection, oddsFormat) !== ''
 
-const isOneXTwoLine = (line: SportMarketLine) => line.BetTypeId === 3 || line.BetTypeId === 35
-
 const mapOneXTwo = (
   line: SportMarketLine,
-  selections: SportWagerSelection[],
+  selections: Array<SportWagerSelection | undefined>,
   oddsFormat: EventDetailsOddsFormat,
   teams: SelectionTeams
 ): OneXTwoMarketCard => ({
   id: String(line.MarketlineId),
-  kind: '1x2',
+  kind: 'selection-grid',
   title: formatMarketName(line, teams),
   betTypeName: line.BetTypeName,
   options: selections.map(selection => ({
-    label: formatSelectionName(line, selection, teams) ?? '',
-    odds: resolveOddsForFormat(selection, oddsFormat),
+    label: selection ? (formatSelectionName(line, selection, teams) ?? '') : '',
+    odds: selection ? resolveOddsForFormat(selection, oddsFormat) : '',
     selection
   }))
 })
@@ -52,11 +51,12 @@ const mapDualColumn = (
   line: SportMarketLine,
   selections: SportWagerSelection[],
   oddsFormat: EventDetailsOddsFormat,
-  teams: SelectionTeams
+  teams: SelectionTeams,
+  layout?: SelectionLayout
 ): DualColumnMarketCard => {
-  const cells = selections.map(selection => ({
-    line: formatSelectionName(line, selection, teams) ?? '',
-    odds: resolveOddsForFormat(selection, oddsFormat),
+  const cells = (layout ? layout.rows.flat() : selections).map(selection => ({
+    line: selection ? (formatSelectionName(line, selection, teams) ?? '') : '',
+    odds: selection ? resolveOddsForFormat(selection, oddsFormat) : '',
     selection
   }))
   const rows: DualColumnMarketCard['rows'] = []
@@ -79,7 +79,8 @@ const mapDualColumn = (
 export const mapMarketLineToCard = (
   line: SportMarketLine,
   oddsFormat: EventDetailsOddsFormat = 3,
-  teams: SelectionTeams = {}
+  teams: SelectionTeams = {},
+  sportId?: number
 ): ScoreDetailsMarketCard | null => {
   if (!line || !Number.isSafeInteger(line.MarketlineId)) {
     return null
@@ -90,19 +91,21 @@ export const mapMarketLineToCard = (
   if (!selections.length) {
     return null
   }
-  if (isOneXTwoLine(line)) {
-    return mapOneXTwo(line, selections, oddsFormat, teams)
+  const layout = resolveSelectionLayout(sportId, line.BetTypeId, selections)
+  if (layout?.columns === 3) {
+    return mapOneXTwo(line, layout.rows.flat(), oddsFormat, teams)
   }
-  return mapDualColumn(line, selections, oddsFormat, teams)
+  return mapDualColumn(line, selections, oddsFormat, teams, layout)
 }
 
 export const mapMarketLinesToCards = (
   lines: readonly SportMarketLine[],
   oddsFormat: EventDetailsOddsFormat = 3,
-  teams: SelectionTeams = {}
+  teams: SelectionTeams = {},
+  sportId?: number
 ): ScoreDetailsMarketCard[] =>
   (lines ?? []).flatMap(line => {
-    const card = mapMarketLineToCard(line, oddsFormat, teams)
+    const card = mapMarketLineToCard(line, oddsFormat, teams, sportId)
     return card ? [card] : []
   })
 
@@ -110,11 +113,12 @@ export const mapMarketLinesToCards = (
 export const mapMarketLinesToGroups = (
   lines: readonly SportMarketLine[],
   oddsFormat: EventDetailsOddsFormat = 3,
-  teams: SelectionTeams = {}
+  teams: SelectionTeams = {},
+  sportId?: number
 ): ScoreDetailsMarketGroup[] => {
   const groups = new Map<string, ScoreDetailsMarketGroup>()
   for (const line of lines) {
-    const card = mapMarketLineToCard(line, oddsFormat, teams)
+    const card = mapMarketLineToCard(line, oddsFormat, teams, sportId)
     if (!card) continue
     const id = `${line.BetTypeId}:${line.PeriodId}`
     const group = groups.get(id)
@@ -137,9 +141,10 @@ export const buildScoreDetailsFilterTabs = (
   lines: readonly SportMarketLine[],
   allTabLabel = 'All',
   oddsFormat: EventDetailsOddsFormat = 3,
-  teams: SelectionTeams = {}
+  teams: SelectionTeams = {},
+  sportId?: number
 ): ScoreDetailsFilterTab[] => {
-  const groups = mapMarketLinesToGroups(lines, oddsFormat, teams)
+  const groups = mapMarketLinesToGroups(lines, oddsFormat, teams, sportId)
   const tabsByBetType = new Map<number, ScoreDetailsFilterTab>()
   for (const group of groups) {
     const tab = tabsByBetType.get(group.betTypeId)

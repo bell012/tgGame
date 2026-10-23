@@ -1,5 +1,5 @@
 <template>
-  <span class="inline-block overflow-hidden align-middle" data-testid="sports-team-logo">
+  <span class="inline-block overflow-hidden align-middle">
     <img
       v-if="imageSrc && !failed"
       :key="imageSrc"

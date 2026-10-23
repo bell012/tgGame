@@ -9,7 +9,6 @@
       role="dialog"
       aria-modal="true"
       :aria-label="t('sports.eventDetails.oddsFormatLabel')"
-      data-testid="odds-format-sheet"
     >
       <h2 class="text-center text-base font-bold leading-5">
         {{ t('sports.eventDetails.oddsFormatLabel') }}

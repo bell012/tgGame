@@ -2,7 +2,6 @@
   <section
     v-if="event"
     class="w-full min-w-0 font-inter text-text-1 h-[183px] rounded-xl bg-bg-5 p-4"
-    data-testid="match-details-header"
   >
     <div class="flex min-w-0 items-center justify-between gap-3">
       <div class="flex min-w-0 flex-1 items-center gap-2 text-xs leading-4 text-text-2">
@@ -134,7 +133,6 @@
         <p
           v-if="halfTimeScore"
           class="mt-7 flex items-center gap-2 text-sm font-normal leading-4 text-text-2 tabular-nums"
-          data-testid="match-details-half-time"
         >
           <span>{{ t('sports.matchCard.periods.firstHalf') }}</span>
           <span>{{ halfTimeScore }}</span>

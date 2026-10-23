@@ -13,7 +13,6 @@
       :aria-busy="busy"
       :inert="editingAmounts || Boolean(result)"
       tabindex="-1"
-      data-testid="sports-betslip-h5"
       :data-state="result ?? (busy ? 'submitting' : mode)"
       @keydown="onKeydown"
     >
@@ -195,7 +194,6 @@
               :disabled="!props.page.canSubmit.value || busy || editingAmounts"
               :aria-busy="busy"
               :aria-label="t('sports.betSubmit')"
-              data-testid="sports-h5-submit"
               @click="submit"
             >
               <Loading
@@ -235,7 +233,6 @@
       class="pointer-events-none fixed inset-0 z-[10001] flex items-center justify-center font-inter"
       role="status"
       aria-live="polite"
-      data-testid="sports-bet-result-h5"
       :data-state="result"
     >
       <div

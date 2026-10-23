@@ -4,7 +4,6 @@
     :style="overlaying ? { minHeight: `${collapsedHeight}px` } : undefined"
     :data-sports-match="match.id"
     :data-expanded="expanded"
-    data-testid="sports-pc-match-card"
     @click="goToEventDetails(match)"
     @transitionend="onOddsTransitionEnd"
   >
@@ -129,7 +128,7 @@
         </div>
       </div>
 
-      <div class="mt-auto min-h-[76px] min-w-0 pt-2" data-testid="sports-card-odds" @click.stop>
+      <div class="mt-auto min-h-[76px] min-w-0 pt-2" @click.stop>
         <MatchOdds
           :MarketLines="MarketLines"
           :selected-wager-selection-id="selectedWagerSelectionId"

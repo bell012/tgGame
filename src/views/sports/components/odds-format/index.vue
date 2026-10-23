@@ -1,9 +1,5 @@
 <template>
-  <footer
-    class="flex flex-col items-center px-3.5 pb-6 pt-8"
-    :class="{ 'font-inter': !isMobile }"
-    data-testid="sports-odds-format"
-  >
+  <footer class="flex flex-col items-center px-3.5 pb-6 pt-8" :class="{ 'font-inter': !isMobile }">
     <div class="flex items-center" :class="isMobile ? 'gap-3' : 'gap-4'">
       <span
         class="shrink-0 text-text-2"

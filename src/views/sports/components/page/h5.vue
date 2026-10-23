@@ -2,12 +2,10 @@
   <div
     class="min-h-dvh w-full min-w-0 max-w-full bg-bg-1 pb-[calc(88px+env(safe-area-inset-bottom))] font-inter text-text-1"
     :data-sport="activeSport"
-    data-testid="sports-h5-page"
   >
     <header
       ref="navigationHeader"
       class="sports-h5-sticky-navigation fixed inset-x-0 top-0 z-40 bg-bg-1"
-      data-testid="sports-h5-sticky-navigation"
     >
       <SportsNavigation @change="page.handleSportChange" />
       <FilterSearch_H5
@@ -41,14 +39,12 @@
             v-if="liveMatches.length"
             :aria-label="t('sports.homepage.popularMatches')"
             class="mb-3 min-w-0"
-            data-testid="sports-h5-live-section"
           >
             <div
               ref="liveStrip"
               class="flex min-w-0 snap-x snap-mandatory gap-2 overflow-x-auto px-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               tabindex="0"
               :aria-label="t('sports.homepage.popularMatches')"
-              data-testid="sports-h5-live-strip"
             >
               <article
                 v-for="match in liveMatches"
@@ -124,7 +120,6 @@
                     : t('sports.homepage.collapseAllLeagues')
                 "
                 :aria-expanded="!allGroupsCollapsed"
-                data-testid="sports-h5-toggle-all-leagues"
                 @click="toggleAllGroups"
               >
                 <CollapseAllIcon
@@ -135,7 +130,7 @@
               </button>
             </div>
 
-            <div v-if="groups.length" class="space-y-[5px]" data-testid="sports-h5-league-list">
+            <div v-if="groups.length" class="space-y-[5px]">
               <section v-for="group in visibleGroups" :key="group.id" :data-league-id="group.id">
                 <h2>
                   <button
@@ -144,7 +139,6 @@
                     class="flex min-h-[34px] w-full items-center gap-1.5 rounded-lg bg-bg-2 px-2.5 py-[7px] text-left text-xs font-medium text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
                     :aria-expanded="isGroupExpanded(group.id)"
                     :aria-controls="`${idPrefix}-${group.id}-matches`"
-                    data-testid="sports-h5-league-toggle"
                     @click="toggleGroup(group.id)"
                   >
                     <img :src="leagueIcon" alt="" class="h-5 w-5 shrink-0 object-contain" />
@@ -223,7 +217,6 @@
               ref="loadMoreSentinel"
               class="h-px w-full"
               aria-hidden="true"
-              data-testid="sports-h5-load-more"
             ></div>
             <template v-if="groups.length && !hasMoreCachedGroups && !page.homepageLoading.value">
               <p

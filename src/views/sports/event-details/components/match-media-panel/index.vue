@@ -9,7 +9,6 @@
       class="flex w-[320px] flex-col rounded-xl bg-bg-5 font-inter"
       :class="[floating ? 'fixed z-10' : '', isLoggedIn ? 'gap-2 p-2' : 'gap-6 px-2 pb-6 pt-2']"
       :style="floating ? { top: `${stickTop}px`, left: `${floatLeft}px` } : undefined"
-      data-testid="match-media-panel"
       :data-pinned="pinned"
       :data-logged-in="isLoggedIn"
     >
@@ -86,7 +85,6 @@
           />
           <div
             class="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-normal text-white/70"
-            data-testid="no-video"
           >
             {{ t('sports.noVideo') }}
           </div>

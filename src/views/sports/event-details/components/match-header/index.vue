@@ -1,5 +1,5 @@
 <template>
-  <section v-if="match" class="w-full min-w-0 font-inter text-text-1" data-testid="match-header">
+  <section v-if="match" class="w-full min-w-0 font-inter text-text-1">
     <div
       v-if="view === 'info'"
       class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl text-white shadow-[0_1px_4px_rgba(24,64,106,0.06)]"
@@ -168,7 +168,6 @@
 
       <div
         class="absolute inset-x-0 bottom-0 flex h-[39px] items-center bg-white/10 backdrop-blur-[20px]"
-        data-testid="match-header-media-switch"
       >
         <button
           type="button"
@@ -206,7 +205,6 @@
       v-else
       class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl shadow-[0_1px_4px_rgba(24,64,106,0.06)]"
       :data-view="view"
-      data-testid="match-header-media"
     >
       <div
         class="absolute inset-0"
@@ -248,7 +246,6 @@
         />
         <div
           class="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-normal text-white/70"
-          data-testid="no-video"
         >
           {{ t('sports.noVideo') }}
         </div>

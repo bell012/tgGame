@@ -2,7 +2,6 @@
   <Teleport to="body">
     <div
       class="fixed inset-0 z-[2200] flex items-center justify-center bg-mask-60-1"
-      data-testid="sports-media-overlay"
       @click.self="emit('close')"
     >
       <section
@@ -14,14 +13,12 @@
         role="dialog"
         aria-modal="true"
         :aria-label="t(mode === 'video' ? 'sports.video' : 'sports.animation')"
-        data-testid="sports-media-popup"
         :data-mode="mode"
         :data-fullscreen="fullscreen"
       >
         <div
           v-if="!isLoggedIn"
           class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-text-1"
-          data-testid="sports-media-login"
         >
           <p class="font-bold">{{ t('sports.loginToWatch') }}</p>
           <button
@@ -36,14 +33,13 @@
           v-else-if="mode === 'video' && match.liveStreamUrl"
           :src="match.liveStreamUrl"
           :show-fullscreen="false"
-          class="[&_[data-testid=live-controls]]:pr-9"
+          class="[&_.sports-live-controls]:pr-9"
         />
         <LiveAnimation v-else-if="mode === 'animation'" :src="animationUrl" />
         <div
           v-else
           class="flex h-full items-center justify-center text-sm text-text-2"
           role="status"
-          data-testid="sports-media-unavailable"
         >
           {{ t('sports.noVideo') }}
         </div>
@@ -53,7 +49,6 @@
           type="button"
           class="absolute right-[5px] top-[5px] z-20 flex size-[15px] items-center justify-center rounded-full bg-mask-60-1 text-common-100 before:absolute before:-inset-1"
           :aria-label="t('sports.mediaClose')"
-          data-testid="sports-media-close"
           @click.stop="emit('close')"
         >
           <CloseIcon class="size-[9px]" aria-hidden="true" />
@@ -64,7 +59,6 @@
           class="absolute bottom-[5px] right-[5px] z-20 flex size-[22px] items-center justify-center rounded-[3.333px] bg-mask-60-1 text-common-100 before:absolute before:-inset-1"
           :aria-label="t(fullscreen ? 'sports.mediaExitFullscreen' : 'sports.mediaFullscreen')"
           :disabled="fullscreenPending"
-          data-testid="sports-media-fullscreen"
           @click.stop="toggleFullscreen"
         >
           <img class="size-[19px]" :src="fullscreenIcon" alt="" draggable="false" />

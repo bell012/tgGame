@@ -67,8 +67,8 @@
           :groups="eventDetailGroups"
           @change="onTabChange"
         />
-        <div class="mt-4 flex items-start gap-4">
-          <div class="min-w-0 flex-1">
+        <div class="mt-4 flex flex-wrap items-start gap-4">
+          <div class="min-w-0 flex-[1_1_360px]">
             <MatchDetails
               :event="displayEvent"
               :sport-id="selectedSportId"

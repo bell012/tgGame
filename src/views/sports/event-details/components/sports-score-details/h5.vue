@@ -1,5 +1,5 @@
 <template>
-  <section class="w-full min-w-0 font-inter text-text-1" data-testid="sports-score-details-h5">
+  <section class="w-full min-w-0 font-inter text-text-1">
     <div class="flex items-center gap-2">
       <button
         type="button"
@@ -55,7 +55,6 @@
       container-class="mt-6 min-h-[280px] justify-center pb-8"
       image-class="h-[200px] w-[220px] object-contain"
       text-class="mt-7 text-center text-[12px] font-medium leading-[18px] text-text-1"
-      data-testid="sports-score-details-h5-empty"
     />
 
     <div v-else class="mt-3 flex flex-col gap-2 pr-3.5">
@@ -112,7 +111,6 @@
             <div
               v-if="group.betTypeId === 1 && marketIndex === 0 && hasTeamNames"
               class="mb-3 grid grid-cols-2 gap-2 text-sm font-bold leading-[18px] text-text-1"
-              data-testid="sports-score-details-h5-teams"
             >
               <div class="flex min-w-0 items-center gap-1.5">
                 <TeamLogo
@@ -145,11 +143,12 @@
             <template v-if="market.kind === 'dual-column'">
               <div class="flex flex-col gap-2">
                 <div
-                  v-for="(row, rowIndex) in getDualColumnRows(market)"
+                  v-for="(row, rowIndex) in market.rows"
                   :key="`${market.id}-row-${rowIndex}`"
                   class="grid grid-cols-2 gap-2"
                 >
                   <button
+                    v-if="row.left.selection"
                     type="button"
                     :disabled="isSelectionUnavailable(market.id, row.left.selection)"
                     class="flex min-h-[33px] min-w-0 items-center gap-2 rounded-lg p-2 text-left transition-colors"
@@ -189,6 +188,7 @@
                       }}</span>
                     </template>
                   </button>
+                  <span v-else aria-hidden="true" />
                   <button
                     v-if="row.right.selection"
                     type="button"
@@ -232,68 +232,55 @@
                   </button>
                 </div>
               </div>
-
-              <button
-                v-if="shouldShowExpand(market)"
-                type="button"
-                class="mt-2 inline-flex w-full items-center justify-center gap-1 border-0 bg-transparent py-1 text-xs font-normal text-text-2"
-                :aria-expanded="isMarketExpanded(market.id)"
-                @click="toggleMarketExpanded(market.id)"
-              >
-                {{ isMarketExpanded(market.id) ? 'Show Less' : 'Show All' }}
-                <img
-                  class="h-3 w-3 object-contain transition-transform"
-                  :class="isMarketExpanded(market.id) ? '' : 'rotate-180'"
-                  :src="upIcon"
-                  alt=""
-                  draggable="false"
-                  aria-hidden="true"
-                />
-              </button>
             </template>
 
-            <template v-else-if="market.kind === '1x2'">
+            <template v-else-if="market.kind === '1x2' || market.kind === 'selection-grid'">
               <div class="grid grid-cols-3 gap-2">
-                <button
-                  v-for="option in market.options"
-                  :key="option.selection?.WagerSelectionId ?? option.label"
-                  type="button"
-                  :disabled="isSelectionUnavailable(market.id, option.selection)"
-                  class="flex min-h-[33px] min-w-0 items-center gap-2 rounded-lg p-2 text-left transition-colors"
-                  :class="[
-                    oddsButtonClass(option.selection, market.id),
-                    isSelectionUnavailable(market.id, option.selection)
-                      ? 'justify-center items-center'
-                      : 'justify-between'
-                  ]"
-                  @click="pickSelection(market.id, option.selection)"
+                <template
+                  v-for="(option, optionIndex) in market.options"
+                  :key="option.selection?.WagerSelectionId ?? 'empty-' + optionIndex"
                 >
-                  <template
-                    v-if="
-                      isMarketLocked(market.id) ||
-                      !option.selection ||
-                      resolveOddsForFormat(option.selection, oddsFormat) === ''
-                    "
+                  <button
+                    v-if="option.selection"
+                    type="button"
+                    :disabled="isSelectionUnavailable(market.id, option.selection)"
+                    class="flex min-h-[33px] min-w-0 items-center gap-2 rounded-lg p-2 text-left transition-colors"
+                    :class="[
+                      oddsButtonClass(option.selection, market.id),
+                      isSelectionUnavailable(market.id, option.selection)
+                        ? 'justify-center items-center'
+                        : 'justify-between'
+                    ]"
+                    @click="pickSelection(market.id, option.selection)"
                   >
-                    <img
-                      class="h-[18px] w-[18px] shrink-0 object-contain"
-                      :src="lockIcon"
-                      alt=""
-                      draggable="false"
-                      aria-hidden="true"
-                    />
-                  </template>
-                  <template v-else-if="isMarketClosed(market.id)">
-                    <span class="text-sm font-bold tabular-nums">--</span>
-                  </template>
-                  <template v-else>
-                    <span
-                      class="min-w-0 flex-1 whitespace-normal break-words text-sm font-normal [overflow-wrap:anywhere]"
-                      >{{ formatLabel(option.label) }}</span
+                    <template
+                      v-if="
+                        isMarketLocked(market.id) ||
+                        !option.selection ||
+                        resolveOddsForFormat(option.selection, oddsFormat) === ''
+                      "
                     >
-                    <span class="shrink-0 text-sm font-bold tabular-nums">{{ option.odds }}</span>
-                  </template>
-                </button>
+                      <img
+                        class="h-[18px] w-[18px] shrink-0 object-contain"
+                        :src="lockIcon"
+                        alt=""
+                        draggable="false"
+                        aria-hidden="true"
+                      />
+                    </template>
+                    <template v-else-if="isMarketClosed(market.id)">
+                      <span class="text-sm font-bold tabular-nums">--</span>
+                    </template>
+                    <template v-else>
+                      <span
+                        class="min-w-0 flex-1 whitespace-normal break-words text-sm font-normal [overflow-wrap:anywhere]"
+                        >{{ formatLabel(option.label) }}</span
+                      >
+                      <span class="shrink-0 text-sm font-bold tabular-nums">{{ option.odds }}</span>
+                    </template>
+                  </button>
+                  <span v-else aria-hidden="true" />
+                </template>
               </div>
             </template>
           </div>
@@ -325,7 +312,7 @@ import {
   mapMarketLinesToGroups,
   type EventDetailsOddsFormat
 } from './map-market-lines'
-import type { DualColumnMarketCard, ScoreDetailsFilterKey, ScoreDetailsMarketCard } from './types'
+import type { ScoreDetailsFilterKey } from './types'
 
 const { t } = useI18n()
 const formatLabel = (value: string) => value.trim()
@@ -362,13 +349,10 @@ const props = withDefaults(
 
 const emit = defineEmits<{ pick: [payload: OddsSelectPayload] }>()
 
-const COLLAPSED_ROW_LIMIT = 3
-
 const activeFilter = ref<ScoreDetailsFilterKey>('all')
 /** 置顶顺序：数组靠前 = 列表越靠前 */
 const pinnedMarketOrder = ref<string[]>([])
 const openSectionIds = ref<Set<string>>(new Set())
-const expandedMarketIds = ref<Set<string>>(new Set())
 
 const hasTeamNames = computed(() => Boolean(props.homeTeamName || props.awayTeamName))
 
@@ -376,7 +360,7 @@ const teams = computed(() => ({ HomeTeam: props.homeTeamName, AwayTeam: props.aw
 const resolveOddsForFormat = (selection: SportWagerSelection, format: EventDetailsOddsFormat) =>
   resolveSelectionName(selection, teams.value) === null ? '' : readOddsForFormat(selection, format)
 const allMarkets = computed(() =>
-  mapMarketLinesToGroups(props.marketLines ?? [], props.oddsFormat, teams.value)
+  mapMarketLinesToGroups(props.marketLines ?? [], props.oddsFormat, teams.value, props.sportId)
 )
 
 const filterTabs = computed(() =>
@@ -384,7 +368,8 @@ const filterTabs = computed(() =>
     props.marketLines ?? [],
     t('sports.eventDetails.filterAll'),
     props.oddsFormat,
-    teams.value
+    teams.value,
+    props.sportId
   )
 )
 
@@ -407,7 +392,6 @@ watch(
   () => props.marketLines,
   () => {
     activeFilter.value = 'all'
-    expandedMarketIds.value = new Set()
     const validIds = new Set(allMarkets.value.map(market => market.id))
     openSectionIds.value = new Set(validIds)
     pinnedMarketOrder.value = pinnedMarketOrder.value.filter(id => validIds.has(id))
@@ -450,28 +434,6 @@ const togglePin = (marketId: string) => {
     return
   }
   pinnedMarketOrder.value = without
-}
-
-const isMarketExpanded = (marketId: string) => expandedMarketIds.value.has(marketId)
-
-const toggleMarketExpanded = (marketId: string) => {
-  const next = new Set(expandedMarketIds.value)
-  if (next.has(marketId)) {
-    next.delete(marketId)
-  } else {
-    next.add(marketId)
-  }
-  expandedMarketIds.value = next
-}
-
-const shouldShowExpand = (market: ScoreDetailsMarketCard) =>
-  market.kind === 'dual-column' && market.rows.length > COLLAPSED_ROW_LIMIT
-
-const getDualColumnRows = (market: DualColumnMarketCard) => {
-  if (!shouldShowExpand(market) || isMarketExpanded(market.id)) {
-    return market.rows
-  }
-  return market.rows.slice(0, COLLAPSED_ROW_LIMIT)
 }
 
 const findMarketLine = (marketLineId: string) =>
