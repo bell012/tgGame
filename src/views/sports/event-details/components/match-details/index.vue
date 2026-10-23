@@ -130,6 +130,14 @@
             {{ awayScore }}
           </span>
         </div>
+        <p
+          v-if="halfTimeScore"
+          class="mt-7 flex items-center gap-2 text-sm font-normal leading-4 text-text-2 tabular-nums"
+          data-testid="match-details-half-time"
+        >
+          <span>{{ t('sports.matchCard.periods.firstHalf') }}</span>
+          <span>{{ halfTimeScore }}</span>
+        </p>
       </div>
 
       <div class="flex min-w-0 flex-col items-center gap-2">
@@ -214,6 +222,9 @@ const statusText = computed(() => event.value?.rbTime || '—')
 const formatScore = (score: number | null) => (score === null ? '—' : String(score))
 const homeScore = computed(() => formatScore(event.value?.home.score ?? null))
 const awayScore = computed(() => formatScore(event.value?.away.score ?? null))
+const halfTimeScore = computed(() =>
+  props.sportId === 1 ? (event.value?.halfTimeScore ?? '').replace('-', ':') : ''
+)
 
 const homeTeam = computed(() => ({
   name: event.value?.home.name ?? '',
