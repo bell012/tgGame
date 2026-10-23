@@ -1,6 +1,6 @@
 import type { SportWagerSelection } from '@/api/interface/sport'
 
-/** `all` 表示全部玩法；其余 key 为接口 BetTypeName。 */
+/** `all` 表示全部玩法；其余 key 为字符串形式的 BetTypeId。 */
 export type ScoreDetailsFilterKey = 'all' | (string & {})
 
 export interface ScoreDetailsFilterTab {
@@ -61,6 +61,13 @@ export interface ScorePickerMarketCard extends ScoreDetailsMarketBase {
 }
 
 export type ScoreDetailsMarketCard =
-  | DualColumnMarketCard
-  | OneXTwoMarketCard
-  | ScorePickerMarketCard
+  DualColumnMarketCard | OneXTwoMarketCard | ScorePickerMarketCard
+
+/** 仅合并展示容器，组内盘口继续使用各自的 ID、选项和开关盘状态。 */
+export interface ScoreDetailsMarketGroup {
+  id: string
+  betTypeId: number
+  periodId: number
+  title: string
+  markets: ScoreDetailsMarketCard[]
+}

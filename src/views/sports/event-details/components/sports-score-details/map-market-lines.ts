@@ -4,7 +4,8 @@ import type {
   DualColumnMarketCard,
   OneXTwoMarketCard,
   ScoreDetailsFilterTab,
-  ScoreDetailsMarketCard
+  ScoreDetailsMarketCard,
+  ScoreDetailsMarketGroup
 } from './types'
 
 import { formatOdds, resolveSelectionOdds } from '../../../shared/odds'
@@ -105,23 +106,56 @@ export const mapMarketLinesToCards = (
     return card ? [card] : []
   })
 
+/** 按玩法和时段合并展示容器，各级别的原盘口保持独立。 */
+export const mapMarketLinesToGroups = (
+  lines: readonly SportMarketLine[],
+  oddsFormat: EventDetailsOddsFormat = 3,
+  teams: SelectionTeams = {}
+): ScoreDetailsMarketGroup[] => {
+  const groups = new Map<string, ScoreDetailsMarketGroup>()
+  for (const line of lines) {
+    const card = mapMarketLineToCard(line, oddsFormat, teams)
+    if (!card) continue
+    const id = `${line.BetTypeId}:${line.PeriodId}`
+    const group = groups.get(id)
+    if (group) {
+      group.markets.push(card)
+    } else {
+      groups.set(id, {
+        id,
+        betTypeId: line.BetTypeId,
+        periodId: line.PeriodId,
+        title: card.title,
+        markets: [card]
+      })
+    }
+  }
+  return [...groups.values()]
+}
+
 export const buildScoreDetailsFilterTabs = (
   lines: readonly SportMarketLine[],
-  allTabLabel = 'All'
+  allTabLabel = 'All',
+  oddsFormat: EventDetailsOddsFormat = 3,
+  teams: SelectionTeams = {}
 ): ScoreDetailsFilterTab[] => {
-  const marketLines = lines ?? []
-  const cards = mapMarketLinesToCards(marketLines)
-  const countByBetType = new Map<string, number>()
-
-  for (const card of cards) {
-    countByBetType.set(card.betTypeName, (countByBetType.get(card.betTypeName) ?? 0) + 1)
+  const groups = mapMarketLinesToGroups(lines, oddsFormat, teams)
+  const tabsByBetType = new Map<number, ScoreDetailsFilterTab>()
+  for (const group of groups) {
+    const tab = tabsByBetType.get(group.betTypeId)
+    if (tab) {
+      tab.count += 1
+    } else {
+      // 优先使用同玩法全场盘口的原始名称，不自行猜测或截去名称中的阶段信息。
+      const labelLine = lines.find(
+        line => line.BetTypeId === group.betTypeId && line.PeriodId === 1
+      )
+      tabsByBetType.set(group.betTypeId, {
+        key: String(group.betTypeId),
+        label: labelLine?.BetTypeName ?? group.markets[0].betTypeName,
+        count: 1
+      })
+    }
   }
-
-  const tabs: ScoreDetailsFilterTab[] = [{ key: 'all', label: allTabLabel, count: cards.length }]
-
-  for (const [betTypeName, count] of countByBetType) {
-    tabs.push({ key: betTypeName, label: betTypeName, count })
-  }
-
-  return tabs
+  return [{ key: 'all', label: allTabLabel, count: groups.length }, ...tabsByBetType.values()]
 }

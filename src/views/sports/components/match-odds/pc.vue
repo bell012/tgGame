@@ -145,6 +145,7 @@ import {
   selectionNeedsHandicap as shouldShowHandicap
 } from '../../shared/selection-name'
 import { noteMarketLines, trendOf } from './odds-trend'
+import { pcOddsButtonTone } from './button-style'
 import type { OddsSelectPayload, SportMarketLine, SportWagerSelection } from './types'
 
 const props = withDefaults(
@@ -205,10 +206,12 @@ const lineCells = (line: SportMarketLine): Array<SportWagerSelection | undefined
 }
 
 const oddsButtonClass = (line: SportMarketLine, selection?: SportWagerSelection) => {
-  if (!selection || isLocked(line, selection)) return 'justify-center bg-bg-3'
-  return isWagerSelected(selection, props.selectedWagerSelectionId)
-    ? 'justify-between bg-theme-primary text-text-4'
-    : 'justify-between bg-bg-3 text-text-1 transition-colors lg:hover:bg-[#d0d2d2] dark:lg:hover:bg-bg-2'
+  const unavailable = !selection || isLocked(line, selection)
+  const tone = pcOddsButtonTone({
+    selected: Boolean(selection && isWagerSelected(selection, props.selectedWagerSelectionId)),
+    unavailable
+  })
+  return `${unavailable ? 'justify-center' : 'justify-between'} ${tone}`
 }
 
 const onSelect = (line: SportMarketLine, selection?: SportWagerSelection) => {
