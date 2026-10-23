@@ -52,6 +52,7 @@
           </div>
 
           <MatchVersus
+            :sport-id="match.sportId"
             class="mt-7"
             :home-src="match.home.badge"
             :away-src="match.away.badge"

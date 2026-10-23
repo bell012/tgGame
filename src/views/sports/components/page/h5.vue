@@ -74,6 +74,7 @@
                 </div>
 
                 <MatchVersus
+                  :sport-id="match.sportId"
                   class="mt-3 min-h-[52px]"
                   :home-src="match.home.badge"
                   :away-src="match.away.badge"

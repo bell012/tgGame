@@ -147,7 +147,8 @@
               :key="team.teamId"
               class="flex min-w-0 items-center gap-2"
             >
-              <img
+              <TeamLogo
+                :sport-id="sportId"
                 class="h-6 w-6 shrink-0 object-contain"
                 :src="team.logo"
                 :alt="team.name"
@@ -246,6 +247,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 import BetSlipPc from '@/views/sports/components/bet-slip/pc.vue'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import { isWagerSelected } from '@/views/sports/components/match-odds/display'
 import type { SportsPageState } from '@/views/sports/index'
 import lockIcon from './img/bold.svg?url'
@@ -261,6 +263,7 @@ const { t } = useI18n()
 
 const props = withDefaults(
   defineProps<{
+    sportId?: number
     marketLines?: SportMarketLine[]
     oddsFormat?: EventDetailsOddsFormat
     betSlipPage?: SportsPageState

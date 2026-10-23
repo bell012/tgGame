@@ -52,7 +52,8 @@
       class="mt-4 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-4 gap-y-3"
     >
       <div class="flex min-w-0 flex-col items-center gap-2">
-        <SmartImage
+        <TeamLogo
+          :sport-id="sportId"
           :src="homeLogo"
           :alt="homeTeam.name"
           class="h-10 w-10 shrink-0 object-contain"
@@ -141,7 +142,8 @@
       </div>
 
       <div class="flex min-w-0 flex-col items-center gap-2">
-        <SmartImage
+        <TeamLogo
+          :sport-id="sportId"
           :src="awayLogo"
           :alt="awayTeam.name"
           class="h-10 w-10 shrink-0 object-contain"
@@ -193,7 +195,7 @@
 import { computed } from 'vue'
 import { Loading } from 'vant'
 import { useI18n } from 'vue-i18n'
-import SmartImage from '@/components/common/SmartImage.vue'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import { getTeamLogoUrl } from '@/views/sports/index'
 import type { EventDetailTabItem } from '../event-detailsd-tabs/types'
 import { sportItems } from '@/views/sports/components/sports-navigation/sport-items'

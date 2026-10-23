@@ -98,7 +98,12 @@
       />
       <div class="mt-3 space-y-2">
         <div v-for="team in teams" :key="team.side" class="flex h-6 min-w-0 items-center gap-3">
-          <SmartImage :src="team.badge" alt="" class="h-6 w-6 shrink-0 object-contain" />
+          <TeamLogo
+            :src="team.badge"
+            :sport-id="match.sportId"
+            alt=""
+            class="h-6 w-6 shrink-0 object-contain"
+          />
           <span class="min-w-0 truncate text-sm font-bold" :title="team.name">{{ team.name }}</span>
           <span
             v-if="
@@ -141,7 +146,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Loading } from 'vant'
-import SmartImage from '@/components/common/SmartImage.vue'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'

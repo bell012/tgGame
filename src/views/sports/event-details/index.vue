@@ -15,6 +15,7 @@
   >
     <template v-if="isMobile">
       <MatchHeader
+        :sport-id="selectedSportId"
         :model="matchHeaderModel"
         :sport-key="selectedSportKey"
         :live-stream-url="liveStreamUrl"
@@ -25,6 +26,7 @@
         v-if="hasScoreDetailsMarkets || !isEventDetailsLoading"
         class="mt-4 pl-3.5"
         :market-lines="scoreDetailsMarketLines"
+        :sport-id="selectedSportId"
         :odds-format="oddsFormat"
         :selected-wager-selection-id="selectedWagerSelectionId"
         :show-empty="!hasScoreDetailsMarkets"
@@ -108,6 +110,7 @@
               v-if="hasScoreDetailsMarkets"
               class="mt-4"
               :market-lines="scoreDetailsMarketLines"
+              :sport-id="selectedSportId"
               :odds-format="oddsFormat"
               :bet-slip-page="betSlipPage"
               :match-id="currentMatchId"

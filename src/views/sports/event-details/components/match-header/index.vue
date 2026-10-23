@@ -52,7 +52,8 @@
         >
           <div class="flex min-w-0 flex-col items-center gap-[10px]">
             <div class="relative">
-              <img
+              <TeamLogo
+                :sport-id="sportId"
                 class="h-10 w-10 object-contain"
                 :src="match.home.logo"
                 :alt="match.home.name"
@@ -135,7 +136,8 @@
 
           <div class="flex min-w-0 flex-col items-center gap-[10px]">
             <div class="relative">
-              <img
+              <TeamLogo
+                :sport-id="sportId"
                 class="h-10 w-10 object-contain"
                 :src="match.away.logo"
                 :alt="match.away.name"
@@ -278,6 +280,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import { useI18n } from 'vue-i18n'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import LiveLoginGate from '../match-media-panel/live-login-gate.vue'
@@ -302,6 +305,7 @@ import videoIcon from './icon/video.svg?url'
 import type { MatchHeaderView, MatchHeaderViewModel } from './types'
 
 const props = defineProps<{
+  sportId?: number
   model?: MatchHeaderViewModel
   /** 球种 key，对应 sportItems 中的 key。 */
   sportKey?: string

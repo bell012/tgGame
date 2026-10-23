@@ -1,6 +1,7 @@
 <template>
   <SportsScoreDetailsH5
     v-if="isMobile"
+    :sport-id="sportId"
     :market-lines="marketLines"
     :odds-format="oddsFormat"
     :selected-wager-selection-id="selectedWagerSelectionId"
@@ -13,6 +14,7 @@
   />
   <SportsScoreDetailsPc
     v-else
+    :sport-id="sportId"
     :market-lines="marketLines"
     :odds-format="oddsFormat"
     :bet-slip-page="betSlipPage"
@@ -31,6 +33,7 @@ import type { EventDetailsOddsFormat } from './map-market-lines'
 
 withDefaults(
   defineProps<{
+    sportId?: number
     marketLines?: SportMarketLine[]
     oddsFormat?: EventDetailsOddsFormat
     selectedWagerSelectionId?: number

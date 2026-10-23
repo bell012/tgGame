@@ -104,8 +104,8 @@
             data-testid="sports-score-details-h5-teams"
           >
             <div class="flex min-w-0 items-center gap-1.5">
-              <img
-                v-if="homeTeamLogo"
+              <TeamLogo
+                :sport-id="sportId"
                 class="h-5 w-5 shrink-0 rounded-full object-contain"
                 :src="homeTeamLogo"
                 alt=""
@@ -120,8 +120,8 @@
               <span class="line-clamp-2 min-w-0 break-words text-right" :title="awayTeamName">
                 {{ awayTeamName }}
               </span>
-              <img
-                v-if="awayTeamLogo"
+              <TeamLogo
+                :sport-id="sportId"
                 class="h-5 w-5 shrink-0 rounded-full object-contain"
                 :src="awayTeamLogo"
                 alt=""
@@ -270,6 +270,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import emptyImage from '@/static/img/explore/default.png'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import emptyImageLight from '@/static/img/explore/default_white.png'
 import lockIcon from './img/bold.svg?url'
 import doubleIcon from './img/double.svg?url'
@@ -307,6 +308,7 @@ const formatCellLine = (header: string, line: string) => {
 
 const props = withDefaults(
   defineProps<{
+    sportId?: number
     marketLines?: SportMarketLine[]
     oddsFormat?: EventDetailsOddsFormat
     selectedWagerSelectionId?: number
