@@ -2364,11 +2364,11 @@
       "oddsFormatOptionsAria": "Odds format options",
       "oddsFormatDisclaimer": "While we make every effort to ensure the accuracy of the data displayed on this website, the information is provided for reference only and should be used as a guide. We accept no liability for any inaccuracies.",
       "oddsFormatTypes": {
-        "1": "Malaysian",
-        "2": "Hong Kong",
-        "3": "European",
-        "4": "Indonesian",
-        "6": "American"
+        "1": "Malaysian Odds",
+        "2": "Hong Kong Odds",
+        "3": "Decimal Odds",
+        "4": "Indonesian Odds",
+        "6": "American Odds"
       },
       "noBettingMarkets": "No Betting Markets Available.",
       "matchEnded": "Match Ended"
