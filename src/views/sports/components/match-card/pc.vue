@@ -101,7 +101,11 @@
           <SmartImage :src="team.badge" alt="" class="h-6 w-6 shrink-0 object-contain" />
           <span class="min-w-0 truncate text-sm font-bold" :title="team.name">{{ team.name }}</span>
           <span
-            v-if="match.live && (team.redCards != null || team.yellowCards != null)"
+            v-if="
+              match.sportId === 1 &&
+              match.live &&
+              (team.redCards != null || team.yellowCards != null)
+            "
             class="flex shrink-0 items-center gap-1 text-xs font-bold leading-4"
           >
             <span
