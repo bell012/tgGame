@@ -365,7 +365,7 @@ const resetSignupForm = () => {
   formData.value.signup.captchaCode = ''
   formData.value.signup.captchaKey = ''
   formData.value.signup.invitationCode = getInvitationCode()
-  formData.value.signup.agreementAccepted = false
+  formData.value.signup.agreementAccepted = true
 }
 
 /**
@@ -425,7 +425,7 @@ const formData = ref({
     captchaCode: '',
     captchaKey: '',
     invitationCode: getInvitationCode(),
-    agreementAccepted: false
+    agreementAccepted: true
   }
 })
 
