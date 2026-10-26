@@ -47,7 +47,8 @@
 
             <button
               type="button"
-              class="mt-5 flex h-10 w-full items-center justify-center rounded-lg bg-theme-primary text-sm font-[700] text-text-4 sm:mt-6 sm:h-12"
+              class="mt-5 flex h-10 w-full items-center justify-center rounded-lg bg-theme-primary text-sm font-[700] text-text-4 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-6 sm:h-12"
+              :disabled="!canTransfer"
               @click="handleTransferAll"
             >
               {{ t('creditLoan.transferPop.transferAll') }}
@@ -91,7 +92,11 @@ const close = () => {
   emit('update:visible', false)
 }
 
+const canTransfer = computed(() => props.transferableBalance > 0)
+
 const handleTransferAll = () => {
+  if (!canTransfer.value) return
+
   emit('transfer-all')
   close()
 }

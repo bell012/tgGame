@@ -75,8 +75,9 @@
               </span>
               <button
                 type="button"
-                class="mt-3 h-10 w-full rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
-                @click="showLoanPop = true"
+                class="mt-3 h-10 w-full rounded-lg bg-theme-primary text-sm font-[700] text-text-4 disabled:cursor-not-allowed disabled:opacity-50"
+                :disabled="!canBorrow"
+                @click="handleBorrow"
               >
                 {{ t('creditLoan.borrowNow') }}
               </button>
@@ -200,8 +201,9 @@
               </span>
               <button
                 type="button"
-                class="mt-4 h-11 w-full max-w-[400px] rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
-                @click="showLoanPop = true"
+                class="mt-4 h-11 w-full max-w-[400px] rounded-lg bg-theme-primary text-sm font-[700] text-text-4 disabled:cursor-not-allowed disabled:opacity-50"
+                :disabled="!canBorrow"
+                @click="handleBorrow"
               >
                 {{ t('creditLoan.borrowNow') }}
               </button>
@@ -267,12 +269,12 @@
       </div>
     </main>
 
-    <LoanPop v-model:visible="showLoanPop" :amount="availableCredit" />
+    <LoanPop v-model:visible="showLoanPop" :amount="borrowedAmount" />
     <TransferOutPop
       v-model:visible="showTransferPop"
       :loan-balance="loanBalance"
       :transferable-balance="transferableBalance"
-      @transfer-all="showTransferSuccess = true"
+      @transfer-all="handleTransferAll"
     />
     <TransferOutSuccess v-model:visible="showTransferSuccess" />
   </div>
@@ -282,7 +284,9 @@
 import { computed, onMounted, ref, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import Api from '@/api'
 import { useCasinoTabsStore } from '@/stores/casinoTabs'
+import { useUserStore } from '@/stores/user'
 import { formatBalance } from '@/utils/locale'
 import newSideIcons from '@/static/svg/side/newIcon'
 import FilterIcon from '@/static/svg/sports/liansai_tabs/filter.svg?component'
@@ -312,15 +316,18 @@ const EXCLUDED_GAME_TYPE_CODES = new Set(['', 'hot_games', 'providers'])
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 const casinoTabsStore = useCasinoTabsStore()
-
+const userStore = useUserStore()
 const activeNavKey = ref<NavTabKey>('credit-loan')
 const activeContentKey = ref<ContentTabKey>('game-lobby')
 const activeGameTypeCode = ref('')
 const showMoreMenu = ref(false)
 const showFilterPopup = ref(false)
 const showLoanPop = ref(false)
+const isBorrowing = ref(false)
+const borrowedAmount = ref(0)
 const showTransferPop = ref(false)
 const showTransferSuccess = ref(false)
+const isTransferring = ref(false)
 
 const loanBalance = ref(0)
 const transferableBalance = ref(0)
@@ -395,8 +402,68 @@ const loadGameTypes = async () => {
   }
 }
 
+const toAmount = (value: unknown) => {
+  const amount = Number(value)
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const loadCreditLoanAmounts = async () => {
+  try {
+    const borInfo = await Api.creditLoan.queryBorInfo()
+
+    console.log('[credit-loan] /br/queryBorInfo', borInfo)
+
+    loanBalance.value = toAmount(borInfo?.balance)
+    availableCredit.value = toAmount(borInfo?.quotaBalance)
+    transferableBalance.value = toAmount(borInfo?.transferAmount)
+  } catch (error) {
+    console.error('credit loan info failed', error)
+  }
+}
+
+const canBorrow = computed(() => !isBorrowing.value && availableCredit.value > 0)
+
+const handleBorrow = async () => {
+  if (!canBorrow.value) return
+
+  isBorrowing.value = true
+  try {
+    const loanResult = await Api.creditLoan.loanAmount()
+
+    console.log('[credit-loan] /br/loanAmount', loanResult)
+
+    borrowedAmount.value = toAmount(loanResult?.amount)
+    showLoanPop.value = true
+    void loadCreditLoanAmounts()
+  } catch (error) {
+    console.error('credit loan borrow failed', error)
+  } finally {
+    isBorrowing.value = false
+  }
+}
+
+const handleTransferAll = async () => {
+  if (isTransferring.value || transferableBalance.value <= 0) return
+
+  isTransferring.value = true
+  try {
+    const transferResult = await Api.creditLoan.transferWallet()
+
+    console.log('[credit-loan] /br/transferWallet', transferResult)
+
+    showTransferSuccess.value = true
+    void loadCreditLoanAmounts()
+    void userStore.refreshBalance({ force: true })
+  } catch (error) {
+    console.error('credit loan transfer failed', error)
+  } finally {
+    isTransferring.value = false
+  }
+}
+
 onMounted(() => {
   void loadGameTypes()
+  void loadCreditLoanAmounts()
 })
 
 watch(locale, () => {
