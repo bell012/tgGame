@@ -121,7 +121,12 @@
             :game-type-codes="lobbyGameTypeCodes"
             :loading="!hasLoadedLoanConfig"
           />
-          <CreditLoanDetails v-else class="mt-3" :rules="loanRules" />
+          <CreditLoanDetails
+            v-else
+            class="mt-3"
+            :rules="loanRules"
+            :bottom-logo="borrowConfig?.bottomLogo"
+          />
         </div>
 
         <ThemedEmptyState
