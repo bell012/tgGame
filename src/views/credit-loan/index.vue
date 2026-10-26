@@ -309,7 +309,7 @@ import TransferOutPop from './components/transfer-out-pop.vue'
 import TransferOutSuccess from './components/transfer-out-success.vue'
 import LoanRecords from './loan-records/index.vue'
 import BetHistory from './bet-history/index.vue'
-import { CREDIT_LOAN_RULE_HIGHLIGHTS, type CreditLoanRuleItem } from './mock'
+import type { CreditLoanRuleItem } from './mock'
 import { parseLoanGameTypeCodes } from './platform-game-codes'
 import coinIcon from './img/yongjin.svg?url'
 import MoreIcon from './img/more.svg?component'
@@ -387,11 +387,54 @@ const contentTabs = computed<{ key: ContentTabKey; label: string }[]>(() => [
 ])
 
 const LOAN_RULE_KEYS = ['rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6'] as const
+const LOAN_RULE_HIGHLIGHT_KEYS = new Set<(typeof LOAN_RULE_KEYS)[number]>(['rule4', 'rule5'])
+
+/** cycleDay 1-7 对应周一到周日，0 也视为周日 */
+const WEEKDAY_KEYS = ['', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+
+const getWeekdayLabel = (day: number) => t(`creditLoan.weekdays.${WEEKDAY_KEYS[day]}`)
+
+/** 根据借呗配置的重置方式生成额度更新、余额清零文案；配置缺失或不合法时返回 null 使用默认文案 */
+const cycleRuleTexts = computed<Record<'rule4' | 'rule5', string> | null>(() => {
+  const cycleType = Number(borrowConfig.value?.cycleType)
+  const cycleDay = Number(borrowConfig.value?.cycleDay)
+
+  if (cycleType === 1) {
+    return {
+      rule4: t('creditLoan.cycleRules.daily.rule4'),
+      rule5: t('creditLoan.cycleRules.daily.rule5')
+    }
+  }
+
+  if (cycleType === 2 && Number.isInteger(cycleDay) && cycleDay >= 0 && cycleDay <= 7) {
+    const weekday = cycleDay === 0 ? 7 : cycleDay
+    const params = {
+      day: getWeekdayLabel(weekday),
+      prevDay: getWeekdayLabel(weekday === 1 ? 7 : weekday - 1)
+    }
+
+    return {
+      rule4: t('creditLoan.cycleRules.weekly.rule4', params),
+      rule5: t('creditLoan.cycleRules.weekly.rule5', params)
+    }
+  }
+
+  if (cycleType === 3 && Number.isInteger(cycleDay) && cycleDay >= 1 && cycleDay <= 31) {
+    return {
+      rule4: t('creditLoan.cycleRules.monthly.rule4', { day: cycleDay }),
+      rule5: t('creditLoan.cycleRules.monthly.rule5', { day: cycleDay })
+    }
+  }
+
+  return null
+})
 
 const loanRules = computed<CreditLoanRuleItem[]>(() =>
-  LOAN_RULE_KEYS.map((key, index) => ({
-    content: t(`creditLoan.rules.${key}`),
-    highlight: CREDIT_LOAN_RULE_HIGHLIGHTS[index]
+  LOAN_RULE_KEYS.map(key => ({
+    content:
+      (key === 'rule4' || key === 'rule5' ? cycleRuleTexts.value?.[key] : undefined) ??
+      t(`creditLoan.rules.${key}`),
+    highlight: LOAN_RULE_HIGHLIGHT_KEYS.has(key) ? t(`creditLoan.ruleHighlights.${key}`) : undefined
   }))
 )
 
