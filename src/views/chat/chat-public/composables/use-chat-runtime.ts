@@ -41,6 +41,7 @@ import {
   loadAllCachedChatMessages,
   loadCachedChatMessageById,
   loadCachedChatMessages,
+  pruneCachedChatMessages,
   saveCachedChatMessage
 } from './chat-message-cache'
 import { useChatConnection } from './use-chat-connection'
@@ -250,6 +251,10 @@ export function useChatRuntime() {
     const memberRowId = acctInfo.value?.memberRowId ?? userInfo.value?.rowId
     return memberRowId ? String(memberRowId) : getChatVisitorId()
   })
+  /** 与会话缓存键保持同一身份判定，决定 30 天会员或 7 天游客的保留期限。 */
+  const isCurrentChatUserGuest = computed(
+    () => !(acctInfo.value?.memberRowId ?? userInfo.value?.rowId)
+  )
 
   /** 构建当前会员或游客写入 Socket 消息的 mine 节点。 */
   const buildMemberParticipant = (): ChatParticipant => {
@@ -335,6 +340,8 @@ export function useChatRuntime() {
       dealerCode.value,
       activeConversation.value
     )
+    // 在写入队列创建时固定身份，避免登录状态在异步写入前变化而误用过期策略。
+    const isGuest = isCurrentChatUserGuest.value
     const messageSnapshot = {
       ...message,
       imageList: message.imageList ? [...message.imageList] : undefined
@@ -342,7 +349,7 @@ export function useChatRuntime() {
 
     pendingMessageCacheWrite = pendingMessageCacheWrite
       .catch(() => undefined)
-      .then(() => saveCachedChatMessage(cacheKey, messageSnapshot))
+      .then(() => saveCachedChatMessage(cacheKey, messageSnapshot, { isGuest }))
 
     return pendingMessageCacheWrite
   }
@@ -1340,7 +1347,7 @@ export function useChatRuntime() {
 
   /** 并行刷新客服列表与自动回复分类，供客服页面首次进入使用。 */
   const initialize = async () => {
-    await Promise.all([loadConversations(), loadQuickIssues()])
+    await Promise.all([loadConversations(), loadQuickIssues(), pruneCachedChatMessages()])
   }
 
   onBeforeUnmount(() => {
