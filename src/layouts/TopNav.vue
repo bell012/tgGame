@@ -306,7 +306,7 @@
             <LanguageIcon class="w-6 h-6 fill-none" />
           </div>
           <template v-if="localeStore.currentCurrency !== 'none'">
-            <div class="absolute left-10 top-2 h-6 w-[1px] line"></div>
+            <div class="absolute left-10 top-2 h-6 w-[1px] bg-opacity-10"></div>
             <div
               class="hidden sm:flex items-center justify-center cursor-pointer search w-auto h-[40px] px-2"
               @click="openCurrencyModal"
@@ -880,7 +880,7 @@ defineExpose({
   left: 0;
   right: 0;
   height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
-  background-color: var(--color-background-level-5);
+  background-color: var(--color-background-level-2);
   z-index: 50;
   overflow: visible;
 }
@@ -964,9 +964,6 @@ defineExpose({
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text-level-2);
-}
-.line {
-  background-color: #e4eaf019;
 }
 
 @media (max-width: 390px) {
