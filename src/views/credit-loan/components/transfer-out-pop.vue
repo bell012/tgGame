@@ -54,8 +54,10 @@
               {{ t('creditLoan.transferPop.transferAll') }}
             </button>
 
-            <p class="mt-4 text-xs leading-[18px] text-text-1 sm:mt-5 sm:text-sm sm:leading-5">
-              {{ t('creditLoan.transferPop.desc') }}
+            <p
+              class="mt-4 text-center text-xs leading-[18px] text-text-1 sm:mt-5 sm:text-sm sm:leading-5"
+            >
+              {{ props.desc || t('creditLoan.transferPop.desc') }}
             </p>
           </section>
         </div>
@@ -74,6 +76,7 @@ const props = defineProps<{
   visible: boolean
   loanBalance: number
   transferableBalance: number
+  desc?: string
 }>()
 
 const emit = defineEmits<{

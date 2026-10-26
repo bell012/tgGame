@@ -82,7 +82,7 @@
                 {{ t('creditLoan.borrowNow') }}
               </button>
               <p class="mt-3 text-center text-xs leading-[15px] text-text-2">
-                {{ t('creditLoan.slogan') }}
+                {{ beforeLoanText }}
               </p>
             </div>
           </div>
@@ -117,7 +117,9 @@
           <CreditLoanGameGrid
             v-if="activeContentKey === 'game-lobby'"
             class="mt-3"
-            :game-type-code="activeGameTypeCode"
+            :platform-game-codes="loanPlatformGameCodes"
+            :game-type-codes="lobbyGameTypeCodes"
+            :loading="!hasLoadedLoanConfig"
           />
           <CreditLoanDetails v-else class="mt-3" :rules="loanRules" />
         </div>
@@ -208,7 +210,7 @@
                 {{ t('creditLoan.borrowNow') }}
               </button>
               <p class="mt-6 text-center text-sm leading-[17px] text-text-2">
-                {{ t('creditLoan.slogan') }}
+                {{ beforeLoanText }}
               </p>
             </div>
 
@@ -253,7 +255,9 @@
 
             <CreditLoanGameGrid
               v-if="activeContentKey === 'game-lobby'"
-              :game-type-code="activeGameTypeCode"
+              :platform-game-codes="loanPlatformGameCodes"
+              :game-type-codes="lobbyGameTypeCodes"
+              :loading="!hasLoadedLoanConfig"
             />
             <CreditLoanDetails v-else :rules="loanRules" />
           </section>
@@ -269,9 +273,10 @@
       </div>
     </main>
 
-    <LoanPop v-model:visible="showLoanPop" :amount="borrowedAmount" />
+    <LoanPop v-model:visible="showLoanPop" :amount="borrowedAmount" :desc="afterLoanText" />
     <TransferOutPop
       v-model:visible="showTransferPop"
+      :desc="transferText"
       :loan-balance="loanBalance"
       :transferable-balance="transferableBalance"
       @transfer-all="handleTransferAll"
@@ -285,7 +290,9 @@ import { computed, onMounted, ref, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import Api from '@/api'
-import { useCasinoTabsStore } from '@/stores/casinoTabs'
+import type { CreditLoanConfig } from '@/api/interface/credit-loan'
+import type { GameDataItem } from '@/api/interface/game'
+import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { formatBalance } from '@/utils/locale'
 import newSideIcons from '@/static/svg/side/newIcon'
@@ -303,6 +310,7 @@ import TransferOutSuccess from './components/transfer-out-success.vue'
 import LoanRecords from './loan-records/index.vue'
 import BetHistory from './bet-history/index.vue'
 import { CREDIT_LOAN_RULE_HIGHLIGHTS, type CreditLoanRuleItem } from './mock'
+import { parseLoanGameTypeCodes } from './platform-game-codes'
 import coinIcon from './img/yongjin.svg?url'
 import MoreIcon from './img/more.svg?component'
 import LoanRecordsIcon from './img/loan-records.svg?component'
@@ -311,11 +319,9 @@ import BettingRecordsIcon from './img/betting-records.svg?component'
 type NavTabKey = 'credit-loan' | 'loan-records' | 'betting-records'
 type ContentTabKey = 'game-lobby' | 'loan-details'
 
-const EXCLUDED_GAME_TYPE_CODES = new Set(['', 'hot_games', 'providers'])
-
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
-const casinoTabsStore = useCasinoTabsStore()
+const gameStore = useGameStore()
 const userStore = useUserStore()
 const activeNavKey = ref<NavTabKey>('credit-loan')
 const activeContentKey = ref<ContentTabKey>('game-lobby')
@@ -332,6 +338,38 @@ const isTransferring = ref(false)
 const loanBalance = ref(0)
 const transferableBalance = ref(0)
 const availableCredit = ref(0)
+const hasLoadedLoanConfig = ref(false)
+/** 借呗配置中的可玩游戏 platformGameCodes */
+const loanPlatformGameCodes = ref<string[]>([])
+const loanGameTypeCodes = computed(() => parseLoanGameTypeCodes(loanPlatformGameCodes.value))
+const gameSections = ref<GameDataItem[]>([])
+const borrowConfig = ref<CreditLoanConfig | null>(null)
+
+/** 文案类型为 1（自定义）且文案有值时使用接口文案，否则使用默认文案 */
+const resolveConfigText = (type: unknown, text: string | undefined, fallbackKey: string) =>
+  (Number(type) === 1 && text?.trim()) || t(fallbackKey)
+
+const beforeLoanText = computed(() =>
+  resolveConfigText(
+    borrowConfig.value?.beforeType,
+    borrowConfig.value?.beforeText,
+    'creditLoan.slogan'
+  )
+)
+const afterLoanText = computed(() =>
+  resolveConfigText(
+    borrowConfig.value?.afterType,
+    borrowConfig.value?.afterText,
+    'creditLoan.loanPop.desc'
+  )
+)
+const transferText = computed(() =>
+  resolveConfigText(
+    borrowConfig.value?.transferType,
+    borrowConfig.value?.transferText,
+    'creditLoan.transferPop.desc'
+  )
+)
 
 const navTabs = computed<{ key: NavTabKey; label: string; icon: Component }[]>(() => [
   { key: 'credit-loan', label: t('creditLoan.title'), icon: newSideIcons.creditLoanIcon },
@@ -357,21 +395,58 @@ const loanRules = computed<CreditLoanRuleItem[]>(() =>
   }))
 )
 
-const gameTypeTabs = computed(() => [
-  { sysGameTypeCode: '', sysGameTypeName: t('creditLoan.all') },
-  ...casinoTabsStore.tabButtons
-    .filter(item => !EXCLUDED_GAME_TYPE_CODES.has(item.sysGameTypeCode))
-    .map(item => ({
-      sysGameTypeCode: item.sysGameTypeCode,
-      sysGameTypeName: item.sysGameTypeName
-    }))
-])
+const allGameTypeTabs = computed(() => {
+  const seenCodes = new Set<string>()
+
+  return gameSections.value.flatMap(section => {
+    const sysGameTypeCode = String(section.sysGameTypeCode ?? '').trim()
+
+    if (!sysGameTypeCode || seenCodes.has(sysGameTypeCode)) return []
+
+    seenCodes.add(sysGameTypeCode)
+    return [
+      {
+        sysGameTypeCode,
+        sysGameTypeName: String(section.sysGameTypeName ?? '').trim() || sysGameTypeCode
+      }
+    ]
+  })
+})
+
+const loanGameTypeTabs = computed(() => {
+  const allowedCodes = new Set(loanGameTypeCodes.value)
+  return allGameTypeTabs.value.filter(item => allowedCodes.has(item.sysGameTypeCode))
+})
+
+const allGameTypeOption = computed(() => ({
+  sysGameTypeCode: '',
+  sysGameTypeName: t('creditLoan.all')
+}))
+
+const gameTypeTabs = computed(() => [allGameTypeOption.value, ...loanGameTypeTabs.value])
+
+const lobbyGameTypeCodes = computed(() => {
+  if (!activeGameTypeCode.value) return loanGameTypeCodes.value
+
+  return loanGameTypeCodes.value.includes(activeGameTypeCode.value)
+    ? [activeGameTypeCode.value]
+    : []
+})
+
+watch(allGameTypeTabs, tabs => {
+  if (
+    activeGameTypeCode.value &&
+    !tabs.some(item => item.sysGameTypeCode === activeGameTypeCode.value)
+  ) {
+    activeGameTypeCode.value = ''
+  }
+})
 
 const filterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'gameType',
     title: t('creditLoan.gameType'),
-    options: gameTypeTabs.value.map(item => ({
+    options: [allGameTypeOption.value, ...allGameTypeTabs.value].map(item => ({
       label: item.sysGameTypeName,
       value: item.sysGameTypeCode
     }))
@@ -396,7 +471,7 @@ const handleMobileBack = () => {
 
 const loadGameTypes = async () => {
   try {
-    await casinoTabsStore.loadCasinoTabButtons()
+    gameSections.value = await gameStore.ensureGameData()
   } catch (error) {
     console.error('credit loan game types failed', error)
   }
@@ -416,8 +491,11 @@ const loadCreditLoanAmounts = async () => {
     loanBalance.value = toAmount(borInfo?.balance)
     availableCredit.value = toAmount(borInfo?.quotaBalance)
     transferableBalance.value = toAmount(borInfo?.transferAmount)
+    loanPlatformGameCodes.value = borInfo?.borrowConfig?.platformGameCodes ?? []
   } catch (error) {
     console.error('credit loan info failed', error)
+  } finally {
+    hasLoadedLoanConfig.value = true
   }
 }
 
@@ -461,9 +539,22 @@ const handleTransferAll = async () => {
   }
 }
 
+const loadBorrowConfig = async () => {
+  try {
+    const config = await Api.creditLoan.getBorrowConfig()
+
+    console.log('[credit-loan] /br/getBorrowConfig', config)
+
+    borrowConfig.value = config ?? null
+  } catch (error) {
+    console.error('credit loan borrow config failed', error)
+  }
+}
+
 onMounted(() => {
   void loadGameTypes()
   void loadCreditLoanAmounts()
+  void loadBorrowConfig()
 })
 
 watch(locale, () => {
