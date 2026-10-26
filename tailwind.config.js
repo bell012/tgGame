@@ -46,6 +46,8 @@ export default {
         'opacity-10': 'var(--color-opacity-10)',
         'opacity-15': 'var(--color-opacity-15)',
         'opacity-30': 'var(--color-opacity-30)',
+        'opacity-60': 'var(--color-opacity-60)',
+        'opacity-80': 'var(--color-opacity-80)',
 
         // ========== 遮罩色 (Mask) ==========
         'mask-20': 'var(--color-mask-20)',
@@ -90,7 +92,10 @@ export default {
         'game-fishing': 'var(--color-game-fishing)',
         'game-live': 'var(--color-game-live)',
         'game-lottery': 'var(--color-game-lottery)',
-        'game-table': 'var(--color-game-table)'
+        'game-table': 'var(--color-game-table)',
+        // 哈希游戏聊天室
+        'hash-chat-draw-frame': 'var(--color-hash-chat-draw-frame)',
+        'hash-chat-win-frame': 'var(--color-hash-chat-win-frame)'
       },
 
       // ========== SVG 描边色 (Stroke) ==========
