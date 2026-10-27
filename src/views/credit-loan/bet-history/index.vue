@@ -186,8 +186,9 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
-import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { navigateTo } from '@/utils/router'
+import Api from '@/api'
+import type { QueryOrderInfoResult } from '@/api/interface/record.interface'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import CustomSelect from '@/components/common/CustomSelect.vue'
@@ -207,16 +208,20 @@ import {
   createBetHistoryTimeOptions,
   createBetHistoryWinlostOptions,
   createDefaultBetHistoryFilterValues,
+  hasMoreByTotal,
   mapRecordToItem,
   normalizeBetHistoryFilterValues,
   type BetHistoryFilterValues,
   type Item
 } from '@/views/wallet/betHistory/shared'
-import { fetchLoanBetRecordsMock, type LoanBetRecord } from '../mock'
+
+type LoanBetRecord = QueryOrderInfoResult['records'][number]
 
 interface LoanBetItem extends Item {
   settled: boolean
 }
+
+const LOAN_BET_CURRENCY = 'JB'
 
 const emit = defineEmits<{
   back: []
@@ -224,7 +229,6 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
-const { currentCurrencyCode } = useDisplayCurrency()
 
 const filterValues = ref<BetHistoryFilterValues>(createDefaultBetHistoryFilterValues())
 const showFilterPopup = ref(false)
@@ -257,14 +261,10 @@ const filterGroups = computed<(FilterGroup & { key: keyof BetHistoryFilterValues
   }
 ])
 
-const toLoanBetItem = (record: LoanBetRecord): LoanBetItem => {
-  const item = mapRecordToItem(record, t)
-  return {
-    ...item,
-    gameName: record.gameName || item.gameName,
-    settled: record.status === 1
-  }
-}
+const toLoanBetItem = (record: LoanBetRecord): LoanBetItem => ({
+  ...mapRecordToItem(record, t),
+  settled: record.status === 1
+})
 
 const getResultClass = (item: LoanBetItem) => {
   if (!item.settled) return 'text-assistOrange'
@@ -274,15 +274,28 @@ const getResultClass = (item: LoanBetItem) => {
 const getStatusLabel = (item: LoanBetItem) =>
   item.settled ? t('creditLoan.betRecords.completed') : t('creditLoan.betRecords.pending')
 
-const fetchLoanBetRecords = (page: number, pageSize: number) =>
-  fetchLoanBetRecordsMock(
+const fetchLoanBetRecords = async (page: number, pageSize: number) => {
+  const response = await Api.record.queryOrderInfoPage(
     buildBetHistoryQueryForm({
       page,
       pageSize,
       filterValues: filterValues.value,
-      currency: currentCurrencyCode.value
+      currency: LOAN_BET_CURRENCY
     })
   )
+
+  if (!response.success) {
+    throw new Error(response.message || t('common.requestError'))
+  }
+
+  const total = Number(response.result?.total) || 0
+
+  return {
+    list: response.result?.records ?? [],
+    total,
+    pages: Number(response.result?.pages) || Math.max(1, Math.ceil(total / pageSize))
+  }
+}
 
 // H5：无限滚动
 const scrollRoot = ref<HTMLElement | null>(null)
@@ -303,7 +316,8 @@ const {
   load: ({ page, pageSize }) => fetchLoanBetRecords(page, pageSize),
   getItems: response => response.list.map(toLoanBetItem),
   getTotal: response => response.total,
-  getHasMore: (response, { page, pageSize }) => page * pageSize < response.total,
+  getHasMore: (response, { page, pageSize, items }) =>
+    hasMoreByTotal(response.total, page, pageSize, items.length),
   dedupeBy: item => item.id,
   onError: error => {
     console.error('loan bet records failed', error)
@@ -370,7 +384,6 @@ const reload = () => {
 }
 
 watch(filterValues, reload, { deep: true })
-watch(currentCurrencyCode, reload)
 watch(
   isMobile,
   mobile => {

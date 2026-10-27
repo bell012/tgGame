@@ -50,7 +50,7 @@
             <p
               class="mt-4 text-center text-xs leading-[15px] text-text-1 sm:mt-5 sm:text-sm sm:leading-[17px]"
             >
-              {{ t('creditLoan.loanPop.desc') }}
+              {{ props.desc || t('creditLoan.loanPop.desc') }}
             </p>
           </section>
         </div>
@@ -69,9 +69,11 @@ const props = withDefaults(
     visible: boolean
     amount: number
     currency?: string
+    desc?: string
   }>(),
   {
-    currency: 'USD'
+    currency: 'USD',
+    desc: ''
   }
 )
 
