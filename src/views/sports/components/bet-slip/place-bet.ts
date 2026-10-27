@@ -4,6 +4,7 @@ import type {
   SportsPlaceBetSelectionParams
 } from '@/api/interface/sport'
 import { SportsBetNotSentError } from '@/stores/sports'
+import { isAcceptedPlaceBetResult } from './shared'
 
 export type BetSubmissionState = 'confirmed' | 'failed' | 'pending' | 'unknown'
 
@@ -59,9 +60,9 @@ export const getPlaceBetResult = (
     const code = statusCode(response.stc)
     return code !== undefined && rejectedRequestCodes.has(code) ? 'failed' : 'unknown'
   }
-  if (results.some(item => Number(item.bcs) === 1)) return 'pending'
-  if (results.every(item => Number(item.bcs) === 2 && Number(item.bsm) === 100 && item.wid))
-    return 'confirmed'
+  if (results.every(isAcceptedPlaceBetResult)) return 'confirmed'
+  if (results.some(item => Number(item.bcs) === 1 && !isAcceptedPlaceBetResult(item)))
+    return 'pending'
   if (
     results.every(item => Number(item.bcs) === 3 || rejectedBetCodes.has(statusCode(item.bsm) ?? 0))
   )

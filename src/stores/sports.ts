@@ -34,6 +34,7 @@ import { useSportsBalanceStore } from '@/stores/sportsBalance'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { isApiBusinessSuccess } from '@/utils/apiBusiness'
 import { decimalOdds } from '@/views/sports/components/bet-slip/bet-info'
+import { isAcceptedPlaceBetResult } from '@/views/sports/components/bet-slip/shared'
 import i18n from '@/i18n'
 import { globalShowToast } from '@/utils/toast'
 
@@ -1123,10 +1124,10 @@ export const useSportsStore = defineStore('sports', () => {
       })
       if (isAuthExpired(response)) sportsAuth.clearCredentials(credentials)
       if (historyStorageKey) {
-        // 仅累计明确成功的注单，同一响应中重复的注单号只计一次。
+        // 与下单成功反馈保持一致，同一响应中重复的注单号只计一次。
         const confirmedIds = new Set(
           (Array.isArray(response.wsis) ? response.wsis : [])
-            .filter(item => item && Number(item.bcs) === 2 && Number(item.bsm) === 100 && item.wid)
+            .filter(isAcceptedPlaceBetResult)
             .map(item => item.wid)
         )
         if (confirmedIds.size) {
