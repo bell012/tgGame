@@ -57,7 +57,7 @@
     </div>
 
     <DesktopPagination
-      class="mt-4"
+      class="mt-auto pt-4"
       :current-page="props.page"
       :total-pages="props.totalPages"
       @change="emit('change-page', $event)"

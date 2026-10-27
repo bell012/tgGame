@@ -8,39 +8,6 @@ export interface CreditLoanRuleItem {
 export type LoanRecordType = 'loan' | 'transfer'
 export type LoanRecordFilter = 'all' | LoanRecordType
 
-export interface LoanRecordItem {
-  id: string
-  type: LoanRecordType
-  amount: number
-  createTime: number
-}
-
-const LOAN_RECORDS_MOCK: LoanRecordItem[] = Array.from({ length: 23 }, (_, index) => ({
-  id: String(index + 1),
-  type: index % 3 === 0 ? 'loan' : 'transfer',
-  amount: 1000,
-  createTime: Date.UTC(2026, 11, 18, 4, 14, 15) - index * 3600 * 1000
-}))
-
-/** 借款记录分页查询，接口返回后替换 */
-export const fetchLoanRecordsMock = async (params: {
-  type: LoanRecordFilter
-  page: number
-  pageSize: number
-}): Promise<{ list: LoanRecordItem[]; total: number }> => {
-  await new Promise(resolve => setTimeout(resolve, 300))
-  const filtered =
-    params.type === 'all'
-      ? LOAN_RECORDS_MOCK
-      : LOAN_RECORDS_MOCK.filter(item => item.type === params.type)
-  const start = (params.page - 1) * params.pageSize
-
-  return {
-    list: filtered.slice(start, start + params.pageSize),
-    total: filtered.length
-  }
-}
-
 export type LoanBetRecord = QueryOrderInfoResult['records'][number] & { gameName?: string }
 
 const LOAN_BET_RECORDS_MOCK: LoanBetRecord[] = Array.from({ length: 56 }, (_, index) => {

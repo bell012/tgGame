@@ -8,7 +8,7 @@
       @sort="showFilterPopup = true"
     />
 
-    <div class="flex-1 overflow-y-auto px-3.5 pb-6 pt-3">
+    <div ref="scrollRef" class="flex-1 overflow-y-auto px-3.5 pb-6 pt-3">
       <div v-if="props.records.length > 0" class="flex flex-col gap-2">
         <div
           v-for="record in props.records"
@@ -49,7 +49,18 @@
         class="flex items-center justify-center gap-2 py-6 text-sm text-text-2"
       >
         <ButtonLoadingSpinner :size="18" color="text-text-2" />
-        <span>{{ t('creditLoan.records.refreshing') }}</span>
+        <span>
+          {{
+            props.records.length > 0 ? t('common.loadingMore') : t('creditLoan.records.refreshing')
+          }}
+        </span>
+      </div>
+
+      <div
+        v-else-if="!props.hasMore && props.records.length > 0"
+        class="py-6 text-center text-xs text-text-2"
+      >
+        {{ t('common.noMoreData') }}
       </div>
 
       <div v-if="props.hasMore" ref="loadMoreRef" class="h-1 w-full" />
@@ -94,6 +105,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const showFilterPopup = ref(false)
+const scrollRef = ref<HTMLElement | null>(null)
 const loadMoreRef = ref<HTMLElement | null>(null)
 let loadMoreObserver: IntersectionObserver | null = null
 
@@ -116,7 +128,7 @@ const setupLoadMoreObserver = () => {
   loadMoreObserver?.disconnect()
   loadMoreObserver = null
 
-  if (!props.hasMore || !loadMoreRef.value) return
+  if (!props.hasMore || props.loading || !loadMoreRef.value) return
 
   loadMoreObserver = new IntersectionObserver(
     entries => {
@@ -124,7 +136,7 @@ const setupLoadMoreObserver = () => {
         emit('load-more')
       }
     },
-    { root: null, rootMargin: '200px 0px 200px 0px' }
+    { root: scrollRef.value, rootMargin: '0px 0px 200px 0px' }
   )
   loadMoreObserver.observe(loadMoreRef.value)
 }
