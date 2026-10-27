@@ -219,14 +219,14 @@ export function getBalance(
 }
 
 /**
- * 体育投注提前结算，提交当前注单的回购价格和价格 ID。
+ * 体育投注提前结算，提交当前注单的回购价格和价格 ID；使用项目统一加解密。
  */
 export function submitBuyBack(
   baseUrl: string,
   data: SubmitBuyBackParams,
   options?: SportsRequestOptions
 ): Promise<SubmitBuyBackResponse> {
-  return postSport(baseUrl, 'SubmitBuyBack', JSON.stringify(data), options)
+  return postSport(baseUrl, 'SubmitBuyBack', data, options, 'site')
 }
 
 /**
