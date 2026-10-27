@@ -287,6 +287,10 @@
       @transfer-all="handleTransferAll"
     />
     <TransferOutSuccess v-model:visible="showTransferSuccess" />
+    <ChangeMobileNumberPcLayout
+      v-if="!isMobile && showBindPhonePopup"
+      v-model="showBindPhonePopup"
+    />
   </div>
 </template>
 
@@ -300,11 +304,13 @@ import type { GameDataItem } from '@/api/interface/game'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { formatBalance } from '@/utils/locale'
+import { navigateToName } from '@/utils/router'
 import newSideIcons from '@/static/svg/side/newIcon'
 import FilterIcon from '@/static/svg/sports/liansai_tabs/filter.svg?component'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import ChangeMobileNumberPcLayout from '@/views/settings/changeMobileNumber/pc-layout.vue'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import CreditLoanGameGrid from './components/CreditLoanGameGrid.vue'
@@ -339,6 +345,7 @@ const borrowedAmount = ref(0)
 const showTransferPop = ref(false)
 const showTransferSuccess = ref(false)
 const isTransferring = ref(false)
+const showBindPhonePopup = ref(false)
 
 const loanBalance = ref(0)
 const transferableBalance = ref(0)
@@ -547,12 +554,39 @@ const loadCreditLoanAmounts = async () => {
   }
 }
 
+/** 借呗配置 verifyPhoneType：0 借款时绑定手机号，1 转出盈利金额时绑定手机号 */
+const VERIFY_PHONE_ON_BORROW = 0
+const VERIFY_PHONE_ON_TRANSFER = 1
+
+const hasBoundTelephone = computed(() =>
+  Boolean(String(userStore.userInfo?.telephone ?? '').trim())
+)
+
+/** 当前场景要求绑定手机号且用户未绑定时，H5 跳转绑定页、PC 打开绑定弹窗，并返回 true */
+const promptBindPhoneIfNeeded = async (scene: number) => {
+  if (hasBoundTelephone.value) return false
+  if (!borrowConfig.value) await loadBorrowConfig()
+  if (Number(borrowConfig.value?.verifyPhoneType) !== scene) return false
+
+  if (isMobile.value) {
+    void navigateToName('changeMobileNumber')
+  } else {
+    showBindPhonePopup.value = true
+  }
+  return true
+}
+
 const canBorrow = computed(() => !isBorrowing.value && availableCredit.value > 0)
 
 const handleBorrow = async () => {
   if (!canBorrow.value) return
 
   isBorrowing.value = true
+  if (await promptBindPhoneIfNeeded(VERIFY_PHONE_ON_BORROW)) {
+    isBorrowing.value = false
+    return
+  }
+
   try {
     const loanResult = await Api.creditLoan.loanAmount()
 
@@ -572,6 +606,12 @@ const handleTransferAll = async () => {
   if (isTransferring.value || transferableBalance.value <= 0) return
 
   isTransferring.value = true
+  if (await promptBindPhoneIfNeeded(VERIFY_PHONE_ON_TRANSFER)) {
+    showTransferPop.value = false
+    isTransferring.value = false
+    return
+  }
+
   try {
     const transferResult = await Api.creditLoan.transferWallet()
 
