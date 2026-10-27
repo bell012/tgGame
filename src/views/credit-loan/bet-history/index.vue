@@ -221,7 +221,9 @@ interface LoanBetItem extends Item {
   settled: boolean
 }
 
-const LOAN_BET_CURRENCY = 'JB'
+/** 借呗投注记录按 JB 查询，返回数据统一按 CNY 展示 */
+const LOAN_BET_QUERY_CURRENCY = 'JB'
+const LOAN_BET_DISPLAY_CURRENCY = 'CNY'
 
 const emit = defineEmits<{
   back: []
@@ -280,7 +282,7 @@ const fetchLoanBetRecords = async (page: number, pageSize: number) => {
       page,
       pageSize,
       filterValues: filterValues.value,
-      currency: LOAN_BET_CURRENCY
+      currency: LOAN_BET_QUERY_CURRENCY
     })
   )
 
@@ -291,7 +293,10 @@ const fetchLoanBetRecords = async (page: number, pageSize: number) => {
   const total = Number(response.result?.total) || 0
 
   return {
-    list: response.result?.records ?? [],
+    list: (response.result?.records ?? []).map(record => ({
+      ...record,
+      currency: LOAN_BET_DISPLAY_CURRENCY
+    })),
     total,
     pages: Number(response.result?.pages) || Math.max(1, Math.ceil(total / pageSize))
   }
