@@ -489,8 +489,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
           label: comboLabel(item.combs, outcomes.value.length),
           comboSelection: item.combs,
           combinationCount: item.noc,
-          // 多注组合不展示单一赔率。
-          odds: item.noc === 1 ? item.epa + 1 : undefined,
+          // 各组合赔率之和：每注 1 元的合计净盈利，加回组合本金。
+          odds: Number.isFinite(item.epa) ? item.epa + item.noc : undefined,
           stake,
           minStake: item.misa,
           maxStake: item.masa,

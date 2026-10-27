@@ -1,5 +1,8 @@
 <template>
-  <footer class="flex flex-col items-center px-3.5 pb-6 pt-8" :class="{ 'font-inter': !isMobile }">
+  <footer
+    class="flex flex-col items-center px-3.5 py-[30px] sm:py-10 sm:pt-0"
+    :class="{ 'font-inter': !isMobile }"
+  >
     <div class="flex items-center" :class="isMobile ? 'gap-3' : 'gap-4'">
       <span
         class="shrink-0 text-text-2"
@@ -31,13 +34,9 @@
               `sports.eventDetails.${isMobile ? 'oddsFormatTypes' : 'oddsFormatShortTypes'}.${oddsType}`
             )
           }}</span>
-          <component
-            :is="isMobile ? ChevronIcon : CaretUp"
-            class="shrink-0 transition-transform motion-reduce:transition-none"
-            :class="[
-              isMobile ? 'h-2 w-2 text-text-1' : 'h-3 w-3 text-text-2 duration-300 ease-[ease]',
-              { 'rotate-180': isMobile && open, '-rotate-180': !isMobile && !open }
-            ]"
+          <CaretUp
+            class="shrink-0 text-text-2 transition-transform duration-300 ease-[ease] motion-reduce:transition-none"
+            :class="[isMobile ? 'h-2.5 w-2.5' : 'h-3 w-3', { '-rotate-180': !open }]"
             aria-hidden="true"
           />
         </button>
@@ -69,7 +68,7 @@
       class="text-center text-xs"
       :class="
         isMobile
-          ? 'mt-6 max-w-[640px] leading-relaxed text-text-3'
+          ? 'mt-2.5 max-w-[640px] leading-relaxed text-text-3'
           : 'mt-4 max-w-[516px] font-normal leading-[15px] text-text-2'
       "
     >
@@ -91,7 +90,6 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import type { SportsOddsType } from '@/api/interface/sport'
-import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import CaretUp from '@/static/svg/sports/caret-up.svg?component'
 import OddsFormatSheet from '../../event-details/components/odds-format-sheet/index.vue'
 import { ODDS_TYPES } from '../../shared/odds'

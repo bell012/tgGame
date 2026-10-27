@@ -100,7 +100,7 @@ export const historyComboLabel = (wager: SportsBetHistoryWager, t: Translate) =>
         : combo === 18
           ? t('sports.betSlip.fold', { count: wager.wil?.length ?? 0 })
           : t('sports.betSlip.combo', { count: combo })
-  return `${label} ${t('sportsHistory.betCount', { count: wager.noc })}`
+  return label
 }
 
 const scoreText = (home: unknown, away: unknown) => {

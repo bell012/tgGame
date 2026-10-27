@@ -35,7 +35,17 @@
           :show-fullscreen="false"
           class="[&_.sports-live-controls]:pr-9"
         />
-        <LiveAnimation v-else-if="mode === 'animation'" :src="animationUrl" />
+        <div
+          v-else-if="mode === 'animation'"
+          class="absolute"
+          :class="
+            fullscreen
+              ? 'left-1/2 top-1/2 aspect-[900/506] w-[min(100%,calc(100dvh*900/506))] -translate-x-1/2 -translate-y-1/2'
+              : 'inset-0'
+          "
+        >
+          <LiveAnimation :src="animationUrl" />
+        </div>
         <div
           v-else
           class="flex h-full items-center justify-center text-sm text-text-2"

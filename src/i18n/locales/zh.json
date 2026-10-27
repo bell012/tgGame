@@ -2244,17 +2244,17 @@
       "history": "投注历史",
       "historyCount": "投注历史，{count} 条记录",
       "selectionCount": "投注单，{count} 个选项",
-      "fold": "{count} 串",
+      "fold": "{count}串1",
       "combo": "组合 {count}",
       "systems": {
-        "1": "Trixie",
-        "2": "Yankee",
-        "3": "Super Yankee",
-        "4": "Heinz",
-        "5": "Super Heinz",
-        "6": "Goliath",
-        "7": "9 串系统",
-        "8": "10 串系统"
+        "1": "3串4",
+        "2": "4串11",
+        "3": "5串26",
+        "4": "6串57",
+        "5": "7串120",
+        "6": "8串247",
+        "7": "9串系统",
+        "8": "10串系统"
       },
       "result": {
         "title": "投注结果",

@@ -1,14 +1,17 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
+import { useRouter } from 'vue-router'
 import type { SportsOddsType } from '@/api/interface/sport'
 import { useSportsAuthStore } from './sportsAuth'
 import { useUserStore } from './user'
 import { useSportsBetSlipStore } from './sportsBetSlip'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { isSportsOddsType } from '@/views/sports/shared/odds'
+import { stripLocalePrefix } from '@/utils/locale'
 
-/** 账号盘口偏好独立于 Token 生命周期；游客选择只保留在内存中。 */
+/** 盘型仅在本次体育访问期间共享；刷新页面或离开体育后恢复欧洲盘。 */
 export const useSportsOddsStore = defineStore('sportsOdds', () => {
+  const router = useRouter()
   const auth = useSportsAuthStore()
   const user = useUserStore()
   const draft = useSportsBetSlipStore()
@@ -16,7 +19,17 @@ export const useSportsOddsStore = defineStore('sportsOdds', () => {
   const preference = ref<SportsOddsType>(3)
   const memberCode = ref('')
   const locked = computed(() => draft.submitting || draft.reusing)
-  const storageKey = (code: string) => `sports_odds_type:${code}`
+
+  watch(
+    () => {
+      const path = stripLocalePrefix(router.currentRoute.value.path)
+      return path === '/sports' || path.startsWith('/sports/')
+    },
+    (isSportsRoute, wasSportsRoute) => {
+      if (wasSportsRoute && !isSportsRoute) preference.value = 3
+    },
+    { flush: 'sync' }
+  )
 
   watch(
     () =>
@@ -38,24 +51,12 @@ export const useSportsOddsStore = defineStore('sportsOdds', () => {
       if (!code || code === memberCode.value) return
       memberCode.value = code
       preference.value = 3
-      try {
-        const saved = Number(localStorage.getItem(storageKey(code)))
-        if (isSportsOddsType(saved)) preference.value = saved
-      } catch {
-        // 存储不可用时保留默认值，不阻碍赛事加载。
-      }
     },
     { immediate: true, flush: 'sync' }
   )
   const select = (type: SportsOddsType) => {
     if (locked.value || !isSportsOddsType(type)) return
     preference.value = type
-    if (!memberCode.value) return
-    try {
-      localStorage.setItem(storageKey(memberCode.value), String(type))
-    } catch {
-      // 保存失败仍允许本次使用新盘型。
-    }
   }
   return { preference, locked, select }
 })
