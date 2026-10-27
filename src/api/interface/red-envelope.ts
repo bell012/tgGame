@@ -46,6 +46,19 @@ export interface RedEnvelopePage<TRecord = RedEnvelopeItem> {
   current: number
 }
 
+/** 会员红包领取记录查询条件。 */
+export interface MemberRecordParams {
+  memberId: string
+  redEnvelopeId?: number
+  redEnvelopeType?: RedEnvelopeType
+}
+
+/** 会员红包领取记录查询结果。 */
+export interface MemberRecordResult {
+  totalMoney: number
+  recordPage: RedEnvelopePage<RedEnvelopeItem>
+}
+
 /** 红包活动进度（查询进度与领取接口共用）。 */
 export interface RedEnvelopeSchedule {
   redEnvelopeId?: number

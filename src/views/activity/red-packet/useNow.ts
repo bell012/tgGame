@@ -43,3 +43,10 @@ export const formatDateTime = (timestamp?: number, withSeconds = false) => {
   const base = `${pad(date.getMonth() + 1)}/${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
   return withSeconds ? `${base}:${pad(date.getSeconds())}` : base
 }
+
+/** 时间戳格式化为 MM/DD/YYYY HH:mm:ss。 */
+export const formatFullDateTime = (timestamp?: number) => {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}

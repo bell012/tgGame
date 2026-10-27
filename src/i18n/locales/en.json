@@ -2653,6 +2653,33 @@
       "recharge": { "prefix": "Bonus on", "suffix": "recharge." },
       "loss": { "prefix": "Bonus on", "suffix": "loss." },
       "bet": { "prefix": "Bonus on", "suffix": "bet." }
+    },
+    "claimHistory": "Claim History",
+    "redemptionHistory": "Redemption History",
+    "myRedemptions": "My Redemptions",
+    "totalRedeemed": "Total Redeemed:",
+    "claimTime": "Claim Time: {time}",
+    "claimedSummary": "Claimed {count} , Total {amount} {currency}",
+    "wonTitle": "You've won {amount}!",
+    "allGoneTitle": "Too slow – all gone!",
+    "goodLuck": "Good luck & great fortune!",
+    "comeBackTomorrow": "Come back tomorrow for more!",
+    "noRecords": "No records yet",
+    "allType": "All Type",
+    "allTime": "All Time",
+    "type": {
+      "1": "Daily Rewards",
+      "2": "Deposit Match Bonus",
+      "3": "Loss Rebate",
+      "4": "Lucky Bonus"
+    },
+    "period": {
+      "all": "All",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "last15Days": "Last 15 Days",
+      "last30Days": "Last 30 Days"
     }
   },
   "creditLoan": {

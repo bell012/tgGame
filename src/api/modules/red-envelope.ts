@@ -1,4 +1,6 @@
 import type {
+  MemberRecordParams,
+  MemberRecordResult,
   RedEnvelopeApiResponse,
   RedEnvelopeItem,
   RedEnvelopePage,
@@ -27,6 +29,32 @@ export const getMemberList = (
       url: '/rea/getMemberList',
       method: 'post',
       data: { page: { records: [], total: 0, size, current } },
+      showSuccessToast: false,
+      showErrorToast: options?.showErrorToast ?? true
+    })
+  )
+
+/** 分页查询会员红包领取记录。 */
+export const getMemberRecord = (
+  query: {
+    current: number
+    size: number
+    param: MemberRecordParams
+    startTime?: number
+    endTime?: number
+  },
+  options?: ApiResponseToastOptions
+): Promise<MemberRecordResult> =>
+  resolveRedEnvelopeApiResult(
+    request({
+      url: '/rea/getMemberRecord',
+      method: 'post',
+      data: {
+        startTime: query.startTime,
+        endTime: query.endTime,
+        param: query.param,
+        page: { records: [], total: 0, size: query.size, current: query.current }
+      },
       showSuccessToast: false,
       showErrorToast: options?.showErrorToast ?? true
     })

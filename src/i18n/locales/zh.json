@@ -2633,6 +2633,33 @@
       "recharge": { "prefix": "充值满", "suffix": "可领取" },
       "loss": { "prefix": "亏损满", "suffix": "可领取" },
       "bet": { "prefix": "打码满", "suffix": "可领取" }
+    },
+    "claimHistory": "领取记录",
+    "redemptionHistory": "领取记录",
+    "myRedemptions": "我的领取记录",
+    "totalRedeemed": "累计领取：",
+    "claimTime": "领取时间：{time}",
+    "claimedSummary": "已领取 {count} 个，共 {amount} {currency}",
+    "wonTitle": "恭喜获得 {amount}！",
+    "allGoneTitle": "手慢了，红包已领完！",
+    "goodLuck": "恭喜发财，大吉大利！",
+    "comeBackTomorrow": "明天再来领取吧！",
+    "noRecords": "暂无记录",
+    "allType": "全部类型",
+    "allTime": "全部时间",
+    "type": {
+      "1": "每日红包",
+      "2": "充值加赠红包",
+      "3": "亏损返现红包",
+      "4": "幸运红包"
+    },
+    "period": {
+      "all": "全部",
+      "today": "今天",
+      "yesterday": "昨天",
+      "last7Days": "近 7 天",
+      "last15Days": "近 15 天",
+      "last30Days": "近 30 天"
     }
   },
   "creditLoan": {

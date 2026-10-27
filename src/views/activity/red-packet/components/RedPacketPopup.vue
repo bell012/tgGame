@@ -149,6 +149,24 @@
           <span class="text-white">{{ t('redPacketPanel.expiryDate') }}</span>
           <span class="font-[700] text-[#F7FF4B]">{{ expiryDateText }}</span>
         </p>
+
+        <button
+          v-if="isClaimed"
+          type="button"
+          class="absolute left-1/2 top-[327px] flex -translate-x-1/2 items-center gap-[2px] whitespace-nowrap text-[12px] leading-[15px] text-[#FFD59E]"
+          @click="emit('history')"
+        >
+          {{ t('redPacketPanel.claimHistory') }}
+          <svg viewBox="0 0 10 10" class="size-[10px]" fill="none" aria-hidden="true">
+            <path
+              d="M1.5 2l3 3-3 3M5.5 2l3 3-3 3"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
       </div>
 
       <button type="button" aria-label="close" class="size-[30px]" @click="emit('close')">
@@ -190,6 +208,7 @@ const emit = defineEmits<{
   close: []
   navigate: [path: string]
   claimed: [schedule: RedEnvelopeSchedule]
+  history: []
 }>()
 
 const { t } = useI18n()

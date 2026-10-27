@@ -5,6 +5,8 @@ import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 
 export type RedPacketDisplayMode = 'pc' | 'h5'
 
+export type RedPacketPanelView = 'list' | 'history' | 'mine'
+
 const CHANNEL_BY_MODE: Record<RedPacketDisplayMode, string> = {
   pc: '3',
   h5: '4'

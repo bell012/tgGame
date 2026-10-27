@@ -7,7 +7,15 @@
         : 'size-full'
     "
   >
-    <div class="relative flex min-h-0 flex-1 flex-col">
+    <RedPacketHistory
+      v-if="view === 'history' && historyItem"
+      :item="historyItem"
+      @back="setView('list')"
+      @open-mine="setView('mine')"
+    />
+    <MyRedemptions v-else-if="view === 'mine'" @back="setView('history')" />
+
+    <div v-show="view === 'list'" class="relative flex min-h-0 flex-1 flex-col">
       <!-- PC 头部；H5 由页面使用公共头部 -->
       <div
         v-if="props.displayMode === 'pc'"
@@ -92,6 +100,7 @@
         @close="popupState = null"
         @navigate="handleNavigate"
         @claimed="handleClaimed"
+        @history="openHistory"
       />
     </div>
   </div>
@@ -107,15 +116,21 @@ import emptyBubbleEar from '@/static/svg/red-packet/empty-bubble-ear.svg?url'
 import sendIcon from '@/static/svg/red-packet/send.svg?url'
 import tgAvatar from '@/static/svg/red-packet/tg-avatar.svg?url'
 import { navigateTo } from '@/utils/router'
-import { useRedPacketList, type RedPacketDisplayMode } from '../useRedPacketList'
+import {
+  useRedPacketList,
+  type RedPacketDisplayMode,
+  type RedPacketPanelView
+} from '../useRedPacketList'
+import MyRedemptions from './MyRedemptions.vue'
 import RedPacketCard from './RedPacketCard.vue'
+import RedPacketHistory from './RedPacketHistory.vue'
 import RedPacketPopup from './RedPacketPopup.vue'
 
 const props = withDefaults(defineProps<{ displayMode?: RedPacketDisplayMode }>(), {
   displayMode: 'pc'
 })
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: []; 'update:view': [view: RedPacketPanelView] }>()
 
 const { t } = useI18n()
 
@@ -152,6 +167,21 @@ const handleClaimed = (schedule: RedEnvelopeSchedule) => {
     receiveState: 1,
     amount: schedule.amount ?? popupState.value.item.amount
   })
+}
+
+const view = ref<RedPacketPanelView>('list')
+const historyItem = shallowRef<RedEnvelopeItem | null>(null)
+
+const setView = (nextView: RedPacketPanelView) => {
+  view.value = nextView
+  emit('update:view', nextView)
+}
+
+const openHistory = () => {
+  if (!popupState.value) return
+  historyItem.value = popupState.value.item
+  popupState.value = null
+  setView('history')
 }
 
 const handleNavigate = (path: string) => {
