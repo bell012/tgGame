@@ -15,13 +15,13 @@
           class="relative overflow-hidden rounded-[10px] bg-bg-2"
         >
           <span
-            v-if="item.settled"
+            v-if="item.raw.bcs === 1 || item.settled"
             :class="[
               'absolute right-0 top-0 rounded-bl-[10px] px-[10px] py-[3px] text-[11px] font-normal leading-[13.333px]',
-              item.statusBadgeClass
+              item.raw.bcs === 1 ? 'bg-secondary-7 text-common-100' : item.statusBadgeClass
             ]"
           >
-            {{ item.resultLabel }}
+            {{ item.raw.bcs === 1 ? t('sportsHistory.pending') : item.resultLabel }}
           </span>
 
           <div class="flex min-h-[85px] items-center gap-2.5 px-3.5 py-2.5">
