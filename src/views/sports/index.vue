@@ -4,7 +4,7 @@
     <BetSlipH5 :page="page" />
   </div>
 
-  <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1" data-testid="sports-page">
+  <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1">
     <SportsNavigation class="!px-5" @change="handleSportChange" />
 
     <section
@@ -16,7 +16,6 @@
         class="relative flex items-start gap-3 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         tabindex="0"
         :aria-label="t('sports.homepage.popularMatches')"
-        data-testid="sports-live-strip"
       >
         <article
           v-for="match in liveMatches"
@@ -52,6 +51,7 @@
           </div>
 
           <MatchVersus
+            :sport-id="match.sportId"
             class="mt-7"
             :home-src="match.home.badge"
             :away-src="match.away.badge"
@@ -76,7 +76,7 @@
       </div>
     </section>
 
-    <section class="mx-5 mt-4 space-y-4" data-testid="sports-filters">
+    <section class="mx-5 mt-4 space-y-4">
       <div
         v-if="page.homepageError.value || page.matchesError.value"
         class="flex items-center gap-3 text-sm text-text-2"
@@ -129,10 +129,7 @@
         image-class="h-[180px] w-[198px] object-contain"
         text-class="mt-4 text-center text-sm text-text-2"
       />
-      <div
-        class="grid min-w-0 auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4"
-        data-testid="sports-match-grid"
-      >
+      <div class="grid min-w-0 auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4">
         <div
           v-for="match in pagedMatches"
           :key="match.id"
@@ -163,12 +160,7 @@
       >
         {{ $t('common.loadingMore') }}
       </p>
-      <nav
-        v-if="totalPages > 1"
-        class="mt-8"
-        :aria-label="t('sports.homepage.matchPagination')"
-        data-testid="sports-pagination"
-      >
+      <nav v-if="totalPages > 1" class="mt-8" :aria-label="t('sports.homepage.matchPagination')">
         <DesktopPagination
           :current-page="currentPage"
           :total-pages="totalPages"
@@ -177,6 +169,7 @@
       </nav>
     </section>
 
+    <OddsFormat />
     <CommonFooter />
 
     <BetSlipPc
@@ -222,6 +215,7 @@ import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
 import CommonFooter from '@/components/commonFooter.vue'
+import OddsFormat from './components/odds-format/index.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { stripLocalePrefix } from '@/utils/locale'

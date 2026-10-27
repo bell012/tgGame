@@ -4,7 +4,6 @@
     :style="overlaying ? { minHeight: `${collapsedHeight}px` } : undefined"
     :data-sports-match="match.id"
     :data-expanded="expanded"
-    data-testid="sports-pc-match-card"
     @click="goToEventDetails(match)"
     @transitionend="onOddsTransitionEnd"
   >
@@ -98,10 +97,19 @@
       />
       <div class="mt-3 space-y-2">
         <div v-for="team in teams" :key="team.side" class="flex h-6 min-w-0 items-center gap-3">
-          <SmartImage :src="team.badge" alt="" class="h-6 w-6 shrink-0 object-contain" />
+          <TeamLogo
+            :src="team.badge"
+            :sport-id="match.sportId"
+            alt=""
+            class="h-6 w-6 shrink-0 object-contain"
+          />
           <span class="min-w-0 truncate text-sm font-bold" :title="team.name">{{ team.name }}</span>
           <span
-            v-if="match.live && (team.redCards != null || team.yellowCards != null)"
+            v-if="
+              match.sportId === 1 &&
+              match.live &&
+              (team.redCards != null || team.yellowCards != null)
+            "
             class="flex shrink-0 items-center gap-1 text-xs font-bold leading-4"
           >
             <span
@@ -120,7 +128,7 @@
         </div>
       </div>
 
-      <div class="mt-auto min-h-[76px] min-w-0 pt-2" data-testid="sports-card-odds" @click.stop>
+      <div class="mt-auto min-h-[76px] min-w-0 pt-2" @click.stop>
         <MatchOdds
           :MarketLines="MarketLines"
           :selected-wager-selection-id="selectedWagerSelectionId"
@@ -137,7 +145,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Loading } from 'vant'
-import SmartImage from '@/components/common/SmartImage.vue'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'

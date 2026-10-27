@@ -25,6 +25,7 @@ import * as task from './modules/task'
 import * as taskCenter from './modules/task-center'
 import * as sport from './modules/sport'
 import * as redEnvelope from './modules/red-envelope'
+import * as creditLoan from './modules/credit-loan'
 
 const Api = {
   onlineCustomer,
@@ -45,7 +46,8 @@ const Api = {
   task, // 奖励中心任务领取
   taskCenter, // 任务中心：新人福利、普通任务、游戏任务等
   sport, // 体育数据
-  redEnvelope // 红包活动：红包列表、活动进度、领取
+  redEnvelope, // 红包活动：红包列表、活动进度、领取
+  creditLoan // 借呗：余额、额度信息、借款、转出、配置、账变记录
 }
 
 export default Api

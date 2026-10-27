@@ -594,6 +594,7 @@
     "placeholder": "Please select"
   },
   "sportsHistory": {
+    "oddsType": "Odds",
     "confirmCashOut": "Confirm",
     "close": "Close",
     "singleBet": "Single Bet",
@@ -2324,8 +2325,13 @@
       "collapseAllLeagues": "Collapse all leagues",
       "matchPagination": "Match pagination"
     },
+    "video": "Video",
+    "animation": "Animation",
     "noVideo": "No video available",
     "noAnimation": "No animation available",
+    "mediaFullscreen": "Fullscreen",
+    "mediaExitFullscreen": "Exit fullscreen",
+    "mediaClose": "Close player",
     "loadingAnimation": "Loading animation",
     "loadingLive": "Loading live stream",
     "liveLoadFailed": "Live stream unavailable",
@@ -2363,12 +2369,19 @@
       "oddsFormatLabel": "Odds Format",
       "oddsFormatOptionsAria": "Odds format options",
       "oddsFormatDisclaimer": "While we make every effort to ensure the accuracy of the data displayed on this website, the information is provided for reference only and should be used as a guide. We accept no liability for any inaccuracies.",
-      "oddsFormatTypes": {
+      "oddsFormatShortTypes": {
         "1": "Malaysian",
         "2": "Hong Kong",
-        "3": "European",
+        "3": "Decimal",
         "4": "Indonesian",
         "6": "American"
+      },
+      "oddsFormatTypes": {
+        "1": "Malaysian Odds",
+        "2": "Hong Kong Odds",
+        "3": "Decimal Odds",
+        "4": "Indonesian Odds",
+        "6": "American Odds"
       },
       "noBettingMarkets": "No Betting Markets Available.",
       "matchEnded": "Match Ended"
@@ -2714,6 +2727,11 @@
       "loanTransferOut": "Loan Transfer Out",
       "refreshing": "Refreshing..."
     },
+    "betRecords": {
+      "loan": "Loan",
+      "pending": "Pending",
+      "completed": "Completed"
+    },
     "transferSuccess": {
       "title": "Transfer Successful",
       "desc": "Loan balance transferred to your account balance."
@@ -2732,6 +2750,33 @@
       "rule4": "Your borrowing limit is updated every Monday.",
       "rule5": "Your loan balance resets every Sunday at 23:59, and your borrowing limit is restored the following Monday.",
       "rule6": "This promotion is intended to reward genuine players. Multiple-account applications or coordinated arbitrage will result in account closure."
+    },
+    "ruleHighlights": {
+      "rule4": "Maintain deposit and betting records to restore or increase your borrowing limit!",
+      "rule5": "If you have winnings, transfer the profits to your account balance before the system clears them automatically."
+    },
+    "cycleRules": {
+      "daily": {
+        "rule4": "Your borrowing limit is updated daily.",
+        "rule5": "Your loan balance resets every day at 23:59, and your borrowing limit is restored the next day."
+      },
+      "weekly": {
+        "rule4": "Your borrowing limit is updated every {day}.",
+        "rule5": "Your loan balance resets every {prevDay} at 23:59, and your borrowing limit is restored on {day}."
+      },
+      "monthly": {
+        "rule4": "Your borrowing limit is updated on day {day} of every month.",
+        "rule5": "Your loan balance resets at 23:59 the day before day {day} of each month, and your borrowing limit is restored on day {day}."
+      }
+    },
+    "weekdays": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
     }
   }
 }

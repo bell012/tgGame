@@ -17,10 +17,11 @@
           type="button"
           class="flex h-11 min-w-0 flex-1 items-center rounded-lg px-4 py-3"
           :class="oddsButtonClass(primaryLine, selection)"
+          :disabled="isLocked(primaryLine, selection)"
           @click="onSelect(primaryLine, selection)"
         >
           <img
-            v-if="primaryLine.IsLocked"
+            v-if="isLocked(primaryLine, selection)"
             class="mx-auto h-[18px] w-[18px] shrink-0 object-contain"
             :src="lockIcon"
             alt=""
@@ -41,7 +42,7 @@
             </span>
             <span class="ml-auto shrink-0 text-xs font-bold" :class="oddsNumberClass(selection)">
               <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span
-              >{{ formatEuropeanOdds(selection) }}
+              >{{ displayOdds(selection) }}
             </span>
           </template>
         </button>
@@ -82,9 +83,10 @@
                 class="flex h-11 min-w-0 flex-1 items-center rounded-lg px-4 py-3"
                 :class="oddsButtonClass(line, selection)"
                 @click="onSelect(line, selection)"
+                :disabled="isLocked(line, selection)"
               >
                 <img
-                  v-if="line.IsLocked"
+                  v-if="isLocked(line, selection)"
                   class="mx-auto h-[18px] w-[18px] shrink-0 object-contain"
                   :src="lockIcon"
                   alt=""
@@ -112,7 +114,7 @@
                     <span v-if="oddsArrow(selection)" aria-hidden="true">{{
                       oddsArrow(selection)
                     }}</span
-                    >{{ formatEuropeanOdds(selection) }}
+                    >{{ displayOdds(selection) }}
                   </span>
                 </template>
               </button>
@@ -130,15 +132,20 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import lockIcon from '../../event-details/components/sports-score-details/img/bold.svg?url'
 import {
-  formatEuropeanOdds,
   formatHandicap,
   hasDisplayableCardOdds,
   isWagerSelected,
   MAX_CARD_SELECTIONS,
-  selectionLetterKey,
-  shouldShowHandicap
+  selectionLetterKey
 } from './display'
+import { useSportsOdds } from '../../composables/useSportsOdds'
+import { formatOdds, resolveSelectionOdds } from '../../shared/odds'
+import {
+  resolveSelectionName,
+  selectionNeedsHandicap as shouldShowHandicap
+} from '../../shared/selection-name'
 import { noteMarketLines, trendOf } from './odds-trend'
+import { pcOddsButtonTone } from './button-style'
 import type { OddsSelectPayload, SportMarketLine, SportWagerSelection } from './types'
 
 const props = withDefaults(
@@ -157,10 +164,24 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
+const { oddsType } = useSportsOdds()
+const nameTeams = computed(() => ({
+  HomeTeam: t('sports.oddsHome'),
+  AwayTeam: t('sports.oddsAway')
+}))
+const displayOdds = (selection: SportWagerSelection) =>
+  resolveSelectionName(selection, nameTeams.value) === null
+    ? ''
+    : formatOdds(resolveSelectionOdds(selection, oddsType.value))
+const isLocked = (line: SportMarketLine, selection?: SportWagerSelection) =>
+  line.IsLocked || line.MarketlineStatusId !== 1 || !selection || displayOdds(selection) === ''
 
 const selectionLabel = (selection: SportWagerSelection) => {
+  if (/[{}]/.test(selection.SelectionName)) {
+    return resolveSelectionName(selection, nameTeams.value) ?? ''
+  }
   const key = selectionLetterKey(selection)
-  return key ? t(key) : selection.SelectionName
+  return key ? t(key) : (resolveSelectionName(selection, nameTeams.value) ?? '')
 }
 
 const emit = defineEmits<{
@@ -185,14 +206,16 @@ const lineCells = (line: SportMarketLine): Array<SportWagerSelection | undefined
 }
 
 const oddsButtonClass = (line: SportMarketLine, selection?: SportWagerSelection) => {
-  if (line.IsLocked || !selection) return 'justify-center bg-bg-3'
-  return isWagerSelected(selection, props.selectedWagerSelectionId)
-    ? 'justify-between bg-theme-primary text-text-4'
-    : 'justify-between bg-bg-3 text-text-1 transition-colors lg:hover:bg-[#d0d2d2] dark:lg:hover:bg-bg-2'
+  const unavailable = !selection || isLocked(line, selection)
+  const tone = pcOddsButtonTone({
+    selected: Boolean(selection && isWagerSelected(selection, props.selectedWagerSelectionId)),
+    unavailable
+  })
+  return `${unavailable ? 'justify-center' : 'justify-between'} ${tone}`
 }
 
 const onSelect = (line: SportMarketLine, selection?: SportWagerSelection) => {
-  if (line.IsLocked || !selection || !hasDisplayableCardOdds(selection)) return
+  if (!selection || isLocked(line, selection)) return
   emit('select', { market: line, option: selection })
 }
 

@@ -53,6 +53,8 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     hotEventsLoading,
     hotEventsError,
     sportsSessionVersion,
+    homepageQueryVersion,
+    favouriteListNeedsRefresh,
     favouriteFilterPending: collectPending,
     retryingSports,
     pageNumber
@@ -218,14 +220,19 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
   })
   let homepageReady = false
   let homepageLoadVersion = 0
+  const homepageResumeVersion = ref(0)
   const resumeHomepageRefresh = (immediate = false) => {
     if (
-      homepageReady &&
       isHomepageRoute.value &&
       sportsPageActive.value &&
       !sportsPageDisposed &&
       !document.hidden
     ) {
+      if (!homepageReady) {
+        // 返回前台时旧加载可能尚未结束；交给同一查询入口接续，不等待旧请求后再计时。
+        if (immediate) homepageResumeVersion.value += 1
+        return
+      }
       // 初始加载期间也可能切后台；就绪后恢复时统一续查，由 Store 复用在途请求和缓存。
       homepageRefresh.startNormal(immediate)
       homepageRefresh.startHot(true)
@@ -236,6 +243,29 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     else resumeHomepageRefresh(true)
   }
   watch(isHomepageRoute, handlePageVisibility)
+  let favouriteRetryKey = ''
+  watch([favouriteListNeedsRefresh, () => sportsAuth.isReady], ([needsRefresh, ready]) => {
+    if (
+      !needsRefresh ||
+      !ready ||
+      !sportsPageActive.value ||
+      !isHomepageRoute.value ||
+      sportsPageDisposed ||
+      document.hidden
+    )
+      return
+    const credentials = sportsAuth.peekCredentials()
+    if (!credentials) return
+    const key = JSON.stringify([
+      homepageQueryVersion.value,
+      credentials.contextVersion,
+      credentials.version
+    ])
+    // 同一条件、同一凭证只自动补查一次，失败仍由原来的重试/轮询流程接管。
+    if (key === favouriteRetryKey) return
+    favouriteRetryKey = key
+    homepageResumeVersion.value += 1
+  })
   const matchListContext = computed(() =>
     JSON.stringify([storeMatchListContext.value, collectOnly.value])
   )
@@ -359,7 +389,9 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
         keyword,
         () => (keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null),
         collectOnly,
-        sportsSessionVersion
+        sportsSessionVersion,
+        homepageQueryVersion,
+        homepageResumeVersion
       ],
       (values, previous) => {
         if (!sportsPageActive.value || sportsPageDisposed) return

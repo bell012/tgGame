@@ -6,13 +6,11 @@
       :src="src"
       title="Animation"
       allow="autoplay; fullscreen"
-      data-testid="live-animation"
       @load="loading = false"
     />
     <div
       v-if="loading"
       class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black text-white/80"
-      data-testid="animation-loading"
       role="status"
     >
       <span
@@ -46,7 +44,6 @@
     />
     <div
       class="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-normal text-white/70"
-      data-testid="no-animation"
     >
       {{ t('sports.noAnimation') }}
     </div>

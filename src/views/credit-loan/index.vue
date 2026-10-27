@@ -5,6 +5,10 @@
       v-if="isMobile && activeNavKey === 'loan-records'"
       @back="activeNavKey = 'credit-loan'"
     />
+    <BetHistory
+      v-else-if="isMobile && activeNavKey === 'betting-records'"
+      @back="activeNavKey = 'credit-loan'"
+    />
     <div v-else-if="isMobile" class="fixed inset-0 flex flex-col overflow-hidden bg-bg-1">
       <H5Header
         :title="activeNavTab.label"
@@ -71,13 +75,14 @@
               </span>
               <button
                 type="button"
-                class="mt-3 h-10 w-full rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
-                @click="showLoanPop = true"
+                class="mt-3 h-10 w-full rounded-lg bg-theme-primary text-sm font-[700] text-text-4 disabled:cursor-not-allowed disabled:opacity-50"
+                :disabled="!canBorrow"
+                @click="handleBorrow"
               >
                 {{ t('creditLoan.borrowNow') }}
               </button>
               <p class="mt-3 text-center text-xs leading-[15px] text-text-2">
-                {{ t('creditLoan.slogan') }}
+                {{ beforeLoanText }}
               </p>
             </div>
           </div>
@@ -112,9 +117,16 @@
           <CreditLoanGameGrid
             v-if="activeContentKey === 'game-lobby'"
             class="mt-3"
-            :game-type-code="activeGameTypeCode"
+            :platform-game-codes="loanPlatformGameCodes"
+            :game-type-codes="lobbyGameTypeCodes"
+            :loading="!hasLoadedLoanConfig"
           />
-          <CreditLoanDetails v-else class="mt-3" :rules="loanRules" />
+          <CreditLoanDetails
+            v-else
+            class="mt-3"
+            :rules="loanRules"
+            :bottom-logo="borrowConfig?.bottomLogo"
+          />
         </div>
 
         <ThemedEmptyState
@@ -196,13 +208,14 @@
               </span>
               <button
                 type="button"
-                class="mt-4 h-11 w-full max-w-[400px] rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
-                @click="showLoanPop = true"
+                class="mt-4 h-11 w-full max-w-[400px] rounded-lg bg-theme-primary text-sm font-[700] text-text-4 disabled:cursor-not-allowed disabled:opacity-50"
+                :disabled="!canBorrow"
+                @click="handleBorrow"
               >
                 {{ t('creditLoan.borrowNow') }}
               </button>
               <p class="mt-6 text-center text-sm leading-[17px] text-text-2">
-                {{ t('creditLoan.slogan') }}
+                {{ beforeLoanText }}
               </p>
             </div>
 
@@ -247,7 +260,9 @@
 
             <CreditLoanGameGrid
               v-if="activeContentKey === 'game-lobby'"
-              :game-type-code="activeGameTypeCode"
+              :platform-game-codes="loanPlatformGameCodes"
+              :game-type-codes="lobbyGameTypeCodes"
+              :loading="!hasLoadedLoanConfig"
             />
             <CreditLoanDetails v-else :rules="loanRules" />
           </section>
@@ -256,28 +271,26 @@
             <LoanRecords />
           </section>
 
-          <section v-else class="flex min-w-0 flex-1 flex-col rounded-[12px] bg-bg-2 py-10">
-            <ThemedEmptyState
-              :dark-image="defaultImgDark"
-              :light-image="defaultImgLight"
-              :message="t('creditLoan.empty')"
-              container-class="mt-0"
-              image-class="w-[220px] h-[200px] object-contain mb-2.5"
-              text-class="text-xs text-center text-text-1"
-            />
+          <section v-else class="min-w-0 flex-1">
+            <BetHistory />
           </section>
         </div>
       </div>
     </main>
 
-    <LoanPop v-model:visible="showLoanPop" :amount="availableCredit" />
+    <LoanPop v-model:visible="showLoanPop" :amount="borrowedAmount" :desc="afterLoanText" />
     <TransferOutPop
       v-model:visible="showTransferPop"
+      :desc="transferText"
       :loan-balance="loanBalance"
       :transferable-balance="transferableBalance"
-      @transfer-all="showTransferSuccess = true"
+      @transfer-all="handleTransferAll"
     />
     <TransferOutSuccess v-model:visible="showTransferSuccess" />
+    <ChangeMobileNumberPcLayout
+      v-if="!isMobile && showBindPhonePopup"
+      v-model="showBindPhonePopup"
+    />
   </div>
 </template>
 
@@ -285,13 +298,19 @@
 import { computed, onMounted, ref, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { useCasinoTabsStore } from '@/stores/casinoTabs'
+import Api from '@/api'
+import type { CreditLoanConfig } from '@/api/interface/credit-loan'
+import type { GameDataItem } from '@/api/interface/game'
+import { useGameStore } from '@/stores/game'
+import { useUserStore } from '@/stores/user'
 import { formatBalance } from '@/utils/locale'
+import { navigateToName } from '@/utils/router'
 import newSideIcons from '@/static/svg/side/newIcon'
 import FilterIcon from '@/static/svg/sports/liansai_tabs/filter.svg?component'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import ChangeMobileNumberPcLayout from '@/views/settings/changeMobileNumber/pc-layout.vue'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import CreditLoanGameGrid from './components/CreditLoanGameGrid.vue'
@@ -300,7 +319,9 @@ import LoanPop from './components/loan-pop.vue'
 import TransferOutPop from './components/transfer-out-pop.vue'
 import TransferOutSuccess from './components/transfer-out-success.vue'
 import LoanRecords from './loan-records/index.vue'
-import { CREDIT_LOAN_RULE_HIGHLIGHTS, type CreditLoanRuleItem } from './mock'
+import BetHistory from './bet-history/index.vue'
+import type { CreditLoanRuleItem } from './mock'
+import { parseLoanGameTypeCodes } from './platform-game-codes'
 import coinIcon from './img/yongjin.svg?url'
 import MoreIcon from './img/more.svg?component'
 import LoanRecordsIcon from './img/loan-records.svg?component'
@@ -309,24 +330,58 @@ import BettingRecordsIcon from './img/betting-records.svg?component'
 type NavTabKey = 'credit-loan' | 'loan-records' | 'betting-records'
 type ContentTabKey = 'game-lobby' | 'loan-details'
 
-const EXCLUDED_GAME_TYPE_CODES = new Set(['', 'hot_games', 'providers'])
-
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
-const casinoTabsStore = useCasinoTabsStore()
-
+const gameStore = useGameStore()
+const userStore = useUserStore()
 const activeNavKey = ref<NavTabKey>('credit-loan')
 const activeContentKey = ref<ContentTabKey>('game-lobby')
 const activeGameTypeCode = ref('')
 const showMoreMenu = ref(false)
 const showFilterPopup = ref(false)
 const showLoanPop = ref(false)
+const isBorrowing = ref(false)
+const borrowedAmount = ref(0)
 const showTransferPop = ref(false)
 const showTransferSuccess = ref(false)
+const isTransferring = ref(false)
+const showBindPhonePopup = ref(false)
 
 const loanBalance = ref(0)
 const transferableBalance = ref(0)
 const availableCredit = ref(0)
+const hasLoadedLoanConfig = ref(false)
+/** 借呗配置中的可玩游戏 platformGameCodes */
+const loanPlatformGameCodes = ref<string[]>([])
+const loanGameTypeCodes = computed(() => parseLoanGameTypeCodes(loanPlatformGameCodes.value))
+const gameSections = ref<GameDataItem[]>([])
+const borrowConfig = ref<CreditLoanConfig | null>(null)
+
+/** 文案类型为 1（自定义）且文案有值时使用接口文案，否则使用默认文案 */
+const resolveConfigText = (type: unknown, text: string | undefined, fallbackKey: string) =>
+  (Number(type) === 1 && text?.trim()) || t(fallbackKey)
+
+const beforeLoanText = computed(() =>
+  resolveConfigText(
+    borrowConfig.value?.beforeType,
+    borrowConfig.value?.beforeText,
+    'creditLoan.slogan'
+  )
+)
+const afterLoanText = computed(() =>
+  resolveConfigText(
+    borrowConfig.value?.afterType,
+    borrowConfig.value?.afterText,
+    'creditLoan.loanPop.desc'
+  )
+)
+const transferText = computed(() =>
+  resolveConfigText(
+    borrowConfig.value?.transferType,
+    borrowConfig.value?.transferText,
+    'creditLoan.transferPop.desc'
+  )
+)
 
 const navTabs = computed<{ key: NavTabKey; label: string; icon: Component }[]>(() => [
   { key: 'credit-loan', label: t('creditLoan.title'), icon: newSideIcons.creditLoanIcon },
@@ -344,29 +399,109 @@ const contentTabs = computed<{ key: ContentTabKey; label: string }[]>(() => [
 ])
 
 const LOAN_RULE_KEYS = ['rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6'] as const
+const LOAN_RULE_HIGHLIGHT_KEYS = new Set<(typeof LOAN_RULE_KEYS)[number]>(['rule4', 'rule5'])
+
+/** cycleDay 1-7 对应周一到周日，0 也视为周日 */
+const WEEKDAY_KEYS = ['', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+
+const getWeekdayLabel = (day: number) => t(`creditLoan.weekdays.${WEEKDAY_KEYS[day]}`)
+
+/** 根据借呗配置的重置方式生成额度更新、余额清零文案；配置缺失或不合法时返回 null 使用默认文案 */
+const cycleRuleTexts = computed<Record<'rule4' | 'rule5', string> | null>(() => {
+  const cycleType = Number(borrowConfig.value?.cycleType)
+  const cycleDay = Number(borrowConfig.value?.cycleDay)
+
+  if (cycleType === 1) {
+    return {
+      rule4: t('creditLoan.cycleRules.daily.rule4'),
+      rule5: t('creditLoan.cycleRules.daily.rule5')
+    }
+  }
+
+  if (cycleType === 2 && Number.isInteger(cycleDay) && cycleDay >= 0 && cycleDay <= 7) {
+    const weekday = cycleDay === 0 ? 7 : cycleDay
+    const params = {
+      day: getWeekdayLabel(weekday),
+      prevDay: getWeekdayLabel(weekday === 1 ? 7 : weekday - 1)
+    }
+
+    return {
+      rule4: t('creditLoan.cycleRules.weekly.rule4', params),
+      rule5: t('creditLoan.cycleRules.weekly.rule5', params)
+    }
+  }
+
+  if (cycleType === 3 && Number.isInteger(cycleDay) && cycleDay >= 1 && cycleDay <= 31) {
+    return {
+      rule4: t('creditLoan.cycleRules.monthly.rule4', { day: cycleDay }),
+      rule5: t('creditLoan.cycleRules.monthly.rule5', { day: cycleDay })
+    }
+  }
+
+  return null
+})
 
 const loanRules = computed<CreditLoanRuleItem[]>(() =>
-  LOAN_RULE_KEYS.map((key, index) => ({
-    content: t(`creditLoan.rules.${key}`),
-    highlight: CREDIT_LOAN_RULE_HIGHLIGHTS[index]
+  LOAN_RULE_KEYS.map(key => ({
+    content:
+      (key === 'rule4' || key === 'rule5' ? cycleRuleTexts.value?.[key] : undefined) ??
+      t(`creditLoan.rules.${key}`),
+    highlight: LOAN_RULE_HIGHLIGHT_KEYS.has(key) ? t(`creditLoan.ruleHighlights.${key}`) : undefined
   }))
 )
 
-const gameTypeTabs = computed(() => [
-  { sysGameTypeCode: '', sysGameTypeName: t('creditLoan.all') },
-  ...casinoTabsStore.tabButtons
-    .filter(item => !EXCLUDED_GAME_TYPE_CODES.has(item.sysGameTypeCode))
-    .map(item => ({
-      sysGameTypeCode: item.sysGameTypeCode,
-      sysGameTypeName: item.sysGameTypeName
-    }))
-])
+const allGameTypeTabs = computed(() => {
+  const seenCodes = new Set<string>()
+
+  return gameSections.value.flatMap(section => {
+    const sysGameTypeCode = String(section.sysGameTypeCode ?? '').trim()
+
+    if (!sysGameTypeCode || seenCodes.has(sysGameTypeCode)) return []
+
+    seenCodes.add(sysGameTypeCode)
+    return [
+      {
+        sysGameTypeCode,
+        sysGameTypeName: String(section.sysGameTypeName ?? '').trim() || sysGameTypeCode
+      }
+    ]
+  })
+})
+
+const loanGameTypeTabs = computed(() => {
+  const allowedCodes = new Set(loanGameTypeCodes.value)
+  return allGameTypeTabs.value.filter(item => allowedCodes.has(item.sysGameTypeCode))
+})
+
+const allGameTypeOption = computed(() => ({
+  sysGameTypeCode: '',
+  sysGameTypeName: t('creditLoan.all')
+}))
+
+const gameTypeTabs = computed(() => [allGameTypeOption.value, ...loanGameTypeTabs.value])
+
+const lobbyGameTypeCodes = computed(() => {
+  if (!activeGameTypeCode.value) return loanGameTypeCodes.value
+
+  return loanGameTypeCodes.value.includes(activeGameTypeCode.value)
+    ? [activeGameTypeCode.value]
+    : []
+})
+
+watch(allGameTypeTabs, tabs => {
+  if (
+    activeGameTypeCode.value &&
+    !tabs.some(item => item.sysGameTypeCode === activeGameTypeCode.value)
+  ) {
+    activeGameTypeCode.value = ''
+  }
+})
 
 const filterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'gameType',
     title: t('creditLoan.gameType'),
-    options: gameTypeTabs.value.map(item => ({
+    options: [allGameTypeOption.value, ...allGameTypeTabs.value].map(item => ({
       label: item.sysGameTypeName,
       value: item.sysGameTypeCode
     }))
@@ -391,14 +526,123 @@ const handleMobileBack = () => {
 
 const loadGameTypes = async () => {
   try {
-    await casinoTabsStore.loadCasinoTabButtons()
+    gameSections.value = await gameStore.ensureGameData()
   } catch (error) {
     console.error('credit loan game types failed', error)
   }
 }
 
+const toAmount = (value: unknown) => {
+  const amount = Number(value)
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const loadCreditLoanAmounts = async () => {
+  try {
+    const borInfo = await Api.creditLoan.queryBorInfo()
+
+    console.log('[credit-loan] /br/queryBorInfo', borInfo)
+
+    loanBalance.value = toAmount(borInfo?.balance)
+    availableCredit.value = toAmount(borInfo?.quotaBalance)
+    transferableBalance.value = toAmount(borInfo?.transferAmount)
+    loanPlatformGameCodes.value = borInfo?.borrowConfig?.platformGameCodes ?? []
+  } catch (error) {
+    console.error('credit loan info failed', error)
+  } finally {
+    hasLoadedLoanConfig.value = true
+  }
+}
+
+/** 借呗配置 verifyPhoneType：0 借款时绑定手机号，1 转出盈利金额时绑定手机号 */
+const VERIFY_PHONE_ON_BORROW = 0
+const VERIFY_PHONE_ON_TRANSFER = 1
+
+const hasBoundTelephone = computed(() =>
+  Boolean(String(userStore.userInfo?.telephone ?? '').trim())
+)
+
+/** 当前场景要求绑定手机号且用户未绑定时，H5 跳转绑定页、PC 打开绑定弹窗，并返回 true */
+const promptBindPhoneIfNeeded = async (scene: number) => {
+  if (hasBoundTelephone.value) return false
+  if (!borrowConfig.value) await loadBorrowConfig()
+  if (Number(borrowConfig.value?.verifyPhoneType) !== scene) return false
+
+  if (isMobile.value) {
+    void navigateToName('changeMobileNumber')
+  } else {
+    showBindPhonePopup.value = true
+  }
+  return true
+}
+
+const canBorrow = computed(() => !isBorrowing.value && availableCredit.value > 0)
+
+const handleBorrow = async () => {
+  if (!canBorrow.value) return
+
+  isBorrowing.value = true
+  if (await promptBindPhoneIfNeeded(VERIFY_PHONE_ON_BORROW)) {
+    isBorrowing.value = false
+    return
+  }
+
+  try {
+    const loanResult = await Api.creditLoan.loanAmount()
+
+    console.log('[credit-loan] /br/loanAmount', loanResult)
+
+    borrowedAmount.value = toAmount(loanResult?.amount)
+    showLoanPop.value = true
+    void loadCreditLoanAmounts()
+  } catch (error) {
+    console.error('credit loan borrow failed', error)
+  } finally {
+    isBorrowing.value = false
+  }
+}
+
+const handleTransferAll = async () => {
+  if (isTransferring.value || transferableBalance.value <= 0) return
+
+  isTransferring.value = true
+  if (await promptBindPhoneIfNeeded(VERIFY_PHONE_ON_TRANSFER)) {
+    showTransferPop.value = false
+    isTransferring.value = false
+    return
+  }
+
+  try {
+    const transferResult = await Api.creditLoan.transferWallet()
+
+    console.log('[credit-loan] /br/transferWallet', transferResult)
+
+    showTransferSuccess.value = true
+    void loadCreditLoanAmounts()
+    void userStore.refreshBalance({ force: true })
+  } catch (error) {
+    console.error('credit loan transfer failed', error)
+  } finally {
+    isTransferring.value = false
+  }
+}
+
+const loadBorrowConfig = async () => {
+  try {
+    const config = await Api.creditLoan.getBorrowConfig()
+
+    console.log('[credit-loan] /br/getBorrowConfig', config)
+
+    borrowConfig.value = config ?? null
+  } catch (error) {
+    console.error('credit loan borrow config failed', error)
+  }
+}
+
 onMounted(() => {
   void loadGameTypes()
+  void loadCreditLoanAmounts()
+  void loadBorrowConfig()
 })
 
 watch(locale, () => {

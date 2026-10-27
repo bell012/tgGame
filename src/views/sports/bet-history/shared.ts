@@ -1,6 +1,6 @@
 import type { SportsBetHistoryWager, SportsBetHistoryWagerSelection } from '@/api/interface/sport'
 import { formatUsDateTime12h } from '@/utils/date'
-import { decimalOdds } from '../components/bet-slip/bet-info'
+import { readOdds, isSportsOddsType } from '../shared/odds'
 import { findSportItemBySportId, sportItems } from '../components/sports-navigation/sport-items'
 
 type Translate = (key: string, values?: Record<string, string | number>) => string
@@ -100,7 +100,7 @@ export const historyComboLabel = (wager: SportsBetHistoryWager, t: Translate) =>
         : combo === 18
           ? t('sports.betSlip.fold', { count: wager.wil?.length ?? 0 })
           : t('sports.betSlip.combo', { count: combo })
-  return `${label} ${t('sportsHistory.betCount', { count: wager.noc })}`
+  return label
 }
 
 const scoreText = (home: unknown, away: unknown) => {
@@ -121,7 +121,7 @@ export const mapHistorySelection = (
       ? 'rejected'
       : 'cancelled'
     : (result ?? (item.waics === 2 ? 'confirmed' : 'pending'))
-  const odds = decimalOdds(item.o, wager.ot)
+  const odds = readOdds(item.o, wager.ot)
   return {
     id: `${item.eid}:${item.mlid}:${item.btsid}:${item.sen}`,
     matchName:
@@ -191,6 +191,7 @@ export const mapHistoryWager = (wager: SportsBetHistoryWager, currency: string, 
     totalOdds: historyNumber(wager.coo) === null ? '--' : Number(wager.coo).toFixed(2),
     orderNo: String(wager.wid),
     createdAt: formatUsDateTime12h(wager.wcdt),
+    oddsTypeLabel: isSportsOddsType(wager.ot) ? t('sports.betOddsType' + wager.ot) : '--',
     cashOutAvailable: canCashOut(wager)
   }
 }

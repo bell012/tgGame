@@ -28,11 +28,13 @@ import type { SportsRequestOptions } from '@/api/modules/sport'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+import { useSportsOddsStore } from '@/stores/sportsOdds'
 import { useSportsAuthStore } from '@/stores/sportsAuth'
 import { useSportsBalanceStore } from '@/stores/sportsBalance'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { isApiBusinessSuccess } from '@/utils/apiBusiness'
 import { decimalOdds } from '@/views/sports/components/bet-slip/bet-info'
+import { isAcceptedPlaceBetResult } from '@/views/sports/components/bet-slip/shared'
 import i18n from '@/i18n'
 import { globalShowToast } from '@/utils/toast'
 
@@ -82,6 +84,9 @@ type SportsRequestError = {
   message: string
   code?: number | string
 }
+
+/** 收藏查询未能确认当前会员身份，不能将返回列表当作已确认的收藏结果。 */
+class SportsFavouriteCredentialsError extends Error {}
 
 type SportsFavouriteResult =
   'success' | 'synced' | 'failed' | 'login-failed' | 'auth-expired' | 'stale'
@@ -265,9 +270,6 @@ const mergeSportEvents = (previous: SportEvent[], incoming: readonly SportEvent[
   incoming.forEach(event => merged.set(event.EventId, event))
   return reuseList(previous, [...merged.values()])
 }
-// 缺少主列表盘型参照时沿用当前网关已验证的马来盘默认值，不转换返回赔率。
-const DEFAULT_HOMEPAGE_ODDS_TYPE: SportsOddsType = 1
-
 /** 各接口独立处理并发和错误，避免并行加载时互相覆盖。 */
 const createSportsRequest = <Params, Response extends SportsResponse>(
   getBaseUrl: () => string,
@@ -327,9 +329,12 @@ const createSportsRequest = <Params, Response extends SportsResponse>(
           state.data = response
         }
         return response
-      } catch {
+      } catch (error) {
         if (currentGeneration === generation && !signal.aborted) {
-          state.error = { kind: 'network', message: 'Sports request failed' }
+          state.error = {
+            kind: error instanceof SportsFavouriteCredentialsError ? 'credentials' : 'network',
+            message: 'Sports request failed'
+          }
         }
         return null
       } finally {
@@ -359,16 +364,63 @@ export const useSportsStore = defineStore('sports', () => {
   const localeStore = useLocaleStore()
   const userStore = useUserStore()
   const sportsAuth = useSportsAuthStore()
+  const oddsPreference = useSportsOddsStore()
   const { currentCurrencyCode } = useDisplayCurrency()
   // 与导航及路由守卫保持相同的本站登录态判断。
   const isLoggedIn = computed(() =>
     Boolean(userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId)
   )
+  const unreadBetHistoryCount = ref(0)
+  const betHistoryStorageKey = computed(() => {
+    const memberId = userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId
+    return isLoggedIn.value && memberId != null && String(memberId).trim()
+      ? `sports_unread_bet_history:${memberId}`
+      : ''
+  })
+  // 本地存储不可用时仍保留当前会话各账号的计数，不影响下单结果处理。
+  const betHistoryCounts = new Map<string, number>()
+  const unsavedBetHistoryKeys = new Set<string>()
+  const readBetHistoryCount = (key: string): number => {
+    if (!key) return 0
+    if (unsavedBetHistoryKeys.has(key)) return betHistoryCounts.get(key) ?? 0
+    try {
+      const count = Number(localStorage.getItem(key))
+      const value = Number.isSafeInteger(count) && count >= 0 ? count : 0
+      betHistoryCounts.set(key, value)
+      return value
+    } catch {
+      return betHistoryCounts.get(key) ?? 0
+    }
+  }
+  const saveBetHistoryCount = (key: string, count: number) => {
+    if (!key) return
+    betHistoryCounts.set(key, count)
+    try {
+      localStorage.setItem(key, String(count))
+      unsavedBetHistoryKeys.delete(key)
+    } catch {
+      unsavedBetHistoryKeys.add(key)
+      // 保存失败仅影响刷新后的恢复，不中断投注或查看历史。
+    }
+    if (key === betHistoryStorageKey.value) unreadBetHistoryCount.value = count
+  }
+  // 切换账号只切换展示的计数，不删除其他账号尚未查看的记录。
+  watch(
+    betHistoryStorageKey,
+    key => {
+      unreadBetHistoryCount.value = readBetHistoryCount(key)
+    },
+    { immediate: true, flush: 'sync' }
+  )
+  const markBetHistoryViewed = () => {
+    saveBetHistoryCount(betHistoryStorageKey.value, 0)
+  }
   const oddsTypeEnum: Readonly<Record<SportsOddsType, string>> = Object.freeze({
     1: '马来盘',
     2: '香港盘',
     3: '欧洲盘',
-    4: '印尼盘'
+    4: '印尼盘',
+    6: '美式盘'
   })
   const languageKeys: Readonly<Partial<Record<string, SportsLanguageCode>>> = Object.freeze({
     eng: 'ENG',
@@ -463,7 +515,8 @@ export const useSportsStore = defineStore('sports', () => {
     if (options?.signal?.aborted || context !== sportsAuth.contextVersion)
       throw new Error('Stale sports request')
     const current = credentials && sportsAuth.isCredentialsCurrent(credentials) ? credentials : null
-    if (params.IsFavourite && !current) throw new Error('Sports credentials unavailable')
+    if (params.IsFavourite && !current)
+      throw new SportsFavouriteCredentialsError('Sports credentials unavailable')
     const query = { ...params }
     delete query.MemberCode
     const response = await sportsApi.getSportsV2(
@@ -475,6 +528,13 @@ export const useSportsStore = defineStore('sports', () => {
       options
     )
     if (current && isAuthExpired(response)) sportsAuth.clearCredentials(current)
+    if (
+      params.IsFavourite &&
+      isSportsSuccess(response) &&
+      (!current || !sportsAuth.isCredentialsCurrent(current) || revision < favouriteResetRevision)
+    ) {
+      throw new SportsFavouriteCredentialsError('Sports credentials changed during favourite query')
+    }
     if (
       !options?.signal?.aborted &&
       current &&
@@ -901,6 +961,7 @@ export const useSportsStore = defineStore('sports', () => {
   })
   let betInfoGeneration = 0
   let betInfoController: AbortController | undefined
+  let betInfoOwner: symbol | undefined
   // 所有报价入口共用 3 秒发送间隔；取消查询、关闭投注单不会重置冷却时间。
   let lastBetInfoSentAt = 0
   const waitForBetInfoSlot = async (signal: AbortSignal) => {
@@ -918,10 +979,13 @@ export const useSportsStore = defineStore('sports', () => {
       })
     }
   }
-  const cancelBetInfo = () => {
+  const cancelBetInfo = (owner?: symbol) => {
+    // 页面只取消自己的报价；账号切换等全局清理不传归属标识。
+    if (owner !== undefined && owner !== betInfoOwner) return
     betInfoGeneration += 1
     betInfoController?.abort()
     betInfoController = undefined
+    betInfoOwner = undefined
     betInfoState.params = null
     betInfoState.response = null
     betInfoState.data = null
@@ -929,7 +993,10 @@ export const useSportsStore = defineStore('sports', () => {
     betInfoState.error = null
   }
   // 选项先加入；报价时才取凭据，获取失败不删除选项。
-  const fetchBetInfo = async (query: SportsBetInfoQuery): Promise<GetBetInfoResponse | null> => {
+  const fetchBetInfo = async (
+    query: SportsBetInfoQuery,
+    owner?: symbol
+  ): Promise<GetBetInfoResponse | null> => {
     cancelBetInfo()
     if (!isLoggedIn.value || !query.WagerSelectionInfos.length) return null
     if (!getBaseUrl()) {
@@ -941,6 +1008,7 @@ export const useSportsStore = defineStore('sports', () => {
     const context = sportsAuth.contextVersion
     const controller = new AbortController()
     betInfoController = controller
+    betInfoOwner = owner
     const isCurrent = () =>
       !controller.signal.aborted &&
       generation === betInfoGeneration &&
@@ -1029,6 +1097,7 @@ export const useSportsStore = defineStore('sports', () => {
     options: { updateBalance?: boolean } = {}
   ): Promise<PlaceBetResponse> => {
     const version = sportsSessionVersion.value
+    const historyStorageKey = betHistoryStorageKey.value
     const context = sportsAuth.contextVersion
     if (!isLoggedIn.value || !getBaseUrl() || !canSend())
       throw new SportsBetNotSentError('Sports session unavailable')
@@ -1054,6 +1123,24 @@ export const useSportsStore = defineStore('sports', () => {
         TimeStamp: Date.now()
       })
       if (isAuthExpired(response)) sportsAuth.clearCredentials(credentials)
+      if (historyStorageKey) {
+        // 与下单成功反馈保持一致，同一响应中重复的注单号只计一次。
+        const confirmedIds = new Set(
+          (Array.isArray(response.wsis) ? response.wsis : [])
+            .filter(isAcceptedPlaceBetResult)
+            .map(item => item.wid)
+        )
+        if (confirmedIds.size) {
+          // 已发出的请求即使晚于账号切换返回，也只记入下单时的账号。
+          saveBetHistoryCount(
+            historyStorageKey,
+            Math.min(
+              Number.MAX_SAFE_INTEGER,
+              readBetHistoryCount(historyStorageKey) + confirmedIds.size
+            )
+          )
+        }
+      }
       if (options.updateBalance !== false && isSportsSuccess(response)) {
         const validBalance = typeof response.av === 'number' && Number.isFinite(response.av)
         finishBalanceUpdate({ amount: response.av, refresh: !validBalance })
@@ -1571,9 +1658,12 @@ export const useSportsStore = defineStore('sports', () => {
         allSportsDataScope.value = scope
         allSportsDataContext.value = context
         return data
-      } catch {
+      } catch (error) {
         if (isCurrent()) {
-          allSportsState.error = { kind: 'network', message: 'All-league request failed' }
+          allSportsState.error = {
+            kind: error instanceof SportsFavouriteCredentialsError ? 'credentials' : 'network',
+            message: 'All-league request failed'
+          }
         }
         return null
       } finally {
@@ -1745,21 +1835,8 @@ export const useSportsStore = defineStore('sports', () => {
     for (const record of response.result ?? [])
       queueReappearedEvents(record.sportId, [record.eventId], revision)
   }
-  const getHomepageOddsType = (): SportsOddsType => {
-    // 独赢通常固定返回欧洲盘，不能用它推断让球/大小的显示盘型。
-    for (const group of allLeagueGroups.value) {
-      for (const event of group.Sports) {
-        for (const line of event.MarketLines ?? []) {
-          if (line.PeriodId !== 1 || (line.BetTypeId !== 1 && line.BetTypeId !== 2)) continue
-          for (const selection of line.WagerSelections ?? []) {
-            const type = selection.OddsType
-            if (type === 1 || type === 2 || type === 3 || type === 4) return type
-          }
-        }
-      }
-    }
-    return DEFAULT_HOMEPAGE_ODDS_TYPE
-  }
+  const getHomepageOddsType = (): SportsOddsType =>
+    market.value === 4 ? 3 : oddsPreference.preference
   /** 热门独立补查，只移除热门展示，不能把缺失结果当作普通赛事下架。 */
   const fetchMissingHotEvents = (): Promise<SportEvent[] | null> => {
     if (hotDetailsPending) return hotDetailsPending
@@ -2043,6 +2120,9 @@ export const useSportsStore = defineStore('sports', () => {
       (!keyword.value.trim()
         ? (competitionIds.value.map(id => getLeagueLoadState(id)?.error).find(Boolean) ?? null)
         : null)
+  )
+  const favouriteListNeedsRefresh = computed(
+    () => isFavourite.value && matchListError.value?.kind === 'credentials'
   )
   // 两种排序均为联赛总数，不当作赛事卡片数量参与本地分页。
   const eventsTotal = computed(() =>
@@ -2361,15 +2441,10 @@ export const useSportsStore = defineStore('sports', () => {
                   ?.group?.Sports.find(event => event.EventId === id)?.MarketLines ??
                 []
             )
-            const knownOddsType = knownLines
-              .filter(line => line.BetTypeId === 1 || line.BetTypeId === 2)
-              .flatMap(line => line.WagerSelections ?? [])
-              .map(selection => selection.OddsType)
-              .find(type => type === 1 || type === 2 || type === 3 || type === 4)
             const params: GetSelectedEventInfoParams = {
               SportId: sportId,
               EventIds: batch,
-              OddsType: knownOddsType ?? getHomepageOddsType(),
+              OddsType: getHomepageOddsType(),
               IsCombo: market.value === 4,
               IncludeGroupEvents: false,
               LanguageCode: languageCode.value,
@@ -2414,15 +2489,16 @@ export const useSportsStore = defineStore('sports', () => {
     eventId: number
     market: SportMarketLine
     wagerSelectionId: number
+    oddsType: SportsOddsType
   }) =>
     runHomepageRefresh(
-      `bet-selection:${selection.sportId}:${selection.eventId}:${selection.market.MarketlineId}:${selection.wagerSelectionId}`,
+      `bet-selection:${selection.sportId}:${selection.eventId}:${selection.market.MarketlineId}:${selection.wagerSelectionId}:${selection.oddsType}`,
       async (signal, isCurrent) => {
         if (isEventExpired(selection.sportId, selection.eventId)) return 'missing'
         const params: GetSelectedEventInfoParams = {
           SportId: selection.sportId,
           EventIds: [selection.eventId],
-          OddsType: getHomepageOddsType(),
+          OddsType: selection.oddsType,
           IsCombo: false,
           IncludeGroupEvents: false,
           LanguageCode: languageCode.value,
@@ -2579,7 +2655,16 @@ export const useSportsStore = defineStore('sports', () => {
     return pending
   }
 
-  watch(getRefreshContext, cancelHomepageRefresh, { flush: 'sync' })
+  // 保留每次条件变化的失效记录；同一批更新切走再切回也必须重新接续查询。
+  const homepageQueryVersion = ref(0)
+  watch(
+    getRefreshContext,
+    () => {
+      cancelHomepageRefresh()
+      homepageQueryVersion.value += 1
+    },
+    { flush: 'sync' }
+  )
   watch(
     () =>
       JSON.stringify([getBaseUrl(), languageCode.value, market.value, sportsSessionVersion.value]),
@@ -3036,6 +3121,8 @@ export const useSportsStore = defineStore('sports', () => {
     matchListContext,
     matchListLoading,
     matchListError,
+    favouriteListNeedsRefresh,
+    homepageQueryVersion,
     allLeagueGroups,
     hotEvents,
     hotEventsLoading,
@@ -3072,6 +3159,8 @@ export const useSportsStore = defineStore('sports', () => {
     fetchPopularSports,
     fetchCompetitionList,
     placeBet,
+    unreadBetHistoryCount,
+    markBetHistoryViewed,
     toggleFavouriteEvent,
     toggleFavouriteTarget,
     getEventFavourite,

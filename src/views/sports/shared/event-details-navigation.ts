@@ -1,5 +1,6 @@
 import { toRaw } from 'vue'
 import { navigateTo } from '@/utils/router'
+import { useSportsStore } from '@/stores/sports'
 import type { SportsMatch } from './types'
 
 const STORAGE_KEY = 'tgGame:sportsEventDetailsMatch'
@@ -19,7 +20,8 @@ export const goToEventDetails = (match: SportsMatch) => {
   navigateTo('/sports/event-details', {
     query: {
       sportId: match.sportId,
-      eventId: match.EventId
+      eventId: match.EventId,
+      combo: useSportsStore().market === 4 ? '1' : undefined
     }
   })
 }

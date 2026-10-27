@@ -11,7 +11,6 @@
       class="h-full w-full bg-black object-contain"
       playsinline
       autoplay
-      data-testid="live-player"
       @play="playing = true"
       @playing="onPlaying"
       @pause="onPause"
@@ -23,7 +22,6 @@
     <div
       v-if="loading"
       class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black text-white/80"
-      data-testid="live-loading"
       role="status"
     >
       <span
@@ -35,7 +33,6 @@
     <div
       v-else-if="failed"
       class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black text-white/80"
-      data-testid="live-failed"
       role="alert"
     >
       <span class="text-xs">{{ t('sports.liveLoadFailed') }}</span>
@@ -50,7 +47,6 @@
     <div
       v-else-if="buffering"
       class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/40 text-white/80"
-      data-testid="live-buffering"
       role="status"
     >
       <span
@@ -60,9 +56,8 @@
       <span class="text-xs">{{ t('sports.loadingLive') }}</span>
     </div>
     <div
-      class="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-black/50 px-2 py-1 text-white transition-opacity duration-200"
+      class="sports-live-controls absolute inset-x-0 bottom-0 flex items-center gap-1 bg-black/50 px-2 py-1 text-white transition-opacity duration-200"
       :class="controlsVisible ? 'opacity-100' : 'pointer-events-none opacity-0'"
-      data-testid="live-controls"
       :data-visible="controlsVisible"
     >
       <button
@@ -107,24 +102,19 @@
         v-if="behindLive"
         type="button"
         class="ml-auto rounded bg-white px-1.5 text-[10px] font-bold leading-none text-black"
-        data-testid="live-badge"
         data-behind="true"
         @click="returnToLive"
       >
         {{ t('sports.backToLive') }}
       </button>
-      <span
-        v-else
-        class="ml-auto px-1.5 text-[10px] font-bold leading-none"
-        data-testid="live-badge"
-        data-behind="false"
-      >
+      <span v-else class="ml-auto px-1.5 text-[10px] font-bold leading-none" data-behind="false">
         LIVE
       </span>
       <button
         type="button"
         class="flex h-6 w-6 items-center justify-center"
         aria-label="Fullscreen"
+        v-if="showFullscreen"
         @click="toggleFullscreen"
       >
         <svg
@@ -157,8 +147,9 @@ const props = withDefaults(
   defineProps<{
     src: string
     active?: boolean
+    showFullscreen?: boolean
   }>(),
-  { active: true }
+  { active: true, showFullscreen: true }
 )
 
 const { t } = useI18n()

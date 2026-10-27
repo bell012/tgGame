@@ -2,12 +2,10 @@
   <div
     class="min-h-dvh w-full min-w-0 max-w-full bg-bg-1 pb-[calc(88px+env(safe-area-inset-bottom))] font-inter text-text-1"
     :data-sport="activeSport"
-    data-testid="sports-h5-page"
   >
     <header
       ref="navigationHeader"
       class="sports-h5-sticky-navigation fixed inset-x-0 top-0 z-40 bg-bg-1"
-      data-testid="sports-h5-sticky-navigation"
     >
       <SportsNavigation @change="page.handleSportChange" />
       <FilterSearch_H5
@@ -22,7 +20,7 @@
       <Transition :name="filterSlideName">
         <div :key="matchSlideKey" class="filter-slide-pane">
           <div
-            v-if="page.homepageError.value"
+            v-if="!emptyLeagueFilter && page.homepageError.value"
             class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
             role="status"
           >
@@ -41,14 +39,12 @@
             v-if="liveMatches.length"
             :aria-label="t('sports.homepage.popularMatches')"
             class="mb-3 min-w-0"
-            data-testid="sports-h5-live-section"
           >
             <div
               ref="liveStrip"
               class="flex min-w-0 snap-x snap-mandatory gap-2 overflow-x-auto px-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               tabindex="0"
               :aria-label="t('sports.homepage.popularMatches')"
-              data-testid="sports-h5-live-strip"
             >
               <article
                 v-for="match in liveMatches"
@@ -74,6 +70,7 @@
                 </div>
 
                 <MatchVersus
+                  :sport-id="match.sportId"
                   class="mt-3 min-h-[52px]"
                   :home-src="match.home.badge"
                   :away-src="match.away.badge"
@@ -109,7 +106,7 @@
                 :collect-pending="page.collectPending.value"
                 :search-keyword="page.searchInput.value"
                 @filter-change="page.handleLeagueSortChange"
-                @league-filter="page.handleLeagueFilter"
+                @league-filter="handleLeagueFilter"
                 @collect-change="page.handleCollectChange"
                 @search-change="page.handleSearchChange"
               />
@@ -123,7 +120,6 @@
                     : t('sports.homepage.collapseAllLeagues')
                 "
                 :aria-expanded="!allGroupsCollapsed"
-                data-testid="sports-h5-toggle-all-leagues"
                 @click="toggleAllGroups"
               >
                 <CollapseAllIcon
@@ -134,7 +130,7 @@
               </button>
             </div>
 
-            <div v-if="groups.length" class="space-y-[5px]" data-testid="sports-h5-league-list">
+            <div v-if="groups.length" class="space-y-[5px]">
               <section v-for="group in visibleGroups" :key="group.id" :data-league-id="group.id">
                 <h2>
                   <button
@@ -143,7 +139,6 @@
                     class="flex min-h-[34px] w-full items-center gap-1.5 rounded-lg bg-bg-2 px-2.5 py-[7px] text-left text-xs font-medium text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
                     :aria-expanded="isGroupExpanded(group.id)"
                     :aria-controls="`${idPrefix}-${group.id}-matches`"
-                    data-testid="sports-h5-league-toggle"
                     @click="toggleGroup(group.id)"
                   >
                     <img :src="leagueIcon" alt="" class="h-5 w-5 shrink-0 object-contain" />
@@ -189,6 +184,7 @@
                       :favorite-pending="page.isMatchFavoritePending(match.id)"
                       @favorite="page.handleMatchFavorite(match.id)"
                       @select="selectOdds(match.id, $event)"
+                      @media="mediaSelection = { match, mode: $event }"
                     />
                   </div>
                   <p
@@ -221,7 +217,6 @@
               ref="loadMoreSentinel"
               class="h-px w-full"
               aria-hidden="true"
-              data-testid="sports-h5-load-more"
             ></div>
             <template v-if="groups.length && !hasMoreCachedGroups && !page.homepageLoading.value">
               <p
@@ -249,14 +244,14 @@
             </template>
           </section>
           <p
-            v-if="page.homepageLoading.value"
+            v-if="!emptyLeagueFilter && page.homepageLoading.value"
             class="mx-[14px] py-6 text-center text-xs text-text-2"
             role="status"
           >
             {{ page.sportsLoadingText.value }}
           </p>
           <ThemedEmptyState
-            v-else-if="!groups.length && !page.homepageError.value"
+            v-else-if="emptyLeagueFilter || (!groups.length && !page.homepageError.value)"
             :dark-image="emptyImage"
             :light-image="emptyImageLight"
             :message="page.sportsEmptyText.value"
@@ -267,17 +262,27 @@
         </div>
       </Transition>
     </div>
+    <OddsFormat />
     <Floating
       v-if="pageActive"
       v-show="!page.betSlipOpen.value"
       :bet-count="page.selections.value.length"
+      :history-count="page.unreadBetHistoryCount.value"
       @select="page.handleFloatingEntry"
+    />
+    <MatchMediaPopup
+      v-if="mediaSelection"
+      :key="`${mediaSelection.match.id}:${mediaSelection.mode}`"
+      :match="mediaSelection.match"
+      :mode="mediaSelection.mode"
+      @close="mediaSelection = null"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import CollapseAllIcon from '@/static/svg/sports/h5-collapse-all.svg?component'
+import OddsFormat from '../odds-format/index.vue'
 import {
   computed,
   nextTick,
@@ -294,6 +299,8 @@ import { useI18n } from 'vue-i18n'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIntersectionObserver } from '@/composables/useIntersectionObserver'
 import { useLayoutStore } from '@/stores/layout'
+import { useLocaleStore } from '@/stores/locale'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { stripLocalePrefix } from '@/utils/locale'
 import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import leagueIcon from '@/static/svg/sports/liansai_tabs/icon1.svg?url'
@@ -306,6 +313,7 @@ import MatchVersus from '../match-versus/index.vue'
 import MatchOdds from '../match-odds/index.vue'
 import { pickOverUnderOrFirstMarketLine } from '../match-odds/display'
 import MatchCardH5 from '../match-card/h5.vue'
+import MatchMediaPopup from '../match-media-popup/index.vue'
 import MatchTime from '../match-card/time.vue'
 import type { SportsMatch } from '../../shared/types'
 import { goToEventDetails } from '../../shared/event-details-navigation'
@@ -313,16 +321,32 @@ import type { SportsPageState } from '../../index'
 import { useMatchVisibility } from '../../composables/useMatchVisibility'
 import type { OddsSelectPayload } from '../match-odds/types'
 import LeagueTabs_H5 from '../liansai_tabs/H5.vue'
+import type { LeagueFilterPayload } from '../liansai_tabs'
 import Floating from '../floating/index.vue'
 
 const props = defineProps<{ page: SportsPageState }>()
 const { t } = useI18n()
 const idPrefix = useId()
 const layoutStore = useLayoutStore()
+const localeStore = useLocaleStore()
+const siteConfigStore = useSiteConfigStore()
 const route = useRoute()
 const navigationHeader = ref<HTMLElement | null>(null)
 const navigationHeight = ref(layoutStore.TOPNAV_HEIGHT + layoutStore.BOTTOM_TAB_HEIGHT + 56)
 const activeSport = computed(() => props.page.selectedSportKey.value)
+// 区分明确的空结果与全部联赛；已选联赛被清理后不能回退到全部。
+const appliedLeagueIds = ref<number[] | null>(
+  props.page.competitionIds.value.length ? [...props.page.competitionIds.value] : null
+)
+const emptyLeagueFilter = computed(
+  () =>
+    appliedLeagueIds.value !== null &&
+    (!appliedLeagueIds.value.length || !props.page.competitionIds.value.length)
+)
+const handleLeagueFilter = (payload: LeagueFilterPayload) => {
+  appliedLeagueIds.value = payload.isAllSelected ? null : [...payload.ids]
+  if (payload.isAllSelected || payload.ids.length) props.page.handleLeagueFilter(payload)
+}
 const liveStrip = ref<HTMLElement | null>(null)
 const expandedGroups = ref<Record<string, boolean>>({})
 const expandNewGroups = ref(true)
@@ -335,6 +359,27 @@ const FILTER_TAB_ORDER = ['rolling', 'today', 'early', 'parlay'] as const
 const filterSlideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
 const matchSlideKey = computed(
   () => `${props.page.selectedSportId.value}:${props.page.selectedFilterKey.value}`
+)
+const mediaSelection = ref<{ match: SportsMatch; mode: 'video' | 'animation' } | null>(null)
+// 弹窗只使用点击时的播放信息；路由离开或首页停用后立即释放媒体。
+watch([() => route.fullPath, matchSlideKey, pageActive], () => {
+  mediaSelection.value = null
+})
+onDeactivated(() => {
+  mediaSelection.value = null
+})
+// 与共用查询条件同步重置；排序、收藏及轮询清理联赛不解除已确认的空筛选。
+watch(
+  [
+    matchSlideKey,
+    () => props.page.keyword.value,
+    () => localeStore.currentLanguage,
+    () => siteConfigStore.getConfigString('IM.im_app_url')
+  ],
+  () => {
+    appliedLeagueIds.value = null
+  },
+  { flush: 'sync' }
 )
 const { vMatchVisibility } = useMatchVisibility({
   enabled: () => !props.page.betSlipOpen.value && stripLocalePrefix(route.path) === '/sports',
@@ -357,7 +402,7 @@ onScopeDispose(() => navigationObserver?.disconnect())
 
 const activeSportLabel = computed(() => props.page.selectedSportLabel.value)
 const matches = computed(() => props.page.matches.value)
-const liveMatches = computed(() => props.page.liveMatches.value)
+const liveMatches = computed(() => (emptyLeagueFilter.value ? [] : props.page.liveMatches.value))
 const liveStripCaption = (match: SportsMatch) => {
   const line = pickOverUnderOrFirstMarketLine(match.MarketLines)[0]
   if (!line) return ''
@@ -365,6 +410,7 @@ const liveStripCaption = (match: SportsMatch) => {
   return line.BetTypeName
 }
 const groups = computed(() => {
+  if (emptyLeagueFilter.value) return []
   const result = new Map<string, { id: string; name: string; matches: SportsMatch[] }>()
   // 预览没有赛事的联赛也保留标题，展开时补查。
   for (const league of props.page.displayLeagueGroups.value) {

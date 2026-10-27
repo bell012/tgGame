@@ -276,7 +276,7 @@ const { filterTabs, leagueFilterItems, activeFilterKey, selectFilterKey, applyLe
   useLiansaiTabs()
 
 const alphabetIndex = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')]
-// 首页赛事搜索交由页面处理，弹窗内的联赛名称过滤仍只作用于弹窗。
+// 首页赛事搜索交由页面处理；弹窗搜索限定确认时的联赛范围。
 const searchKeyword = computed({
   get: () => props.searchKeyword,
   set: value => emit('search-change', value)
@@ -292,20 +292,22 @@ const popupScrollRef = ref<HTMLElement | null>(null)
 const sectionRefs = ref<Record<string, HTMLElement>>({})
 const activeIndexKey = ref('#')
 
-const selectedMatchCount = computed(() => {
-  const selectedKeys = new Set(selectedLeagueKeys.value)
-  return leagueFilterItems.value.reduce(
-    (total, item) => total + (selectedKeys.has(item.key) ? item.count : 0),
-    0
-  )
-})
-
 // 根据弹窗搜索关键字过滤接口返回的联赛列表。
 const visibleLeagueTabs = computed(() => {
   const keyword = popupSearchKeyword.value.trim().toLowerCase()
   if (!keyword) return leagueFilterItems.value
   return leagueFilterItems.value.filter(item => item.label.toLowerCase().includes(keyword))
 })
+
+// 数量与提交使用同一份可见勾选结果，不包含搜索后隐藏的联赛。
+const selectedVisibleLeagues = computed(() => {
+  const selectedKeys = new Set(selectedLeagueKeys.value)
+  return visibleLeagueTabs.value.filter(item => selectedKeys.has(item.key))
+})
+const selectedVisibleLeagueKeys = computed(() => selectedVisibleLeagues.value.map(item => item.key))
+const selectedMatchCount = computed(() =>
+  selectedVisibleLeagues.value.reduce((total, item) => total + item.count, 0)
+)
 
 // 将可见联赛按首字母分组，供弹窗列表和右侧索引共同使用。
 const visibleSections = computed<LeagueSection[]>(() => {
@@ -451,15 +453,26 @@ const toggleAllSelection = () => {
 
 // 点击弹窗全部联赛过滤按钮 emit已经暴露出去，别的组件可以接受当前选中哪个值
 const applyPopupFilter = () => {
-  const payload = applyLeagueFilter(selectedLeagueKeys.value)
+  // 空结果只通知页面显示空态，不把空 ID 提交为接口的“全部联赛”。
+  const payload: LeagueFilterPayload = selectedVisibleLeagueKeys.value.length
+    ? applyLeagueFilter(selectedVisibleLeagueKeys.value, {
+        keepExplicitIds: Boolean(popupSearchKeyword.value.trim())
+      })
+    : {
+        keys: [],
+        ids: [],
+        items: [],
+        isAllSelected: !popupSearchKeyword.value.trim() && !hasTouchedLeagueSelection.value
+      }
   emit('league-filter', payload)
   closePopup()
 }
 
 // 接口联赛列表变化时，初始化或修正弹窗里的已选联赛。
 watch(
-  leagueFilterItems,
-  items => {
+  [leagueFilterItems, () => popupSearchKeyword.value.trim().toLowerCase()],
+  ([items, keyword], previous) => {
+    if (previous && keyword !== previous[1]) hasTouchedLeagueSelection.value = false
     const availableKeys = items.map(item => item.key)
     const availableKeySet = new Set(availableKeys)
     const selectedKeys = selectedLeagueKeys.value.filter(key => availableKeySet.has(key))

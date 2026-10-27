@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
     <div
-      v-if="isLoading && games.length === 0"
+      v-if="(props.loading || isLoading) && games.length === 0"
       class="grid w-full grid-cols-3 gap-2 sm:grid-cols-6 sm:gap-3"
     >
       <div
@@ -58,10 +58,20 @@ import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
+import { filterLoanGameSections } from '../platform-game-codes'
 
-const props = defineProps<{
-  gameTypeCode: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    /** 借呗配置中的可玩游戏 "游戏类型|游戏平台|游戏编码" */
+    platformGameCodes: string[]
+    /** 当前要展示的游戏类型 sysGameTypeCode */
+    gameTypeCodes: string[]
+    loading?: boolean
+  }>(),
+  {
+    loading: false
+  }
+)
 
 const PAGE_SIZE = 24
 
@@ -79,22 +89,33 @@ let requestToken = 0
 let loadMoreObserver: IntersectionObserver | null = null
 
 const fetchGames = async () => {
+  if (props.loading) return
+
   const currentToken = ++requestToken
   const isAppend = isMobile.value && page.value > 1
   isLoading.value = true
 
   try {
-    const res = await gameStore.queryGameDataPage({
-      gameTypeCode: props.gameTypeCode || undefined,
-      sortByOrderId: true,
-      sortDirection: 'asc',
-      rowType: 3,
-      page: page.value,
-      pageSize: PAGE_SIZE
-    })
+    const gameSections = await gameStore.ensureGameData()
+    const sourceNodes = filterLoanGameSections(
+      gameSections,
+      props.platformGameCodes,
+      props.gameTypeCodes
+    )
+    const res = gameStore.queryGameRecordsPage(
+      {
+        sortByOrderId: true,
+        sortDirection: 'asc',
+        rowType: 3,
+        page: page.value,
+        pageSize: PAGE_SIZE
+      },
+      sourceNodes
+    )
+    const list = res.list.map(record => record.node)
 
     if (currentToken !== requestToken) return
-    games.value = isAppend ? [...games.value, ...res.list] : res.list
+    games.value = isAppend ? [...games.value, ...list] : list
     totalPages.value = res.totalPages
   } catch (error) {
     if (currentToken !== requestToken) return
@@ -146,7 +167,15 @@ watch(page, () => {
   void fetchGames()
 })
 
-watch(() => props.gameTypeCode, reload, { immediate: true })
+watch(
+  [
+    () => props.platformGameCodes.join(','),
+    () => props.gameTypeCodes.join(','),
+    () => props.loading
+  ],
+  reload,
+  { immediate: true }
+)
 
 watch(isMobile, reload)
 

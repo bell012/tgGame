@@ -6,9 +6,9 @@ import { computed } from 'vue'
 export const useRequireLoginAction = () => {
   const userStore = useUserStore()
   const authModalStore = useAuthModalStore()
-  const { userInfo } = storeToRefs(userStore)
+  const { userInfo, acctInfo } = storeToRefs(userStore)
 
-  const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
+  const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId))
 
   const requireLogin = () => {
     userStore.syncStoredUserData()

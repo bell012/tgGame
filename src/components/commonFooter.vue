@@ -1,5 +1,5 @@
 <template>
-  <footer class="w-full bg-bg-6 py-6">
+  <footer class="w-full bg-bg-6 py-6 px-[14px]">
     <div class="max-w-[1260px] mx-auto font-['Inter']">
       <!-- 第一排 -->
       <div class="border-b border-opacity-10 pb-6">

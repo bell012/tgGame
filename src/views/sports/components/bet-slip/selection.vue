@@ -14,7 +14,7 @@
             : ''
         "
       >
-        @{{ props.selection.odds.toFixed(2) }}
+        @{{ Number.isFinite(props.selection.odds) ? props.selection.odds.toFixed(2) : '--' }}
         <span
           v-if="!props.single && props.selection.trend"
           :aria-label="

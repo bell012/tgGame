@@ -1,11 +1,14 @@
 import { computed, onDeactivated, onScopeDispose, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { SportsCredentialsUnavailableError, useSportsStore } from '@/stores/sports'
 import { useUserStore } from '@/stores/user'
-import type { PlaceBetParams } from '@/api/interface/sport'
+import { useSportsBetSlipStore } from '@/stores/sportsBetSlip'
+import type { SelectedOutcome } from '@/stores/sportsBetSlip'
+import type { PlaceBetParams, SportsBetInfoQuote } from '@/api/interface/sport'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import type { OddsSelectPayload } from '../match-odds/types'
@@ -17,24 +20,13 @@ import type {
 } from '../../shared/types'
 import { mapSportsMatches } from '../../shared/match'
 import { MAX_SELECTIONS, parseSportsStake, moneyRound, adjustSportsStakeToBalance } from './shared'
+import { useSportsOdds } from '../../composables/useSportsOdds'
+import { resolveSelectionOdds, resolveParlayOdds } from '../../shared/odds'
+import { formatSelectionName, formatQuotedSelectionName } from '../../shared/selection-name'
 import { useBetInfo } from './useBetInfo'
-import { isBetInfoMarketClosed } from './bet-info'
-import type { BetInfoSource } from './useBetInfo'
+import { isBetInfoMarketClosed, isBetInfoQuoteUsable } from './bet-info'
 import { getPlaceBetFailure, getPlaceBetResult, toPlaceBetSelection } from './place-bet'
 import type { BetSubmissionState } from './place-bet'
-
-type SelectedOutcome = {
-  id: string
-  matchId: string
-  MarketlineId: number
-  WagerSelectionId: number
-  odds: number
-  stake: string
-  sportId: number
-  eventId: number
-  snapshot: SportsBetSelection
-  source: BetInfoSource
-}
 
 type BetSlipOptions = {
   getMatch: (id: string) => SportsMatch | undefined
@@ -67,39 +59,55 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   }
   const { requireLogin } = useRequireLoginAction()
   const { currentCurrencyCode } = useDisplayCurrency()
+  const router = useRouter()
   const betSlipOpen = ref(false)
-  const mode = ref<SportsBetMode>('single')
-  const outcomes = ref<SelectedOutcome[]>([])
+  const {
+    accountKey,
+    mode,
+    outcomes,
+    parlayStakes,
+    submitting,
+    reusing,
+    acceptAnyOdds,
+    oddsPreferenceKey
+  } = storeToRefs(useSportsBetSlipStore())
+  const { oddsType: pageOddsType } = useSportsOdds()
+  const betOddsType = computed(() => (mode.value === 'parlay' ? 3 : pageOddsType.value))
+  const getBetOdds = (outcome: SelectedOutcome) =>
+    mode.value === 'parlay'
+      ? resolveParlayOdds(outcome.source.option)
+      : resolveSelectionOdds(outcome.source.option, betOddsType.value)
+  let selectionVersion = 0
+  // H5 详情页以抽屉叠在首页上方；离开当前路由要停止旧弹窗的报价查询。
+  watch(
+    () => router.currentRoute.value.fullPath,
+    () => {
+      betSlipOpen.value = false
+      selectionVersion += 1
+    },
+    { flush: 'sync' }
+  )
   const availability = ref<Record<string, 'checking' | 'unknown' | 'expired'>>({})
   const isSelectionExpired = (outcome: SelectedOutcome) =>
     availability.value[outcome.id] === 'expired' ||
     sportsStore.isEventExpired(outcome.sportId, outcome.eventId)
+  const hasSelectionName = (outcome: SelectedOutcome) =>
+    formatSelectionName(outcome.source.market, outcome.source.option, {
+      HomeTeam: outcome.snapshot.homeTeam,
+      AwayTeam: outcome.snapshot.awayTeam
+    }) !== null
+  const getQuotedName = (outcome: SelectedOutcome, quote: SportsBetInfoQuote) =>
+    formatQuotedSelectionName(outcome.source.market, outcome.source.option, quote, {
+      HomeTeam: outcome.snapshot.homeTeam,
+      AwayTeam: outcome.snapshot.awayTeam
+    })
   const selectionBlocked = (id: string) =>
     availability.value[id] === 'checking' ||
-    outcomes.value.some(outcome => outcome.id === id && isSelectionExpired(outcome))
-  const parlayStakes = ref<Record<string, string>>({})
+    outcomes.value.some(
+      outcome => outcome.id === id && (isSelectionExpired(outcome) || !hasSelectionName(outcome))
+    )
   const balanceAdjusted = ref<Record<string, boolean>>({})
   const focusedStakeId = ref('')
-  const submitting = ref(false)
-  const reusing = ref(false)
-  const acceptAnyOdds = ref(true)
-  const oddsPreferenceKey = computed(() => {
-    const memberId = userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId
-    return memberId ? `sportsAcceptAnyOdds:${memberId}` : ''
-  })
-  watch(
-    oddsPreferenceKey,
-    key => {
-      acceptAnyOdds.value = true
-      if (!key) return
-      try {
-        acceptAnyOdds.value = localStorage.getItem(key) !== 'false'
-      } catch {
-        // 本地存储不可用时沿用默认值。
-      }
-    },
-    { immediate: true, flush: 'sync' }
-  )
   const setAcceptAnyOdds = (value: boolean) => {
     if (submitting.value || reusing.value) return
     acceptAnyOdds.value = value
@@ -116,12 +124,6 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     betResult.value = null
     lastSubmission.value = null
   }
-  const accountKey = computed(() =>
-    JSON.stringify([
-      userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId,
-      currentCurrencyCode.value
-    ])
-  )
   let disposed = false
   const selectionAccountKey = computed(
     () =>
@@ -160,6 +162,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   } = useBetInfo({
     open: betSlipOpen,
     mode,
+    oddsType: betOddsType,
     parlayEligible,
     interactionKey: computed(() => outcomes.value.map(outcome => outcome.id).join(',')),
     selectionKey: computed(() =>
@@ -194,9 +197,21 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         })
   })
 
-  let selectionVersion = 0
   const checkedQuoteIds = new Set<string>()
+  watch(
+    () => [...outcomes.value],
+    (current, previous) => {
+      for (const item of previous) {
+        if (current.includes(item)) continue
+        delete availability.value[item.id]
+        delete balanceAdjusted.value[item.id]
+        checkedQuoteIds.delete(item.id)
+      }
+    },
+    { flush: 'sync' }
+  )
   onDeactivated(() => {
+    betSlipOpen.value = false
     selectionVersion += 1
     clearBalanceRefreshAnimation()
   })
@@ -217,7 +232,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       sportId: outcome.sportId,
       eventId: outcome.eventId,
       market: outcome.source.market,
-      wagerSelectionId: outcome.WagerSelectionId
+      wagerSelectionId: outcome.WagerSelectionId,
+      oddsType: betOddsType.value
     })
     if (disposed || !outcomes.value.includes(outcome)) return
     if (isSelectionExpired(outcome)) {
@@ -333,14 +349,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
             ? 'up'
             : 'down',
       stake: outcome.stake,
-      selection: [
-        selection.SelectionName,
-        line.BetTypeId !== 3 && Number.isFinite(selection.Handicap)
-          ? String(selection.Handicap)
-          : ''
-      ]
-        .filter(Boolean)
-        .join(' '),
+      selection: formatSelectionName(line, selection, match) ?? '--',
       market: line.BetTypeName,
       marketTitle: line.BetTypeName,
       fixture: `${match.HomeTeam} — ${match.AwayTeam}`,
@@ -352,7 +361,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   }
   // 切换赛事列表时保留投注项，刷新时保留金额。
   watch(
-    () => outcomes.value.map(outcome => getOutcomeSnapshot(outcome)),
+    () => (betSlipOpen.value ? outcomes.value.map(outcome => getOutcomeSnapshot(outcome)) : []),
     snapshots => {
       snapshots.forEach((snapshot, index) => {
         const outcome = outcomes.value[index]
@@ -399,6 +408,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   const selections = computed<SportsBetSelection[]>(() =>
     outcomes.value.map(outcome => {
       const quote = betInfoQuotes.value.find(item => item.rid === outcome.WagerSelectionId)
+      const quotedName = quote ? getQuotedName(outcome, quote) : null
       const setting =
         mode.value === 'single'
           ? betInfoSettings.value.find(
@@ -409,16 +419,18 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         mode.value === 'parlay' &&
         (!outcome.source.openParlay || quote?.st === 439 || quote?.st === 464)
       const getStatus = (): NonNullable<SportsBetSelection['betStatus']> => {
-        if (isSelectionExpired(outcome)) return 'unavailable'
+        if (isSelectionExpired(outcome) || !hasSelectionName(outcome)) return 'unavailable'
         if (availability.value[outcome.id] === 'checking') return 'pending'
         if (parlayUnsupported) return 'unavailable'
         if (isBetInfoMarketClosed(quote)) return 'closed'
+        if (quote && (!isBetInfoQuoteUsable(quote, betOddsType.value) || quotedName === null))
+          return 'unavailable'
+        if (!quote && getBetOdds(outcome) === null) return 'unavailable'
         if (betInfoError.value) return 'error'
         if (!quote) {
           if (['queued', 'loading'].includes(betInfoState.value)) return 'pending'
-          return betInfoState.value === 'idle' ? 'idle' : 'open'
+          return betInfoState.value === 'idle' ? 'idle' : 'unavailable'
         }
-        // 未明确拒绝时正常展示，能否下单由接口判断。
         return 'open'
       }
       const status = getStatus()
@@ -435,23 +447,20 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         error: betInfoError.value || 'sports.betInfoFailed'
       }
       const statusMessage = statusMessages[status] ? t(statusMessages[status]) : ''
-      const odds = quote && Number.isFinite(quote.o) ? quote.o : outcome.odds
-      const handicap =
-        quote?.dih ?? (quote?.h === null || quote?.h === undefined ? '' : String(quote.h))
+      const odds = quote
+        ? isBetInfoQuoteUsable(quote, betOddsType.value)
+          ? quote.o
+          : NaN
+        : (getBetOdds(outcome) ?? NaN)
       return {
         ...outcome.snapshot,
         stake: outcome.stake,
         odds,
-        trend: quote ? betInfoTrends.value[quote.rid] : outcome.snapshot.trend,
-        oddsType: quote?.ot ?? outcome.source.option.OddsType,
+        trend: quote ? betInfoTrends.value[quote.rid] : undefined,
+        oddsType: betOddsType.value,
         selection:
-          quote && (quote.dih != null || quote.h !== undefined)
-            ? [
-                outcome.source.option.SelectionName,
-                outcome.source.market.BetTypeId === 3 ? '' : handicap
-              ]
-                .filter(Boolean)
-                .join(' ')
+          quote && !isBetInfoMarketClosed(quote)
+            ? (quotedName ?? '--')
             : outcome.snapshot.selection,
         betStatus: status,
         minStake: setting?.misa,
@@ -480,8 +489,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
           label: comboLabel(item.combs, outcomes.value.length),
           comboSelection: item.combs,
           combinationCount: item.noc,
-          // 多注组合不展示单一赔率。
-          odds: item.noc === 1 ? item.epa + 1 : undefined,
+          // 各组合赔率之和：每注 1 元的合计净盈利，加回组合本金。
+          odds: Number.isFinite(item.epa) ? item.epa + item.noc : undefined,
           stake,
           minStake: item.misa,
           maxStake: item.masa,
@@ -531,9 +540,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       betInfoReady.value &&
       !selectionBlocked(outcome.id) &&
       quote !== undefined &&
-      Number(quote.st) !== 380 &&
-      !isBetInfoMarketClosed(quote) &&
-      (mode.value !== 'parlay' || ![439, 464].includes(Number(quote.st)))
+      isBetInfoQuoteUsable(quote, betOddsType.value) &&
+      getQuotedName(outcome, quote) !== null
     )
   }
   const submittableSingles = computed(() =>
@@ -648,8 +656,9 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       item => item.WagerSelectionId === payload.option.WagerSelectionId
     )
     if (!match || !line || !selection) return false
-    const odds = Number(selection.Odds)
-    if (!Number.isFinite(odds)) return false
+    if (formatSelectionName(line, selection, match) === null) return false
+    const odds = resolveSelectionOdds(selection, pageOddsType.value)
+    if (odds === null) return false
     const id = `${matchId}:${line.MarketlineId}:${selection.WagerSelectionId}`
     const previous = outcomes.value.find(item => item.matchId === matchId)
     const event = sportsStore.getRefreshEvent(match.sportId, match.EventId)
@@ -671,14 +680,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       matchId,
       odds,
       stake: '',
-      selection: [
-        selection.SelectionName,
-        line.BetTypeId !== 3 && Number.isFinite(selection.Handicap)
-          ? String(selection.Handicap)
-          : ''
-      ]
-        .filter(Boolean)
-        .join(' '),
+      selection: formatSelectionName(line, selection, match) ?? '--',
       market: line.BetTypeName,
       marketTitle: line.BetTypeName,
       fixture: `${match.HomeTeam} — ${match.AwayTeam}`,
@@ -817,7 +819,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
             sportId: item.sportId,
             eventId: item.eventId,
             market: item.source.market,
-            wagerSelectionId: item.WagerSelectionId
+            wagerSelectionId: item.WagerSelectionId,
+            oddsType: receipt.mode === 'parlay' ? 3 : pageOddsType.value
           })
           if (!current()) return
           if (available !== 'present') continue
@@ -1011,13 +1014,14 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         outcomes.value = outcomes.value.filter(item => !targets.includes(item))
         parlayStakes.value = {}
       }
+      // 共享投注单清空后同步复原模式，不依赖提交页面是否仍然有效。
+      if (accountKey.value === account && !outcomes.value.length) mode.value = 'single'
       if (!current() || selectionVersion !== submissionSelectionVersion) return
       if (refreshQuote) refreshBetInfo()
       if (!outcomes.value.length) {
         availability.value = {}
         checkedQuoteIds.clear()
         focusedStakeId.value = ''
-        mode.value = 'single'
       }
       const result = results.includes('unknown')
         ? 'Unknown'
@@ -1070,20 +1074,13 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   const showUnsupported = () => {
     globalShowToast({ type: 'fail', message: t('sports.betFeatureUnavailable') })
   }
-  watch([accountKey, currentCurrencyCode], ([, currency], [, previousCurrency]) => {
+  watch(accountKey, () => {
     dismissBetResult()
-    const hadSelections = outcomes.value.length > 0
-    // 切换币种时清空投注项，包括提交期间。
-    outcomes.value = []
     balanceAdjusted.value = {}
     availability.value = {}
     checkedQuoteIds.clear()
-    parlayStakes.value = {}
     focusedStakeId.value = ''
-    mode.value = 'single'
     selectionVersion += 1
-    if (hadSelections && currency !== previousCurrency)
-      globalShowToast({ type: 'fail', message: t('sports.betCurrencyChanged') })
   })
 
   return {
