@@ -121,8 +121,16 @@
                     />
                   </span>
                 </div>
-                <p class="mt-3 break-words text-base leading-[19px] text-theme-primary">
-                  {{ selection.market }}
+                <p
+                  class="mt-3 flex flex-wrap items-center gap-x-[7px] gap-y-1 break-words text-base font-normal leading-[19px] text-theme-primary"
+                >
+                  <template v-if="selection.live">
+                    <span>{{ t('sports.betSlip.live') }}</span>
+                    <span class="h-3.5 w-px shrink-0 bg-text-3" aria-hidden="true" />
+                  </template>
+                  <span class="min-w-0 max-w-full">{{ selection.marketTitle }}</span>
+                  <span class="h-3.5 w-px shrink-0 bg-text-3" aria-hidden="true" />
+                  <span>{{ t(`sports.betOddsType${selection.oddsType ?? 3}`) }}</span>
                 </p>
                 <div
                   class="mt-[9px] flex flex-wrap items-start gap-x-1.5 gap-y-1.5 break-words font-['PingFang_SC',sans-serif] text-sm leading-5 text-text-2"
@@ -202,8 +210,21 @@
 
         <div
           v-if="props.selections.length"
-          class="relative flex shrink-0 gap-2 overflow-x-auto px-3 py-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          :class="props.mode === 'parlay' ? 'mt-[9px]' : 'mt-[17px]'"
+          ref="quickAmountsScrollElement"
+          class="relative flex shrink-0 select-none gap-2 overflow-x-auto px-3 py-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          :class="[
+            props.mode === 'parlay' ? 'mt-[9px]' : 'mt-[17px]',
+            quickAmountsDragging ? 'cursor-grabbing' : 'cursor-grab'
+          ]"
+          @pointerdown="onQuickAmountsPointerDown"
+          @pointermove="onQuickAmountsPointerMove"
+          @pointerup="onQuickAmountsPointerEnd"
+          @pointercancel="onQuickAmountsPointerEnd"
+          @lostpointercapture="onQuickAmountsPointerEnd"
+          @pointerleave="onQuickAmountsPointerLeave"
+          @click.capture="onQuickAmountsClickCapture"
+          @dragstart.prevent
+          @wheel="onQuickAmountsWheel"
         >
           <button
             v-for="amount in quickAmounts"
@@ -400,6 +421,7 @@ import CheckedIcon from '@/static/svg/sports/bet-slip/checked.svg'
 import UncheckedIcon from '@/static/svg/sports/bet-slip/unchecked.svg'
 import StakeInput from './stake-input.vue'
 import AmountsDialog from './amounts-dialog.vue'
+import { useQuickAmountsScroll } from './useQuickAmountsScroll'
 import { storeToRefs } from 'pinia'
 import { useSportsBetSlipStore } from '@/stores/sportsBetSlip'
 import { globalShowToast } from '@/utils/toast'
@@ -466,6 +488,17 @@ const betSlipStore = useSportsBetSlipStore()
 const { quickAmounts, quickAmountsStorageKey } = storeToRefs(betSlipStore)
 const editingAmounts = ref(false)
 const isSubmitting = computed(() => props.submitting)
+const {
+  scrollElement: quickAmountsScrollElement,
+  dragging: quickAmountsDragging,
+  endDrag: endQuickAmountsDrag,
+  onPointerDown: onQuickAmountsPointerDown,
+  onPointerMove: onQuickAmountsPointerMove,
+  onPointerEnd: onQuickAmountsPointerEnd,
+  onPointerLeave: onQuickAmountsPointerLeave,
+  onClickCapture: onQuickAmountsClickCapture,
+  onWheel: onQuickAmountsWheel
+} = useQuickAmountsScroll()
 const panelState = computed(() =>
   !props.open
     ? 'collapsed'
@@ -476,6 +509,9 @@ const panelState = computed(() =>
 const quickAmountClass =
   'h-9 w-[66px] shrink-0 rounded-xl px-2 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary'
 const quickEditClass = `${quickAmountClass} bg-bg-3 text-text-1 hover:bg-bg-2`
+watch([panelState, quickAmountsStorageKey, editingAmounts, oddsSettingsOpen], endQuickAmountsDrag, {
+  flush: 'sync'
+})
 
 const focusedSingle = computed(
   () =>

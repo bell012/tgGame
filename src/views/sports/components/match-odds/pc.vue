@@ -37,7 +37,7 @@
             >
               <span class="truncate">{{ selectionLabel(selection) }}</span>
               <span v-if="shouldShowHandicap(primaryLine, selection)" class="shrink-0">{{
-                selection.Handicap
+                formatHandicap(selection.Handicap)
               }}</span>
             </span>
             <span class="ml-auto shrink-0 text-xs font-bold" :class="oddsNumberClass(selection)">
