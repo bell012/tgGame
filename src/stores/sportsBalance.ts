@@ -132,8 +132,8 @@ export const useSportsBalanceStore = defineStore('sportsBalance', () => {
         if (!current()) return false
         if (balanceUpdates.size) return sportsBalance.value !== null
         if (balanceDelay(snapshot.memberCode)) {
-          // 首次查询失败或旧上下文已发送时也不能永久停在 --。
-          if (sportsBalance.value === null) balanceRefreshRequested = true
+          // 限频期间保留刷新需求，即使已有余额也在冷却结束后合并补查一次。
+          balanceRefreshRequested = true
           return sportsBalance.value !== null
         }
         requestRevision = balanceRevision
