@@ -1,11 +1,15 @@
 <template>
   <aside
-    class="fixed bottom-0 right-6 z-30 flex max-h-[min(915px,calc(100dvh-84px))] w-[390px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-t-lg bg-bg-1 font-inter text-text-1 shadow-2xl 2xl:right-[120px]"
+    ref="panelElement"
+    class="fixed bottom-0 right-6 z-30 flex max-h-[min(915px,calc(100dvh-84px))] w-[390px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-t-lg bg-bg-1 font-inter text-text-1 shadow-2xl transition-transform duration-[var(--bet-slip-duration)] ease-[ease-in-out] motion-reduce:transition-none 2xl:right-[120px]"
+    :class="{ 'translate-y-[calc(100%_-_66px)]': !panelExpanded }"
+    :style="{ '--bet-slip-duration': `${panelDuration}ms` }"
     :data-state="panelState"
     :aria-label="t('sports.betSlip.title')"
     @keydown.esc.stop="collapse"
   >
     <header
+      ref="panelHeader"
       class="btn-primary flex h-[66px] shrink-0 items-center gap-2 px-5 text-text-4 !shadow-none"
       :inert="oddsSettingsOpen"
     >
@@ -20,8 +24,8 @@
         <span class="truncate">{{ t('sports.betSlip.title') }}</span>
         <span class="flex h-[30px] w-[30px] shrink-0 items-center justify-center">
           <CaretIcon
-            class="h-3 w-3 transition-transform"
-            :class="{ 'rotate-180': props.open }"
+            class="h-3 w-3 transition-transform duration-[var(--bet-slip-duration)] ease-[ease-in-out] motion-reduce:transition-none"
+            :class="{ 'rotate-180': panelExpanded }"
             aria-hidden="true"
           />
         </span>
@@ -48,24 +52,24 @@
     </header>
 
     <div
-      v-show="props.open"
       :id="panelId"
       class="flex min-h-0 flex-col"
       :aria-busy="isSubmitting"
-      :inert="oddsSettingsOpen"
+      :aria-hidden="!props.open"
+      :inert="!props.open || oddsSettingsOpen"
     >
       <BetResult
-        v-if="props.result"
-        :state="props.result"
-        :reusing="props.reusing"
+        v-if="panelDisplay.result"
+        :state="panelDisplay.result"
+        :reusing="panelDisplay.reusing"
         class="min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         @dismiss="emit('dismissResult')"
         @history="emit('history')"
         @reuse="emit('reuse')"
       />
-      <fieldset v-else class="contents" :disabled="isSubmitting">
+      <fieldset v-else class="contents" :disabled="panelDisplay.submitting">
         <div
-          v-if="!props.selections.length"
+          v-if="!panelDisplay.selections.length"
           class="flex h-[168px] items-center justify-center gap-[19px] px-5"
         >
           <BetIcon class="h-[84px] w-[84px] shrink-0 text-theme-primary" aria-hidden="true" />
@@ -83,7 +87,7 @@
         >
           <ul class="flex flex-col gap-[10px] px-[9px]">
             <li
-              v-for="selection in props.selections"
+              v-for="selection in panelDisplay.selections"
               :key="selection.id"
               class="flex min-w-0 overflow-hidden rounded-[9px] bg-bg-5"
             >
@@ -140,14 +144,16 @@
                   <span class="min-w-0 max-w-full">{{ selection.awayTeam }}</span>
                 </div>
                 <p
-                  v-if="selection.league && !(props.mode === 'single' && selection.stakeError)"
+                  v-if="
+                    selection.league && !(panelDisplay.mode === 'single' && selection.stakeError)
+                  "
                   class="mt-[9px] break-words font-['PingFang_SC',sans-serif] text-sm leading-5 text-text-2"
                 >
                   {{ selection.league }}
                 </p>
                 <p
                   v-if="
-                    props.mode === 'parlay' &&
+                    panelDisplay.mode === 'parlay' &&
                     selection.stakeError &&
                     selection.betStatus !== 'open'
                   "
@@ -157,14 +163,14 @@
                   {{ selection.stakeError }}
                 </p>
                 <StakeInput
-                  v-if="props.mode === 'single'"
+                  v-if="panelDisplay.mode === 'single'"
                   class="mt-3"
                   :value="selection.stake"
-                  :currency-symbol="props.currencySymbol"
+                  :currency-symbol="panelDisplay.currencySymbol"
                   :label="t('sports.betSlip.stakeFor', { selection: selection.selection })"
                   :error="selection.stakeError"
                   :placeholder="selection.limitText"
-                  :disabled="isSubmitting"
+                  :disabled="panelDisplay.submitting"
                   @update="emit('stake', selection.id, $event)"
                   @focus="emit('focusStake', selection.id, 'single')"
                   @max="emit('max', selection.id, 'single')"
@@ -173,8 +179,8 @@
             </li>
           </ul>
 
-          <div v-if="props.mode === 'parlay'" class="mt-[10px] flex flex-col gap-[10px]">
-            <div v-for="parlay in props.parlays" :key="parlay.id" class="min-w-0">
+          <div v-if="panelDisplay.mode === 'parlay'" class="mt-[10px] flex flex-col gap-[10px]">
+            <div v-for="parlay in panelDisplay.parlays" :key="parlay.id" class="min-w-0">
               <div
                 class="mx-[9px] grid min-h-[60px] grid-cols-[minmax(0,1fr)_209px] items-center gap-1.5 rounded-xl bg-bg-4 py-2 pl-[9px] pr-1.5"
               >
@@ -194,11 +200,11 @@
                 </div>
                 <StakeInput
                   :value="parlay.stake"
-                  :currency-symbol="props.currencySymbol"
+                  :currency-symbol="panelDisplay.currencySymbol"
                   :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
                   :error="parlay.stakeError"
                   :placeholder="parlay.limitText"
-                  :disabled="isSubmitting"
+                  :disabled="panelDisplay.submitting"
                   @update="emit('parlayStake', parlay.id, $event)"
                   @focus="emit('focusStake', parlay.id, 'parlay')"
                   @max="emit('max', parlay.id, 'parlay')"
@@ -209,11 +215,11 @@
         </div>
 
         <div
-          v-if="props.selections.length"
+          v-if="panelDisplay.selections.length"
           ref="quickAmountsScrollElement"
           class="relative flex shrink-0 select-none gap-2 overflow-x-auto px-3 py-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           :class="[
-            props.mode === 'parlay' ? 'mt-[9px]' : 'mt-[17px]',
+            panelDisplay.mode === 'parlay' ? 'mt-[9px]' : 'mt-[17px]',
             quickAmountsDragging ? 'cursor-grabbing' : 'cursor-grab'
           ]"
           @pointerdown="onQuickAmountsPointerDown"
@@ -227,7 +233,7 @@
           @wheel="onQuickAmountsWheel"
         >
           <button
-            v-for="amount in quickAmounts"
+            v-for="amount in panelDisplay.quickAmounts"
             :key="amount"
             type="button"
             :class="[quickAmountClass, amountClass(activeStake, amount)]"
@@ -241,32 +247,34 @@
           </button>
         </div>
 
-        <div v-if="props.selections.length" class="shrink-0 px-3 pb-[18px] pt-[17px]">
+        <div v-if="panelDisplay.selections.length" class="shrink-0 px-3 pb-[18px] pt-[17px]">
           <div class="flex min-h-5 items-center justify-between gap-3 text-sm leading-5">
             <span class="text-text-2">{{ t('sports.betSlip.winnings') }}</span>
             <span class="min-w-0 break-all text-right font-bold tabular-nums">
-              {{ props.potentialReturnText }}
+              {{ panelDisplay.potentialReturnText }}
             </span>
           </div>
           <button
             type="button"
             class="mt-[18px] flex min-h-[49px] w-full items-center justify-center rounded-full bg-theme-primary px-4 py-3 text-sm font-bold text-text-4 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1 disabled:cursor-not-allowed"
-            :class="isSubmitting ? 'gap-[5px]' : 'gap-2.5'"
-            :disabled="!props.canSubmit || isSubmitting"
-            :aria-busy="isSubmitting"
+            :class="panelDisplay.submitting ? 'gap-[5px]' : 'gap-2.5'"
+            :disabled="!panelDisplay.canSubmit || panelDisplay.submitting"
+            :aria-busy="panelDisplay.submitting"
             @click="emit('submit')"
           >
             <Loading
-              v-if="isSubmitting"
+              v-if="panelDisplay.submitting"
               type="spinner"
               size="20"
               color="currentColor"
               aria-hidden="true"
             />
-            <span v-if="isSubmitting" role="status">{{ t('sports.betSlip.confirming') }}</span>
+            <span v-if="panelDisplay.submitting" role="status">{{
+              t('sports.betSlip.confirming')
+            }}</span>
             <template v-else>
               <span>{{ t('sports.betSlip.placeBet') }}</span>
-              <span>{{ props.totalStakeText }}</span>
+              <span>{{ panelDisplay.totalStakeText }}</span>
             </template>
           </button>
           <button
@@ -275,14 +283,18 @@
             @click="emit('mode', props.mode === 'single' ? 'parlay' : 'single')"
           >
             {{
-              t(props.mode === 'single' ? 'sports.betSlip.addToAcca' : 'sports.betSlip.singleBets')
+              t(
+                panelDisplay.mode === 'single'
+                  ? 'sports.betSlip.addToAcca'
+                  : 'sports.betSlip.singleBets'
+              )
             }}
           </button>
         </div>
 
         <footer class="flex shrink-0 gap-3 px-[18px] pb-[18px]">
           <button
-            v-if="props.selections.length"
+            v-if="panelDisplay.selections.length"
             type="button"
             class="flex h-[42px] w-[60px] shrink-0 items-center justify-center rounded-xl bg-bg-2 text-text-2 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
             :aria-label="t('sports.betSlip.clear')"
@@ -294,7 +306,7 @@
             ref="oddsSettingsTrigger"
             type="button"
             class="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-bg-2 px-3 text-[13px] font-extrabold text-text-2 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-            :class="props.selections.length ? 'h-[42px]' : 'h-10'"
+            :class="panelDisplay.selections.length ? 'h-[42px]' : 'h-10'"
             :aria-expanded="oddsSettingsOpen"
             :aria-controls="oddsSettingsId"
             @click="oddsSettingsOpen = !oddsSettingsOpen"
@@ -467,6 +479,44 @@ const emit = defineEmits<{
 }>()
 
 const panelId = useId()
+const panelElement = ref<HTMLElement | null>(null)
+const panelHeader = ref<HTMLElement | null>(null)
+const panelExpanded = ref(props.open)
+const panelDuration = ref(0)
+// 空态内容 168px + 赔率设置按钮 40px + 底部留白 18px，标题栏使用实际高度。
+const emptyPanelBodyHeight = 168 + 40 + 18
+
+function getPanelTransitionDuration(
+  height: number,
+  minHeight: number,
+  maxHeight: number,
+  opened: boolean
+) {
+  const [minDuration, maxDuration] = opened ? [400, 600] : [300, 450]
+  if (![height, minHeight, maxHeight].every(Number.isFinite) || maxHeight <= minHeight) {
+    return minDuration
+  }
+  const ratio = Math.min(1, Math.max(0, (height - minHeight) / (maxHeight - minHeight)))
+  return Math.round(minDuration + (maxDuration - minDuration) * ratio)
+}
+
+watch(
+  () => props.open,
+  opened => {
+    // 等内容更新后测量，再一起更新时长与位移，避免新增投注项时沿用空态高度。
+    const panel = panelElement.value
+    panelDuration.value = panel
+      ? getPanelTransitionDuration(
+          panel.offsetHeight,
+          (panelHeader.value?.offsetHeight ?? 0) + emptyPanelBodyHeight,
+          Number.parseFloat(getComputedStyle(panel).maxHeight),
+          opened
+        )
+      : 0
+    panelExpanded.value = opened
+  },
+  { flush: 'post' }
+)
 const oddsSettingsId = useId()
 const oddsSettingsOpen = ref(false)
 const oddsInfoOpen = ref(false)
@@ -486,6 +536,16 @@ watch(oddsSettingsOpen, async opened => {
 const { t } = useI18n()
 const betSlipStore = useSportsBetSlipStore()
 const { quickAmounts, quickAmountsStorageKey } = storeToRefs(betSlipStore)
+// 关闭会立即清理报价；滑出时沿用最后一次展示，重新打开才恢复实时 props。
+const panelDisplay = computed<typeof props & { quickAmounts: number[] }>(previous => {
+  if (!props.open && previous) return previous
+  return {
+    ...props,
+    selections: props.selections.map(selection => ({ ...selection })),
+    parlays: props.parlays.map(parlay => ({ ...parlay })),
+    quickAmounts: [...quickAmounts.value]
+  }
+})
 const editingAmounts = ref(false)
 const isSubmitting = computed(() => props.submitting)
 const {
@@ -520,9 +580,11 @@ const focusedSingle = computed(
 const focusedParlay = computed(
   () => props.parlays.find(parlay => parlay.id === props.focusedStakeId) ?? props.parlays[0]
 )
-const activeStake = computed(
-  () => (props.mode === 'single' ? focusedSingle.value?.stake : focusedParlay.value?.stake) ?? ''
-)
+const activeStake = computed(() => {
+  const display = panelDisplay.value
+  const rows = display.mode === 'single' ? display.selections : display.parlays
+  return (rows.find(row => row.id === display.focusedStakeId) ?? rows[0])?.stake ?? ''
+})
 watch(
   [() => props.open, () => props.currencySymbol, () => props.submitting, () => props.mode],
   () => {
