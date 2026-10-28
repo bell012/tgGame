@@ -246,7 +246,7 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'redPacket',
     component: () => import('@/views/activity/red-packet/index.vue'),
     meta: {
-      title: '红包领取',
+      title: '红包活动',
       mobileOnly: true,
       slideTransition: true,
       mobile: {
