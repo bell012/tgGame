@@ -164,7 +164,7 @@
       </div>
     </div>
 
-    <div v-if="mobileHistoryList.length > 0" class="mt-5 grid grid-cols-3 items-start gap-4">
+    <div v-if="mobileHistoryList.length > 0" class="mt-5 grid grid-cols-3 gap-4">
       <HistoryCardPc
         v-for="item in mobileHistoryList"
         :key="item.id"
