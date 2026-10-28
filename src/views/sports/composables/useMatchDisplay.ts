@@ -10,10 +10,16 @@ type DisplayOptions = {
   hotEvents: () => readonly SportEvent[]
   teamLogoUrl: (id: number) => string
   clockUpdatedAt: (sportId: number, eventId: number) => number
+  hotClockUpdatedAt: (sportId: number, eventId: number) => number
 }
 
 export const useMatchDisplay = (options: DisplayOptions) => {
-  const createEntry = (sportId: number, group: SportCompetitionGroup, event: SportEvent) => {
+  const createEntry = (
+    sportId: number,
+    group: SportCompetitionGroup,
+    event: SportEvent,
+    hot: boolean
+  ) => {
     const source = shallowRef({ ...group, Sports: [event] })
     const match = computed<SportsMatch | undefined>(previous => {
       const next = mapSportsMatches(
@@ -21,7 +27,7 @@ export const useMatchDisplay = (options: DisplayOptions) => {
         sportId,
         options.teamLogoUrl,
         undefined,
-        options.clockUpdatedAt
+        hot ? options.hotClockUpdatedAt : options.clockUpdatedAt
       )[0]
       return reuseEqual(previous, next)
     })
@@ -31,12 +37,12 @@ export const useMatchDisplay = (options: DisplayOptions) => {
   const catalog = computed(() => {
     const sportId = options.sportId()
     const sources = new Map<string, { group: SportCompetitionGroup; event: SportEvent }>()
-    const collect = (groups: readonly SportCompetitionGroup[]) => {
+    const collect = (groups: readonly SportCompetitionGroup[], hot = false) => {
       const ids = new Set<string>()
       for (const group of groups) {
         for (const event of group.Sports) {
           if (!Number.isSafeInteger(event.EventId) || event.EventId <= 0) continue
-          const id = `${sportId}:${event.EventId}`
+          const id = `${hot ? 'hot:' : ''}${sportId}:${event.EventId}`
           if (ids.has(id)) continue
           ids.add(id)
           sources.set(id, { group, event })
@@ -49,12 +55,13 @@ export const useMatchDisplay = (options: DisplayOptions) => {
         ...event.Competition,
         competitionCount: 1,
         Sports: [event]
-      }))
+      })),
+      true
     )
     const matchIds = collect(options.groups())
     for (const [id, { group, event }] of sources) {
       const entry = entries.get(id)
-      if (!entry) entries.set(id, createEntry(sportId, group, event))
+      if (!entry) entries.set(id, createEntry(sportId, group, event, id.startsWith('hot:')))
       else if (
         entry.source.value.Sports[0] !== event ||
         entry.source.value.CompetitionId !== group.CompetitionId ||

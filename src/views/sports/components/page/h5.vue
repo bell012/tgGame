@@ -35,6 +35,26 @@
             </button>
           </div>
 
+          <div
+            v-if="!emptyLeagueFilter && page.hotEventsError.value && !liveMatches.length"
+            class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
+            role="status"
+          >
+            <span
+              >{{ t('sports.homepage.popularMatches') }}：{{
+                page.sportsLoadFailedText.value
+              }}</span
+            >
+            <button
+              type="button"
+              class="shrink-0 text-theme-primary disabled:opacity-50"
+              :disabled="page.hotEventsLoading.value"
+              @click="page.retryHotEvents"
+            >
+              {{ page.sportsRetryText.value }}
+            </button>
+          </div>
+
           <section
             v-if="liveMatches.length"
             :aria-label="t('sports.homepage.popularMatches')"
@@ -49,7 +69,6 @@
               <article
                 v-for="match in liveMatches"
                 :key="match.id"
-                v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
                 class="flex min-h-[150px] w-full min-w-0 shrink-0 cursor-pointer snap-center flex-col rounded-lg bg-bg-2 px-2.5 py-3"
                 :data-sports-live-match="match.id"
                 @click="goToEventDetails(match)"
@@ -89,7 +108,7 @@
                     :MarketLines="match.MarketLines"
                     :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
                     picker="liveStrip"
-                    @select="selectOdds(match.id, $event)"
+                    @select="selectOdds(match.id, $event, match)"
                   />
                 </div>
               </article>
@@ -574,9 +593,13 @@ watch(activeSport, async () => {
 })
 
 // 增删选项时保留串关模式，点击赔率后打开投注单。
-const selectOdds = async (matchId: string, payload: OddsSelectPayload) => {
+const selectOdds = async (
+  matchId: string,
+  payload: OddsSelectPayload,
+  sourceMatch?: SportsMatch
+) => {
   const wasParlay = props.page.mode.value === 'parlay'
-  if (!(await props.page.selectOdds(matchId, payload))) return
+  if (!(await props.page.selectOdds(matchId, payload, sourceMatch))) return
   if (wasParlay && props.page.selections.value.length) props.page.setMode('parlay', true)
   props.page.betSlipOpen.value = true
 }

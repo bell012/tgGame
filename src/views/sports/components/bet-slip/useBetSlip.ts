@@ -89,8 +89,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   )
   const availability = ref<Record<string, 'checking' | 'unknown' | 'expired'>>({})
   const isSelectionExpired = (outcome: SelectedOutcome) =>
-    availability.value[outcome.id] === 'expired' ||
-    sportsStore.isEventExpired(outcome.sportId, outcome.eventId)
+    availability.value[outcome.id] === 'expired' || sportsStore.isBetSelectionExpired(outcome)
   const hasSelectionName = (outcome: SelectedOutcome) =>
     formatSelectionName(outcome.source.market, outcome.source.option, {
       HomeTeam: outcome.snapshot.homeTeam,
@@ -175,7 +174,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       outcomes.value
         .filter(outcome => !selectionBlocked(outcome.id))
         .map(outcome => {
-          const event = sportsStore.getRefreshEvent(outcome.sportId, outcome.eventId)
+          const event = sportsStore.getBetSelectionEvent(outcome)
           const match = event ? undefined : getMatch(outcome.matchId)
           const openParlay = outcome.source.openParlay
           const lines = event?.MarketLines ?? match?.MarketLines
@@ -221,7 +220,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   })
   const confirmSelection = async (outcome: SelectedOutcome) => {
     if (isSelectionExpired(outcome)) {
-      availability.value[outcome.id] = 'expired'
+      if (!outcome.fromHot) availability.value[outcome.id] = 'expired'
       return
     }
     if (['checking', 'expired'].includes(availability.value[outcome.id])) return
@@ -229,6 +228,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     checkedQuoteIds.add(outcome.id)
     availability.value[outcome.id] = 'checking'
     const result = await sportsStore.confirmBetSelection({
+      fromHot: outcome.fromHot,
       sportId: outcome.sportId,
       eventId: outcome.eventId,
       market: outcome.source.market,
@@ -237,7 +237,12 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     })
     if (disposed || !outcomes.value.includes(outcome)) return
     if (isSelectionExpired(outcome)) {
-      availability.value[outcome.id] = 'expired'
+      if (
+        !outcome.fromHot ||
+        (version === sportsStore.sportsSessionVersion && result === 'missing')
+      )
+        availability.value[outcome.id] = 'expired'
+      else if (availability.value[outcome.id] === 'checking') delete availability.value[outcome.id]
       return
     }
     if (version !== sportsStore.sportsSessionVersion || result === null) {
@@ -257,14 +262,14 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       open: betSlipOpen.value,
       version: sportsStore.sportsSessionVersion,
       rows: outcomes.value.map(outcome => {
-        const event = sportsStore.getRefreshEvent(outcome.sportId, outcome.eventId)
+        const event = sportsStore.getBetSelectionEvent(outcome)
         const line = event?.MarketLines?.find(item => item.MarketlineId === outcome.MarketlineId)
         const option = line?.WagerSelections?.find(
           item => item.WagerSelectionId === outcome.WagerSelectionId
         )
         return {
           outcome,
-          expired: sportsStore.isEventExpired(outcome.sportId, outcome.eventId),
+          expired: sportsStore.isBetSelectionExpired(outcome),
           missing: Boolean(event && !option),
           key: option
             ? JSON.stringify([
@@ -284,13 +289,13 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     }),
     (current, previous) => {
       for (const row of current.rows) {
-        if (row.expired) availability.value[row.outcome.id] = 'expired'
+        if (row.expired && !row.outcome.fromHot) availability.value[row.outcome.id] = 'expired'
       }
       if (!current.open) return
       if (!previous?.open || current.version !== previous.version) checkedQuoteIds.clear()
       let changed = false
       for (const row of current.rows) {
-        if (availability.value[row.outcome.id] === 'expired') continue
+        if (row.expired || availability.value[row.outcome.id] === 'expired') continue
         const before = previous?.rows.find(item => item.outcome === row.outcome)
         if (before && row.key !== before.key) checkedQuoteIds.delete(row.outcome.id)
         if (row.missing || availability.value[row.outcome.id] === 'unknown')
@@ -322,7 +327,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     outcomes.value.find(outcome => outcome.matchId === matchId)?.WagerSelectionId
   const getOutcomeSnapshot = (outcome: SelectedOutcome): SportsBetSelection => {
     if (isSelectionExpired(outcome)) return outcome.snapshot
-    const event = sportsStore.getRefreshEvent(outcome.sportId, outcome.eventId)
+    const event = sportsStore.getBetSelectionEvent(outcome)
     const refreshedMatch = event
       ? mapSportsMatches(
           [{ ...event.Competition, competitionCount: 1, Sports: [event] }],
@@ -639,7 +644,11 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       mode.value === 'single' ? (outcomes.value[0]?.id ?? '') : (parlays.value[0]?.id ?? '')
   }
   // 使用组件返回的盘口和选项，同一赛事只保留一项。
-  const selectOdds = async (matchId: string, payload: OddsSelectPayload): Promise<boolean> => {
+  const selectOdds = async (
+    matchId: string,
+    payload: OddsSelectPayload,
+    sourceMatch?: SportsMatch
+  ): Promise<boolean> => {
     if (submitting.value || reusing.value) return false
     dismissBetResult()
     const selectedId = `${matchId}:${payload.market.MarketlineId}:${payload.option.WagerSelectionId}`
@@ -648,7 +657,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       return true
     }
     if (!requireLogin()) return false
-    const match = getMatch(matchId)
+    const match = sourceMatch?.id === matchId ? sourceMatch : getMatch(matchId)
     const line = (match?.MarketLines ?? []).find(
       item => item.MarketlineId === payload.market.MarketlineId
     )
@@ -661,7 +670,9 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     if (odds === null) return false
     const id = `${matchId}:${line.MarketlineId}:${selection.WagerSelectionId}`
     const previous = outcomes.value.find(item => item.matchId === matchId)
-    const event = sportsStore.getRefreshEvent(match.sportId, match.EventId)
+    const event = sourceMatch
+      ? undefined
+      : sportsStore.getRefreshEvent(match.sportId, match.EventId)
     const openParlay = (event ? event.OpenParlay : match.OpenParlay) === true
     if (mode.value === 'parlay' && !openParlay) {
       showParlayUnsupported()
@@ -690,6 +701,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       live: match.live
     }
     const next: SelectedOutcome = {
+      fromHot: Boolean(sourceMatch),
       id,
       matchId,
       MarketlineId: line.MarketlineId,
@@ -804,8 +816,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       for (const item of receipt.selections) {
         if (isSelectionExpired(item)) continue
         const findSource = () => {
-          const event =
-            sportsStore.getRefreshEvent(item.sportId, item.eventId) ?? getMatch(item.matchId)
+          const event = sportsStore.getBetSelectionEvent(item) ?? getMatch(item.matchId)
           const market = event?.MarketLines.find(line => line.MarketlineId === item.MarketlineId)
           const option = market?.WagerSelections.find(
             option => option.WagerSelectionId === item.WagerSelectionId
@@ -816,6 +827,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         // 列表可能只有部分盘口，缺失时先补查，不直接恢复旧选项。
         if (!source.option) {
           const available = await sportsStore.confirmBetSelection({
+            fromHot: item.fromHot,
             sportId: item.sportId,
             eventId: item.eventId,
             market: item.source.market,

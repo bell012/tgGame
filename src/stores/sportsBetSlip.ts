@@ -12,6 +12,7 @@ import {
 } from '@/views/sports/components/bet-slip/quick-amounts'
 
 export type SelectedOutcome = {
+  fromHot?: boolean
   id: string
   matchId: string
   MarketlineId: number
