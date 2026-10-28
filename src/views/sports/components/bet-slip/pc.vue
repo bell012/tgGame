@@ -400,6 +400,9 @@ import CheckedIcon from '@/static/svg/sports/bet-slip/checked.svg'
 import UncheckedIcon from '@/static/svg/sports/bet-slip/unchecked.svg'
 import StakeInput from './stake-input.vue'
 import AmountsDialog from './amounts-dialog.vue'
+import { storeToRefs } from 'pinia'
+import { useSportsBetSlipStore } from '@/stores/sportsBetSlip'
+import { globalShowToast } from '@/utils/toast'
 import BetResult from './pc-result.vue'
 import { useI18n } from 'vue-i18n'
 import type { SportsBetMode, SportsBetSelection, SportsParlay } from '../../shared/types'
@@ -459,11 +462,8 @@ watch(oddsSettingsOpen, async opened => {
   if (oddsSettingsOpen.value) oddsSettingsPanel.value?.focus({ preventScroll: true })
 })
 const { t } = useI18n()
-const singleQuickAmounts = ref([10, 20, 50, 100, 200])
-const parlayQuickAmounts = ref([20, 50, 100, 200])
-const quickAmounts = computed(() =>
-  props.mode === 'single' ? singleQuickAmounts.value : parlayQuickAmounts.value
-)
+const betSlipStore = useSportsBetSlipStore()
+const { quickAmounts, quickAmountsStorageKey } = storeToRefs(betSlipStore)
 const editingAmounts = ref(false)
 const isSubmitting = computed(() => props.submitting)
 const panelState = computed(() =>
@@ -496,10 +496,21 @@ watch(
 )
 
 function saveQuickAmounts(amounts: number[]) {
-  if (props.mode === 'single') singleQuickAmounts.value = amounts
-  else parlayQuickAmounts.value = amounts
+  if (!editingAmounts.value || isSubmitting.value) return
+  if (!betSlipStore.saveQuickAmounts(amounts)) {
+    globalShowToast({ type: 'fail', message: t('sports.betSlip.quickAmountsSaveFailed') })
+    return
+  }
   editingAmounts.value = false
 }
+
+watch(
+  quickAmountsStorageKey,
+  () => {
+    editingAmounts.value = false
+  },
+  { flush: 'sync' }
+)
 
 function amountClass(stake: string, amount: number) {
   return Number(stake) === amount

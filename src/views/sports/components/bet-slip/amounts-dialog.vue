@@ -97,6 +97,7 @@ import { useI18n } from 'vue-i18n'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { parseSportsStake } from './shared'
+import { QUICK_AMOUNT_COUNT } from './quick-amounts'
 
 const props = defineProps<{ amounts: readonly number[]; currencySymbol: string }>()
 const { t } = useI18n()
@@ -106,7 +107,10 @@ const errorId = useId()
 const dialog = ref<HTMLElement | null>(null)
 // 保存前只修改草稿，关闭时丢弃。
 const drafts = ref(
-  Array.from({ length: 4 }, (_, id) => ({ id, value: String(props.amounts[id] ?? '') }))
+  Array.from({ length: QUICK_AMOUNT_COUNT }, (_, id) => ({
+    id,
+    value: String(props.amounts[id] ?? '')
+  }))
 )
 const error = ref('')
 const draggedId = ref<number | null>(null)
