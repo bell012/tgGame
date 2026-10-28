@@ -38,10 +38,11 @@
         v-else-if="!props.loading"
         :dark-image="defaultImgDark"
         :light-image="defaultImgLight"
+        :image-alt="t('common.noData')"
         :message="t('common.noData')"
-        container-class="mt-[60px]"
-        image-class="w-[160px] h-[160px] object-contain"
-        text-class="mt-2 text-xs font-[700] text-center text-text-1"
+        container-class="mt-[100px] justify-center"
+        image-class="h-[200px] w-auto mb-2.5"
+        text-class="text-text-1 text-xs font-[500] mb-5"
       />
 
       <div
