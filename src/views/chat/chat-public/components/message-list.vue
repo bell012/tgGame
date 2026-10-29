@@ -30,6 +30,7 @@
             :loading="props.redPacketClaimingMessageIds.includes(message.id)"
             :message="message"
             @claim="$emit('claim-red-packet', $event)"
+            @view-claimed="$emit('view-claimed-red-packet', $event)"
           />
           <RedPacketSystemMessage
             v-else-if="message.type === 'system' && message.system?.type === 'red-packet-claimed'"
@@ -137,6 +138,7 @@ const emit = defineEmits<{
   'view-image': [message: ChatMessage]
   'view-video': [message: ChatMessage]
   'claim-red-packet': [message: ChatMessage]
+  'view-claimed-red-packet': [message: ChatMessage]
   'load-older': []
   retry: [message: ChatMessage]
 }>()

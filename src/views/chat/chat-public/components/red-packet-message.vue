@@ -4,17 +4,17 @@
     class="flex w-full"
     :class="props.message.direction === 'outgoing' ? 'justify-end' : 'justify-start'"
   >
-    <!-- 待领取红包可点击，已领取红包仅保留聊天记录展示。 -->
+    <!-- 待领取红包用于领取；会员右侧的已领取红包可再次查看领取成功结果。 -->
     <button
       type="button"
       class="relative shrink-0 overflow-hidden rounded-[10px] bg-[#F3674C] text-left transition-opacity disabled:cursor-default"
       :class="[
         props.displayMode === 'pc' ? 'h-[92px] w-[258px]' : 'h-[90px] w-[254px]',
-        isClaimable ? 'cursor-pointer active:opacity-80' : 'opacity-70'
+        isInteractive ? 'cursor-pointer active:opacity-80' : 'opacity-70'
       ]"
-      :disabled="!isClaimable"
+      :disabled="!isInteractive"
       :aria-label="packetLabel"
-      @click="$emit('claim', props.message)"
+      @click="handleClick"
     >
       <!-- 红包主题图标。 -->
       <img
@@ -95,7 +95,10 @@ const props = withDefaults(
   }
 )
 
-defineEmits<{ claim: [message: ChatMessage] }>()
+const emit = defineEmits<{
+  claim: [message: ChatMessage]
+  'view-claimed': [message: ChatMessage]
+}>()
 
 const { t } = useI18n()
 
@@ -103,6 +106,19 @@ const { t } = useI18n()
 const isClaimable = computed(
   () => props.message.redPacket?.status === 0 && !props.claimed && !props.loading
 )
+/** 仅会员自己右侧的已领取红包可打开成功弹窗，避免误把客服侧历史卡片变为可操作项。 */
+const isViewableClaimedPacket = computed(
+  () => props.message.direction === 'outgoing' && props.message.redPacket?.status === 1
+)
+const isInteractive = computed(() => isClaimable.value || isViewableClaimedPacket.value)
+
+const handleClick = () => {
+  if (isClaimable.value) {
+    emit('claim', props.message)
+  } else if (isViewableClaimedPacket.value) {
+    emit('view-claimed', props.message)
+  }
+}
 
 /** 根据红包领取状态返回卡片中的操作文案。 */
 const packetLabel = computed(() =>

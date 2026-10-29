@@ -617,46 +617,73 @@ export function useChatRuntime() {
     }
   }
 
-  /** 服务端历史接口的 redReceive 还原为会员右侧“已领取”的红包卡片。 */
-  const mapHistoryRecord = (record: ChatHistoryRecord): ChatMessage | null => {
+  /** 服务端历史接口的 redReceive 还原为会员右侧红包卡片和固定文案系统记录。 */
+  const mapHistoryRecord = (record: ChatHistoryRecord): ChatMessage[] => {
     const payload = record.socketMessage
-    if (!payload || typeof payload !== 'object') return null
+    if (!payload || typeof payload !== 'object') return []
 
     const socketPayload = payload as unknown as ChatSocketMessage
     const messageId = String(socketPayload.messageId ?? record.messageId ?? '').trim()
-    if (!messageId) return null
+    if (!messageId) return []
 
     const contentType = String(socketPayload.contentType ?? record.contentType ?? '')
     const timestamp = Number(socketPayload.timestamp ?? record.creationTime) || Date.now()
     if (contentType === 'redReceive') {
       const redPacket = parseChatRedPacket(socketPayload.content ?? record.content)
-      if (!redPacket) return null
+      if (!redPacket) return []
+      const sourceMessageId = (() => {
+        try {
+          const parsedContent = JSON.parse(
+            String(socketPayload.content ?? record.content ?? '')
+          ) as {
+            messageId?: unknown
+          }
+          return String(parsedContent.messageId ?? '').trim()
+        } catch {
+          return ''
+        }
+      })()
 
-      return {
-        id: messageId,
-        direction: 'outgoing',
-        type: 'red-pack',
-        text: '',
-        time: formatChatMessageTime(timestamp),
-        period: getChatTimePeriod(timestamp),
-        timestamp,
-        read: true,
-        status: 'sent',
-        contentType,
-        redPacket,
-        authorId: String(socketPayload.mine?.userId ?? ''),
-        authorName: decodeChatDisplayName(socketPayload.mine?.nickName),
-        authorAvatar: resolveChatMediaUrl(socketPayload.mine?.avatar)
-      }
+      return [
+        {
+          id: messageId,
+          direction: 'outgoing',
+          type: 'red-pack',
+          text: '',
+          time: formatChatMessageTime(timestamp),
+          period: getChatTimePeriod(timestamp),
+          timestamp,
+          read: true,
+          status: 'sent',
+          contentType,
+          redPacket,
+          authorId: String(socketPayload.mine?.userId ?? ''),
+          authorName: decodeChatDisplayName(socketPayload.mine?.nickName),
+          authorAvatar: resolveChatMediaUrl(socketPayload.mine?.avatar)
+        },
+        {
+          id: 'red-pack-system:' + (sourceMessageId || messageId),
+          direction: 'incoming',
+          type: 'system',
+          text: '',
+          time: formatChatMessageTime(timestamp),
+          period: getChatTimePeriod(timestamp),
+          timestamp,
+          contentType: 'redPackClaimed',
+          system: { type: 'red-packet-claimed', serviceName: '' }
+        }
+      ]
     }
 
-    return mapSocketMessage({
-      ...socketPayload,
-      messageId,
-      content: String(socketPayload.content ?? record.content ?? ''),
-      contentType,
-      timestamp
-    })
+    return [
+      mapSocketMessage({
+        ...socketPayload,
+        messageId,
+        content: String(socketPayload.content ?? record.content ?? ''),
+        contentType,
+        timestamp
+      })
+    ]
   }
 
   /** 服务端返回倒序，页面统一按时间正序展示；重复消息以服务端内容覆盖本地快照。 */
@@ -712,9 +739,9 @@ export function useChatRuntime() {
       }
 
       const historyPage = (response.result ?? {}) as ChatHistoryPage
-      const historyMessages = toArray<ChatHistoryRecord>(historyPage.records)
-        .map(mapHistoryRecord)
-        .filter((message): message is ChatMessage => Boolean(message))
+      const historyMessages = toArray<ChatHistoryRecord>(historyPage.records).flatMap(
+        mapHistoryRecord
+      )
       mergeHistoryMessages(historyMessages)
 
       const currentPage = Number(historyPage.current) || page
@@ -1392,6 +1419,23 @@ export function useChatRuntime() {
     }
   }
 
+  /** 查看会员右侧已领取红包的奖励结果，不再次发起领取请求。 */
+  const viewClaimedRedPacket = (message: ChatMessage) => {
+    const redPacket = message.redPacket
+    if (
+      message.direction !== 'outgoing' ||
+      !redPacket ||
+      redPacket.status !== 1 ||
+      redPacket.amount === ''
+    ) {
+      return false
+    }
+
+    redPacketSuccessAmount.value = redPacket.amount
+    redPacketSuccessCurrency.value = redPacket.currency
+    return true
+  }
+
   /** 关闭领取成功弹窗，保留已写入本地会话缓存的领取记录。 */
   const closeRedPacketSuccess = () => {
     redPacketSuccessAmount.value = null
@@ -1599,6 +1643,7 @@ export function useChatRuntime() {
     sendTextMessage,
     retryMessage,
     claimRedPacket,
+    viewClaimedRedPacket,
     closeRedPacketSuccess,
     sendAutoReplyMessage,
     sendImageFile,

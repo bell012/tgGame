@@ -49,6 +49,7 @@
       @search="searchVisible = true"
       @reply="startReply"
       @claim-red-packet="handleRedPacketClaim"
+      @view-claimed-red-packet="handleViewClaimedRedPacket"
       @load-older="handleLoadOlderMessages"
       @issue="handleIssueSelect"
       @retry="handleRetryMessage"
@@ -167,6 +168,7 @@ const {
   sendTextMessage,
   retryMessage,
   claimRedPacket,
+  viewClaimedRedPacket,
   closeRedPacketSuccess,
   sendAutoReplyMessage,
   sendMediaFile
@@ -240,6 +242,11 @@ const handleLoadOlderMessages = () => {
 /** 领取当前点击的客服红包，并在接口成功后显示领取结果。 */
 const handleRedPacketClaim = (message: ChatMessage) => {
   void claimRedPacket(message)
+}
+
+/** 点击会员右侧已领取红包时，仅回看领取结果，不重复调用领取接口。 */
+const handleViewClaimedRedPacket = (message: ChatMessage) => {
+  viewClaimedRedPacket(message)
 }
 
 /** 重新发送当前会话中连接失败的消息。 */
