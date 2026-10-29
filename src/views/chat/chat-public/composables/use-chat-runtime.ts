@@ -40,6 +40,7 @@ import type {
 } from '../types'
 import {
   CHAT_CACHE_PAGE_SIZE,
+  deleteCachedChatMessages,
   loadAllCachedChatMessages,
   loadCachedChatConversations,
   loadCachedChatMessageById,
@@ -643,10 +644,11 @@ export function useChatRuntime() {
           return ''
         }
       })()
+      const claimedMessageKey = sourceMessageId || messageId
 
       return [
         {
-          id: messageId,
+          id: 'red-pack-claimed:' + claimedMessageKey,
           direction: 'outgoing',
           type: 'red-pack',
           text: '',
@@ -662,7 +664,7 @@ export function useChatRuntime() {
           authorAvatar: resolveChatMediaUrl(socketPayload.mine?.avatar)
         },
         {
-          id: 'red-pack-system:' + (sourceMessageId || messageId),
+          id: 'red-pack-system:' + claimedMessageKey,
           direction: 'incoming',
           type: 'system',
           text: '',
@@ -691,7 +693,22 @@ export function useChatRuntime() {
     if (!historyMessages.length) return
 
     const mergedMessages = new Map(messages.value.map(message => [message.id, message]))
+    const legacyMessageIds = new Set<string>()
     historyMessages.forEach(message => {
+      if (message.id.startsWith('red-pack-claimed:')) {
+        const sourceMessageId = message.id.slice('red-pack-claimed:'.length)
+        const claimedPrefix = 'red-pack-claimed:' + sourceMessageId + ':'
+        const systemPrefix = 'red-pack-system:' + sourceMessageId + ':'
+        for (const existingMessageId of mergedMessages.keys()) {
+          if (
+            existingMessageId.startsWith(claimedPrefix) ||
+            existingMessageId.startsWith(systemPrefix)
+          ) {
+            mergedMessages.delete(existingMessageId)
+            legacyMessageIds.add(existingMessageId)
+          }
+        }
+      }
       const existingMessage = mergedMessages.get(message.id)
       mergedMessages.set(message.id, existingMessage ? { ...existingMessage, ...message } : message)
       persistActiveConversationMessage(message)
@@ -703,6 +720,15 @@ export function useChatRuntime() {
     })
     syncClaimedRedPacketIds()
     syncActiveConversationPreview()
+
+    if (legacyMessageIds.size && activeConversation.value) {
+      const cacheKey = getConversationCacheKey(
+        currentChatUserId.value,
+        dealerCode.value,
+        activeConversation.value
+      )
+      void deleteCachedChatMessages(cacheKey, [...legacyMessageIds])
+    }
   }
 
   /** 已登录会员优先读取服务端保留的七天历史；游客仅使用本地七天缓存。 */
@@ -1373,7 +1399,7 @@ export function useChatRuntime() {
       await userStore.refreshBalance({ force: true })
       // 领取成功后追加会员侧已领取红包，原客服侧待领取记录不替换。
       upsertMessage({
-        id: `red-pack-claimed:${message.id}:${timestamp}`,
+        id: 'red-pack-claimed:' + message.id,
         direction: 'outgoing',
         type: 'red-pack',
         text: '',
@@ -1391,7 +1417,7 @@ export function useChatRuntime() {
 
       // 领取完成后追加系统记录，便于会员在会话历史中确认领取来源。
       upsertMessage({
-        id: `red-pack-system:${message.id}:${timestamp}`,
+        id: 'red-pack-system:' + message.id,
         direction: 'incoming',
         type: 'system',
         text: '',

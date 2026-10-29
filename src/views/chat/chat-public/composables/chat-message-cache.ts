@@ -699,6 +699,33 @@ export const loadCachedChatMessageById = async (conversationKey: string, message
   })
 }
 
+/** 删除指定会话中的过期兼容记录；用于以服务端稳定 ID 替换旧版临时消息 ID。 */
+export const deleteCachedChatMessages = async (conversationKey: string, messageIds: string[]) => {
+  const uniqueMessageIds = [...new Set(messageIds.filter(Boolean))]
+  if (!uniqueMessageIds.length) return
+
+  const database = await openChatCacheDatabase()
+  if (!database) return
+
+  return new Promise<void>(resolve => {
+    const transaction = database.transaction(CHAT_CACHE_MESSAGE_STORE_NAME, 'readwrite')
+    const store = transaction.objectStore(CHAT_CACHE_MESSAGE_STORE_NAME)
+    uniqueMessageIds.forEach(messageId =>
+      store.delete(getMessageCacheKey(conversationKey, messageId))
+    )
+
+    const finish = () => {
+      // 删除后重新统计，避免内存中的容量统计与 IndexedDB 脱节。
+      cacheStatistics = null
+      database.close()
+      resolve()
+    }
+    transaction.oncomplete = finish
+    transaction.onerror = finish
+    transaction.onabort = finish
+  })
+}
+
 /** 增量写入或更新单条会话消息，同时执行缓存上限治理。 */
 export const saveCachedChatMessage = async (
   conversationKey: string,
