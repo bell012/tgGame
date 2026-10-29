@@ -31,10 +31,10 @@
               {{ displayName }}
             </span>
             <span
-              v-if="isOnline"
-              class="flex h-4 shrink-0 items-center justify-center rounded-[4px] bg-theme-3 px-[4px] text-[10px] font-[400] leading-3 text-theme-primary"
+              class="flex h-4 shrink-0 items-center justify-center rounded-[4px] px-[4px] text-[10px] font-[400] leading-3"
+              :class="isOnline ? 'bg-theme-3 text-theme-primary' : 'text-text-2'"
             >
-              {{ t('chatPublic.online') }}
+              {{ t(getConversationStatusKey(conversationStatus)) }}
             </span>
           </div>
           <span
@@ -107,7 +107,10 @@
             {{ displayName }}
           </span>
           <span
-            class="flex h-[16px] shrink-0 items-center justify-center rounded-[3px] bg-theme-3 px-[6px] text-[10px] font-[400] leading-[12px] text-theme-primary"
+            class="flex h-[16px] shrink-0 items-center justify-center rounded-[3px] px-[6px] text-[10px] font-[400] leading-[12px]"
+            :class="
+              conversationStatus === 'offline' ? 'text-text-2' : 'bg-theme-3 text-theme-primary'
+            "
           >
             {{ t(getConversationStatusKey(conversationStatus)) }}
           </span>
@@ -175,11 +178,18 @@ const lastMessagePreview = computed(() => {
   const lastUnreadMessage = props.conversation.lastUnreadMessage
   if (lastUnreadMessage) {
     if (lastUnreadMessage.contentType === 'image') return '[图片消息]'
+    if (
+      lastUnreadMessage.contentType === 'redPack' ||
+      lastUnreadMessage.contentType === 'redReceive'
+    ) {
+      return '[红包]'
+    }
     return lastUnreadMessage.content || ''
   }
 
   if (props.conversation.lastMessageType === 'image') return '[图片消息]'
   if (props.conversation.lastMessageType === 'video') return '[视频消息]'
+  if (props.conversation.lastMessageType === 'red-pack') return '[红包]'
   return props.conversation.lastMessage || ''
 })
 

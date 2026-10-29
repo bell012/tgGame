@@ -1,4 +1,4 @@
-import type { ChatMessage } from '../types'
+import type { ChatMessage, ConversationItem } from '../types'
 
 /** 客服聊天 IndexedDB 数据库名。 */
 const CHAT_CACHE_DATABASE_NAME = 'tg-game-chat'
@@ -6,8 +6,10 @@ const CHAT_CACHE_DATABASE_NAME = 'tg-game-chat'
 const CHAT_CACHE_CONVERSATION_STORE_NAME = 'conversations'
 /** 当前按单条消息存储的对象仓库。 */
 const CHAT_CACHE_MESSAGE_STORE_NAME = 'messages'
-/** 缓存 schema 版本；v3 新增过期时间、身份范围和容量治理字段。 */
-const CHAT_CACHE_VERSION = 3
+/** 保存客服基本信息，供接口未返回时恢复最近本地会话的对象仓库。 */
+const CHAT_CACHE_CONVERSATION_META_STORE_NAME = 'conversation-meta'
+/** 缓存 schema 版本；v4 新增客服会话元数据缓存。 */
+const CHAT_CACHE_VERSION = 4
 
 /** 界面首次加载或继续上拉时，每页读取的本地消息数量。 */
 export const CHAT_CACHE_PAGE_SIZE = 20
@@ -56,6 +58,12 @@ interface ChatMessageCacheRecord {
   byteSize: number
 }
 
+interface ChatConversationCacheRecord {
+  key: string
+  conversation: ConversationItem
+  updatedAt: number
+}
+
 interface ChatCacheStatistics {
   totalCount: number
   totalBytes: number
@@ -70,6 +78,11 @@ export interface ChatMessageCacheCursor {
 interface CachedChatMessagePage {
   messages: ChatMessage[]
   hasMore: boolean
+}
+
+export interface CachedChatConversation {
+  conversation: ConversationItem
+  latestMessage: ChatMessage
 }
 
 /** 当前页面会话内的缓存用量快照，定期重新扫描以纠正跨标签页写入的偏差。 */
@@ -187,6 +200,9 @@ const openChatCacheDatabase = () =>
       const messageStore = database.objectStoreNames.contains(CHAT_CACHE_MESSAGE_STORE_NAME)
         ? transaction.objectStore(CHAT_CACHE_MESSAGE_STORE_NAME)
         : database.createObjectStore(CHAT_CACHE_MESSAGE_STORE_NAME, { keyPath: 'key' })
+      if (!database.objectStoreNames.contains(CHAT_CACHE_CONVERSATION_META_STORE_NAME)) {
+        database.createObjectStore(CHAT_CACHE_CONVERSATION_META_STORE_NAME, { keyPath: 'key' })
+      }
 
       if (!messageStore.indexNames.contains('byConversationTimestamp')) {
         messageStore.createIndex(
@@ -487,6 +503,97 @@ export const pruneCachedChatMessages = async () => {
   } finally {
     database.close()
   }
+}
+
+/** 保存客服会话基础信息，以便在线客服接口不再返回时仍可恢复近期本地会话。 */
+export const saveCachedChatConversation = async (
+  conversationKey: string,
+  conversation: ConversationItem
+) => {
+  const database = await openChatCacheDatabase()
+  if (!database) return
+
+  return new Promise<void>(resolve => {
+    const transaction = database.transaction(CHAT_CACHE_CONVERSATION_META_STORE_NAME, 'readwrite')
+    transaction.objectStore(CHAT_CACHE_CONVERSATION_META_STORE_NAME).put({
+      key: conversationKey,
+      conversation: JSON.parse(JSON.stringify(conversation)) as ConversationItem,
+      updatedAt: Date.now()
+    } satisfies ChatConversationCacheRecord)
+
+    const finish = () => {
+      database.close()
+      resolve()
+    }
+    transaction.oncomplete = finish
+    transaction.onerror = finish
+    transaction.onabort = finish
+  })
+}
+
+/**
+ * 读取指定账号、商户下有最近有效消息的本地会话。
+ * 会话元数据本身不足以决定展示与否，必须由消息记录的时间戳和过期规则共同校验。
+ */
+export const loadCachedChatConversations = async (
+  conversationKeyPrefix: string,
+  { minimumTimestamp = 0 }: { minimumTimestamp?: number } = {}
+): Promise<CachedChatConversation[]> => {
+  const database = await openChatCacheDatabase()
+  if (!database) return []
+
+  return new Promise(resolve => {
+    const conversations = new Map<string, CachedChatConversation>()
+    const transaction = database.transaction(
+      [CHAT_CACHE_CONVERSATION_META_STORE_NAME, CHAT_CACHE_MESSAGE_STORE_NAME],
+      'readonly'
+    )
+    const metadataStore = transaction.objectStore(CHAT_CACHE_CONVERSATION_META_STORE_NAME)
+    const messageIndex = transaction
+      .objectStore(CHAT_CACHE_MESSAGE_STORE_NAME)
+      .index('byConversationTimestamp')
+    const metadataCursor = metadataStore.openCursor()
+
+    metadataCursor.onsuccess = () => {
+      const cursor = metadataCursor.result
+      if (!cursor) return
+
+      const metadata = cursor.value as ChatConversationCacheRecord
+      if (metadata.key.startsWith(conversationKeyPrefix) && metadata.conversation?.id) {
+        const range = IDBKeyRange.bound(
+          [metadata.key, 0, ''],
+          [metadata.key, Number.MAX_SAFE_INTEGER, '\uffff']
+        )
+        const messageCursor = messageIndex.openCursor(range, 'prev')
+        messageCursor.onsuccess = () => {
+          const messageRecord = messageCursor.result?.value as ChatMessageCacheRecord | undefined
+          if (
+            messageRecord &&
+            !isExpiredCacheRecord(messageRecord) &&
+            Number(messageRecord.timestamp) >= minimumTimestamp
+          ) {
+            conversations.set(metadata.key, {
+              conversation: metadata.conversation,
+              latestMessage: messageRecord.message
+            })
+          }
+        }
+      }
+      cursor.continue()
+    }
+    transaction.oncomplete = () => {
+      database.close()
+      resolve([...conversations.values()])
+    }
+    transaction.onerror = () => {
+      database.close()
+      resolve([])
+    }
+    transaction.onabort = () => {
+      database.close()
+      resolve([])
+    }
+  })
 }
 
 /** 从 IndexedDB 读取指定会话的一页历史消息，默认返回最新消息。 */
