@@ -11,6 +11,38 @@ export interface QueryOnlineCustomerForm {
   memberRowId: string
 }
 
+/** 客服历史消息分页查询参数。 */
+export interface QueryChatHistoryForm {
+  customerId: string
+  page: {
+    size: number
+    current: number
+  }
+}
+
+/** 客服历史消息接口中的单条服务端记录。 */
+export interface ChatHistoryRecord {
+  messageId?: string
+  content?: string
+  contentType?: string
+  creationTime?: number
+  rowId?: string | number
+  replyToMsgId?: string
+  replyToContent?: string
+  replyToUserId?: string
+  replyToUserName?: string
+  socketMessage?: Record<string, unknown>
+}
+
+/** 客服历史消息分页结果。 */
+export interface ChatHistoryPage {
+  current?: number
+  pages?: number
+  size?: number
+  total?: number
+  records?: ChatHistoryRecord[]
+}
+
 /** 在线客服记录。 */
 export interface OnlineChatCustomer {
   id: string | number

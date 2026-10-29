@@ -3,8 +3,10 @@ import type {
   AutoReplyType,
   ChatApiResponse,
   ChatConfig,
+  ChatHistoryPage,
   OnlineChatCustomer,
   QueryAutoReplyForm,
+  QueryChatHistoryForm,
   QueryChatConfigParams,
   QueryOnlineCustomerForm,
   ReceiveRedPackageForm
@@ -18,6 +20,19 @@ export const queryOnlineCustomer = (
 ): Promise<ChatApiResponse<OnlineChatCustomer[]>> =>
   request({
     url: '/customer/onlineCustomer',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 查询已登录会员与指定客服的服务端历史消息。 */
+export const queryChatHistory = (
+  data: QueryChatHistoryForm,
+  options?: ApiResponseToastOptions
+): Promise<ChatApiResponse<ChatHistoryPage>> =>
+  request({
+    url: '/user/hisMsg',
     method: 'post',
     data,
     showSuccessToast: false,

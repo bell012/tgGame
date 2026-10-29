@@ -6,7 +6,9 @@
     <img :src="redPacketIcon" alt="" class="h-[16px] w-[14px] shrink-0 object-fill" />
     <span>{{ t('chatPublic.claimedRedPacketPrefix') }}</span>
     <span class="text-secondary-2">{{ t('chatPublic.redPacket') }}</span>
-    <span>{{ t('chatPublic.claimedRedPacketSuffix', { name: props.serviceName }) }}</span>
+    <span v-if="props.serviceName">
+      {{ t('chatPublic.claimedRedPacketSuffix', { name: props.serviceName }) }}
+    </span>
   </div>
 </template>
 

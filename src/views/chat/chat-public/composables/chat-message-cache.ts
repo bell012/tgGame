@@ -10,13 +10,13 @@ const CHAT_CACHE_MESSAGE_STORE_NAME = 'messages'
 const CHAT_CACHE_VERSION = 3
 
 /** 界面首次加载或继续上拉时，每页读取的本地消息数量。 */
-export const CHAT_CACHE_PAGE_SIZE = 30
+export const CHAT_CACHE_PAGE_SIZE = 20
 /** 单个客服会话允许保留的最大消息条数。 */
-export const CHAT_CACHE_MAX_MESSAGES_PER_CONVERSATION = 500
+export const CHAT_CACHE_MAX_MESSAGES_PER_CONVERSATION = 300
 /** 当前站点下所有客服会话允许保留的最大消息条数。 */
-export const CHAT_CACHE_MAX_MESSAGES = 5000
+export const CHAT_CACHE_MAX_MESSAGES = 3000
 /** 已登录会员消息的本地缓存保留时长。 */
-export const CHAT_CACHE_MEMBER_RETENTION_MS = 30 * 24 * 60 * 60 * 1000
+export const CHAT_CACHE_MEMBER_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
 /** 游客消息的本地缓存保留时长。 */
 export const CHAT_CACHE_GUEST_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
 /** 聊天缓存的应用级容量硬上限（100 MiB）。 */
@@ -29,13 +29,13 @@ const CHAT_CACHE_SIZE_CLEANUP_TARGET = 80 * 1024 * 1024
 /** 浏览器报配额不足时，紧急回收后的目标水位，为本次写入预留空间。 */
 const CHAT_CACHE_EMERGENCY_CLEANUP_TARGET = 75 * 1024 * 1024
 /** 单会话超过上限后，裁剪到该条数，形成回收缓冲区。 */
-const CHAT_CACHE_CONVERSATION_CLEANUP_TARGET = 450
+const CHAT_CACHE_CONVERSATION_CLEANUP_TARGET = 250
 /** 全库超过上限后，裁剪到该条数，形成回收缓冲区。 */
-const CHAT_CACHE_GLOBAL_CLEANUP_TARGET = 4750
+const CHAT_CACHE_GLOBAL_CLEANUP_TARGET = 2500
 /** 每个异步清理事务最多删除的过期消息数，避免长事务影响聊天滚动。 */
-const CHAT_CACHE_EXPIRY_CLEANUP_BATCH_SIZE = 200
+const CHAT_CACHE_EXPIRY_CLEANUP_BATCH_SIZE = 100
 /** 估算单条 IndexedDB 记录容量时预留的索引与结构开销。 */
-const CHAT_CACHE_ESTIMATED_RECORD_OVERHEAD_BYTES = 256
+const CHAT_CACHE_ESTIMATED_RECORD_OVERHEAD_BYTES = 125
 
 type ChatCacheScope = 'member' | 'guest'
 
