@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[205px] rounded-xl bg-bg-2 p-1" data-testid="sports-bet-keyboard">
+  <div class="h-[205px] rounded-xl bg-bg-2 p-1">
     <div class="flex h-[33.333px] gap-1 overflow-x-auto overscroll-x-contain">
       <button
         v-for="(amount, index) in props.amounts"

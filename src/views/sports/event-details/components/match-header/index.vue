@@ -1,5 +1,5 @@
 <template>
-  <section v-if="match" class="w-full min-w-0 font-inter text-text-1" data-testid="match-header">
+  <section v-if="match" class="w-full min-w-0 font-inter text-text-1">
     <div
       v-if="view === 'info'"
       class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl text-white shadow-[0_1px_4px_rgba(24,64,106,0.06)]"
@@ -52,7 +52,8 @@
         >
           <div class="flex min-w-0 flex-col items-center gap-[10px]">
             <div class="relative">
-              <img
+              <TeamLogo
+                :sport-id="sportId"
                 class="h-10 w-10 object-contain"
                 :src="match.home.logo"
                 :alt="match.home.name"
@@ -93,8 +94,11 @@
                   <span>{{ match.phaseText }}</span>
                   <span>{{ match.clockText }}</span>
                 </p>
-                <div class="flex items-center gap-[14px] text-xs font-normal leading-4 mt-[10px]">
-                  <span class="inline-flex items-center gap-1.5">
+                <div
+                  v-if="match.cornerScore || match.halfTimeScore"
+                  class="flex items-center gap-[14px] text-xs font-normal leading-4 mt-[10px]"
+                >
+                  <span v-if="match.cornerScore" class="inline-flex items-center gap-1.5">
                     <img
                       class="h-[14px] w-[14px] shrink-0 object-contain"
                       :src="cornerIcon"
@@ -104,7 +108,7 @@
                     />
                     {{ match.cornerScore }}
                   </span>
-                  <span class="inline-flex items-center gap-[3px]">
+                  <span v-if="match.halfTimeScore" class="inline-flex items-center gap-[3px]">
                     <img
                       class="h-[14px] w-[14px] shrink-0 object-contain"
                       :src="htIcon"
@@ -118,15 +122,22 @@
               </div>
             </template>
             <template v-else>
-              <p class="text-[22px] font-bold leading-none">VS</p>
-              <p class="text-xs leading-4 text-text-2">{{ match.kickoffText }}</p>
-              <p class="text-xs leading-4 text-text-2">{{ match.durationText }}</p>
+              <p
+                class="flex h-10 items-center text-[25px] font-bold leading-none text-theme-primary"
+              >
+                VS
+              </p>
+              <p class="text-[13px] font-normal leading-none text-white">{{ match.kickoffText }}</p>
+              <p v-if="match.durationText" class="text-xs leading-4 text-white/70">
+                {{ match.durationText }}
+              </p>
             </template>
           </div>
 
           <div class="flex min-w-0 flex-col items-center gap-[10px]">
             <div class="relative">
-              <img
+              <TeamLogo
+                :sport-id="sportId"
                 class="h-10 w-10 object-contain"
                 :src="match.away.logo"
                 :alt="match.away.name"
@@ -157,7 +168,6 @@
 
       <div
         class="absolute inset-x-0 bottom-0 flex h-[39px] items-center bg-white/10 backdrop-blur-[20px]"
-        data-testid="match-header-media-switch"
       >
         <button
           type="button"
@@ -171,7 +181,7 @@
             draggable="false"
             aria-hidden="true"
           />
-          Video
+          {{ t('sports.video') }}
         </button>
         <span class="h-[13px] w-px shrink-0 bg-[#E7E7E7]" aria-hidden="true"></span>
         <button
@@ -186,7 +196,7 @@
             draggable="false"
             aria-hidden="true"
           />
-          Animation
+          {{ t('sports.animation') }}
         </button>
       </div>
     </div>
@@ -195,7 +205,6 @@
       v-else
       class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl shadow-[0_1px_4px_rgba(24,64,106,0.06)]"
       :data-view="view"
-      data-testid="match-header-media"
     >
       <div
         class="absolute inset-0"
@@ -237,7 +246,6 @@
         />
         <div
           class="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-normal text-white/70"
-          data-testid="no-video"
         >
           {{ t('sports.noVideo') }}
         </div>
@@ -269,6 +277,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import { useI18n } from 'vue-i18n'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import LiveLoginGate from '../match-media-panel/live-login-gate.vue'
@@ -293,6 +302,7 @@ import videoIcon from './icon/video.svg?url'
 import type { MatchHeaderView, MatchHeaderViewModel } from './types'
 
 const props = defineProps<{
+  sportId?: number
   model?: MatchHeaderViewModel
   /** 球种 key，对应 sportItems 中的 key。 */
   sportKey?: string

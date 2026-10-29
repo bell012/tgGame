@@ -1,11 +1,11 @@
 <template>
   <div class="min-w-0">
     <div
-      class="flex min-w-0 items-center gap-[3px] rounded-lg bg-input-3 p-1.5 text-sm leading-5"
+      class="flex min-w-0 items-center gap-[3px] rounded-lg border-solid bg-input-3 p-1.5 text-sm leading-5"
       :class="
         props.error
-          ? 'h-11 border border-solid border-secondary-2'
-          : 'h-[42px] focus-within:ring-1 focus-within:ring-inset focus-within:ring-theme-primary'
+          ? 'h-11 border border-secondary-2'
+          : 'h-[42px] border-0 focus-within:h-11 focus-within:border focus-within:border-theme-primary'
       "
     >
       <!-- 仅固定输入框符号，不改变实际投注币种。 -->

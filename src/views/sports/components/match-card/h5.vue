@@ -3,7 +3,6 @@
     class="min-w-0 cursor-pointer rounded-lg bg-bg-2 px-2.5 py-3 text-text-1"
     :data-sports-match="match.id"
     :data-live="match.live"
-    data-testid="sports-h5-match-card"
     @click="goToEventDetails(match)"
   >
     <div class="grid min-w-0 grid-cols-[minmax(0,430fr)_minmax(0,522fr)] gap-2.5">
@@ -19,7 +18,6 @@
             :aria-pressed="favorite"
             :aria-busy="favoritePending"
             :disabled="favoritePending"
-            data-testid="sports-h5-favorite"
             @click.stop="emit('favorite')"
           >
             <Loading
@@ -41,20 +39,24 @@
             />
           </button>
           <MatchTime :match="match" class="min-w-0 truncate" />
-          <span
+          <button
             v-if="match.hasVideo"
-            class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
-            aria-hidden="true"
+            type="button"
+            class="relative flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4 before:absolute before:-inset-y-1 before:inset-x-0"
+            :aria-label="t('sports.video')"
+            @click.stop="emit('media', 'video')"
           >
-            <VideoIcon class="h-2 w-[7px]" />
-          </span>
-          <span
+            <VideoIcon class="h-2 w-[7px]" aria-hidden="true" />
+          </button>
+          <button
             v-if="match.hasAnimation"
-            class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
-            aria-hidden="true"
+            type="button"
+            class="relative flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4 before:absolute before:-inset-y-1 before:inset-x-0"
+            :aria-label="t('sports.animation')"
+            @click.stop="emit('media', 'animation')"
           >
-            <AnimationIcon class="h-2.5 w-[15px]" />
-          </span>
+            <AnimationIcon class="h-2.5 w-[15px]" aria-hidden="true" />
+          </button>
         </div>
 
         <div class="mt-3 grid min-h-[119px] flex-1 grid-rows-2 gap-1">
@@ -68,7 +70,11 @@
             <p class="flex min-w-0 items-center gap-[3px] text-[13px] font-bold leading-4">
               <span class="min-w-0 break-words">{{ team.name }}</span>
               <span
-                v-if="match.live && (team.redCards != null || team.yellowCards != null)"
+                v-if="
+                  match.sportId === 1 &&
+                  match.live &&
+                  (team.redCards != null || team.yellowCards != null)
+                "
                 class="flex shrink-0 items-center gap-[3px] text-[10px] font-bold leading-3"
               >
                 <span
@@ -89,7 +95,7 @@
         </div>
       </div>
 
-      <div class="min-w-0" data-testid="sports-h5-match-odds" @click.stop>
+      <div class="min-w-0" @click.stop>
         <MatchOdds
           :MarketLines="MarketLines"
           :selected-wager-selection-id="selectedWagerSelectionId"
@@ -128,6 +134,7 @@ const { t } = useI18n()
 const emit = defineEmits<{
   select: [payload: OddsSelectPayload]
   favorite: []
+  media: [mode: 'video' | 'animation']
 }>()
 
 const teams = computed(() => [

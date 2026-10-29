@@ -1,4 +1,4 @@
-import { ref, shallowRef, watch, type Ref } from 'vue'
+import { onScopeDispose, ref, shallowRef, watch, type Ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import Api from '@/api'
 import type {
@@ -11,6 +11,7 @@ import type {
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { useSportsAuthStore } from '@/stores/sportsAuth'
+import { useSportsOdds } from '../composables/useSportsOdds'
 import { eventToCompetitionGroup, mergeEventIntoGroups } from './map-seed-match'
 
 type EventDetailsSportsError = {
@@ -34,6 +35,7 @@ export function useEventDetailsSports(
   const siteConfigStore = useSiteConfigStore()
   const sportsStore = useSportsStore()
   const sportsAuth = useSportsAuthStore()
+  const { oddsType, parlayContext } = useSportsOdds()
   const { languageCode } = storeToRefs(sportsStore)
 
   const loading = ref(false)
@@ -78,8 +80,8 @@ export function useEventDetailsSports(
   const buildTargetParams = (id: number, eventId: number): GetSelectedEventInfoParams => ({
     SportId: id,
     EventIds: [eventId],
-    OddsType: 1,
-    IsCombo: false,
+    OddsType: oddsType.value,
+    IsCombo: parlayContext.value,
     IncludeGroupEvents: false,
     LanguageCode: languageCode.value
   })
@@ -228,9 +230,9 @@ export function useEventDetailsSports(
     const id = sportId.value
     if (Number.isFinite(eventId) && eventId > 0) {
       void loadListWithTargetEvent(id, eventId)
-      return
+    } else {
+      void fetchSportsV2(id)
     }
-    void fetchSportsV2(id)
   }
 
   watch(
@@ -241,11 +243,10 @@ export function useEventDetailsSports(
       () => sportsAuth.contextVersion,
       () => sportsAuth.isReady
     ],
-    () => {
-      loadSports()
-    },
+    loadSports,
     { immediate: true }
   )
+  onScopeDispose(cancel)
 
   const clearGroups = () => {
     groups.value = []

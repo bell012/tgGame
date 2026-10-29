@@ -1,6 +1,6 @@
 <!-- pc赛事筛选和搜索 -->
 <template>
-  <section class="flex w-full items-center justify-between">
+  <section class="flex w-full flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-[10px]">
       <button
         v-for="item in filterTabs"
@@ -21,7 +21,19 @@
       </button>
     </div>
 
-    <div class="flex flex-none items-center">
+    <div class="ml-auto flex min-w-0 items-center gap-3">
+      <label
+        class="flex h-10 w-[264px] min-w-0 items-center gap-1 rounded-full border border-opacity-10 bg-opacity-6 px-4 focus-within:border-theme-primary"
+      >
+        <SearchIcon class="h-5 w-5 shrink-0 text-icon-3" aria-hidden="true" />
+        <input
+          v-model="searchKeyword"
+          type="search"
+          class="min-w-0 flex-1 bg-transparent text-sm text-text-1 outline-none placeholder:text-text-3"
+          :placeholder="t('sports.leagueTabs.searchLeagueOrTeam')"
+          :aria-label="t('sports.leagueTabs.searchLeagueOrTeam')"
+        />
+      </label>
       <button
         type="button"
         class="inline-flex h-[41px] w-[41px] flex-none items-center justify-center rounded-full border-0 bg-bg-2 transition-colors"
@@ -50,33 +62,44 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Loading } from 'vant'
 import { useI18n } from 'vue-i18n'
 import { useSportsStore } from '@/stores/sports'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
+import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import { useFilterTabs } from './index'
 import type { CollectOnlyPayload, FilterTabChangePayload, FilterTabKey } from './index'
 
 const emit = defineEmits<{
   'filter-change': [payload: FilterTabChangePayload]
   'collect-change': [payload: CollectOnlyPayload]
+  'search-change': [keyword: string]
 }>()
 
 const props = withDefaults(
   defineProps<{
     collectOnly?: boolean
     collectPending?: boolean
+    searchKeyword?: string
   }>(),
   {
     collectOnly: false,
-    collectPending: false
+    collectPending: false,
+    searchKeyword: ''
   }
 )
 
 const filterTabs = useFilterTabs()
 const { t } = useI18n()
 const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
+
+// 与 H5 共用查询入口，v-model 在中文输入法组合完成后再更新关键词。
+const searchKeyword = computed({
+  get: () => props.searchKeyword,
+  set: value => emit('search-change', value)
+})
 
 // 根据当前选中的筛选项返回按钮样式。
 const getFilterTabClass = (key: FilterTabKey) =>

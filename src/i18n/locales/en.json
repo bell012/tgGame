@@ -35,6 +35,24 @@
     "refreshBalance": "Refresh Balance",
     "selectCurrency": "Select Currency",
     "records": "Bet History",
+    "recordsMenu": "Bet history menu",
+    "recentBets": "Recent Bets",
+    "gameRules": "Game Rules",
+    "more": "More",
+    "currency": "Currency",
+    "bets": "Bets",
+    "betAmount": "Bet Amount",
+    "todayProfitLoss": "Today's P/L",
+    "betBlock": "Bet Block",
+    "result": "Result",
+    "actions": "Actions",
+    "betSelection": "Bet Selection",
+    "profitLoss": "P/L",
+    "game": "Game",
+    "betId": "Bet ID",
+    "resultBlock": "Result Block",
+    "blockHash": "Block Hash",
+    "betTime": "Bet Time",
     "back": "Back",
     "chat": "Chat",
     "close": "Close"
@@ -318,13 +336,13 @@
     "select_country": "Select Country",
     "search_country": "Search Country",
     "enter_account": "Enter your phone number",
-    "enter_username": "Enter your username",
+    "enter_username": "6–16 characters (letters or numbers)",
     "invitation_code": "Invite Code",
-    "enter_invitation_code": "Enter invite code",
+    "enter_invitation_code": "Enter invite code (optional)",
     "password": "Password",
     "enter_password": "6–16 characters (letters and numbers)",
     "confirm_password": "Confirm Password",
-    "enter_confirm_password": "Please re-enter your password",
+    "enter_confirm_password": "Re-enter your password",
     "remember_me": "Remember Me",
     "forget_password": "Forget Password",
     "reset_password": "Reset Password",
@@ -574,6 +592,38 @@
   },
   "customSelect": {
     "placeholder": "Please select"
+  },
+  "sportsHistory": {
+    "oddsType": "Odds",
+    "confirmCashOut": "Confirm",
+    "close": "Close",
+    "singleBet": "Single Bet",
+    "comboBet": "Combo Bet",
+    "cashOut": "Cash Out",
+    "betCount": "{count} Bets",
+    "comboBadge": "Combo",
+    "totalOdds": "Total Odds",
+    "confirmed": "Confirm",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "cancelled": "Cancel",
+    "win": "Win",
+    "loss": "Loss",
+    "draw": "Draw",
+    "halfWin": "Half Win",
+    "halfLoss": "Half Loss",
+    "partialLoss": "Partial Loss",
+    "eventCancelled": "Event Cancelled",
+    "betCancelled": "Cancelled",
+    "cashedOut": "Cashed Out",
+    "processing": "Processing",
+    "live": "Live Betting",
+    "halfTime": "Half Time",
+    "fullTime": "Full Time",
+    "eventTime": "Event Time",
+    "result": "Match Result",
+    "copyOrder": "Copy order number",
+    "copyFailed": "Copy failed. Please try again."
   },
   "betDetails": {
     "title": "Bet Details",
@@ -2205,9 +2255,9 @@
       "reorderQuickAmount": "Reorder quick bet amount {count}",
       "reorderQuickAmountHint": "Reorder quick amount {count}. Use the up and down arrow keys.",
       "quickAmountMoved": "Quick bet amount moved to position {count}.",
-      "quickAmountsPositive": "Enter four positive amounts with up to two decimal places.",
-      "quickAmountsWithinBalance": "Enter four positive amounts within your balance.",
-      "quickAmountsUnique": "Enter four different quick amounts.",
+      "quickAmountsPositive": "Enter six positive amounts with up to two decimal places.",
+      "quickAmountsUnique": "Enter six different quick amounts.",
+      "quickAmountsSaveFailed": "Could not save quick amounts. Please try again.",
       "save": "Save",
       "shortcuts": "Betting shortcuts",
       "history": "Betting History",
@@ -2275,8 +2325,13 @@
       "collapseAllLeagues": "Collapse all leagues",
       "matchPagination": "Match pagination"
     },
+    "video": "Video",
+    "animation": "Animation",
     "noVideo": "No video available",
     "noAnimation": "No animation available",
+    "mediaFullscreen": "Fullscreen",
+    "mediaExitFullscreen": "Exit fullscreen",
+    "mediaClose": "Close player",
     "loadingAnimation": "Loading animation",
     "loadingLive": "Loading live stream",
     "liveLoadFailed": "Live stream unavailable",
@@ -2314,12 +2369,19 @@
       "oddsFormatLabel": "Odds Format",
       "oddsFormatOptionsAria": "Odds format options",
       "oddsFormatDisclaimer": "While we make every effort to ensure the accuracy of the data displayed on this website, the information is provided for reference only and should be used as a guide. We accept no liability for any inaccuracies.",
-      "oddsFormatTypes": {
+      "oddsFormatShortTypes": {
         "1": "Malaysian",
         "2": "Hong Kong",
-        "3": "European",
+        "3": "Decimal",
         "4": "Indonesian",
         "6": "American"
+      },
+      "oddsFormatTypes": {
+        "1": "Malaysian Odds",
+        "2": "Hong Kong Odds",
+        "3": "Decimal Odds",
+        "4": "Indonesian Odds",
+        "6": "American Odds"
       },
       "noBettingMarkets": "No Betting Markets Available.",
       "matchEnded": "Match Ended"
@@ -2341,8 +2403,9 @@
     "my-vouchers": "My Vouchers",
     "task-center": "Task Center",
     "promotions": "Promotions",
+    "red-packet": "Red Packet Event",
     "red-envelope-event": "Red Envelope Event",
-    "credit-loan": "Credit Loan",
+    "credit-loan": "Repayment-Free Loan",
     "lottery-event": "Lottery Event",
     "lucky-wheel": "Lucky Wheel",
     "promo-code": "Promo Code",
@@ -2573,5 +2636,147 @@
     "luckySpinVoucher": "Lucky Spin Voucher",
     "mysteryBoxVoucher": "Mystery Box Voucher",
     "claimNow": "Claim Now"
+  },
+  "redPacketPanel": {
+    "empty": "No red packets yet",
+    "emptySender": "TG Bonus Desk",
+    "emptyTime": "11/07 12:18",
+    "emptyMessage": "Something exciting is on the way. Come back soon to claim your bonus!",
+    "loadFailed": "Failed to load.",
+    "retry": "Retry",
+    "congratulations": "Congratulations",
+    "congratulationsExclaim": "Congratulations!",
+    "timeLeft": "Time Left:",
+    "depositNow": "Deposit Now",
+    "betNow": "Bet Now",
+    "claimNow": "Claim Now",
+    "claimed": "Claimed",
+    "credited": "Credited to your balance",
+    "expiredTitle": "Oops!",
+    "expiredDesc": "Bonus expired!",
+    "expiryDate": "Expiry Date:",
+    "soldOutTitle": "Too slow!",
+    "soldOutDesc": "All gone!",
+    "conditionLabel": {
+      "recharge": "Deposit Amount:",
+      "loss": "Loss Amount:",
+      "bet": "Bet Amount:"
+    },
+    "conditionHint": {
+      "recharge": { "prefix": "Bonus on", "suffix": "recharge." },
+      "loss": { "prefix": "Bonus on", "suffix": "loss." },
+      "bet": { "prefix": "Bonus on", "suffix": "bet." }
+    },
+    "claimHistory": "Claim History",
+    "redemptionHistory": "Redemption History",
+    "myRedemptions": "My Redemptions",
+    "totalRedeemed": "Total Redeemed:",
+    "claimTime": "Claim Time: {time}",
+    "claimedSummary": "Claimed {count} , Total {amount} {currency}",
+    "wonTitle": "You've won {amount}!",
+    "allGoneTitle": "Too slow – all gone!",
+    "goodLuck": "Good luck & great fortune!",
+    "comeBackTomorrow": "Come back tomorrow for more!",
+    "noRecords": "No records yet",
+    "allType": "All Type",
+    "allTime": "All Time",
+    "type": {
+      "1": "Daily Rewards",
+      "2": "Deposit Match Bonus",
+      "3": "Loss Rebate",
+      "4": "Lucky Bonus"
+    },
+    "period": {
+      "all": "All",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "last15Days": "Last 15 Days",
+      "last30Days": "Last 30 Days"
+    }
+  },
+  "creditLoan": {
+    "title": "Credit Loan",
+    "loanRecords": "Loan Records",
+    "bettingRecords": "Betting Records",
+    "loanBalance": "Loan Balance :",
+    "transfer": "Transfer",
+    "availableCredit": "Available Credit (USD)",
+    "borrowNow": "Borrow Now",
+    "slogan": "Repay less, recharge more, refer more, play more!",
+    "gameLobby": "Game Lobby",
+    "loanDetails": "Loan Details",
+    "all": "All",
+    "empty": "No data",
+    "repaymentFreeTitle": "Repayment-Free Loan",
+    "repaymentFreeDesc": "No repayment required. Higher VIP levels unlock higher borrowing limits",
+    "gameType": "Game Type",
+    "loanPop": {
+      "title": "Loan Approved!",
+      "accept": "Accept",
+      "desc": "Credited to your Jiebei balance."
+    },
+    "records": {
+      "all": "All",
+      "loans": "Loans",
+      "transfers": "Transfers",
+      "type": "Type",
+      "time": "Time",
+      "amount": "Amount",
+      "loanAmount": "Loan Amount",
+      "loanTransferOut": "Loan Transfer Out",
+      "refreshing": "Refreshing..."
+    },
+    "betRecords": {
+      "loan": "Loan",
+      "pending": "Pending",
+      "completed": "Completed"
+    },
+    "transferSuccess": {
+      "title": "Transfer Successful",
+      "desc": "Loan balance transferred to your account balance."
+    },
+    "transferPop": {
+      "title": "Transfer",
+      "loanBalance": "Loan Balance",
+      "transferableBalance": "Transferable Balance",
+      "transferAll": "Transfer All",
+      "desc": "Your loan balance will be transferred to your account balance. After transfer, your loan balance will reset to zero and you can borrow again next Monday."
+    },
+    "rules": {
+      "rule1": "All loans are repayment-free.",
+      "rule2": "Winnings made using borrowed funds can be transferred out up to the original loan amount.",
+      "rule3": "The higher your VIP level, the higher your borrowing limit.",
+      "rule4": "Your borrowing limit is updated every Monday.",
+      "rule5": "Your loan balance resets every Sunday at 23:59, and your borrowing limit is restored the following Monday.",
+      "rule6": "This promotion is intended to reward genuine players. Multiple-account applications or coordinated arbitrage will result in account closure."
+    },
+    "ruleHighlights": {
+      "rule4": "Maintain deposit and betting records to restore or increase your borrowing limit!",
+      "rule5": "If you have winnings, transfer the profits to your account balance before the system clears them automatically."
+    },
+    "cycleRules": {
+      "daily": {
+        "rule4": "Your borrowing limit is updated daily.",
+        "rule5": "Your loan balance resets every day at 23:59, and your borrowing limit is restored the next day."
+      },
+      "weekly": {
+        "rule4": "Your borrowing limit is updated every {day}.",
+        "rule5": "Your loan balance resets every {prevDay} at 23:59, and your borrowing limit is restored on {day}."
+      },
+      "monthly": {
+        "rule4": "Your borrowing limit is updated on day {day} of every month.",
+        "rule5": "Your loan balance resets at 23:59 the day before day {day} of each month, and your borrowing limit is restored on day {day}."
+      }
+    },
+    "weekdays": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    }
   }
 }

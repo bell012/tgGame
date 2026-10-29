@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto flex w-[272px] flex-col items-center gap-3" data-testid="live-login-gate">
+  <div class="mx-auto flex w-[272px] flex-col items-center gap-3">
     <div class="flex w-full flex-col items-center gap-4">
       <img
         class="h-10 w-10 shrink-0"
@@ -14,7 +14,6 @@
       <button
         type="button"
         class="flex h-12 w-[272px] items-center justify-center rounded-[60px] bg-theme-primary text-sm font-bold text-text-4"
-        data-testid="live-login-button"
         @click="authModalStore.openLoginModal()"
       >
         {{ t('sports.logIn') }}
@@ -25,7 +24,6 @@
       <button
         type="button"
         class="text-theme-primary underline"
-        data-testid="live-join-now"
         @click="authModalStore.openRegisterModal()"
       >
         {{ t('sports.joinNow') }}

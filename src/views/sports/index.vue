@@ -4,8 +4,24 @@
     <BetSlipH5 :page="page" />
   </div>
 
-  <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1" data-testid="sports-page">
+  <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1">
     <SportsNavigation class="!px-5" @change="handleSportChange" />
+
+    <div
+      v-if="page.hotEventsError.value && !liveMatches.length"
+      class="mx-5 mt-4 flex items-center gap-3 text-sm text-text-2"
+      role="status"
+    >
+      <span>{{ t('sports.homepage.popularMatches') }}：{{ page.sportsLoadFailedText.value }}</span>
+      <button
+        type="button"
+        class="shrink-0 text-theme-primary disabled:opacity-50"
+        :disabled="page.hotEventsLoading.value"
+        @click="page.retryHotEvents"
+      >
+        {{ page.sportsRetryText.value }}
+      </button>
+    </div>
 
     <section
       v-if="liveMatches.length"
@@ -16,12 +32,10 @@
         class="relative flex items-start gap-3 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         tabindex="0"
         :aria-label="t('sports.homepage.popularMatches')"
-        data-testid="sports-live-strip"
       >
         <article
           v-for="match in liveMatches"
           :key="match.id"
-          v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
           class="relative flex min-h-[204px] w-[360px] shrink-0 cursor-pointer flex-col rounded-xl bg-bg-5 p-3 transition-colors hover:bg-opacity-6"
           :data-sports-match="`live:${match.id}`"
           @click="goToEventDetails(match)"
@@ -52,6 +66,7 @@
           </div>
 
           <MatchVersus
+            :sport-id="match.sportId"
             class="mt-7"
             :home-src="match.home.badge"
             :away-src="match.away.badge"
@@ -69,14 +84,14 @@
               :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
               picker="liveStrip"
               :show-expand="false"
-              @select="selectOdds(match.id, $event)"
+              @select="selectOdds(match.id, $event, match)"
             />
           </div>
         </article>
       </div>
     </section>
 
-    <section class="mx-5 mt-4 space-y-4" data-testid="sports-filters">
+    <section class="mx-5 mt-4 space-y-4">
       <div
         v-if="page.homepageError.value || page.matchesError.value"
         class="flex items-center gap-3 text-sm text-text-2"
@@ -101,8 +116,10 @@
         v-if="!isMobile"
         :collect-only="collectOnly"
         :collect-pending="collectPending"
+        :search-keyword="page.searchInput.value"
         @filter-change="handleMatchFilterChange"
         @collect-change="handleCollectChange"
+        @search-change="page.handleSearchChange"
       />
     </section>
 
@@ -127,10 +144,7 @@
         image-class="h-[180px] w-[198px] object-contain"
         text-class="mt-4 text-center text-sm text-text-2"
       />
-      <div
-        class="grid min-w-0 auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4"
-        data-testid="sports-match-grid"
-      >
+      <div class="grid min-w-0 auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4">
         <div
           v-for="match in pagedMatches"
           :key="match.id"
@@ -161,12 +175,7 @@
       >
         {{ $t('common.loadingMore') }}
       </p>
-      <nav
-        v-if="totalPages > 1"
-        class="mt-8"
-        :aria-label="t('sports.homepage.matchPagination')"
-        data-testid="sports-pagination"
-      >
+      <nav v-if="totalPages > 1" class="mt-8" :aria-label="t('sports.homepage.matchPagination')">
         <DesktopPagination
           :current-page="currentPage"
           :total-pages="totalPages"
@@ -175,6 +184,7 @@
       </nav>
     </section>
 
+    <OddsFormat />
     <CommonFooter />
 
     <BetSlipPc
@@ -220,6 +230,7 @@ import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
 import CommonFooter from '@/components/commonFooter.vue'
+import OddsFormat from './components/odds-format/index.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { stripLocalePrefix } from '@/utils/locale'

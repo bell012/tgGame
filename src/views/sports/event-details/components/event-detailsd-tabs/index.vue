@@ -3,7 +3,6 @@
     ref="rootRef"
     class="relative flex min-w-0 items-center gap-2"
     aria-label="Related matches"
-    data-testid="event-details-tabs"
   >
     <button
       type="button"

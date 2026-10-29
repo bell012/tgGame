@@ -7,7 +7,7 @@
     <!-- BC代币 / 顶部提示 -->
     <!-- <div
       v-if="showBcToken"
-      class="bc-card mt-4 flex h-14 shrink-0 cursor-pointer items-center justify-between rounded-xl bg-bg-2 px-3 sm:mt-0"
+      class="bc-card mt-4 flex h-14 shrink-0 cursor-pointer items-center justify-between rounded-xl bg-bg-3 px-3 sm:mt-0"
       @click="() => console.log('点击 BC代币')"
     >
       <div class="flex min-w-0 flex-1 items-center gap-2.5">
@@ -35,9 +35,9 @@
         <div
           v-for="(menu, menuIndex) in menuGroup"
           :key="menu.id"
-          class="flex flex-col bg-bg-2 rounded-lg"
+          class="flex flex-col bg-bg-3 rounded-lg"
         >
-          <div v-if="hasGroupedChildren(menu)" class="bg-bg-2 rounded-lg overflow-visible">
+          <div v-if="hasGroupedChildren(menu)" class="bg-bg-3 rounded-lg overflow-visible">
             <div
               v-for="(item, index) in menu.children"
               :key="item.id"
@@ -89,7 +89,7 @@
 
           <div
             v-else-if="isCollapsed && hasChildren(menu) && expandedMenus.includes(menu.id)"
-            class="bg-bg-2 rounded-lg overflow-visible"
+            class="bg-bg-3 rounded-lg overflow-visible"
           >
             <div
               class="mt-[4px]"
@@ -149,7 +149,7 @@
           <div
             v-else-if="isCollapsed"
             :class="[
-              'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
+              'relative flex items-center justify-between launch-card h-10 bg-bg-3 rounded-lg cursor-pointer menu-item-collapsed',
               { 'border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
               { 'rounded-t-lg rounded-b-none': menuIndex === 0 && menuGroup.length > 1 },
               {
@@ -182,7 +182,7 @@
           <template v-else>
             <div
               :class="[
-                'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
+                'flex items-center justify-between launch-card h-10 bg-bg-3 rounded-lg cursor-pointer',
                 { 'border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
                 { 'rounded-t-lg rounded-b-none': menuIndex === 0 && menuGroup.length > 1 },
                 {
@@ -232,13 +232,13 @@
             <transition name="expand">
               <div
                 v-if="hasChildren(menu) && expandedMenus.includes(menu.id)"
-                class="flex flex-col bg-bg-2 rounded-b-lg"
+                class="flex flex-col bg-bg-3 rounded-b-lg"
               >
                 <div
                   v-for="item in menu.children"
                   :key="item.id"
                   :class="[
-                    'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
+                    'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-3 rounded-lg cursor-pointer',
                     { 'launch-card-active': isSubmenuBranchActive(item) }
                   ]"
                   @click="handleMenuItemClick(item)"
@@ -280,7 +280,7 @@
       <!-- 线上客服 -->
       <div
         :class="[
-          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2.5 sm:mt-3',
+          'flex items-center justify-between launch-card h-10 bg-bg-3 rounded-lg cursor-pointer mt-2.5 sm:mt-3',
           { 'relative menu-item-collapsed justify-center': isCollapsed },
           { 'launch-card-active': activeMenuId === 'customer-service' }
         ]"
@@ -328,7 +328,7 @@
       <!-- 语言切换 -->
       <div
         :class="[
-          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2'
+          'flex items-center justify-between launch-card h-10 bg-bg-3 rounded-lg cursor-pointer mt-2'
         ]"
         @click="openLanguagePopup()"
       >
@@ -351,8 +351,8 @@
       <!-- 主题切换 -->
       <div
         v-if="!isCollapsed"
-        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-3 p-0.5 sm:mb-4"
-        :class="themeStore.theme === 'light' ? 'bg-bg-3' : 'bg-bg-2'"
+        class="flex items-center justify-between h-10 bg-bg-9 rounded-lg cursor-pointer mt-3 p-0.5 sm:mb-4"
+        :class="themeStore.theme === 'light' ? 'bg-bg-3' : 'bg-bg-9'"
       >
         <button
           :class="[
@@ -378,7 +378,10 @@
           </div>
         </button>
         <button
-          class="flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all bg-bg-2"
+          :class="[
+            'flex-1 w-[50%] h-8 rounded-lg border-none cursor-pointer transition-all',
+            themeStore.theme === 'dark' ? 'bg-bg-9' : 'bg-bg-7'
+          ]"
           @click="themeStore.setTheme('light')"
         >
           <div class="flex items-center justify-center">
@@ -493,6 +496,7 @@ import newSideIcons from '@/static/svg/side/newIcon'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { usePromotionsStore } from '@/stores/promotions'
+import { useRedPacketPanelStore } from '@/stores/redPacketPanel'
 import { useThemeStore } from '@/stores/theme'
 import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
 import { openLuckySpin } from '@/utils/openLuckySpin'
@@ -548,6 +552,7 @@ const mobileMenuStyle = computed(() => {
 const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
 const promotionsStore = usePromotionsStore()
+const redPacketPanelStore = useRedPacketPanelStore()
 const { groups: promotionGroups } = storeToRefs(promotionsStore)
 const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
 
@@ -920,7 +925,7 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
     {
       id: 'hashGame',
       name: t('menu.hashGame'),
-      icon: newSideIcons.sportsIcon,
+      icon: newSideIcons.hashGame,
       handler: () => navigateTo('/hash-game'),
       groupKey: 'hashGame'
     },
@@ -976,6 +981,23 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
           return navigateTo(`/promotions/${defaultGroupCode}`)
         }
       }
+    },
+    {
+      id: 'red-packet',
+      name: t('menu.red-packet'),
+      icon: newSideIcons.luckyRedEnvelopeIcon,
+      groupKey: 'red-packet',
+      handler: () => {
+        if (isMobile.value) return navigateTo('/red-packet')
+        redPacketPanelStore.open()
+      }
+    },
+    {
+      id: 'credit-loan',
+      name: t('menu.credit-loan'),
+      icon: newSideIcons.creditLoanIcon,
+      groupKey: 'credit-loan',
+      handler: () => navigateTo('/credit-loan')
     },
     {
       id: 'vip-center',
@@ -1141,7 +1163,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 @media (min-width: 641px) {
   .launch-card:hover {
-    background: var(--color-opacity-6);
+    background: var(--color-opacity-10);
   }
 
   .launch-card:hover:not(.launch-card-active) .pc-menu-icon {
@@ -1151,7 +1173,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   }
 
   .launch-card-active {
-    background: var(--color-opacity-6);
+    background: var(--color-opacity-10);
     color: var(--color-theme-level-1);
   }
 

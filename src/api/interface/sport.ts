@@ -7,9 +7,8 @@
 /** 请求语言：体育接口独立语言码，例如 CHS（中文）、ENG（英文）。 */
 export type SportsLanguageCode = 'ENG' | 'CHS' | 'VN' | 'HI' | 'PT'
 
-/** 页面支持的盘型（Int）：1 马来盘、2 香港盘、3 欧洲盘、4 印尼盘。 */
-
-export type SportsOddsType = 1 | 2 | 3 | 4
+/** 页面支持的盘型（Int）：1 马来盘、2 香港盘、3 欧洲盘、4 印尼盘、6 美式盘。 */
+export type SportsOddsType = 1 | 2 | 3 | 4 | 6
 
 /** 响应盘型（Int）：1 马来盘、2 香港盘、3 欧洲盘、4 印尼盘、6 美式盘。 */
 export type SportsResponseOddsType = number
@@ -392,7 +391,7 @@ export interface SportsBetHistoryWager {
   bss: number
   br: number
   bts: number
-  prid: number | null
+  prid: number | string | null
   bbp: number | null
   btbba: number
   noc: number
@@ -716,7 +715,7 @@ export interface GetSelectedEventInfoParams {
   SportId: number
   /** List<Long>，必填：赛事 EventId 列表；V5 上限 5 场，调用方先去重、分批。 */
   EventIds: number[]
-  /** Int，必填：1 马来盘、2 香港盘、3 欧洲盘、4 印尼盘。 */
+  /** Int，必填：1 马来盘、2 香港盘、3 欧洲盘、4 印尼盘、6 美式盘。 */
   OddsType: SportsOddsType
   /** Boolean，必填：true 查询串关赛事，false 查询非串关赛事。 */
   IsCombo: boolean

@@ -2,7 +2,6 @@
   <section
     v-if="event"
     class="w-full min-w-0 font-inter text-text-1 h-[183px] rounded-xl bg-bg-5 p-4"
-    data-testid="match-details-header"
   >
     <div class="flex min-w-0 items-center justify-between gap-3">
       <div class="flex min-w-0 flex-1 items-center gap-2 text-xs leading-4 text-text-2">
@@ -52,7 +51,8 @@
       class="mt-4 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-4 gap-y-3"
     >
       <div class="flex min-w-0 flex-col items-center gap-2">
-        <SmartImage
+        <TeamLogo
+          :sport-id="sportId"
           :src="homeLogo"
           :alt="homeTeam.name"
           class="h-10 w-10 shrink-0 object-contain"
@@ -130,10 +130,18 @@
             {{ awayScore }}
           </span>
         </div>
+        <p
+          v-if="halfTimeScore"
+          class="mt-7 flex items-center gap-2 text-sm font-normal leading-4 text-text-2 tabular-nums"
+        >
+          <span>{{ t('sports.matchCard.periods.firstHalf') }}</span>
+          <span>{{ halfTimeScore }}</span>
+        </p>
       </div>
 
       <div class="flex min-w-0 flex-col items-center gap-2">
-        <SmartImage
+        <TeamLogo
+          :sport-id="sportId"
           :src="awayLogo"
           :alt="awayTeam.name"
           class="h-10 w-10 shrink-0 object-contain"
@@ -185,7 +193,7 @@
 import { computed } from 'vue'
 import { Loading } from 'vant'
 import { useI18n } from 'vue-i18n'
-import SmartImage from '@/components/common/SmartImage.vue'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import { getTeamLogoUrl } from '@/views/sports/index'
 import type { EventDetailTabItem } from '../event-detailsd-tabs/types'
 import { sportItems } from '@/views/sports/components/sports-navigation/sport-items'
@@ -214,6 +222,9 @@ const statusText = computed(() => event.value?.rbTime || '—')
 const formatScore = (score: number | null) => (score === null ? '—' : String(score))
 const homeScore = computed(() => formatScore(event.value?.home.score ?? null))
 const awayScore = computed(() => formatScore(event.value?.away.score ?? null))
+const halfTimeScore = computed(() =>
+  props.sportId === 1 ? (event.value?.halfTimeScore ?? '').replace('-', ':') : ''
+)
 
 const homeTeam = computed(() => ({
   name: event.value?.home.name ?? '',

@@ -1,3 +1,4 @@
+import { formatSportsEventDate } from '@/utils/date'
 import type { EventDetailTabItem } from './components/event-detailsd-tabs/types'
 import type { MatchHeaderViewModel } from './components/match-header/types'
 import type { SportsMatch } from '../shared/types'
@@ -33,8 +34,10 @@ const splitPhaseClock = (rbTime: string) => {
 
 export const mapEventDetailTabToMatchHeader = (
   item: EventDetailTabItem,
-  teamLogoUrl: (id: number) => string
+  teamLogoUrl: (id: number) => string,
+  sportId: number
 ): MatchHeaderViewModel => {
+  const isFootball = sportId === 1
   const { phaseText, clockText } = splitPhaseClock(item.rbTime)
   return {
     league: item.league,
@@ -51,14 +54,13 @@ export const mapEventDetailTabToMatchHeader = (
     },
     homeScore: item.home.score ?? 0,
     awayScore: item.away.score ?? 0,
-    kickoffText: item.rbTime || '—',
+    kickoffText: formatSportsEventDate(item.eventDate),
     durationText: '',
     phaseText,
     periodScoreText: '',
     clockText: clockText || item.rbTime,
-    cornerScore:
-      item.homeCorners || item.awayCorners ? `${item.homeCorners}-${item.awayCorners}` : '—',
-    halfTimeScore: '—'
+    cornerScore: isFootball ? `${item.homeCorners}-${item.awayCorners}` : '',
+    halfTimeScore: isFootball ? item.halfTimeScore : ''
   }
 }
 
@@ -88,12 +90,12 @@ export const mapSportsMatchToMatchHeader = (
     },
     homeScore: parseScore(match.homeScore),
     awayScore: parseScore(match.awayScore),
-    kickoffText: match.kickoff || match.phase || '—',
+    kickoffText: formatSportsEventDate(match.eventDate || match.kickoff),
     durationText: '',
     phaseText,
     periodScoreText: '',
     clockText: clockText || match.phase,
-    cornerScore: match.cornerScore ?? '—',
-    halfTimeScore: match.halfTimeScore ?? '—'
+    cornerScore: match.cornerScore ?? '',
+    halfTimeScore: match.halfTimeScore ?? ''
   }
 }

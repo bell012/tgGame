@@ -16,6 +16,7 @@ type MatchTimeOptions = {
   matches: () => readonly SportsMatch[]
   enabled: () => boolean
   retainClock: (id: string) => boolean
+  clockKey?: (match: SportsMatch) => string
 }
 
 type DisplayClock = NonNullable<SportsMatch['phaseClock']>
@@ -23,6 +24,7 @@ export const matchTimeKey: InjectionKey<(match: SportsMatch) => string> = Symbol
 
 /** 页面共用一个秒表，只在有需要计时的赛事时运行。 */
 export const useMatchTime = (options: MatchTimeOptions) => {
+  const clockKey = (match: SportsMatch) => options.clockKey?.(match) ?? match.id
   const now = ref(Date.now())
   const clocks = shallowReactive(new Map<string, DisplayClock>())
   let mounted = false
@@ -36,19 +38,20 @@ export const useMatchTime = (options: MatchTimeOptions) => {
   const sync = () => {
     const matches = options.matches()
     // 筛选和换页不重置已见赛事的计时起点。
-    const activeIds = new Set(matches.map(match => match.id))
+    const activeIds = new Set(matches.map(clockKey))
     for (const id of clocks.keys())
       if (!activeIds.has(id) && !options.retainClock(id)) clocks.delete(id)
     for (const match of matches) {
+      const id = clockKey(match)
       const clock = match.phaseClock
       if (!clock) {
-        clocks.delete(match.id)
+        clocks.delete(id)
         continue
       }
-      const previous = clocks.get(match.id)
+      const previous = clocks.get(id)
       // 同阶段持续运行时沿用前端起点；暂停、恢复或换阶段才校准。
       const keepClock = clock.running && previous?.running && previous.period === clock.period
-      if (!keepClock) clocks.set(match.id, clock)
+      if (!keepClock) clocks.set(id, clock)
     }
     const running = matches.some(match => match.phaseClock?.running)
     if (!mounted || !active || document.hidden || !options.enabled() || !running) {
@@ -82,7 +85,7 @@ export const useMatchTime = (options: MatchTimeOptions) => {
   })
 
   const getMatchTime = (match: SportsMatch) => {
-    const clock = clocks.get(match.id) ?? match.phaseClock
+    const clock = clocks.get(clockKey(match)) ?? match.phaseClock
     return getMatchDisplayTime(match, clock?.running ? now.value : 0, clock)
   }
   provide(matchTimeKey, getMatchTime)

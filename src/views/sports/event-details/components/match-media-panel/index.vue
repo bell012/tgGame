@@ -9,7 +9,6 @@
       class="flex w-[320px] flex-col rounded-xl bg-bg-5 font-inter"
       :class="[floating ? 'fixed z-10' : '', isLoggedIn ? 'gap-2 p-2' : 'gap-6 px-2 pb-6 pt-2']"
       :style="floating ? { top: `${stickTop}px`, left: `${floatLeft}px` } : undefined"
-      data-testid="match-media-panel"
       :data-pinned="pinned"
       :data-logged-in="isLoggedIn"
     >
@@ -86,7 +85,6 @@
           />
           <div
             class="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-normal text-white/70"
-            data-testid="no-video"
           >
             {{ t('sports.noVideo') }}
           </div>
@@ -117,6 +115,7 @@ const MAX_CACHED_STREAMS = 3
 const props = defineProps<{
   liveStreamUrl: string
   animationUrl: string
+  navigationHeight: number
 }>()
 
 const { t } = useI18n()
@@ -146,7 +145,7 @@ watch(
   { immediate: true }
 )
 
-const stickTop = computed(() => layoutStore.TOPNAV_HEIGHT + 24)
+const stickTop = computed(() => layoutStore.TOPNAV_HEIGHT + props.navigationHeight)
 
 const updatePin = () => {
   const anchor = anchorRef.value
@@ -170,6 +169,8 @@ watch(pinned, () => {
   floating.value = false
   requestAnimationFrame(updatePin)
 })
+
+watch(stickTop, updatePin, { flush: 'post' })
 
 watch(isLoggedIn, () => {
   if (!floating.value) return

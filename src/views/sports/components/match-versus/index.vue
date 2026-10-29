@@ -7,7 +7,8 @@
         : 'grid-cols-[128px_minmax(0,1fr)_128px] gap-y-4'
     "
   >
-    <SmartImage
+    <TeamLogo
+      :sport-id="sportId"
       :src="homeSrc"
       :alt="homeAltText"
       :class="[
@@ -25,7 +26,8 @@
       <span :class="scoreValueClass">{{ awayScoreText }}</span>
     </div>
 
-    <SmartImage
+    <TeamLogo
+      :sport-id="sportId"
       :src="awaySrc"
       :alt="awayAltText"
       :class="[
@@ -68,11 +70,12 @@
 </template>
 
 <script setup lang="ts">
-import SmartImage from '@/components/common/SmartImage.vue'
+import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { computed } from 'vue'
 
 interface Props {
+  sportId?: number
   homeSrc: string
   awaySrc: string
   HomeTeam: string

@@ -131,6 +131,16 @@ export const formatSportsKickoff = (
   return `${day}${separator}${formatDisplayClockTime(date, locale, languageCode)}`
 }
 
+/** 体育详情未开赛时间：`08/30 19:00`；时间戳（秒/毫秒）无法解析时原样返回文本。 */
+export const formatSportsEventDate = (value?: number | string | null): string => {
+  const timestamp = normalizeTimestamp(value)
+  const date = timestamp ? new Date(timestamp) : null
+  if (!date || Number.isNaN(date.getTime())) {
+    return String(value ?? '').trim() || '—'
+  }
+  return `${getTwoDigitNumber(date.getMonth() + 1)}/${getTwoDigitNumber(date.getDate())} ${getTwoDigitNumber(date.getHours())}:${getTwoDigitNumber(date.getMinutes())}`
+}
+
 // 13位时间戳转换  月/日/年 + 12小时制 + AM/PM 格式化函数
 export const formatTimestamp = (value?: number | string | null): string => {
   const timestamp = normalizeTimestamp(value)

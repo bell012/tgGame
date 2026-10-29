@@ -65,7 +65,7 @@ defineExpose({
   left: 0;
   top: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
   bottom: 0;
-  background-color: var(--color-background-level-5);
+  background-color: var(--color-background-level-2);
   overflow-y: auto;
   overflow-x: visible;
   transition: width 0.3s ease;

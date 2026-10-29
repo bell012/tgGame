@@ -191,7 +191,7 @@
               <button
                 :class="[
                   'w-[22px] h-[22px] flex items-center justify-center transition-all',
-                  themeStore.theme === 'light' ? 'bg-bg-3 rounded-md' : ''
+                  themeStore.theme === 'light' ? 'bg-bg-7 rounded-md' : ''
                 ]"
                 @click.stop="themeStore.setTheme('light')"
               >

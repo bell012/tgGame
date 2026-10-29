@@ -139,6 +139,17 @@
     <BottomTabBar class="sm:hidden" v-if="isMobile && !hideBottomBar" />
 
     <CheckInPopup v-model="checkInVisible" auto-popup-only />
+
+    <!-- PC 右下角红包面板 -->
+    <transition name="notification-panel">
+      <RedPacketPanel
+        v-if="redPacketPanelVisible && !isMobile"
+        display-mode="pc"
+        class="fixed bottom-[16px] right-[16px] z-40"
+        :style="redPacketPanelStyle"
+        @close="redPacketPanelStore.close()"
+      />
+    </transition>
   </div>
 </template>
 
@@ -148,6 +159,7 @@ import { useNativeHistoryTransition } from '@/composables/useNativeHistoryTransi
 import { useCheckInModalStore } from '@/stores/checkInModal'
 import { useLayoutStore } from '@/stores/layout'
 import { usePromotionsStore } from '@/stores/promotions'
+import { useRedPacketPanelStore } from '@/stores/redPacketPanel'
 import { useUserStore } from '@/stores/user'
 import {
   DEFAULT_LOCALE,
@@ -180,9 +192,15 @@ import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
 import { CheckInPopup, useCheckInAutoPopup } from '@/views/activity/check-in'
+import { RedPacketPanel } from '@/views/activity/red-packet'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 
 const layoutStore = useLayoutStore()
+const redPacketPanelStore = useRedPacketPanelStore()
+const { visible: redPacketPanelVisible } = storeToRefs(redPacketPanelStore)
+const redPacketPanelStyle = computed(() => ({
+  height: `min(780px, calc(100vh - ${layoutStore.TOPNAV_HEIGHT}px - 32px))`
+}))
 const promotionsStore = usePromotionsStore()
 const checkInModalStore = useCheckInModalStore()
 const userStore = useUserStore()

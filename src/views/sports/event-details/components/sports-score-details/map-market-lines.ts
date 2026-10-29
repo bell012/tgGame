@@ -1,64 +1,48 @@
-import type {
-  SportMarketLine,
-  SportWagerSelection,
-  SportsResponseOddsType
-} from '@/api/interface/sport'
-import {
-  formatHandicap,
-  hasFiniteOdds,
-  shouldShowHandicap
-} from '@/views/sports/components/match-odds/display'
+import type { SportMarketLine, SportWagerSelection, SportsOddsType } from '@/api/interface/sport'
+import { hasDisplayableCardOdds } from '@/views/sports/components/match-odds/display'
+import { resolveSelectionLayout, type SelectionLayout } from './selection-layout'
 import type {
   DualColumnMarketCard,
   OneXTwoMarketCard,
   ScoreDetailsFilterTab,
-  ScoreDetailsMarketCard
+  ScoreDetailsMarketCard,
+  ScoreDetailsMarketGroup
 } from './types'
 
-const LEFT_SELECTION_IDS = new Set([1, 3, 5])
-const RIGHT_SELECTION_IDS = new Set([2, 4, 6, 7])
+import { formatOdds, resolveSelectionOdds } from '../../../shared/odds'
+import {
+  formatMarketName,
+  formatSelectionName,
+  type SelectionTeams
+} from '../../../shared/selection-name'
 
 /** 赛事详情页底部 Odds Format 可选盘型（含美式 6）。 */
-export type EventDetailsOddsFormat = 1 | 2 | 3 | 4 | 6
+export type EventDetailsOddsFormat = SportsOddsType
 
 /** 按底部 Odds Format 从 OddsList 取对应 OddsType 的 OddsValues.A。 */
 export const resolveOddsForFormat = (
   selection: SportWagerSelection,
   oddsFormat: EventDetailsOddsFormat
 ): string => {
-  const match = (selection.OddsList ?? []).find(
-    item => Number(item.OddsType) === (oddsFormat as SportsResponseOddsType)
-  )
-  const value = match?.OddsValues?.A
-  return value !== undefined && value !== '' ? value : ''
+  return formatOdds(resolveSelectionOdds(selection, oddsFormat))
 }
 
 const hasOddsForFormat = (selection: SportWagerSelection, oddsFormat: EventDetailsOddsFormat) =>
   resolveOddsForFormat(selection, oddsFormat) !== ''
 
-const formatLine = (line: SportMarketLine, selection: SportWagerSelection) => {
-  if (shouldShowHandicap(line, selection)) {
-    return formatHandicap(selection.Handicap)
-  }
-  return selection.SelectionName?.trim() ?? ''
-}
-
-const isOneXTwoLine = (line: SportMarketLine, selections: SportWagerSelection[]) =>
-  line.BetTypeId === 3 ||
-  (selections.length === 3 && selections.every(item => item.SelectionId >= 5))
-
 const mapOneXTwo = (
   line: SportMarketLine,
-  selections: SportWagerSelection[],
-  oddsFormat: EventDetailsOddsFormat
+  selections: Array<SportWagerSelection | undefined>,
+  oddsFormat: EventDetailsOddsFormat,
+  teams: SelectionTeams
 ): OneXTwoMarketCard => ({
   id: String(line.MarketlineId),
-  kind: '1x2',
-  title: line.BetTypeName,
+  kind: 'selection-grid',
+  title: formatMarketName(line, teams),
   betTypeName: line.BetTypeName,
   options: selections.map(selection => ({
-    label: selection.SelectionName,
-    odds: resolveOddsForFormat(selection, oddsFormat),
+    label: selection ? (formatSelectionName(line, selection, teams) ?? '') : '',
+    odds: selection ? resolveOddsForFormat(selection, oddsFormat) : '',
     selection
   }))
 })
@@ -66,112 +50,117 @@ const mapOneXTwo = (
 const mapDualColumn = (
   line: SportMarketLine,
   selections: SportWagerSelection[],
-  oddsFormat: EventDetailsOddsFormat
+  oddsFormat: EventDetailsOddsFormat,
+  teams: SelectionTeams,
+  layout?: SelectionLayout
 ): DualColumnMarketCard => {
-  const leftSelections = selections.filter(item => LEFT_SELECTION_IDS.has(item.SelectionId))
-  const rightSelections = selections.filter(item => RIGHT_SELECTION_IDS.has(item.SelectionId))
-
-  const leftPool = leftSelections.length ? leftSelections : selections.slice(0, 1)
-  const rightPool = rightSelections.length
-    ? rightSelections
-    : selections.length > 1
-      ? selections.slice(1)
-      : []
-
-  const leftHeader = leftPool[0]?.SelectionName ?? ''
-  const rightHeader = rightPool[0]?.SelectionName ?? ''
-
-  const rightByHandicap = new Map(
-    rightPool.map(selection => [selection.Handicap, selection] as const)
-  )
-
-  const rows = leftPool.map((left, index) => {
-    const right = rightByHandicap.get(left.Handicap) ?? rightPool[index] ?? rightPool[0]
-    const emptyCell = { line: '', odds: '' as const, selection: undefined }
-    return {
-      left: {
-        line: formatLine(line, left),
-        odds: resolveOddsForFormat(left, oddsFormat),
-        selection: left
-      },
-      right: right
-        ? {
-            line: formatLine(line, right),
-            odds: resolveOddsForFormat(right, oddsFormat),
-            selection: right
-          }
-        : emptyCell
-    }
-  })
-
-  if (!rows.length && selections.length) {
-    const [only] = selections
-    rows.push({
-      left: {
-        line: formatLine(line, only),
-        odds: resolveOddsForFormat(only, oddsFormat),
-        selection: only
-      },
-      right: { line: '', odds: '', selection: undefined }
-    })
+  const cells = (layout ? layout.rows.flat() : selections).map(selection => ({
+    line: selection ? (formatSelectionName(line, selection, teams) ?? '') : '',
+    odds: selection ? resolveOddsForFormat(selection, oddsFormat) : '',
+    selection
+  }))
+  const rows: DualColumnMarketCard['rows'] = []
+  // 按接口顺序逐项展示，不按 Handicap 合并；同盘口值可以对应多个不同投注选项。
+  for (let index = 0; index < cells.length; index += 2) {
+    rows.push({ left: cells[index], right: cells[index + 1] ?? { line: '', odds: '' } })
   }
 
   return {
     id: String(line.MarketlineId),
     kind: 'dual-column',
-    title: line.BetTypeName,
+    title: formatMarketName(line, teams),
     betTypeName: line.BetTypeName,
-    leftHeader,
-    rightHeader,
+    leftHeader: '',
+    rightHeader: '',
     rows
   }
 }
 
 export const mapMarketLineToCard = (
   line: SportMarketLine,
-  oddsFormat: EventDetailsOddsFormat = 1
+  oddsFormat: EventDetailsOddsFormat = 3,
+  teams: SelectionTeams = {},
+  sportId?: number
 ): ScoreDetailsMarketCard | null => {
   if (!line || !Number.isSafeInteger(line.MarketlineId)) {
     return null
   }
   const selections = (line.WagerSelections ?? []).filter(
-    item => hasOddsForFormat(item, oddsFormat) || hasFiniteOdds(item)
+    item => hasOddsForFormat(item, oddsFormat) || hasDisplayableCardOdds(item)
   )
   if (!selections.length) {
     return null
   }
-  if (isOneXTwoLine(line, selections)) {
-    return mapOneXTwo(line, selections, oddsFormat)
+  const layout = resolveSelectionLayout(sportId, line.BetTypeId, selections)
+  if (layout?.columns === 3) {
+    return mapOneXTwo(line, layout.rows.flat(), oddsFormat, teams)
   }
-  return mapDualColumn(line, selections, oddsFormat)
+  return mapDualColumn(line, selections, oddsFormat, teams, layout)
 }
 
 export const mapMarketLinesToCards = (
   lines: readonly SportMarketLine[],
-  oddsFormat: EventDetailsOddsFormat = 1
+  oddsFormat: EventDetailsOddsFormat = 3,
+  teams: SelectionTeams = {},
+  sportId?: number
 ): ScoreDetailsMarketCard[] =>
   (lines ?? []).flatMap(line => {
-    const card = mapMarketLineToCard(line, oddsFormat)
+    const card = mapMarketLineToCard(line, oddsFormat, teams, sportId)
     return card ? [card] : []
   })
 
+/** 按玩法和时段合并展示容器，各级别的原盘口保持独立。 */
+export const mapMarketLinesToGroups = (
+  lines: readonly SportMarketLine[],
+  oddsFormat: EventDetailsOddsFormat = 3,
+  teams: SelectionTeams = {},
+  sportId?: number
+): ScoreDetailsMarketGroup[] => {
+  const groups = new Map<string, ScoreDetailsMarketGroup>()
+  for (const line of lines) {
+    const card = mapMarketLineToCard(line, oddsFormat, teams, sportId)
+    if (!card) continue
+    const id = `${line.BetTypeId}:${line.PeriodId}`
+    const group = groups.get(id)
+    if (group) {
+      group.markets.push(card)
+    } else {
+      groups.set(id, {
+        id,
+        betTypeId: line.BetTypeId,
+        periodId: line.PeriodId,
+        title: card.title,
+        markets: [card]
+      })
+    }
+  }
+  return [...groups.values()]
+}
+
 export const buildScoreDetailsFilterTabs = (
   lines: readonly SportMarketLine[],
-  allTabLabel = 'All'
+  allTabLabel = 'All',
+  oddsFormat: EventDetailsOddsFormat = 3,
+  teams: SelectionTeams = {},
+  sportId?: number
 ): ScoreDetailsFilterTab[] => {
-  const marketLines = lines ?? []
-  const cards = mapMarketLinesToCards(marketLines)
-  const countByBetType = new Map<string, number>()
-
-  for (const card of cards) {
-    countByBetType.set(card.betTypeName, (countByBetType.get(card.betTypeName) ?? 0) + 1)
+  const groups = mapMarketLinesToGroups(lines, oddsFormat, teams, sportId)
+  const tabsByBetType = new Map<number, ScoreDetailsFilterTab>()
+  for (const group of groups) {
+    const tab = tabsByBetType.get(group.betTypeId)
+    if (tab) {
+      tab.count += 1
+    } else {
+      // 优先使用同玩法全场盘口的原始名称，不自行猜测或截去名称中的阶段信息。
+      const labelLine = lines.find(
+        line => line.BetTypeId === group.betTypeId && line.PeriodId === 1
+      )
+      tabsByBetType.set(group.betTypeId, {
+        key: String(group.betTypeId),
+        label: labelLine?.BetTypeName ?? group.markets[0].betTypeName,
+        count: 1
+      })
+    }
   }
-
-  const tabs: ScoreDetailsFilterTab[] = [{ key: 'all', label: allTabLabel, count: cards.length }]
-
-  for (const [betTypeName, count] of countByBetType) {
-    tabs.push({ key: betTypeName, label: betTypeName, count })
-  }
-
-  return tabs
+  return [{ key: 'all', label: allTabLabel, count: groups.length }, ...tabsByBetType.values()]
 }

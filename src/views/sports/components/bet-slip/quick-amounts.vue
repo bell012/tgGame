@@ -11,7 +11,6 @@
       aria-modal="true"
       :aria-labelledby="titleId"
       tabindex="-1"
-      data-testid="sports-quick-amounts-h5"
       @keydown.stop="onKeydown"
     >
       <header class="relative flex h-12 shrink-0 items-center justify-center px-12">

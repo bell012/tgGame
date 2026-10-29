@@ -35,6 +35,24 @@
     "refreshBalance": "刷新余额",
     "selectCurrency": "选择币种",
     "records": "投注记录",
+    "recordsMenu": "投注记录菜单",
+    "recentBets": "最近投注",
+    "gameRules": "游戏规则",
+    "more": "更多",
+    "currency": "币种",
+    "bets": "投注数",
+    "betAmount": "投注金额",
+    "todayProfitLoss": "今日盈亏",
+    "betBlock": "投注区块",
+    "result": "结果",
+    "actions": "操作",
+    "betSelection": "投注选项",
+    "profitLoss": "盈亏",
+    "game": "游戏",
+    "betId": "投注编号",
+    "resultBlock": "开奖结果区块",
+    "blockHash": "区块哈希",
+    "betTime": "投注时间",
     "back": "返回",
     "chat": "聊天",
     "close": "关闭"
@@ -305,14 +323,14 @@
     "phone": "手机",
     "select_country": "选择国家",
     "search_country": "搜索国家",
-    "enter_account": "请输入您的电话号码",
-    "enter_username": "请输入您的用户名",
+    "enter_account": "输入您的手机号码",
+    "enter_username": "6–16 个字符（字母或数字）",
     "invitation_code": "邀请码",
-    "enter_invitation_code": "请输入邀请码",
+    "enter_invitation_code": "输入邀请码（可选）",
     "password": "密码",
-    "enter_password": "请输入您的密码（6–16个字母和数字)",
+    "enter_password": "6–16 个字符（字母和数字）",
     "confirm_password": "确认密码",
-    "enter_confirm_password": "请再次确认您的密码",
+    "enter_confirm_password": "重新输入密码",
     "remember_me": "记住密码",
     "forget_password": "忘记密码",
     "reset_password": "重置密码",
@@ -324,7 +342,7 @@
     "log_in_now": "立即登录",
     "continue": "先逛逛",
     "verification": "验证码",
-    "enter_verification": "请输入验证码",
+    "enter_verification": "输入验证码",
     "get_code": "获取验证码",
     "welcome_deposit_bonus": "首存奖金",
     "free_daily_lucky_spin": "每日免费幸运旋转",
@@ -856,6 +874,38 @@
   },
   "customSelect": {
     "placeholder": "请选择"
+  },
+  "sportsHistory": {
+    "oddsType": "盘口",
+    "confirmCashOut": "确定",
+    "close": "关闭",
+    "singleBet": "单关投注",
+    "comboBet": "串关投注",
+    "cashOut": "提前结算",
+    "betCount": "{count}注",
+    "comboBadge": "串",
+    "totalOdds": "总赔率",
+    "confirmed": "确认",
+    "pending": "待定",
+    "rejected": "拒绝",
+    "cancelled": "取消",
+    "win": "赢",
+    "loss": "输",
+    "draw": "和",
+    "halfWin": "半赢",
+    "halfLoss": "半输",
+    "partialLoss": "输部分",
+    "eventCancelled": "赛事取消",
+    "betCancelled": "注单取消",
+    "cashedOut": "已兑现",
+    "processing": "处理中",
+    "live": "滚球中",
+    "halfTime": "半场",
+    "fullTime": "全场",
+    "eventTime": "比赛时间",
+    "result": "比赛结果",
+    "copyOrder": "复制订单号",
+    "copyFailed": "复制失败，请重试"
   },
   "betDetails": {
     "title": "投注详情",
@@ -2186,25 +2236,25 @@
       "reorderQuickAmount": "调整第 {count} 个快捷投注金额的顺序",
       "reorderQuickAmountHint": "调整第 {count} 个快捷金额的顺序。使用上下方向键。",
       "quickAmountMoved": "快捷投注金额已移至第 {count} 位。",
-      "quickAmountsPositive": "请输入四个大于零且最多保留两位小数的金额。",
-      "quickAmountsWithinBalance": "请输入四个大于零且不超过余额的金额。",
-      "quickAmountsUnique": "请输入四个不同的快捷金额。",
+      "quickAmountsPositive": "请输入六个大于零且最多保留两位小数的金额。",
+      "quickAmountsUnique": "请输入六个不同的快捷金额。",
+      "quickAmountsSaveFailed": "快捷金额保存失败，请重试。",
       "save": "保存",
       "shortcuts": "投注快捷入口",
       "history": "投注历史",
       "historyCount": "投注历史，{count} 条记录",
       "selectionCount": "投注单，{count} 个选项",
-      "fold": "{count} 串",
+      "fold": "{count}串1",
       "combo": "组合 {count}",
       "systems": {
-        "1": "Trixie",
-        "2": "Yankee",
-        "3": "Super Yankee",
-        "4": "Heinz",
-        "5": "Super Heinz",
-        "6": "Goliath",
-        "7": "9 串系统",
-        "8": "10 串系统"
+        "1": "3串4",
+        "2": "4串11",
+        "3": "5串26",
+        "4": "6串57",
+        "5": "7串120",
+        "6": "8串247",
+        "7": "9串系统",
+        "8": "10串系统"
       },
       "result": {
         "title": "投注结果",
@@ -2256,8 +2306,13 @@
       "collapseAllLeagues": "收起所有联赛",
       "matchPagination": "赛事分页"
     },
+    "video": "视频",
+    "animation": "动画",
     "noVideo": "暂无视频",
     "noAnimation": "暂无动画",
+    "mediaFullscreen": "全屏播放",
+    "mediaExitFullscreen": "退出全屏",
+    "mediaClose": "关闭播放器",
     "loadingAnimation": "正在加载动画",
     "loadingLive": "正在加载直播",
     "liveLoadFailed": "直播连接失败",
@@ -2295,12 +2350,19 @@
       "oddsFormatLabel": "盘口格式",
       "oddsFormatOptionsAria": "盘口格式选项",
       "oddsFormatDisclaimer": "我们虽尽力确保本网站所显示数据的准确性，但相关内容仅供参考，不应作为唯一依据。对于任何不准确之处，我们不承担任何责任。",
+      "oddsFormatShortTypes": {
+        "1": "马来盘",
+        "2": "香港盘",
+        "3": "欧洲盘",
+        "4": "印尼盘",
+        "6": "美式盘"
+      },
       "oddsFormatTypes": {
         "1": "马来盘",
         "2": "香港盘",
         "3": "欧洲盘",
         "4": "印尼盘",
-        "6": "美国盘"
+        "6": "美式盘"
       },
       "noBettingMarkets": "暂无可用盘口。",
       "matchEnded": "比赛已结束"
@@ -2321,8 +2383,9 @@
     "lucky-spin": "大转盘",
     "task-center": "任务中心",
     "promotions": "活动中心",
+    "red-packet": "红包活动",
     "red-envelope-event": "红包活动",
-    "credit-loan": "借呗",
+    "credit-loan": "免还借呗",
     "my-vouchers": "我的票卷",
     "lottery-event": "彩票活动",
     "lucky-wheel": "幸运转盘",
@@ -2553,5 +2616,147 @@
     "luckySpinVoucher": "转盘票券",
     "mysteryBoxVoucher": "盲盒票券",
     "claimNow": "立即领取"
+  },
+  "redPacketPanel": {
+    "empty": "暂无红包",
+    "emptySender": "TG Bonus Desk",
+    "emptyTime": "11/07 12:18",
+    "emptyMessage": "精彩福利即将到来，稍后再来领取你的红包。",
+    "loadFailed": "加载失败，",
+    "retry": "重试",
+    "congratulations": "恭喜",
+    "congratulationsExclaim": "恭喜您！",
+    "timeLeft": "剩余时间：",
+    "depositNow": "立即充值",
+    "betNow": "立即投注",
+    "claimNow": "立即领取",
+    "claimed": "已领取",
+    "credited": "已存入您的余额",
+    "expiredTitle": "哎呀！",
+    "expiredDesc": "红包已过期！",
+    "expiryDate": "过期时间：",
+    "soldOutTitle": "手慢了！",
+    "soldOutDesc": "红包已领完！",
+    "conditionLabel": {
+      "recharge": "充值金额：",
+      "loss": "亏损金额：",
+      "bet": "打码金额："
+    },
+    "conditionHint": {
+      "recharge": { "prefix": "充值满", "suffix": "可领取" },
+      "loss": { "prefix": "亏损满", "suffix": "可领取" },
+      "bet": { "prefix": "打码满", "suffix": "可领取" }
+    },
+    "claimHistory": "领取记录",
+    "redemptionHistory": "领取记录",
+    "myRedemptions": "我的领取记录",
+    "totalRedeemed": "累计领取：",
+    "claimTime": "领取时间：{time}",
+    "claimedSummary": "已领取 {count} 个，共 {amount} {currency}",
+    "wonTitle": "恭喜获得 {amount}！",
+    "allGoneTitle": "手慢了，红包已领完！",
+    "goodLuck": "恭喜发财，大吉大利！",
+    "comeBackTomorrow": "明天再来领取吧！",
+    "noRecords": "暂无记录",
+    "allType": "全部类型",
+    "allTime": "全部时间",
+    "type": {
+      "1": "每日红包",
+      "2": "充值加赠红包",
+      "3": "亏损返现红包",
+      "4": "幸运红包"
+    },
+    "period": {
+      "all": "全部",
+      "today": "今天",
+      "yesterday": "昨天",
+      "last7Days": "近 7 天",
+      "last15Days": "近 15 天",
+      "last30Days": "近 30 天"
+    }
+  },
+  "creditLoan": {
+    "title": "借呗",
+    "loanRecords": "借款记录",
+    "bettingRecords": "投注记录",
+    "loanBalance": "借款余额：",
+    "transfer": "转出",
+    "availableCredit": "可用额度 (USD)",
+    "borrowNow": "立即借款",
+    "slogan": "少还款，多充值，多推荐，多畅玩！",
+    "gameLobby": "游戏大厅",
+    "loanDetails": "借款详情",
+    "all": "全部",
+    "empty": "暂无数据",
+    "repaymentFreeTitle": "免还款借呗",
+    "repaymentFreeDesc": "无需还款，VIP 等级越高，可借额度越高",
+    "gameType": "游戏类型",
+    "loanPop": {
+      "title": "借款成功！",
+      "accept": "确定",
+      "desc": "已存入您的借呗余额。"
+    },
+    "records": {
+      "all": "全部",
+      "loans": "借款",
+      "transfers": "转出",
+      "type": "类型",
+      "time": "时间",
+      "amount": "金额",
+      "loanAmount": "借款金额",
+      "loanTransferOut": "借款转出",
+      "refreshing": "刷新中..."
+    },
+    "betRecords": {
+      "loan": "借呗",
+      "pending": "待结算",
+      "completed": "已完成"
+    },
+    "transferSuccess": {
+      "title": "转出成功",
+      "desc": "借款余额已转入您的账户余额。"
+    },
+    "transferPop": {
+      "title": "转出",
+      "loanBalance": "借款余额",
+      "transferableBalance": "可转出余额",
+      "transferAll": "全部转出",
+      "desc": "借款余额将转入您的账户余额。转出后，借款余额将清零，下周一可再次借款。"
+    },
+    "rules": {
+      "rule1": "所有借款均无需还款。",
+      "rule2": "使用借款赢得的奖金，最多可转出与原借款金额相等的部分。",
+      "rule3": "VIP 等级越高，可借额度越高。",
+      "rule4": "借款额度每周一更新。",
+      "rule5": "借款余额于每周日 23:59 清零，借款额度将于次周一恢复。",
+      "rule6": "本活动旨在回馈真实玩家，多账号申请或协同套利将被封号处理。"
+    },
+    "ruleHighlights": {
+      "rule4": "保持充值和投注记录，即可恢复或提升您的借款额度！",
+      "rule5": "如有盈利，请在系统自动清零前将盈利转出至账户余额。"
+    },
+    "cycleRules": {
+      "daily": {
+        "rule4": "借款额度每日更新。",
+        "rule5": "借款余额于每日 23:59 清零，借款额度将于次日恢复。"
+      },
+      "weekly": {
+        "rule4": "借款额度每{day}更新。",
+        "rule5": "借款余额于每{prevDay} 23:59 清零，借款额度将于{day}恢复。"
+      },
+      "monthly": {
+        "rule4": "借款额度每月 {day} 号更新。",
+        "rule5": "借款余额于每月 {day} 号前一天 23:59 清零，借款额度将于每月 {day} 号恢复。"
+      }
+    },
+    "weekdays": {
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六",
+      "sun": "周日"
+    }
   }
 }

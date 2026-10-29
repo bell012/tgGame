@@ -53,6 +53,8 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     hotEventsLoading,
     hotEventsError,
     sportsSessionVersion,
+    homepageQueryVersion,
+    favouriteListNeedsRefresh,
     favouriteFilterPending: collectPending,
     retryingSports,
     pageNumber
@@ -218,17 +220,22 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
   })
   let homepageReady = false
   let homepageLoadVersion = 0
+  const homepageResumeVersion = ref(0)
   const resumeHomepageRefresh = (immediate = false) => {
     if (
-      homepageReady &&
       isHomepageRoute.value &&
       sportsPageActive.value &&
       !sportsPageDisposed &&
       !document.hidden
     ) {
+      homepageRefresh.startHot(true)
+      if (!homepageReady) {
+        // 返回前台时旧加载可能尚未结束；交给同一查询入口接续，不等待旧请求后再计时。
+        if (immediate) homepageResumeVersion.value += 1
+        return
+      }
       // 初始加载期间也可能切后台；就绪后恢复时统一续查，由 Store 复用在途请求和缓存。
       homepageRefresh.startNormal(immediate)
-      homepageRefresh.startHot(true)
     }
   }
   const handlePageVisibility = () => {
@@ -236,6 +243,29 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     else resumeHomepageRefresh(true)
   }
   watch(isHomepageRoute, handlePageVisibility)
+  let favouriteRetryKey = ''
+  watch([favouriteListNeedsRefresh, () => sportsAuth.isReady], ([needsRefresh, ready]) => {
+    if (
+      !needsRefresh ||
+      !ready ||
+      !sportsPageActive.value ||
+      !isHomepageRoute.value ||
+      sportsPageDisposed ||
+      document.hidden
+    )
+      return
+    const credentials = sportsAuth.peekCredentials()
+    if (!credentials) return
+    const key = JSON.stringify([
+      homepageQueryVersion.value,
+      credentials.contextVersion,
+      credentials.version
+    ])
+    // 同一条件、同一凭证只自动补查一次，失败仍由原来的重试/轮询流程接管。
+    if (key === favouriteRetryKey) return
+    favouriteRetryKey = key
+    homepageResumeVersion.value += 1
+  })
   const matchListContext = computed(() =>
     JSON.stringify([storeMatchListContext.value, collectOnly.value])
   )
@@ -244,10 +274,13 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     hotEvents: () => hotEvents.value,
     sportId: () => selectedSportId.value,
     teamLogoUrl: getTeamLogoUrl,
-    clockUpdatedAt: sportsStore.getEventClockUpdatedAt
+    clockUpdatedAt: sportsStore.getEventClockUpdatedAt,
+    hotClockUpdatedAt: sportsStore.getHotEventClockUpdatedAt
   })
   const { getMatchTime } = useMatchTime({
+    clockKey: match => (liveMatches.value.includes(match) ? `hot:${match.id}` : match.id),
     retainClock: id => {
+      if (id.startsWith('hot:')) return liveMatches.value.some(match => `hot:${match.id}` === id)
       const [sportId, eventId] = id.split(':').map(Number)
       return (
         Boolean(sportsStore.getRefreshEvent(sportId, eventId)) ||
@@ -257,11 +290,12 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     enabled: () =>
       isHomepageRoute.value &&
       sportsPageActive.value &&
-      refreshTargets.value.some(
-        target => matchById.value.get(`${target.sportId}:${target.eventId}`)?.phaseClock?.running
-      ),
+      (liveMatches.value.some(match => match.phaseClock?.running) ||
+        refreshTargets.value.some(
+          target => matchById.value.get(`${target.sportId}:${target.eventId}`)?.phaseClock?.running
+        )),
     // 换页和滚动不丢失计时起点，只有需要显示时才启动秒表。
-    matches: () => [...matchById.value.values()]
+    matches: () => [...matches.value, ...liveMatches.value]
   })
   const totalPages = computed(() => Math.max(1, Math.ceil(matches.value.length / MATCH_PAGE_SIZE)))
   const pagedMatches = computed(() =>
@@ -287,7 +321,8 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     const match = matchById.value.get(matchId)
     return match?.MarketLines ?? []
   }
-  const getLiveMarkets = getMatchMarkets
+  const getLiveMarkets = (matchId: string): SportMarketLine[] =>
+    liveMatches.value.find(match => match.id === matchId)?.MarketLines ?? []
   // 先同步筛选与分页，再由下方单一请求监听批量刷新。
   const resetMatchListState = () => {
     currentPage.value = 1
@@ -359,7 +394,9 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
         keyword,
         () => (keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null),
         collectOnly,
-        sportsSessionVersion
+        sportsSessionVersion,
+        homepageQueryVersion,
+        homepageResumeVersion
       ],
       (values, previous) => {
         if (!sportsPageActive.value || sportsPageDisposed) return
@@ -369,18 +406,19 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
         const refreshCounts =
           previous[0] !== true || values[1] !== previous[1] || values[2] !== previous[2]
         if (refreshCounts) resetMatchListState()
-        // 共同条件变化才重启热门线；名单并行取得，详情等待普通首轮结束。
+        // 热门线独立启动，不等待普通列表首轮完成。
         const refreshCompetitionList =
           refreshCounts ||
           values[3] !== previous[3] ||
           values[4] !== previous[4] ||
           values[10] !== previous[10]
         if (refreshCompetitionList) homepageRefresh.stopHot()
-        void sportsStore.loadHomepage({ refreshCounts, refreshCompetitionList }).finally(() => {
+        void sportsStore.loadHomepage().finally(() => {
           if (version !== homepageLoadVersion) return
           homepageReady = true
           resumeHomepageRefresh()
         })
+        resumeHomepageRefresh()
       },
       { immediate: true }
     )

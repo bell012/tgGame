@@ -1,5 +1,31 @@
-import type { SportCompetitionGroup, SportEvent, SportsEventMarket } from '@/api/interface/sport'
+import type {
+  SportCompetitionGroup,
+  SportEvent,
+  SportRelatedScore,
+  SportsEventMarket
+} from '@/api/interface/sport'
 import type { SportsMatch } from '../shared/types'
+
+const toRelatedScore = (
+  eventGroupTypeId: number,
+  score: string | undefined
+): SportRelatedScore[] => {
+  const matched = /^(\d+)-(\d+)$/.exec(score ?? '')
+  if (!matched) {
+    return []
+  }
+  return [
+    {
+      EventGroupTypeId: eventGroupTypeId,
+      HomeScore: Number(matched[1]),
+      AwayScore: Number(matched[2]),
+      HomeRedCard: 0,
+      AwayRedCard: 0,
+      GamePeriod: 0,
+      ScoreCategory: 0
+    }
+  ]
+}
 
 /** 将单场详情合并进 getSportsV2 联赛列表，按 EventId 更新盘口并保持 tabs 完整。 */
 export const mergeEventIntoGroups = (
@@ -50,7 +76,7 @@ export const sportsMatchToCompetitionGroups = (match: SportsMatch): SportCompeti
     Market: market,
     EventStatusId: 1,
     OrderNumber: 0,
-    EventDate: match.kickoff,
+    EventDate: match.eventDate ?? match.kickoff,
     GroundTypeId: 1,
     EventGroupId: 0,
     EventGroupTypeId: 0,
@@ -75,7 +101,14 @@ export const sportsMatchToCompetitionGroups = (match: SportsMatch): SportCompeti
     AwayScore: match.AwayScore,
     HomeRedCard: match.home.redCards,
     AwayRedCard: match.away.redCards,
-    ExtraInfo: '',
+    RelatedScores: [
+      ...toRelatedScore(2, match.cornerScore),
+      ...toRelatedScore(22, match.halfTimeScore)
+    ],
+    ExtraInfo: JSON.stringify({
+      htycs: Number(match.home.yellowCards) || 0,
+      atycs: Number(match.away.yellowCards) || 0
+    }),
     Competition: {
       CompetitionId: Number.isSafeInteger(competitionId) ? competitionId : 0,
       CompetitionName: match.league,

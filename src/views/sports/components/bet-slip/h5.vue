@@ -13,7 +13,6 @@
       :aria-busy="busy"
       :inert="editingAmounts || Boolean(result)"
       tabindex="-1"
-      data-testid="sports-betslip-h5"
       :data-state="result ?? (busy ? 'submitting' : mode)"
       @keydown="onKeydown"
     >
@@ -95,18 +94,26 @@
                 :key="parlay.id"
                 class="min-w-0 rounded-lg bg-bg-2 py-[3.333px] pl-2.5 pr-[3.333px]"
               >
-                <div class="flex min-w-0 items-start gap-2.5">
-                  <div class="flex h-[38px] shrink-0 items-center gap-2.5 text-[15px]">
-                    <span>{{ parlay.label }}</span>
-                    <span v-if="parlay.odds !== undefined" class="text-theme-primary"
-                      >@{{ parlay.odds.toFixed(2) }}</span
+                <div
+                  class="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,52.7273%)] items-center gap-[6.667px]"
+                >
+                  <div class="flex min-h-[38px] min-w-0 items-center gap-2.5">
+                    <div
+                      class="flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[15px] font-medium leading-[18px]"
+                    >
+                      <span class="min-w-0 break-words">{{ parlay.label }}</span>
+                      <span
+                        v-if="parlay.odds !== undefined"
+                        class="min-w-0 break-all text-theme-primary"
+                        >@{{ parlay.odds.toFixed(2) }}</span
+                      >
+                    </div>
+                    <span class="shrink-0 text-sm font-normal leading-[17px] text-text-1"
+                      >{{ parlay.combinationCount }}x</span
                     >
                   </div>
-                  <span class="ml-auto flex h-[38px] shrink-0 items-center text-sm text-text-2"
-                    >{{ parlay.combinationCount }}x</span
-                  >
                   <StakeField
-                    class="min-w-0 flex-1"
+                    class="min-w-0"
                     :value="parlay.stake"
                     :currency-symbol="currencySymbol"
                     :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
@@ -195,7 +202,6 @@
               :disabled="!props.page.canSubmit.value || busy || editingAmounts"
               :aria-busy="busy"
               :aria-label="t('sports.betSubmit')"
-              data-testid="sports-h5-submit"
               @click="submit"
             >
               <Loading
@@ -235,7 +241,6 @@
       class="pointer-events-none fixed inset-0 z-[10001] flex items-center justify-center font-inter"
       role="status"
       aria-live="polite"
-      data-testid="sports-bet-result-h5"
       :data-state="result"
     >
       <div
@@ -298,6 +303,7 @@ import type { SportsPageState } from '../../index'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ page: SportsPageState }>()
+const emit = defineEmits<{ addEvent: [] }>()
 const { t } = useI18n()
 const panel = ref<HTMLElement | null>(null)
 const titleId = useId()
@@ -327,7 +333,7 @@ const {
   removeSelection,
   clear,
   submit
-} = useSportsH5Bet(props.page)
+} = useSportsH5Bet(props.page, () => emit('addEvent'))
 const selections = computed(() => displayed.value.selections)
 const parlays = computed(() => displayed.value.parlays)
 const mode = computed(() => displayed.value.mode)

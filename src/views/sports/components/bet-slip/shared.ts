@@ -1,4 +1,23 @@
-export const MAX_SELECTIONS = 8
+import type { SportsPlaceBetResult } from '@/api/interface/sport'
+
+/** 下单反馈按受理成功处理；不改变投注历史里的确认状态。 */
+export const isAcceptedPlaceBetResult = (
+  value: unknown
+): value is Pick<SportsPlaceBetResult, 'wid' | 'bsm' | 'bcs'> =>
+  typeof value === 'object' &&
+  value !== null &&
+  'wid' in value &&
+  typeof value.wid === 'string' &&
+  value.wid.trim().length > 0 &&
+  'bsm' in value &&
+  (typeof value.bsm === 'number' || typeof value.bsm === 'string') &&
+  Number(value.bsm) === 100 &&
+  'bcs' in value &&
+  (typeof value.bcs === 'number' || typeof value.bcs === 'string') &&
+  [1, 2].includes(Number(value.bcs))
+
+/** 共用投注单最多保留 10 场赛事，切换串关或再次投注时沿用同一上限。 */
+export const MAX_SELECTIONS = 10
 /** 空输入按 0 处理，拒绝负数、指数和超过两位的小数。 */
 export const parseSportsStake = (raw: string): number | null => {
   const value = raw.trim()

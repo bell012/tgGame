@@ -170,14 +170,21 @@ export const useLiansaiTabs = () => {
     }
   }
 
-  // 应用 H5 弹窗的多选联赛筛选，并返回已选择的联赛数据。
-  const applyLeagueFilter = (keys: string[]): LeagueFilterPayload => {
+  // H5 与 PC 共用 CompetitionIds，交由页面统一调度刷新。
+  const applyLeagueFilter = (
+    keys: string[],
+    options: { keepExplicitIds?: boolean } = {}
+  ): LeagueFilterPayload => {
     const uniqueKeys = Array.from(new Set(keys))
     const selectedItems = uniqueKeys
       .map(key => leagueFilterItems.value.find(item => item.key === key))
       .filter((item): item is LeagueTabItem => Boolean(item))
     const allKeys = leagueFilterItems.value.map(item => item.key)
-    const isAllSelected = allKeys.length > 0 && allKeys.every(key => uniqueKeys.includes(key))
+    // 搜索命中当前全部候选，也不能放开后续分页或轮询新增的其他联赛。
+    const isAllSelected =
+      !options.keepExplicitIds &&
+      allKeys.length > 0 &&
+      allKeys.every(key => uniqueKeys.includes(key))
     const ids = selectedItems
       .map(item => item.id)
       .filter((id): id is number => typeof id === 'number')
