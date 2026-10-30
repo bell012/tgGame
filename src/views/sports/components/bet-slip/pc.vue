@@ -1,9 +1,12 @@
 <template>
   <aside
     ref="panelElement"
-    class="fixed bottom-0 right-6 z-30 flex max-h-[min(915px,calc(100dvh-84px))] w-[390px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-t-lg bg-bg-1 font-inter text-text-1 shadow-2xl transition-transform duration-[var(--bet-slip-duration)] ease-[ease-in-out] motion-reduce:transition-none 2xl:right-[120px]"
+    class="fixed bottom-0 right-6 z-30 flex max-h-[calc(100dvh-var(--sports-topnav-height)-theme(spacing.4)-theme(spacing.3)-theme(spacing.11)-theme(spacing.3)-theme(spacing.4))] w-[390px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-t-lg bg-bg-1 font-inter text-text-1 shadow-2xl transition-transform duration-[var(--bet-slip-duration)] ease-[ease-in-out] motion-reduce:transition-none 2xl:right-[120px]"
     :class="{ 'translate-y-[calc(100%_-_66px)]': !panelExpanded }"
-    :style="{ '--bet-slip-duration': `${panelDuration}ms` }"
+    :style="{
+      '--bet-slip-duration': `${panelDuration}ms`,
+      '--sports-topnav-height': `${layoutStore.TOPNAV_HEIGHT}px`
+    }"
     :data-state="panelState"
     :aria-label="t('sports.betSlip.title')"
     @keydown.esc.stop="collapse"
@@ -436,6 +439,7 @@ import AmountsDialog from './amounts-dialog.vue'
 import { useQuickAmountsScroll } from './useQuickAmountsScroll'
 import { storeToRefs } from 'pinia'
 import { useSportsBetSlipStore } from '@/stores/sportsBetSlip'
+import { useLayoutStore } from '@/stores/layout'
 import { globalShowToast } from '@/utils/toast'
 import BetResult from './pc-result.vue'
 import { useI18n } from 'vue-i18n'
@@ -479,6 +483,7 @@ const emit = defineEmits<{
 }>()
 
 const panelId = useId()
+const layoutStore = useLayoutStore()
 const panelElement = ref<HTMLElement | null>(null)
 const panelHeader = ref<HTMLElement | null>(null)
 const panelExpanded = ref(props.open)
