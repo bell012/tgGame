@@ -36,7 +36,11 @@
         <div class="size-full overflow-hidden rounded-full">
           <img :src="avatarUrl" alt="" class="size-full object-cover" />
         </div>
-        <OnlineIcon class="absolute -bottom-[2px] -right-[2px] z-[1] size-[7px]" />
+        <OfflineIcon
+          v-if="isOffline"
+          class="absolute -bottom-[2px] -right-[2px] z-[1] size-[7px]"
+        />
+        <OnlineIcon v-else class="absolute -bottom-[2px] -right-[2px] z-[1] size-[7px]" />
       </div>
       <div class="min-w-0" :class="props.displayMode === 'pc' ? 'flex items-center gap-[6px]' : ''">
         <h1
@@ -53,16 +57,7 @@
               : t('chatPublic.customerServiceName', { name: displayName })
           }}
         </h1>
-        <p
-          class="text-theme-primary"
-          :class="
-            props.displayMode === 'pc'
-              ? 'rounded-[4px] bg-theme-3 px-[4px] py-[2px] text-[10px] leading-[12px]'
-              : 'mt-[2px] text-[11px] leading-[13px]'
-          "
-        >
-          {{ statusText }}
-        </p>
+        <p :class="statusClass">{{ statusText }}</p>
       </div>
     </div>
 
@@ -90,6 +85,7 @@
 
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import OfflineIcon from '@/static/svg/chat/public/offline.svg?component'
 import OnlineIcon from '@/static/svg/chat/public/online.svg?component'
 import SearchIcon from '@/static/svg/chat/public/search.svg?component'
 import { computed } from 'vue'
@@ -113,12 +109,32 @@ const displayName = computed(() => props.conversation.nickName || props.conversa
 /** 将后台头像文件名或绝对地址转换为可显示地址。 */
 const avatarUrl = computed(() => resolveChatMediaUrl(props.conversation.avatar))
 
-/** 优先显示正在输入状态，否则显示当前客服的在线状态。 */
+const conversationStatus = computed(() =>
+  resolveConversationStatus(props.conversation.onlineStatus)
+)
+
+/** 离线客服不展示输入中状态，始终显示“离线”。 */
+const isOffline = computed(() => conversationStatus.value === 'offline')
+
+/** 优先显示正在输入状态；客服离线时固定显示“离线”。 */
 const statusText = computed(() =>
   t(
     getConversationStatusKey(
-      props.typing ? 'typing' : resolveConversationStatus(props.conversation.onlineStatus)
+      isOffline.value ? 'offline' : props.typing ? 'typing' : conversationStatus.value
     )
   )
 )
+
+/** 离线文案使用次级文字色；PC 在线状态保留主题背景。 */
+const statusClass = computed(() => {
+  if (props.displayMode === 'pc') {
+    return isOffline.value
+      ? 'rounded-[4px] px-[4px] py-[2px] text-[10px] leading-[12px] text-text-2'
+      : 'rounded-[4px] bg-theme-3 px-[4px] py-[2px] text-[10px] leading-[12px] text-theme-primary'
+  }
+
+  return isOffline.value
+    ? 'mt-[2px] text-[11px] leading-[13px] text-text-2'
+    : 'mt-[2px] text-[11px] leading-[13px] text-theme-primary'
+})
 </script>

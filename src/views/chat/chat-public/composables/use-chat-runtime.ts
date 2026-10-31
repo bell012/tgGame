@@ -2,9 +2,9 @@ import Api from '@/api'
 import type {
   AutoReplyItem,
   AutoReplyType,
+  ChatConfig,
   ChatHistoryPage,
   ChatHistoryRecord,
-  ChatConfig,
   ChatQaConfig,
   OnlineChatCustomer
 } from '@/api/interface/chat'
@@ -42,18 +42,15 @@ import {
   CHAT_CACHE_PAGE_SIZE,
   deleteCachedChatMessages,
   loadAllCachedChatMessages,
-  loadCachedChatConversations,
   loadCachedChatMessageById,
   loadCachedChatMessages,
   pruneCachedChatMessages,
-  saveCachedChatConversation,
   saveCachedChatMessage
 } from './chat-message-cache'
 import { useChatConnection } from './use-chat-connection'
 
 const CHAT_VISITOR_STORAGE_KEY = 'chat_visitor_id'
 const CHAT_HISTORY_PAGE_SIZE = 20
-const LOCAL_CONVERSATION_VISIBLE_MS = 7 * 24 * 60 * 60 * 1000
 /** 已读取欢迎语配置的会话；键中包含用户、商户和客服，避免切换账号时误复用。 */
 const requestedWelcomeReminderConversationKeys = new Set<string>()
 const CHAT_MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -406,20 +403,33 @@ export function useChatRuntime() {
     return message.text ?? ''
   }
 
-  /** 用本地缓存历史覆盖会话预览，避免使用客服列表接口的非聊天消息字段。 */
-  const hydrateConversationPreview = async (conversation: ConversationItem) => {
-    const { messages: conversationMessages } = await loadCachedChatMessages(
+  /** 判断接口是否给出了可用的未读消息摘要；空对象视为未返回。 */
+  const hasLastUnreadMessage = (conversation: ConversationItem) => {
+    const lastUnreadMessage = conversation.lastUnreadMessage
+    return Boolean(
+      lastUnreadMessage && (lastUnreadMessage.content || lastUnreadMessage.contentType)
+    )
+  }
+
+  /**
+   * 接口没有未读消息摘要时，以该客服本地历史的最新消息补充预览。
+   * 仅补充接口已返回的会话项，不会从缓存新增会话或改变接口排序、在线状态。
+   */
+  const hydrateConversationHistoryPreview = async (conversation: ConversationItem) => {
+    if (hasLastUnreadMessage(conversation)) return conversation
+
+    const { messages: cachedMessages } = await loadCachedChatMessages(
       getConversationCacheKey(currentChatUserId.value, dealerCode.value, conversation),
       { limit: 1 }
     )
-    const latestMessage = getLatestConversationMessage(conversationMessages)
+    const latestMessage = getLatestConversationMessage(cachedMessages)
+    if (!latestMessage) return conversation
 
     return {
       ...conversation,
       lastMessage: getConversationMessagePreview(latestMessage),
-      lastMessageType: latestMessage?.type,
-      // 会话列表时间以本地历史最新消息的展示时间为准。
-      lastMessageTime: latestMessage?.time ?? ''
+      lastMessageType: latestMessage.type,
+      lastMessageTime: latestMessage.time
     }
   }
 
@@ -432,41 +442,6 @@ export function useChatRuntime() {
     activeConversation.value.lastMessageType = latestMessage?.type
     // 当前会话新增消息后，同步更新会话列表使用的本地消息时间。
     activeConversation.value.lastMessageTime = latestMessage?.time ?? ''
-  }
-
-  /** 缓存接口已返回或用户已进入过的客服基础信息，供近期本地会话在列表中恢复。 */
-  const persistConversationMetadata = (conversation: ConversationItem) => {
-    const cacheKey = getConversationCacheKey(
-      currentChatUserId.value,
-      dealerCode.value,
-      conversation
-    )
-    void saveCachedChatConversation(cacheKey, conversation)
-  }
-
-  /** 将未出现在在线客服接口中的近期本地会话补入列表，并固定展示为离线。 */
-  const loadRecentLocalConversations = async (onlineConversationIds: Set<string>) => {
-    const prefix = currentChatUserId.value + ':' + dealerCode.value + ':'
-    const cachedConversations = await loadCachedChatConversations(prefix, {
-      minimumTimestamp: Date.now() - LOCAL_CONVERSATION_VISIBLE_MS
-    })
-
-    return cachedConversations
-      .filter(({ conversation }) => !onlineConversationIds.has(conversation.id))
-      .sort(
-        (left, right) =>
-          (Number(right.latestMessage.timestamp) || 0) - (Number(left.latestMessage.timestamp) || 0)
-      )
-      .map(({ conversation, latestMessage }) => ({
-        ...conversation,
-        // resolveConversationStatus 将非 0 值视为离线；本地补充项不复用过期在线状态。
-        onlineStatus: 1,
-        unreadCount: 0,
-        lastUnreadMessage: undefined,
-        lastMessage: getConversationMessagePreview(latestMessage),
-        lastMessageType: latestMessage.type,
-        lastMessageTime: latestMessage.time
-      }))
   }
 
   /** 将新消息去重写入当前会话，并立即同步到本地缓存。 */
@@ -868,7 +843,11 @@ export function useChatRuntime() {
 
     try {
       const response = await Api.chat.queryOnlineCustomer(
-        { memberRowId: currentChatUserId.value },
+        {
+          memberRowId: currentChatUserId.value,
+          // 后端以 3 返回全部客服；会话列表不再以本地缓存补充客服项。
+          onlineStatus: 3
+        },
         { showErrorToast: false }
       )
 
@@ -879,15 +858,9 @@ export function useChatRuntime() {
       const customerConversations = toArray<OnlineChatCustomer>(response.result)
         .sort((left, right) => (Number(left.sort) || 0) - (Number(right.sort) || 0))
         .map(item => ({ ...item, id: String(item.id) }))
-      customerConversations.forEach(persistConversationMetadata)
-      const onlineConversationIds = new Set(
-        customerConversations.map(conversation => conversation.id)
+      conversations.value = await Promise.all(
+        customerConversations.map(hydrateConversationHistoryPreview)
       )
-      const [hydratedConversations, localConversations] = await Promise.all([
-        Promise.all(customerConversations.map(hydrateConversationPreview)),
-        loadRecentLocalConversations(onlineConversationIds)
-      ])
-      conversations.value = [...hydratedConversations, ...localConversations]
     } catch (error) {
       if (!silent) {
         conversations.value = []
@@ -1031,7 +1004,6 @@ export function useChatRuntime() {
       dealerCode.value,
       conversation
     )
-    persistConversationMetadata(conversation)
     const cachedPage = await loadCachedChatMessages(conversationCacheKey, {
       limit: CHAT_CACHE_PAGE_SIZE
     })

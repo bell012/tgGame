@@ -15,10 +15,8 @@
         <!-- PC 客服头像与在线圆点。 -->
         <div class="relative size-[40px] shrink-0">
           <img :src="avatarUrl" alt="" class="size-[40px] rounded-full object-cover" />
-          <span
-            v-if="isOnline"
-            class="absolute bottom-[2px] right-[2px] size-[6px] rounded-full border border-common-100 bg-theme-primary"
-          />
+          <OfflineIcon v-if="!isOnline" class="absolute bottom-[2px] right-[2px] size-[7px]" />
+          <OnlineIcon v-else class="absolute bottom-[2px] right-[2px] size-[7px]" />
         </div>
 
         <!-- PC 昵称、状态与最后消息。 -->
@@ -32,7 +30,7 @@
             </span>
             <span
               class="flex h-4 shrink-0 items-center justify-center rounded-[4px] px-[4px] text-[10px] font-[400] leading-3"
-              :class="isOnline ? 'bg-theme-3 text-theme-primary' : 'text-text-2'"
+              :class="isOnline ? 'bg-theme-3 text-theme-primary' : 'bg-opacity-10   text-text-2'"
             >
               {{ t(getConversationStatusKey(conversationStatus)) }}
             </span>
@@ -94,10 +92,11 @@
         <div class="relative size-full overflow-hidden rounded-[6px]">
           <img :src="avatarUrl" alt="" class="size-full object-cover" />
         </div>
-        <OnlineIcon
-          v-if="conversationStatus !== 'offline'"
+        <OfflineIcon
+          v-if="conversationStatus === 'offline'"
           class="absolute -right-[3.33px] bottom-0 z-[1] size-[8px]"
         />
+        <OnlineIcon v-else class="absolute -right-[3.33px] bottom-0 z-[1] size-[8px]" />
       </div>
 
       <!-- 昵称、状态与消息均按固定纵向槽位定位。 -->
@@ -109,7 +108,9 @@
           <span
             class="flex h-[16px] shrink-0 items-center justify-center rounded-[3px] px-[6px] text-[10px] font-[400] leading-[12px]"
             :class="
-              conversationStatus === 'offline' ? 'text-text-2' : 'bg-theme-3 text-theme-primary'
+              conversationStatus === 'offline'
+                ? 'bg-opacity-10 text-text-2'
+                : 'bg-theme-3 text-theme-primary'
             "
           >
             {{ t(getConversationStatusKey(conversationStatus)) }}
@@ -142,6 +143,7 @@
 
 <script setup lang="ts">
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import OfflineIcon from '@/static/svg/chat/public/offline.svg?component'
 import OnlineIcon from '@/static/svg/chat/public/online.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -173,10 +175,14 @@ const unreadCount = computed(() => Math.max(0, Number(props.conversation.unreadC
 /** 直接展示 IndexedDB 最新消息预先格式化的 time；无本地历史时保持为空。 */
 const lastMessageTime = computed(() => String(props.conversation.lastMessageTime ?? '').trim())
 
-/** 优先展示接口返回的最新未读消息；未返回时保持本地消息预览逻辑。 */
+/** 优先展示有效的接口未读摘要；未返回或空对象时回退至本地历史预览。 */
 const lastMessagePreview = computed(() => {
   const lastUnreadMessage = props.conversation.lastUnreadMessage
-  if (lastUnreadMessage) {
+  const hasLastUnreadMessage = Boolean(
+    lastUnreadMessage && (lastUnreadMessage.content || lastUnreadMessage.contentType)
+  )
+
+  if (hasLastUnreadMessage && lastUnreadMessage) {
     if (lastUnreadMessage.contentType === 'image') return t('chatPublic.imageMessagePreview')
     if (
       lastUnreadMessage.contentType === 'redPack' ||

@@ -9,6 +9,8 @@ export interface ChatApiResponse<TResult> {
 /** 在线客服列表查询参数。 */
 export interface QueryOnlineCustomerForm {
   memberRowId: string
+  /** 3 表示查询全部客服（在线和离线）。 */
+  onlineStatus: number
 }
 
 /** 客服历史消息分页查询参数。 */
@@ -52,6 +54,10 @@ export interface OnlineChatCustomer {
   nickName?: string
   onlineStatus?: number
   unreadCount?: number
+  /** 接口返回的最后一条消息预览；本地无历史缓存时用于会话列表展示。 */
+  lastMessage?: string
+  /** 接口返回的最后一条消息 ID。 */
+  lastMsgId?: string
   /** 后台返回的最新未读消息，用于优先展示会话列表预览。 */
   lastUnreadMessage?: {
     content?: string
