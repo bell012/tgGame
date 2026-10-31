@@ -6,7 +6,7 @@ const TICKET_PC_OVERLAY_PADDING = 24
 
 const viewportWidth = ref(0)
 const viewportHeight = ref(0)
-const stackLayoutHeight = ref(TICKET_PC_LAYOUT.modalBodyHeight)
+const stackLayoutHeight = ref<number>(TICKET_PC_LAYOUT.modalBodyHeight)
 
 let viewportListenerCount = 0
 
