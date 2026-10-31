@@ -1,6 +1,6 @@
 <template>
   <div
-    class="absolute inset-0 z-10 flex items-center justify-center bg-[rgba(0,0,0,0.6)] font-inter"
+    class="absolute inset-0 z-10 flex items-center justify-center bg-mask-60-1 font-inter"
     @click.self="emit('close')"
   >
     <div class="flex w-[260px] flex-col items-center gap-[24px]">
@@ -15,7 +15,7 @@
         <p
           v-if="showTitle"
           class="absolute inset-x-0 text-center text-[24px] font-[700] leading-[29px]"
-          :class="isClaimed ? 'top-[20px] text-[#E71727]' : 'text-[#FFD59E]'"
+          :class="isClaimed ? 'top-[20px] text-packet-title' : 'text-secondary-9'"
           :style="!isClaimed ? { top: hasProgress ? '20px' : '24px' } : undefined"
         >
           {{
@@ -35,13 +35,13 @@
           <span
             v-else
             class="text-[46px] font-[700] leading-[56px]"
-            :class="isClaimed ? 'text-[#E71727]' : 'text-white'"
+            :class="isClaimed ? 'text-packet-title' : 'text-common-100'"
           >
             {{ amountText }}
           </span>
           <span
             class="max-w-[232px] truncate text-[16px] leading-[19px]"
-            :class="isClaimed ? 'text-[#E71727]' : 'text-[#FFD59E]'"
+            :class="isClaimed ? 'text-packet-title' : 'text-secondary-9'"
           >
             {{ props.item.redEnvelopeName }}
           </span>
@@ -53,11 +53,11 @@
           class="absolute left-[14px] top-[164px] flex w-[232px] flex-col items-center gap-[14px]"
         >
           <div class="flex items-center gap-[4px]">
-            <span class="flex items-center gap-[6px] text-[12px] leading-[15px] text-white">
+            <span class="flex items-center gap-[6px] text-[12px] leading-[15px] text-common-100">
               <img :src="clockIcon" alt="" class="size-[12px]" />
               {{ t('redPacketPanel.timeLeft') }}
             </span>
-            <span class="text-[14px] font-[700] leading-[17px] text-[#F7FF4B]">
+            <span class="text-[14px] font-[700] leading-[17px] text-secondary-6">
               {{ countdown }}
             </span>
           </div>
@@ -65,36 +65,36 @@
           <div class="flex w-full flex-col items-center gap-[2px]">
             <span
               v-if="isSingleCondition && activeCondition"
-              class="relative mb-[4px] rounded-[8px] bg-[#FFD59E] px-[7px] text-[10px] font-[700] leading-[16px]"
+              class="relative mb-[4px] rounded-[8px] bg-secondary-9 px-[7px] text-[10px] font-[700] leading-[16px]"
             >
-              <span class="text-[#FC3C3C]">{{ formatNumber(activeCondition.gather) }}</span>
-              <span class="text-black">/{{ formatNumber(activeCondition.cond) }}</span>
+              <span class="text-secondary-2">{{ formatNumber(activeCondition.gather) }}</span>
+              <span class="text-text-4">/{{ formatNumber(activeCondition.cond) }}</span>
               <span
-                class="absolute left-1/2 top-full -translate-x-1/2 border-x-[4.5px] border-t-[4px] border-x-transparent border-t-[#FFD59E]"
+                class="absolute left-1/2 top-full -translate-x-1/2 border-x-[4.5px] border-t-[4px] border-x-transparent border-t-secondary-9"
               />
             </span>
 
             <div class="flex w-full flex-col gap-[10px]">
-              <div class="h-[6px] w-full overflow-hidden rounded-[60px] bg-[rgba(0,0,0,0.2)]">
+              <div class="h-[6px] w-full overflow-hidden rounded-[60px] bg-mask-20">
                 <div
-                  class="h-full rounded-[60px] bg-[#F7FF4B]"
+                  class="h-full rounded-[60px] bg-secondary-6"
                   :style="{ width: `${progressPercent}%` }"
                 />
               </div>
 
               <p
                 v-if="isSingleCondition && activeCondition"
-                class="text-center text-[12px] leading-[15px] text-white"
+                class="text-center text-[12px] leading-[15px] text-common-100"
               >
                 {{ t(`redPacketPanel.conditionHint.${activeCondition.key}.prefix`) }}
-                <span class="text-[#F7FF4B]">{{ formatNumber(activeCondition.cond) }}+</span>
+                <span class="text-secondary-6">{{ formatNumber(activeCondition.cond) }}+</span>
                 {{ t(`redPacketPanel.conditionHint.${activeCondition.key}.suffix`) }}
               </p>
 
               <div v-else class="flex flex-col gap-[6px] text-[12px] leading-[15px]">
-                <p v-for="condition in conditions" :key="condition.key" class="text-white">
+                <p v-for="condition in conditions" :key="condition.key" class="text-common-100">
                   {{ t(`redPacketPanel.conditionLabel.${condition.key}`) }}
-                  <span class="text-[#F7FF4B]">
+                  <span class="text-secondary-6">
                     {{ formatNumber(condition.gather) }}/{{ formatNumber(condition.cond) }}
                   </span>
                 </p>
@@ -106,7 +106,7 @@
         <!-- 已过期 / 已领完 提示 -->
         <div
           v-if="isExpired || isSoldOut"
-          class="absolute inset-x-0 top-[229px] flex flex-col items-center gap-[4px] text-[24px] font-[700] leading-[29px] text-[#FFD59E]"
+          class="absolute inset-x-0 top-[229px] flex flex-col items-center gap-[4px] text-[24px] font-[700] leading-[29px] text-secondary-9"
         >
           <span>{{
             t(isExpired ? 'redPacketPanel.expiredTitle' : 'redPacketPanel.soldOutTitle')
@@ -127,7 +127,7 @@
         <button
           v-if="buttonText"
           type="button"
-          class="red-packet-popup-button absolute left-[26px] flex w-[208px] items-center justify-center rounded-[68px] px-[12px] pb-[10px] pt-[12px] text-[16px] font-[700] leading-[19px] text-[#CD1825] disabled:cursor-default"
+          class="red-packet-popup-button absolute left-[26px] flex w-[208px] items-center justify-center rounded-[68px] px-[12px] pb-[10px] pt-[12px] text-[16px] font-[700] leading-[19px] text-packet-button-text disabled:cursor-default"
           :style="{ top: `${buttonTop}px` }"
           :disabled="isClaimed || claiming"
           @click="handleButtonClick"
@@ -137,7 +137,7 @@
 
         <p
           v-if="isClaimed"
-          class="absolute inset-x-0 top-[303px] text-center text-[12px] leading-[15px] text-[#FFD59E]"
+          class="absolute inset-x-0 top-[303px] text-center text-[12px] leading-[15px] text-secondary-9"
         >
           {{ t('redPacketPanel.credited') }}
         </p>
@@ -146,14 +146,14 @@
           v-if="isExpired"
           class="absolute inset-x-0 top-[321px] flex items-center justify-center gap-[6px] text-[12px] leading-[15px]"
         >
-          <span class="text-white">{{ t('redPacketPanel.expiryDate') }}</span>
-          <span class="font-[700] text-[#F7FF4B]">{{ expiryDateText }}</span>
+          <span class="text-common-100">{{ t('redPacketPanel.expiryDate') }}</span>
+          <span class="font-[700] text-secondary-6">{{ expiryDateText }}</span>
         </p>
 
         <button
           v-if="isClaimed"
           type="button"
-          class="absolute left-1/2 top-[327px] flex -translate-x-1/2 items-center gap-[2px] whitespace-nowrap text-[12px] leading-[15px] text-[#FFD59E]"
+          class="absolute left-1/2 top-[327px] flex -translate-x-1/2 items-center gap-[2px] whitespace-nowrap text-[12px] leading-[15px] text-secondary-9"
           @click="emit('history')"
         >
           {{ t('redPacketPanel.claimHistory') }}
@@ -336,11 +336,15 @@ const handleButtonClick = () => {
 
 <style scoped>
 .red-packet-popup-button {
-  background: linear-gradient(180deg, #fce9b5 0%, #fbb357 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-red-packet-button-start) 0%,
+    var(--color-red-packet-button-end) 100%
+  );
   box-shadow:
-    0 2px 0 0 #fc9034,
-    inset 0 -1px 6px 0 rgba(253, 239, 170, 0.4),
-    inset 0 1px 6px 0 rgba(255, 251, 229, 0.8);
-  text-shadow: 0 0.6px 0 #ffeeab;
+    0 2px 0 0 var(--color-red-packet-button-shadow),
+    inset 0 -1px 6px 0 var(--color-red-packet-button-inset-bottom),
+    inset 0 1px 6px 0 var(--color-red-packet-button-inset-top);
+  text-shadow: 0 0.6px 0 var(--color-red-packet-button-highlight);
 }
 </style>

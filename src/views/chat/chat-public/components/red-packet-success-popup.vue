@@ -26,7 +26,7 @@
 
           <!-- 领取成功标题和奖励金额。 -->
           <div
-            class="absolute left-1/2 flex -translate-x-1/2 flex-col items-center text-center text-[#E71727]"
+            class="absolute left-1/2 flex -translate-x-1/2 flex-col items-center text-center text-packet-title"
             :class="
               props.displayMode === 'pc'
                 ? 'top-[42px] w-[254px] gap-[16px]'
@@ -56,11 +56,11 @@
           </div>
           <!-- 插画内置区域的币种符号 -->
           <span
-            class="absolute inline-flex items-center justify-center font-black leading-none text-[#E92629]"
+            class="absolute inline-flex items-center justify-center font-black leading-none text-packet-amount"
             :class="
               props.displayMode === 'pc'
-                ? 'left-1/2 top-[313.88px] h-[48.657px] w-[30.053px] -translate-x-1/2 text-[48.657px] [text-shadow:0_1px_0_#FFEEAB]'
-                : 'left-1/2 top-[219.33px] h-[34px] w-[21px] -translate-x-1/2 text-[34px] [text-shadow:0_0.702px_0_#FFEEAB]'
+                ? 'left-1/2 top-[313.88px] h-[48.657px] w-[30.053px] -translate-x-1/2 text-[48.657px] [text-shadow:0_1px_0_var(--color-red-packet-button-highlight)]'
+                : 'left-1/2 top-[219.33px] h-[34px] w-[21px] -translate-x-1/2 text-[34px] [text-shadow:0_0.702px_0_var(--color-red-packet-button-highlight)]'
             "
           >
             {{ currencySymbol }}
@@ -68,11 +68,11 @@
           <!-- 插画内置按钮区域的领取完成状态。 -->
           <button
             type="button"
-            class="absolute left-1/2 -translate-x-1/2 border-0 bg-transparent p-0 text-center font-[700] text-[#CD1825]"
+            class="absolute left-1/2 -translate-x-1/2 border-0 bg-transparent p-0 text-center font-[700] text-packet-button-text"
             :class="
               props.displayMode === 'pc'
-                ? 'bottom-[90px] h-[53px] w-[280px] text-[32px] leading-[39px] [text-shadow:0_0.954px_0_#FFEEAB]  '
-                : 'bottom-[63.67px] h-[38px] w-[160px] text-[23px] leading-[28px] [text-shadow:0_0.67px_0_#FFEEAB]   '
+                ? 'bottom-[90px] h-[53px] w-[280px] text-[32px] leading-[39px] [text-shadow:0_0.954px_0_var(--color-red-packet-button-highlight)]'
+                : 'bottom-[63.67px] h-[38px] w-[160px] text-[23px] leading-[28px] [text-shadow:0_0.67px_0_var(--color-red-packet-button-highlight)]'
             "
             @click="$emit('close')"
           >
@@ -81,7 +81,7 @@
 
           <!-- 余额到账提示。 -->
           <p
-            class="absolute left-1/2 -translate-x-1/2 text-center text-[#FFD59E]"
+            class="absolute left-1/2 -translate-x-1/2 text-center text-secondary-9"
             :class="
               props.displayMode === 'pc'
                 ? 'bottom-[24px] h-[38px] w-[247px] text-[16px] leading-[19px]'

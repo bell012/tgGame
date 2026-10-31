@@ -7,7 +7,7 @@
     <!-- 待领取红包可点击，已领取红包仅保留聊天记录展示。 -->
     <button
       type="button"
-      class="relative shrink-0 overflow-hidden rounded-[10px] bg-[#F3674C] text-left transition-opacity disabled:cursor-default"
+      class="relative shrink-0 overflow-hidden rounded-[10px] bg-packet-body text-left transition-opacity disabled:cursor-default"
       :class="[
         props.displayMode === 'pc' ? 'h-[92px] w-[258px]' : 'h-[90px] w-[254px]',
         isClaimable ? 'cursor-pointer active:opacity-80' : 'opacity-70'
@@ -30,7 +30,7 @@
         :class="props.displayMode === 'pc' ? 'top-[13px]' : 'top-[14px]'"
       >
         <p
-          class="font-inter font-[700] text-[#FFD59E]"
+          class="font-inter font-[700] text-secondary-9"
           :class="
             props.displayMode === 'pc' ? 'text-[16px] leading-[19px]' : 'text-[14px] leading-[17px]'
           "
@@ -38,7 +38,7 @@
           {{ t('chatPublic.redPacketGoodLuck') }}
         </p>
         <p
-          class="mt-[4px] text-[12px] text-[#FFD59E]"
+          class="mt-[4px] text-[12px] text-secondary-9"
           :class="props.displayMode === 'pc' ? 'leading-[15px]' : 'leading-[14px]'"
         >
           {{ packetLabel }}
@@ -48,13 +48,13 @@
       <!-- 红包信息区与时间的分隔线。 -->
       <i
         aria-hidden="true"
-        class="absolute right-[12px] top-[64px] h-px bg-[#E65A3F]"
+        class="absolute right-[12px] top-[64px] h-px bg-packet-divider"
         :class="props.displayMode === 'pc' ? 'left-[16px]' : 'left-[12px]'"
       />
 
       <!-- 红包来源与发送时间。 -->
       <span
-        class="absolute text-[12px] text-[#FFD59E]"
+        class="absolute text-[12px] text-secondary-9"
         :class="
           props.displayMode === 'pc'
             ? 'bottom-[6px] left-[16px] leading-[15px]'
@@ -64,7 +64,7 @@
         {{ t('chatPublic.supportRedPacket') }}
       </span>
       <span
-        class="absolute right-[12px] text-[12px] text-[#FFD59E]"
+        class="absolute right-[12px] text-[12px] text-secondary-9"
         :class="
           props.displayMode === 'pc' ? 'bottom-[6px] leading-[15px]' : 'bottom-[8px] leading-[14px]'
         "

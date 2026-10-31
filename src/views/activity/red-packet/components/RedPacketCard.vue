@@ -10,7 +10,7 @@
 
     <div class="flex w-[260px] flex-col gap-[4px]">
       <div
-        class="flex items-center justify-between gap-[8px] pl-[6px] text-[14px] leading-[20px] text-[#7B7D7D]"
+        class="flex items-center justify-between gap-[8px] pl-[6px] text-[14px] leading-[20px] text-text-3"
       >
         <span class="truncate">{{ props.item.empName }}</span>
         <span class="shrink-0">{{ formatDateTime(props.item.createTime) }}</span>
@@ -22,13 +22,13 @@
         :class="{ 'opacity-50': dimmed }"
         @click="emit('click', props.item)"
       >
-        <img :src="bubbleEar" alt="" class="absolute left-0 top-[10px] h-[11px] w-[6px]" />
-        <span class="absolute inset-y-0 left-[6px] right-0 rounded-[6px] bg-[#F3674C]" />
+        <BubbleEar class="absolute left-0 top-[10px] h-[11px] w-[6px]" />
+        <span class="bg-packet-body absolute inset-y-0 left-[6px] right-0 rounded-[6px]" />
 
         <span class="absolute left-[18px] top-[10.5px] flex w-[230px] flex-col gap-[9px]">
           <span class="flex items-center gap-[11px]">
             <img :src="redPacketIcon" alt="" class="h-[40px] w-[34px] shrink-0" />
-            <span class="flex min-w-0 flex-col justify-center gap-[4px] text-[#FFD59E]">
+            <span class="flex min-w-0 flex-col justify-center gap-[4px] text-secondary-9">
               <span class="truncate text-[16px] font-[700] leading-[19px]">{{ title }}</span>
               <span v-if="subtitle" class="truncate text-[12px] leading-[15px]">
                 {{ subtitle }}
@@ -37,10 +37,10 @@
           </span>
 
           <span class="flex flex-col gap-[6px]">
-            <span class="h-px w-full bg-[#E65A3F]" />
+            <span class="h-px w-full bg-packet-divider" />
             <span class="flex items-center justify-between gap-[8px] text-[12px] leading-[15px]">
-              <span class="truncate text-[#FFD59E]">{{ props.item.redEnvelopeName }}</span>
-              <span class="flex shrink-0 items-center gap-[4px] text-[#F7FF4B]">
+              <span class="truncate text-secondary-9">{{ props.item.redEnvelopeName }}</span>
+              <span class="flex shrink-0 items-center gap-[4px] text-secondary-6">
                 <img :src="clockIcon" alt="" class="size-[12px]" />
                 {{ countdown }}
               </span>
@@ -56,7 +56,7 @@
 import { computed, ref } from 'vue'
 import type { RedEnvelopeItem } from '@/api/interface/red-envelope'
 import redPacketIcon from '@/static/svg/chat/public/red-packet-icon.svg?url'
-import bubbleEar from '@/static/svg/red-packet/bubble-ear.svg?url'
+import BubbleEar from '@/static/svg/red-packet/bubble-ear.svg?component'
 import clockIcon from '@/static/svg/red-packet/clock.svg?url'
 import tgAvatar from '@/static/svg/red-packet/tg-avatar.svg?url'
 import { resolveGameImageUrl } from '@/utils/image'
