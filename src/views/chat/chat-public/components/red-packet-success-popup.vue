@@ -81,7 +81,7 @@
 
           <!-- 余额到账提示。 -->
           <p
-            class="absolute left-1/2 -translate-x-1/2 text-center text-[#FFD59E]"
+            class="absolute left-1/2 -translate-x-1/2 text-center text-secondary-9"
             :class="
               props.displayMode === 'pc'
                 ? 'bottom-[24px] h-[38px] w-[247px] text-[16px] leading-[19px]'

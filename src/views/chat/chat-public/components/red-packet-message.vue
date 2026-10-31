@@ -30,7 +30,7 @@
         :class="props.displayMode === 'pc' ? 'top-[13px]' : 'top-[14px]'"
       >
         <p
-          class="font-inter font-[700] text-[#FFD59E]"
+          class="font-inter font-[700] text-secondary-9"
           :class="
             props.displayMode === 'pc' ? 'text-[16px] leading-[19px]' : 'text-[14px] leading-[17px]'
           "
@@ -38,7 +38,7 @@
           {{ t('chatPublic.redPacketGoodLuck') }}
         </p>
         <p
-          class="mt-[4px] text-[12px] text-[#FFD59E]"
+          class="mt-[4px] text-[12px] text-secondary-9"
           :class="props.displayMode === 'pc' ? 'leading-[15px]' : 'leading-[14px]'"
         >
           {{ packetLabel }}
@@ -54,7 +54,7 @@
 
       <!-- 红包来源与发送时间。 -->
       <span
-        class="absolute text-[12px] text-[#FFD59E]"
+        class="absolute text-[12px] text-secondary-9"
         :class="
           props.displayMode === 'pc'
             ? 'bottom-[6px] left-[16px] leading-[15px]'
@@ -64,7 +64,7 @@
         {{ t('chatPublic.supportRedPacket') }}
       </span>
       <span
-        class="absolute right-[12px] text-[12px] text-[#FFD59E]"
+        class="absolute right-[12px] text-[12px] text-secondary-9"
         :class="
           props.displayMode === 'pc' ? 'bottom-[6px] leading-[15px]' : 'bottom-[8px] leading-[14px]'
         "
