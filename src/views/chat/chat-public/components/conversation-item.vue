@@ -147,7 +147,12 @@ import OfflineIcon from '@/static/svg/chat/public/offline.svg?component'
 import OnlineIcon from '@/static/svg/chat/public/online.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getConversationStatusKey, resolveChatMediaUrl, resolveConversationStatus } from '../shared'
+import {
+  getChatPlainText,
+  getConversationStatusKey,
+  resolveChatMediaUrl,
+  resolveConversationStatus
+} from '../shared'
 import type { ConversationItem } from '../types'
 
 const { t } = useI18n()
@@ -190,7 +195,7 @@ const lastMessagePreview = computed(() => {
     ) {
       return t('chatPublic.redPacketMessagePreview')
     }
-    return lastUnreadMessage.content || ''
+    return getChatPlainText(lastUnreadMessage.content)
   }
 
   if (props.conversation.lastMessageType === 'image') return t('chatPublic.imageMessagePreview')
@@ -198,7 +203,7 @@ const lastMessagePreview = computed(() => {
   if (props.conversation.lastMessageType === 'red-pack') {
     return t('chatPublic.redPacketMessagePreview')
   }
-  return props.conversation.lastMessage || ''
+  return getChatPlainText(props.conversation.lastMessage)
 })
 
 /** 将后台头像文件名或绝对地址转换为可显示地址。 */
