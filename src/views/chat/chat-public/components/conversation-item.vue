@@ -177,19 +177,21 @@ const lastMessageTime = computed(() => String(props.conversation.lastMessageTime
 const lastMessagePreview = computed(() => {
   const lastUnreadMessage = props.conversation.lastUnreadMessage
   if (lastUnreadMessage) {
-    if (lastUnreadMessage.contentType === 'image') return '[图片消息]'
+    if (lastUnreadMessage.contentType === 'image') return t('chatPublic.imageMessagePreview')
     if (
       lastUnreadMessage.contentType === 'redPack' ||
       lastUnreadMessage.contentType === 'redReceive'
     ) {
-      return '[红包]'
+      return t('chatPublic.redPacketMessagePreview')
     }
     return lastUnreadMessage.content || ''
   }
 
-  if (props.conversation.lastMessageType === 'image') return '[图片消息]'
-  if (props.conversation.lastMessageType === 'video') return '[视频消息]'
-  if (props.conversation.lastMessageType === 'red-pack') return '[红包]'
+  if (props.conversation.lastMessageType === 'image') return t('chatPublic.imageMessagePreview')
+  if (props.conversation.lastMessageType === 'video') return t('chatPublic.videoMessagePreview')
+  if (props.conversation.lastMessageType === 'red-pack') {
+    return t('chatPublic.redPacketMessagePreview')
+  }
   return props.conversation.lastMessage || ''
 })
 

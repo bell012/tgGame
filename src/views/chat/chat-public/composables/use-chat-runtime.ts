@@ -401,7 +401,7 @@ export function useChatRuntime() {
   const getConversationMessagePreview = (message: ChatMessage | null) => {
     if (!message) return ''
     if (message.type === 'red-pack' || message.system?.type === 'red-packet-claimed') {
-      return '[红包]'
+      return i18n.global.t('chatPublic.redPacketMessagePreview')
     }
     return message.text ?? ''
   }
