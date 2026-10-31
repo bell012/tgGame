@@ -7,7 +7,10 @@
         isMobile ? LUCKY_SPIN_TOKENS.modalMaskClass : TICKET_PC_LAYOUT.overlayMaskClass,
         isMobile
           ? 'flex h-[100dvh] min-h-0 flex-col overflow-hidden'
-          : 'flex items-center justify-center overflow-y-auto p-6'
+          : [
+              'flex items-center justify-center p-6',
+              isTicketPcModalScaled ? 'overflow-hidden' : 'overflow-y-auto'
+            ]
       ]"
       :style="modalOverlayStyle"
     >
@@ -32,6 +35,7 @@ import type {
 } from '../../shared/types'
 import { useTicketGameSlot } from '../composables/useTicketGameSlot'
 import { useTicketOverlayStyle } from '../composables/useTicketOverlayStyle'
+import { useTicketPcViewport } from '../composables/useTicketDesktopPanelStyle'
 import type { TicketActivityCoreEmits } from './activity-props'
 import TicketActivityDesktopLayout from './TicketActivityDesktopLayout.vue'
 import TicketActivityMobileLayout from './TicketActivityMobileLayout.vue'
@@ -56,6 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<TicketActivityCoreEmits>()
 
 const isMobile = useIsMobile()
+const { isTicketPcModalScaled } = useTicketPcViewport()
 const { modalOverlayStyle } = useTicketOverlayStyle(isMobile)
 
 const { gameId, activitySession, activeGameIndex } = toRefs(props)
