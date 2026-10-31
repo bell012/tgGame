@@ -1,18 +1,14 @@
 <template>
   <!-- 展开内容浮于后续卡片上方，外层保留收起时的列表占位。 -->
-  <div
-    class="relative min-h-[362px] min-w-0 self-start"
-    :style="item.parlay && expanded ? { height: `${collapsedHeight}px` } : undefined"
-  >
+  <div class="relative flex h-[407px] min-w-0">
     <article
       ref="card"
-      class="flex min-w-0 flex-col self-start rounded-[10px] bg-bg-2 px-2.5 pb-5 pt-2.5 text-text-1"
-      :class="[
+      class="flex min-w-0 flex-1 flex-col rounded-[10px] bg-bg-2 px-2.5 pb-5 pt-2.5 text-text-1"
+      :class="
         item.parlay && expanded
-          ? 'absolute inset-x-0 top-0 z-20 max-h-[740px] shadow-lg'
-          : 'relative',
-        confirming && !item.parlay ? 'min-h-[366px]' : 'min-h-[362px]'
-      ]"
+          ? 'absolute inset-x-0 top-0 z-20 min-h-full max-h-[calc(200%+1rem)] shadow-lg'
+          : 'relative h-full'
+      "
       :style="transitioning && heldHeight ? { height: `${heldHeight}px` } : undefined"
       :data-history-id="item.id"
     >
@@ -23,7 +19,10 @@
         @after-leave="restoreRecordLayout"
         @after-enter="transitioning = false"
       >
-        <div :key="confirming ? 'confirm' : 'record'" class="flex min-h-0 flex-1 flex-col">
+        <div
+          :key="confirming ? 'confirm' : 'record'"
+          class="flex min-h-0 flex-1 flex-col overflow-y-auto"
+        >
           <header
             class="flex shrink-0 items-center justify-between gap-3 text-sm leading-5"
             :class="confirming ? 'h-6' : 'h-5'"
@@ -46,7 +45,7 @@
               >{{ item.statusLabel }}</span
             >
           </header>
-          <p v-if="item.transactionLabel" class="mt-1 text-xs text-text-2">
+          <p v-if="item.transactionLabel" class="mt-1 shrink-0 text-xs text-text-2">
             {{ item.transactionLabel }}
           </p>
           <button
@@ -66,8 +65,8 @@
           </button>
           <div
             v-if="!item.parlay || expanded"
-            class="mt-2.5 min-h-0 space-y-2.5"
-            :class="item.parlay ? 'overflow-y-auto overscroll-contain' : ''"
+            class="mt-2.5 space-y-2.5"
+            :class="item.parlay ? 'min-h-0 overflow-y-auto' : 'shrink-0'"
           >
             <HistoryEvent
               v-for="selection in item.selections"
@@ -78,18 +77,8 @@
               :show-time="item.parlay"
             />
           </div>
-          <HistoryFields
-            class="mb-5 shrink-0 pt-5"
-            :class="item.parlay ? '' : 'mt-auto'"
-            :item="item"
-            pc
-            :show-odds="item.parlay"
-          />
-          <div
-            v-if="confirming"
-            class="grid shrink-0 grid-cols-2 gap-4"
-            :class="item.parlay ? 'mt-auto' : ''"
-          >
+          <HistoryFields class="mb-5 shrink-0 pt-5" :item="item" pc :show-odds="item.parlay" />
+          <div v-if="confirming" class="mt-auto grid shrink-0 grid-cols-2 gap-4">
             <button
               type="button"
               :class="actionClass"
@@ -110,11 +99,8 @@
           <button
             v-else
             type="button"
-            class="flex h-9 shrink-0 items-center justify-center rounded-[30px] text-sm font-bold"
-            :class="[
-              item.cashOutAvailable ? 'bg-theme-primary text-text-4' : 'bg-bg-3 text-text-3',
-              item.parlay ? 'mt-auto' : ''
-            ]"
+            class="mt-auto flex h-9 shrink-0 items-center justify-center rounded-[30px] text-sm font-bold"
+            :class="item.cashOutAvailable ? 'bg-theme-primary text-text-4' : 'bg-bg-3 text-text-3'"
             :disabled="!item.cashOutAvailable || submitting || transitioning"
             @click="openConfirm"
           >
@@ -140,15 +126,13 @@ const emit = defineEmits<{ open: []; close: []; confirm: [] }>()
 const { t } = useI18n()
 const expanded = ref(false)
 const card = ref<HTMLElement | null>(null)
-const collapsedHeight = ref(362)
 const heldHeight = ref(0)
 const transitioning = ref(false)
-let recordLayout = { expanded: false, collapsedHeight: 362, height: 362 }
+let recordLayout = { expanded: false, height: 407 }
 const actionClass =
   'flex h-9 items-center justify-center rounded-[30px] bg-theme-primary text-sm font-bold text-text-4 disabled:opacity-50'
 const toggleExpanded = () => {
   if (props.submitting || transitioning.value) return
-  if (!expanded.value) collapsedHeight.value = card.value?.getBoundingClientRect().height ?? 362
   expanded.value = !expanded.value
 }
 const openConfirm = () => {
@@ -158,18 +142,16 @@ const openConfirm = () => {
 const restoreRecordLayout = () => {
   if (props.confirming) return
   expanded.value = recordLayout.expanded
-  collapsedHeight.value = recordLayout.collapsedHeight
   heldHeight.value = recordLayout.height
 }
 watch(
   () => props.confirming,
   confirming => {
     // 仅在界面过渡时锁住当前高度，串关在确认界面仍可独立展开和收起。
-    heldHeight.value = card.value?.getBoundingClientRect().height ?? 362
+    heldHeight.value = card.value?.getBoundingClientRect().height ?? 407
     if (confirming) {
       recordLayout = {
         expanded: expanded.value,
-        collapsedHeight: collapsedHeight.value,
         height: heldHeight.value
       }
     }

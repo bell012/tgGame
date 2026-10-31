@@ -25,6 +25,7 @@
       :highlight-message-id="highlightMessageId"
       :highlight-keyword="highlightKeyword"
       @claim-red-packet="$emit('claim-red-packet', $event)"
+      @view-claimed-red-packet="$emit('view-claimed-red-packet', $event)"
       @load-older="$emit('load-older')"
       @reply="$emit('reply', $event)"
       @retry="$emit('retry', $event)"
@@ -163,6 +164,7 @@ defineEmits<{
   search: []
   reply: [target: ChatReplyTarget]
   'claim-red-packet': [message: ChatMessage]
+  'view-claimed-red-packet': [message: ChatMessage]
   'load-older': []
   retry: [message: ChatMessage]
   issue: [issue: QuickIssue]

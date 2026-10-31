@@ -49,10 +49,11 @@
       <ThemedEmptyState
         :dark-image="defaultImgDark"
         :light-image="defaultImgLight"
+        :image-alt="t('common.noData')"
         :message="t('common.noData')"
         container-class="mt-0"
-        image-class="w-[160px] h-[160px] object-contain"
-        text-class="mt-2 text-xs font-[700] text-center text-text-1"
+        image-class="mb-2.5 h-[200px] w-auto"
+        text-class="text-text-1 text-sm font-[700]"
       />
     </div>
 

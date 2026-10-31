@@ -1,5 +1,8 @@
 import { computed, onDeactivated, onScopeDispose, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { storeToRefs } from 'pinia'
+import { useSportsBetSlipStore } from '@/stores/sportsBetSlip'
+import { QUICK_AMOUNT_COUNT } from './quick-amounts'
 import { parseSportsStake } from './shared'
 import type { SportsBetMode } from '../../shared/types'
 import type { SportsPageState } from '../../index'
@@ -24,7 +27,8 @@ export const applySportsKeyboardKey = (raw: string, key: string, replace = false
 export const useSportsH5Bet = (page: SportsPageState, onAddEvent?: () => void) => {
   const { t } = useI18n()
   const keyboardOpen = ref(false)
-  const quickAmounts = ref([20, 50, 100, 200, 500, 1000])
+  const betSlipStore = useSportsBetSlipStore()
+  const { quickAmounts, quickAmountsStorageKey } = storeToRefs(betSlipStore)
   const editingAmounts = ref(false)
   const amountDrafts = ref<string[]>([])
   const editError = ref('')
@@ -110,8 +114,7 @@ export const useSportsH5Bet = (page: SportsPageState, onAddEvent?: () => void) =
   }
   const startEdit = () => {
     if (busy.value) return
-    // 编辑时只取前四项，保存后替换快捷金额。
-    amountDrafts.value = quickAmounts.value.slice(0, 4).map(String)
+    amountDrafts.value = quickAmounts.value.map(String)
     editError.value = ''
     editingAmounts.value = true
   }
@@ -139,22 +142,23 @@ export const useSportsH5Bet = (page: SportsPageState, onAddEvent?: () => void) =
   }
   const saveEdit = () => {
     if (!editingAmounts.value || busy.value) return
-    const balance = page.balance.value
-    if (balance === null) {
-      editError.value = t('sports.balanceUnavailable')
-      return
-    }
     const amounts = amountDrafts.value.map(parseSportsStake)
-    if (amounts.some(value => value === null || value <= 0 || value > balance)) {
-      editError.value = t('sports.betSlip.quickAmountsWithinBalance')
+    if (amounts.some(value => value === null || value <= 0)) {
+      editError.value = t('sports.betSlip.quickAmountsPositive')
       return
     }
     const validAmounts = amounts.filter((value): value is number => value !== null)
-    if (validAmounts.length !== 4 || new Set(validAmounts).size !== 4) {
+    if (
+      validAmounts.length !== QUICK_AMOUNT_COUNT ||
+      new Set(validAmounts).size !== QUICK_AMOUNT_COUNT
+    ) {
       editError.value = t('sports.betSlip.quickAmountsUnique')
       return
     }
-    quickAmounts.value = validAmounts
+    if (!betSlipStore.saveQuickAmounts(validAmounts)) {
+      editError.value = t('sports.betSlip.quickAmountsSaveFailed')
+      return
+    }
     cancelEdit()
     replaceNextKey = true
   }
@@ -259,6 +263,7 @@ export const useSportsH5Bet = (page: SportsPageState, onAddEvent?: () => void) =
     { flush: 'sync' }
   )
   onDeactivated(close)
+  watch(quickAmountsStorageKey, cancelEdit, { flush: 'sync' })
   onScopeDispose(resetResult)
 
   return {

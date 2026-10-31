@@ -1,13 +1,18 @@
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useUserStore } from '@/stores/user'
 import i18n from '@/i18n'
 import { globalShowToast } from '@/utils/toast'
 import type { SportsBetMode, SportsBetSelection } from '@/views/sports/shared/types'
 import type { BetInfoSource } from '@/views/sports/components/bet-slip/useBetInfo'
+import {
+  DEFAULT_QUICK_AMOUNTS,
+  isValidQuickAmounts
+} from '@/views/sports/components/bet-slip/quick-amounts'
 
 export type SelectedOutcome = {
+  fromHot?: boolean
   id: string
   matchId: string
   MarketlineId: number
@@ -26,6 +31,43 @@ export const useSportsBetSlipStore = defineStore('sportsBetSlip', () => {
   const { currentCurrencyCode } = useDisplayCurrency()
   const memberId = computed(() => userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId)
   const accountKey = computed(() => JSON.stringify([memberId.value, currentCurrencyCode.value]))
+  const quickAmountsStorageKey = computed(() =>
+    memberId.value ? `sports_quick_amounts:${memberId.value}` : ''
+  )
+  const quickAmounts = ref([...DEFAULT_QUICK_AMOUNTS])
+  const loadQuickAmounts = () => {
+    let amounts = [...DEFAULT_QUICK_AMOUNTS]
+    try {
+      const stored: unknown = JSON.parse(
+        (quickAmountsStorageKey.value && localStorage.getItem(quickAmountsStorageKey.value)) ||
+          'null'
+      )
+      if (isValidQuickAmounts(stored)) amounts = [...stored]
+    } catch {
+      // 缓存缺失、损坏或不可读时使用默认配置。
+    }
+    quickAmounts.value = amounts
+  }
+  const saveQuickAmounts = (amounts: number[]) => {
+    if (!quickAmountsStorageKey.value || !isValidQuickAmounts(amounts)) return false
+    try {
+      localStorage.setItem(quickAmountsStorageKey.value, JSON.stringify(amounts))
+    } catch {
+      return false
+    }
+    quickAmounts.value = [...amounts]
+    return true
+  }
+  watch(quickAmountsStorageKey, loadQuickAmounts, { immediate: true, flush: 'sync' })
+  const syncQuickAmounts = (event: StorageEvent) => {
+    if (
+      event.storageArea === localStorage &&
+      (event.key === null || event.key === quickAmountsStorageKey.value)
+    )
+      loadQuickAmounts()
+  }
+  window.addEventListener('storage', syncQuickAmounts)
+  onScopeDispose(() => window.removeEventListener('storage', syncQuickAmounts))
   const outcomes = ref<SelectedOutcome[]>([])
   const mode = ref<SportsBetMode>('single')
   const parlayStakes = ref<Record<string, string>>({})
@@ -65,6 +107,9 @@ export const useSportsBetSlipStore = defineStore('sportsBetSlip', () => {
 
   return {
     accountKey,
+    quickAmounts,
+    quickAmountsStorageKey,
+    saveQuickAmounts,
     outcomes,
     mode,
     parlayStakes,

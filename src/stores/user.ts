@@ -380,6 +380,7 @@ export const useUserStore = defineStore('user', () => {
         'home_pop_notice:login:',
         'home_pop_notice:guest:',
         'sports_accept_any_odds:',
+        'sports_quick_amounts:',
         'sports_unread_bet_history:'
       ]
     )

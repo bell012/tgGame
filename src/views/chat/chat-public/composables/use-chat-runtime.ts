@@ -3,6 +3,8 @@ import type {
   AutoReplyItem,
   AutoReplyType,
   ChatConfig,
+  ChatHistoryPage,
+  ChatHistoryRecord,
   ChatQaConfig,
   OnlineChatCustomer
 } from '@/api/interface/chat'
@@ -38,14 +40,17 @@ import type {
 } from '../types'
 import {
   CHAT_CACHE_PAGE_SIZE,
+  deleteCachedChatMessages,
   loadAllCachedChatMessages,
   loadCachedChatMessageById,
   loadCachedChatMessages,
+  pruneCachedChatMessages,
   saveCachedChatMessage
 } from './chat-message-cache'
 import { useChatConnection } from './use-chat-connection'
 
 const CHAT_VISITOR_STORAGE_KEY = 'chat_visitor_id'
+const CHAT_HISTORY_PAGE_SIZE = 20
 /** 已读取欢迎语配置的会话；键中包含用户、商户和客服，避免切换账号时误复用。 */
 const requestedWelcomeReminderConversationKeys = new Set<string>()
 const CHAT_MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -98,6 +103,16 @@ const parseChatRedPacket = (value: unknown): ChatRedPacket | null => {
 
     if ((typeof id !== 'string' && typeof id !== 'number') || (status !== 0 && status !== 1)) {
       return null
+    }
+
+    // 历史接口中已领取的 redPack 可能只返回 id 与 status；卡片仅需状态即可正确显示。
+    if (status === 1) {
+      return {
+        id,
+        status,
+        amount: typeof amount === 'string' || typeof amount === 'number' ? amount : '',
+        currency
+      }
     }
 
     if (typeof amount !== 'string' && typeof amount !== 'number') return null
@@ -238,6 +253,10 @@ export function useChatRuntime() {
   const loadingOlderMessages = ref(false)
   let pendingMessageCacheWrite = Promise.resolve()
   let autoReplyRequestId = 0
+  let serverHistoryHasMore = false
+  let serverHistoryNextPage = 1
+  let serverHistoryRequestId = 0
+  let loadingServerHistory = false
 
   /** 直接读取本地 config 中由 /sy/dlicgh 缓存的 customer_service_dealer。 */
   const dealerCode = computed(() => siteConfigStore.getConfigString('customer_service_dealer'))
@@ -250,6 +269,10 @@ export function useChatRuntime() {
     const memberRowId = acctInfo.value?.memberRowId ?? userInfo.value?.rowId
     return memberRowId ? String(memberRowId) : getChatVisitorId()
   })
+  /** 与会话缓存键保持同一身份判定，决定 30 天会员或 7 天游客的保留期限。 */
+  const isCurrentChatUserGuest = computed(
+    () => !(acctInfo.value?.memberRowId ?? userInfo.value?.rowId)
+  )
 
   /** 构建当前会员或游客写入 Socket 消息的 mine 节点。 */
   const buildMemberParticipant = (): ChatParticipant => {
@@ -335,6 +358,8 @@ export function useChatRuntime() {
       dealerCode.value,
       activeConversation.value
     )
+    // 在写入队列创建时固定身份，避免登录状态在异步写入前变化而误用过期策略。
+    const isGuest = isCurrentChatUserGuest.value
     const messageSnapshot = {
       ...message,
       imageList: message.imageList ? [...message.imageList] : undefined
@@ -342,7 +367,7 @@ export function useChatRuntime() {
 
     pendingMessageCacheWrite = pendingMessageCacheWrite
       .catch(() => undefined)
-      .then(() => saveCachedChatMessage(cacheKey, messageSnapshot))
+      .then(() => saveCachedChatMessage(cacheKey, messageSnapshot, { isGuest }))
 
     return pendingMessageCacheWrite
   }
@@ -369,20 +394,42 @@ export function useChatRuntime() {
       return messageTimestamp >= latestTimestamp ? message : latestMessage
     }, null)
 
-  /** 用本地缓存历史覆盖会话预览，避免使用客服列表接口的非聊天消息字段。 */
-  const hydrateConversationPreview = async (conversation: ConversationItem) => {
-    const { messages: conversationMessages } = await loadCachedChatMessages(
+  /** 会话列表使用固定媒体文案，红包及其领取记录统一显示为“[红包]”。 */
+  const getConversationMessagePreview = (message: ChatMessage | null) => {
+    if (!message) return ''
+    if (message.type === 'red-pack' || message.system?.type === 'red-packet-claimed') {
+      return i18n.global.t('chatPublic.redPacketMessagePreview')
+    }
+    return message.text ?? ''
+  }
+
+  /** 判断接口是否给出了可用的未读消息摘要；空对象视为未返回。 */
+  const hasLastUnreadMessage = (conversation: ConversationItem) => {
+    const lastUnreadMessage = conversation.lastUnreadMessage
+    return Boolean(
+      lastUnreadMessage && (lastUnreadMessage.content || lastUnreadMessage.contentType)
+    )
+  }
+
+  /**
+   * 接口没有未读消息摘要时，以该客服本地历史的最新消息补充预览。
+   * 仅补充接口已返回的会话项，不会从缓存新增会话或改变接口排序、在线状态。
+   */
+  const hydrateConversationHistoryPreview = async (conversation: ConversationItem) => {
+    if (hasLastUnreadMessage(conversation)) return conversation
+
+    const { messages: cachedMessages } = await loadCachedChatMessages(
       getConversationCacheKey(currentChatUserId.value, dealerCode.value, conversation),
       { limit: 1 }
     )
-    const latestMessage = getLatestConversationMessage(conversationMessages)
+    const latestMessage = getLatestConversationMessage(cachedMessages)
+    if (!latestMessage) return conversation
 
     return {
       ...conversation,
-      lastMessage: latestMessage?.text ?? '',
-      lastMessageType: latestMessage?.type,
-      // 会话列表时间以本地历史最新消息的展示时间为准。
-      lastMessageTime: latestMessage?.time ?? ''
+      lastMessage: getConversationMessagePreview(latestMessage),
+      lastMessageType: latestMessage.type,
+      lastMessageTime: latestMessage.time
     }
   }
 
@@ -391,7 +438,7 @@ export function useChatRuntime() {
     if (!activeConversation.value) return
 
     const latestMessage = getLatestConversationMessage(messages.value)
-    activeConversation.value.lastMessage = latestMessage?.text ?? ''
+    activeConversation.value.lastMessage = getConversationMessagePreview(latestMessage)
     activeConversation.value.lastMessageType = latestMessage?.type
     // 当前会话新增消息后，同步更新会话列表使用的本地消息时间。
     activeConversation.value.lastMessageTime = latestMessage?.time ?? ''
@@ -546,6 +593,177 @@ export function useChatRuntime() {
     }
   }
 
+  /** 服务端历史接口的 redReceive 还原为会员右侧红包卡片和固定文案系统记录。 */
+  const mapHistoryRecord = (record: ChatHistoryRecord): ChatMessage[] => {
+    const payload = record.socketMessage
+    if (!payload || typeof payload !== 'object') return []
+
+    const socketPayload = payload as unknown as ChatSocketMessage
+    const messageId = String(socketPayload.messageId ?? record.messageId ?? '').trim()
+    if (!messageId) return []
+
+    const contentType = String(socketPayload.contentType ?? record.contentType ?? '')
+    const timestamp = Number(socketPayload.timestamp ?? record.creationTime) || Date.now()
+    if (contentType === 'redReceive') {
+      const redPacket = parseChatRedPacket(socketPayload.content ?? record.content)
+      if (!redPacket) return []
+      const sourceMessageId = (() => {
+        try {
+          const parsedContent = JSON.parse(
+            String(socketPayload.content ?? record.content ?? '')
+          ) as {
+            messageId?: unknown
+          }
+          return String(parsedContent.messageId ?? '').trim()
+        } catch {
+          return ''
+        }
+      })()
+      const claimedMessageKey = sourceMessageId || messageId
+
+      return [
+        {
+          id: 'red-pack-claimed:' + claimedMessageKey,
+          direction: 'outgoing',
+          type: 'red-pack',
+          text: '',
+          time: formatChatMessageTime(timestamp),
+          period: getChatTimePeriod(timestamp),
+          timestamp,
+          read: true,
+          status: 'sent',
+          contentType,
+          redPacket,
+          authorId: String(socketPayload.mine?.userId ?? ''),
+          authorName: decodeChatDisplayName(socketPayload.mine?.nickName),
+          authorAvatar: resolveChatMediaUrl(socketPayload.mine?.avatar)
+        },
+        {
+          id: 'red-pack-system:' + claimedMessageKey,
+          direction: 'incoming',
+          type: 'system',
+          text: '',
+          time: formatChatMessageTime(timestamp),
+          period: getChatTimePeriod(timestamp),
+          timestamp,
+          contentType: 'redPackClaimed',
+          system: { type: 'red-packet-claimed', serviceName: '' }
+        }
+      ]
+    }
+
+    return [
+      mapSocketMessage({
+        ...socketPayload,
+        messageId,
+        content: String(socketPayload.content ?? record.content ?? ''),
+        contentType,
+        timestamp
+      })
+    ]
+  }
+
+  /** 服务端返回倒序，页面统一按时间正序展示；重复消息以服务端内容覆盖本地快照。 */
+  const mergeHistoryMessages = (historyMessages: ChatMessage[]) => {
+    if (!historyMessages.length) return
+
+    const mergedMessages = new Map(messages.value.map(message => [message.id, message]))
+    const legacyMessageIds = new Set<string>()
+    historyMessages.forEach(message => {
+      if (message.id.startsWith('red-pack-claimed:')) {
+        const sourceMessageId = message.id.slice('red-pack-claimed:'.length)
+        const claimedPrefix = 'red-pack-claimed:' + sourceMessageId + ':'
+        const systemPrefix = 'red-pack-system:' + sourceMessageId + ':'
+        for (const existingMessageId of mergedMessages.keys()) {
+          if (
+            existingMessageId.startsWith(claimedPrefix) ||
+            existingMessageId.startsWith(systemPrefix)
+          ) {
+            mergedMessages.delete(existingMessageId)
+            legacyMessageIds.add(existingMessageId)
+          }
+        }
+      }
+      const existingMessage = mergedMessages.get(message.id)
+      mergedMessages.set(message.id, existingMessage ? { ...existingMessage, ...message } : message)
+      persistActiveConversationMessage(message)
+      void hydrateReplyMediaFromCache(message)
+    })
+    messages.value = [...mergedMessages.values()].sort((left, right) => {
+      const timestampDifference = (Number(left.timestamp) || 0) - (Number(right.timestamp) || 0)
+      return timestampDifference || left.id.localeCompare(right.id)
+    })
+    syncClaimedRedPacketIds()
+    syncActiveConversationPreview()
+
+    if (legacyMessageIds.size && activeConversation.value) {
+      const cacheKey = getConversationCacheKey(
+        currentChatUserId.value,
+        dealerCode.value,
+        activeConversation.value
+      )
+      void deleteCachedChatMessages(cacheKey, [...legacyMessageIds])
+    }
+  }
+
+  /** 已登录会员优先读取服务端保留的七天历史；游客仅使用本地七天缓存。 */
+  const loadServerHistoryPage = async (conversation: ConversationItem, page: number) => {
+    if (isCurrentChatUserGuest.value || loadingServerHistory) return false
+
+    const requestId = serverHistoryRequestId
+    const conversationCacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
+    )
+    loadingServerHistory = true
+
+    try {
+      const response = await Api.chat.queryChatHistory(
+        {
+          customerId: conversation.id,
+          page: { size: CHAT_HISTORY_PAGE_SIZE, current: page }
+        },
+        { showErrorToast: false }
+      )
+      if (response.code !== 'C2') return false
+      if (
+        requestId !== serverHistoryRequestId ||
+        !activeConversation.value ||
+        getConversationCacheKey(
+          currentChatUserId.value,
+          dealerCode.value,
+          activeConversation.value
+        ) !== conversationCacheKey
+      ) {
+        return false
+      }
+
+      const historyPage = (response.result ?? {}) as ChatHistoryPage
+      const historyMessages = toArray<ChatHistoryRecord>(historyPage.records).flatMap(
+        mapHistoryRecord
+      )
+      mergeHistoryMessages(historyMessages)
+
+      const currentPage = Number(historyPage.current) || page
+      const pageCount =
+        Number(historyPage.pages) ||
+        Math.ceil(
+          (Number(historyPage.total) || 0) / (Number(historyPage.size) || CHAT_HISTORY_PAGE_SIZE)
+        )
+      serverHistoryHasMore = currentPage < pageCount
+      serverHistoryNextPage = currentPage + 1
+      hasMoreCachedMessages.value = serverHistoryHasMore || hasMoreCachedMessages.value
+      return true
+    } catch {
+      return false
+    } finally {
+      if (requestId === serverHistoryRequestId) {
+        loadingServerHistory = false
+      }
+    }
+  }
+
   /** 收到红包消息后按协议发送已读回执，通知客服端消息已被客户端接收。 */
   const sendRedPacketReadReceipt = (messageId: string) => {
     const to = buildCustomerParticipant()
@@ -625,7 +843,11 @@ export function useChatRuntime() {
 
     try {
       const response = await Api.chat.queryOnlineCustomer(
-        { memberRowId: currentChatUserId.value },
+        {
+          memberRowId: currentChatUserId.value,
+          // 后端以 3 返回全部客服；会话列表不再以本地缓存补充客服项。
+          onlineStatus: 3
+        },
         { showErrorToast: false }
       )
 
@@ -636,7 +858,9 @@ export function useChatRuntime() {
       const customerConversations = toArray<OnlineChatCustomer>(response.result)
         .sort((left, right) => (Number(left.sort) || 0) - (Number(right.sort) || 0))
         .map(item => ({ ...item, id: String(item.id) }))
-      conversations.value = await Promise.all(customerConversations.map(hydrateConversationPreview))
+      conversations.value = await Promise.all(
+        customerConversations.map(hydrateConversationHistoryPreview)
+      )
     } catch (error) {
       if (!silent) {
         conversations.value = []
@@ -768,6 +992,10 @@ export function useChatRuntime() {
   /** 建立选中客服的连接前读取对应 IndexedDB 消息缓存。 */
   const selectConversation = async (conversation: ConversationItem) => {
     disconnect()
+    serverHistoryRequestId += 1
+    serverHistoryHasMore = false
+    serverHistoryNextPage = 1
+    loadingServerHistory = false
     activeConversation.value = conversation
     messages.value = []
     hasMoreCachedMessages.value = false
@@ -811,6 +1039,8 @@ export function useChatRuntime() {
     hasMoreCachedMessages.value = cachedPage.hasMore
     syncClaimedRedPacketIds()
     void loadWelcomeReminder(conversation)
+    // 本地缓存优先用于秒开；随后补齐服务端最近七天的分页历史。
+    void loadServerHistoryPage(conversation, 1)
 
     const socketUrl = buildSocketUrl()
     if (!socketUrl) {
@@ -830,9 +1060,22 @@ export function useChatRuntime() {
 
   /** 读取当前已加载消息之前的一页本地历史，并追加至消息列表顶部。 */
   const loadOlderMessages = async () => {
-    if (!activeConversation.value || loadingOlderMessages.value || !hasMoreCachedMessages.value) {
+    if (!activeConversation.value || loadingOlderMessages.value) {
       return
     }
+
+    if (serverHistoryHasMore) {
+      const conversation = activeConversation.value
+      loadingOlderMessages.value = true
+      try {
+        await loadServerHistoryPage(conversation, serverHistoryNextPage)
+      } finally {
+        loadingOlderMessages.value = false
+      }
+      return
+    }
+
+    if (!hasMoreCachedMessages.value) return
 
     const oldestMessage = messages.value[0]
     if (!oldestMessage?.id) {
@@ -873,7 +1116,7 @@ export function useChatRuntime() {
       )
       messages.value = [...olderMessages, ...messages.value]
       olderMessages.forEach(message => void hydrateReplyMediaFromCache(message))
-      hasMoreCachedMessages.value = cachedPage.hasMore
+      hasMoreCachedMessages.value = serverHistoryHasMore || cachedPage.hasMore
     } finally {
       loadingOlderMessages.value = false
     }
@@ -965,6 +1208,10 @@ export function useChatRuntime() {
   /** 退出当前客服会话并重置当前会话的临时数据。 */
   const leaveConversation = () => {
     autoReplyRequestId += 1
+    serverHistoryRequestId += 1
+    serverHistoryHasMore = false
+    serverHistoryNextPage = 1
+    loadingServerHistory = false
     // 断开连接前提交当前会话的全量已读回执，避免客服端保留旧未读数。
     sendConversationReadReceipt()
     disconnect()
@@ -1124,7 +1371,7 @@ export function useChatRuntime() {
       await userStore.refreshBalance({ force: true })
       // 领取成功后追加会员侧已领取红包，原客服侧待领取记录不替换。
       upsertMessage({
-        id: `red-pack-claimed:${message.id}:${timestamp}`,
+        id: 'red-pack-claimed:' + message.id,
         direction: 'outgoing',
         type: 'red-pack',
         text: '',
@@ -1142,7 +1389,7 @@ export function useChatRuntime() {
 
       // 领取完成后追加系统记录，便于会员在会话历史中确认领取来源。
       upsertMessage({
-        id: `red-pack-system:${message.id}:${timestamp}`,
+        id: 'red-pack-system:' + message.id,
         direction: 'incoming',
         type: 'system',
         text: '',
@@ -1168,6 +1415,23 @@ export function useChatRuntime() {
         messageId => messageId !== message.id
       )
     }
+  }
+
+  /** 查看会员右侧已领取红包的奖励结果，不再次发起领取请求。 */
+  const viewClaimedRedPacket = (message: ChatMessage) => {
+    const redPacket = message.redPacket
+    if (
+      message.direction !== 'outgoing' ||
+      !redPacket ||
+      redPacket.status !== 1 ||
+      redPacket.amount === ''
+    ) {
+      return false
+    }
+
+    redPacketSuccessAmount.value = redPacket.amount
+    redPacketSuccessCurrency.value = redPacket.currency
+    return true
   }
 
   /** 关闭领取成功弹窗，保留已写入本地会话缓存的领取记录。 */
@@ -1340,7 +1604,7 @@ export function useChatRuntime() {
 
   /** 并行刷新客服列表与自动回复分类，供客服页面首次进入使用。 */
   const initialize = async () => {
-    await Promise.all([loadConversations(), loadQuickIssues()])
+    await Promise.all([loadConversations(), loadQuickIssues(), pruneCachedChatMessages()])
   }
 
   onBeforeUnmount(() => {
@@ -1377,6 +1641,7 @@ export function useChatRuntime() {
     sendTextMessage,
     retryMessage,
     claimRedPacket,
+    viewClaimedRedPacket,
     closeRedPacketSuccess,
     sendAutoReplyMessage,
     sendImageFile,
