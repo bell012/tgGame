@@ -729,19 +729,19 @@
       "label": "赞助",
       "items": {
         "sponsorship_journey": "赞助之旅",
-        "o_higgins": "O'HIGGINS",
+        "o_higgins": "奥伊金斯",
         "jason_derulo": "杰森·德鲁罗",
-        "lil_pump": "Lil Pump",
+        "lil_pump": "利尔·庞普",
         "colby_covington": "科尔比·卡温顿",
         "miami_club": "迈阿密俱乐部",
-        "tg_game_esports": "TG Game Esports",
+        "tg_game_esports": "TG Game 电竞",
         "st_kitts_nevis_patriots": "圣克里斯托弗及尼维斯爱国者",
         "kwara_united": "夸拉联队",
-        "sashimi_poker": "Sashimi Poker",
+        "sashimi_poker": "沙西米扑克",
         "leicester_city": "莱斯特城",
         "krasava": "克拉萨瓦",
         "deccan_gladiators": "迪肯角斗士队",
-        "jean_silva": "Jean Silva"
+        "jean_silva": "让·席尔瓦"
       }
     },
     "support": {
@@ -978,7 +978,7 @@
   "taskCenter": {
     "title": "任务中心",
     "pageTitle": "任务",
-    "general": "General",
+    "general": "常规任务",
     "entrant": "新人福利",
     "reward": "奖励",
     "rewardCap": "上限",
