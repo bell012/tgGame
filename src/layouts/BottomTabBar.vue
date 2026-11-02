@@ -44,7 +44,8 @@ let stopPreloading = false
 let cancelScheduledPreload: (() => void) | undefined
 let preloadInFlight = false
 let preloadResumeAt = 0
-const pendingPreloadPaths = ['/', '/explore', '/casino', '/sports', '/chat-public'].filter(
+// 优先预加载聊天路由，避免首次点击时等待组件模块加载。
+const pendingPreloadPaths = ['/chat-public', '/', '/explore', '/casino', '/sports'].filter(
   path => path !== currentPath.value
 )
 
@@ -154,10 +155,8 @@ function prepareTab(menu: (typeof menus.value)[number]) {
   cancelScheduledPreload?.()
   cancelScheduledPreload = undefined
   scheduleNextPreload()
-  // 在 click 之前利用按下手指到抬起的时间优先加载目标模块，客服仍按后台模式打开。
-  if (menu.id !== 'chat-public') {
-    void preloadBottomTabRoute(menu.route).catch(() => {})
-  }
+  // 提前加载路由模块，点击后即可尽快开始路由切换。
+  void preloadBottomTabRoute(menu.route).catch(() => {})
 }
 
 function handleTabClick(menu: (typeof menus.value)[number]) {
