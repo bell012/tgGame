@@ -1,9 +1,9 @@
 <template>
   <div
-    class="flex flex-col overflow-hidden bg-[#292D2E] font-inter"
+    class="flex flex-col overflow-hidden bg-bg-5 font-inter"
     :class="
       props.displayMode === 'pc'
-        ? 'w-[400px] rounded-[20px] shadow-[0_0_20px_0_rgba(0,0,0,0.2)]'
+        ? 'w-[400px] rounded-[20px] shadow-[0_0_20px_0_var(--color-mask-20)]'
         : 'size-full'
     "
   >
@@ -19,16 +19,16 @@
       <!-- PC 头部；H5 由页面使用公共头部 -->
       <div
         v-if="props.displayMode === 'pc'"
-        class="relative flex h-[58px] shrink-0 items-center justify-center bg-[#323738]"
+        class="relative flex h-[58px] shrink-0 items-center justify-center bg-bg-2"
       >
-        <span class="text-[18px] font-[700] leading-[22px] text-white">Red Packet</span>
+        <span class="text-[18px] font-[700] leading-[22px] text-text-1">Red Packet</span>
         <button
           type="button"
           aria-label="close"
           class="absolute right-[10px] top-[14px] size-[30px]"
           @click="emit('close')"
         >
-          <img :src="closeIcon" alt="" class="size-full" />
+          <CloseIcon class="size-full" />
         </button>
       </div>
 
@@ -47,17 +47,17 @@
           <img :src="tgAvatar" alt="" class="size-[50px] shrink-0" />
           <div class="flex w-[260px] flex-col gap-[4px]">
             <div
-              class="flex items-center justify-between pl-[6px] text-[14px] leading-[20px] text-[#7B7D7D]"
+              class="flex items-center justify-between pl-[6px] text-[14px] leading-[20px] text-text-3"
             >
               <span>{{ t('redPacketPanel.emptySender') }}</span>
               <span>{{ t('redPacketPanel.emptyTime') }}</span>
             </div>
             <div class="flex items-start">
               <span class="flex h-[32px] shrink-0 items-center">
-                <img :src="emptyBubbleEar" alt="" class="h-[13px] w-[9px]" />
+                <EmptyBubbleEar class="h-[13px] w-[9px]" />
               </span>
               <p
-                class="w-[232px] rounded-[6px] bg-[#3B4142] px-[10px] py-[6px] text-[14px] leading-[20px] text-white"
+                class="w-[232px] rounded-[6px] bg-bg-3 px-[10px] py-[6px] text-[14px] leading-[20px] text-text-1"
               >
                 {{ t('redPacketPanel.emptyMessage') }}
               </p>
@@ -67,10 +67,10 @@
 
         <p
           v-else-if="showLoadError"
-          class="m-auto text-center text-[14px] leading-[20px] text-[#7B7D7D]"
+          class="m-auto text-center text-[14px] leading-[20px] text-text-3"
         >
           {{ t('redPacketPanel.loadFailed') }}
-          <button type="button" class="ml-[4px] text-[#FFD59E]" @click="retry">
+          <button type="button" class="ml-[4px] text-secondary-9" @click="retry">
             {{ t('redPacketPanel.retry') }}
           </button>
         </p>
@@ -79,16 +79,16 @@
       </div>
 
       <!-- 底部输入栏仅展示，不可交互 -->
-      <div class="flex shrink-0 items-center gap-[10px] bg-[#323738] p-[10px]">
+      <div class="flex shrink-0 items-center gap-[10px] bg-bg-2 p-[10px]">
         <input
           type="text"
           readonly
           tabindex="-1"
           placeholder="Muted..."
-          class="pointer-events-none min-w-0 flex-1 rounded-[10px] bg-[rgba(255,255,255,0.06)] px-[12px] py-[10px] text-[14px] leading-[20px] text-[#7B7D7D] outline-none placeholder:text-[#7B7D7D]"
+          class="pointer-events-none min-w-0 flex-1 rounded-[10px] bg-opacity-5 px-[12px] py-[10px] text-[14px] leading-[20px] text-text-3 outline-none placeholder:text-text-3"
         />
         <button type="button" disabled tabindex="-1" class="size-[44px] shrink-0 cursor-default">
-          <img :src="sendIcon" alt="" class="size-full" />
+          <SendIcon class="size-full" />
         </button>
       </div>
 
@@ -111,9 +111,9 @@ import { computed, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import type { RedEnvelopeItem, RedEnvelopeSchedule } from '@/api/interface/red-envelope'
-import closeIcon from '@/static/svg/red-packet/close.svg?url'
-import emptyBubbleEar from '@/static/svg/red-packet/empty-bubble-ear.svg?url'
-import sendIcon from '@/static/svg/red-packet/send.svg?url'
+import CloseIcon from '@/static/svg/red-packet/close.svg?component'
+import EmptyBubbleEar from '@/static/svg/red-packet/empty-bubble-ear.svg?component'
+import SendIcon from '@/static/svg/red-packet/send.svg?component'
 import tgAvatar from '@/static/svg/red-packet/tg-avatar.svg?url'
 import { navigateTo } from '@/utils/router'
 import {
@@ -198,6 +198,6 @@ const handleNavigate = (path: string) => {
 
 .red-packet-list::-webkit-scrollbar-thumb {
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-opacity-5);
 }
 </style>

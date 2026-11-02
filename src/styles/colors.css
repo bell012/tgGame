@@ -89,6 +89,19 @@
   /* ========== 哈希游戏聊天室 ========== */
   --color-hash-chat-draw-frame: linear-gradient(to right, #2c271f 0%, rgba(31, 27, 22, 0.81) 100%);
   --color-hash-chat-win-frame: linear-gradient(to right, #435e11 0%, #131e04 81.67%);
+
+  /* ========== 红包本体色（不随主题翻转） ========== */
+  --color-red-packet-body: #f3674c;
+  --color-red-packet-divider: #e65a3f;
+  --color-red-packet-title: #e71727;
+  --color-red-packet-button-text: #cd1825;
+  --color-red-packet-amount: #e92629;
+  --color-red-packet-button-start: #fce9b5;
+  --color-red-packet-button-end: #fbb357;
+  --color-red-packet-button-shadow: #fc9034;
+  --color-red-packet-button-highlight: #ffeeab;
+  --color-red-packet-button-inset-bottom: rgba(253, 239, 170, 0.4);
+  --color-red-packet-button-inset-top: rgba(255, 251, 229, 0.8);
 }
 
 /**
@@ -184,4 +197,17 @@
     rgba(255, 252, 246, 0.81) 100%
   );
   --color-hash-chat-win-frame: linear-gradient(to right, #e5fbbd 0%, #fafdf6 81.67%);
+
+  /* ========== 红包本体色（不随主题翻转） ========== */
+  --color-red-packet-body: #f3674c;
+  --color-red-packet-divider: #e65a3f;
+  --color-red-packet-title: #e71727;
+  --color-red-packet-button-text: #cd1825;
+  --color-red-packet-amount: #e92629;
+  --color-red-packet-button-start: #fce9b5;
+  --color-red-packet-button-end: #fbb357;
+  --color-red-packet-button-shadow: #fc9034;
+  --color-red-packet-button-highlight: #ffeeab;
+  --color-red-packet-button-inset-bottom: rgba(253, 239, 170, 0.4);
+  --color-red-packet-button-inset-top: rgba(255, 251, 229, 0.8);
 }

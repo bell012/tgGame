@@ -12,9 +12,7 @@
       {{ t('gameDetail.playNowHint') }}
     </div>
     <button type="button" class="play-btn w-full mt-[14px] cursor-pointer" @click="gamePlay">
-      <div class="w-[16px] h-[16px]">
-        <play-icon class="w-full h-full" />
-      </div>
+      <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
       <div class="text-[15px] font-bold text-[var(--color-text-level-4)]">
         {{ t('gameDetail.playNow') }}
       </div>
@@ -22,7 +20,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import PlayIcon from '@/static/svg/game/detail/play.svg'
+import playIcon from '@/static/img/game/detail/play.png'
 import CurrencySelect from '../currency-select/index.vue'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 import { useI18n } from 'vue-i18n'

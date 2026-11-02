@@ -80,7 +80,14 @@ export default {
         // ========== 输入框色 (Input) ==========
         'input-1': 'var(--color-input-level-1)',
         'input-2': 'var(--color-input-level-2)',
-        'input-3': 'var(--color-input-level-3)'
+        'input-3': 'var(--color-input-level-3)',
+
+        // ========== 红包本体色（避免 red- 前缀命中 Tailwind 默认 red 色阶） ==========
+        'packet-body': 'var(--color-red-packet-body)',
+        'packet-divider': 'var(--color-red-packet-divider)',
+        'packet-title': 'var(--color-red-packet-title)',
+        'packet-button-text': 'var(--color-red-packet-button-text)',
+        'packet-amount': 'var(--color-red-packet-amount)'
       },
 
       // ========== 背景渐变 (Background Gradient) ==========

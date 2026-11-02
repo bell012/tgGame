@@ -7,7 +7,7 @@
     <!-- 待领取红包用于领取；会员右侧的已领取红包可再次查看领取成功结果。 -->
     <button
       type="button"
-      class="relative shrink-0 overflow-hidden rounded-[10px] bg-[#F3674C] text-left transition-opacity disabled:cursor-default"
+      class="relative shrink-0 overflow-hidden rounded-[10px] bg-packet-body text-left transition-opacity disabled:cursor-default"
       :class="[
         props.displayMode === 'pc' ? 'h-[92px] w-[258px]' : 'h-[90px] w-[254px]',
         isInteractive ? 'cursor-pointer active:opacity-80' : 'opacity-70'
@@ -48,7 +48,7 @@
       <!-- 红包信息区与时间的分隔线。 -->
       <i
         aria-hidden="true"
-        class="absolute right-[12px] top-[64px] h-px bg-[#E65A3F]"
+        class="absolute right-[12px] top-[64px] h-px bg-packet-divider"
         :class="props.displayMode === 'pc' ? 'left-[16px]' : 'left-[12px]'"
       />
 

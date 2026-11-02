@@ -40,9 +40,7 @@
               {{ t('gameDetail.playNowHint') }}
             </div>
             <div class="play-btn cursor-pointer" @click="handlePlayAction">
-              <div class="w-[16px] h-[16px]">
-                <play-icon class="w-full h-full" />
-              </div>
+              <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
               <div class="text-[15px] font-bold text-[#000]">
                 {{ playButtonText }}
               </div>
@@ -64,9 +62,7 @@
         </template>
 
         <div v-if="!isLogin" class="play-btn cursor-pointer" @click="handlePlayAction">
-          <div class="w-[16px] h-[16px]">
-            <play-icon class="w-full h-full" />
-          </div>
+          <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
           <div class="text-[15px] font-bold text-[#000]">
             {{ playButtonText }}
           </div>
@@ -79,7 +75,7 @@
 <script setup lang="ts">
 import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
-import PlayIcon from '@/static/svg/game/detail/play.svg'
+import playIcon from '@/static/img/game/detail/play.png'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
 import CurrencySelect from '../currency-select/index.vue'
@@ -183,7 +179,9 @@ const gameCovernameShow = computed(() => {
   return Number.isFinite(value) && value > 0
 })
 
-const playButtonText = computed(() => (isLogin.value ? t('gameDetail.playNow') : t('home.sign_In')))
+const playButtonText = computed(() =>
+  isLogin.value ? t('gameDetail.playNow') : t('gameDetail.guestCtaH5')
+)
 
 const handlePlayAction = () => {
   if (!isLogin.value) {

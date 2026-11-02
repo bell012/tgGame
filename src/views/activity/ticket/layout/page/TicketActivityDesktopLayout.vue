@@ -1,70 +1,77 @@
 <template>
-  <div class="pc-activity-stack flex w-full flex-col items-center" :style="pcStackStyle">
-    <div class="pc-modal-shell relative w-full overflow-hidden" :style="pcModalShellStyle">
-      <TicketLayoutControls
-        variant="pc-close"
-        :is-interaction-locked="isInteractionLocked"
-        :control-btn-style="pcControlBtnStyle"
-        @close="emit('close')"
+  <div class="pc-activity-fit relative shrink-0" :style="pcFitSlotStyle">
+    <div
+      ref="stackRef"
+      class="pc-activity-stack flex w-full flex-col items-center"
+      :class="isTicketPcModalScaled ? 'absolute left-0 top-0' : undefined"
+      :style="[pcStackStyle, pcFitScaleStyle]"
+    >
+      <div class="pc-modal-shell relative w-full overflow-hidden" :style="pcModalShellStyle">
+        <TicketLayoutControls
+          variant="pc-close"
+          :is-interaction-locked="isInteractionLocked"
+          :control-btn-style="pcControlBtnStyle"
+          @close="emit('close')"
+        />
+
+        <TicketActivityStateGate
+          :is-loading="isLoading"
+          :load-error="loadError"
+          :activity-session="activitySession"
+          state-layout="desktop"
+          :panel-style="pcFallbackPanelStyle"
+          @retry="emit('retry')"
+        >
+          <div class="pc-modal-body flex items-stretch" :style="pcModalBodyStyle">
+            <aside
+              class="pc-modal-panel pc-modal-panel--left flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+              :style="pcLeftPanelSyncedStyle"
+            >
+              <div class="flex w-full shrink-0 flex-col items-center">
+                <TicketModalHeader v-bind="headerData" align="center" layout="pc" />
+              </div>
+              <TicketVoucherPcPanel
+                :voucher-props="voucherSwitcherProps"
+                :section-divider-style="pcSectionDividerStyle"
+                @select="emit('select', $event)"
+                @prev="emit('prev')"
+                @next="emit('next')"
+                @open-voucher-list="emit('open-voucher-list')"
+              />
+            </aside>
+
+            <main
+              ref="rightPanelRef"
+              class="pc-modal-panel pc-modal-panel--right relative isolate flex h-full min-h-0 min-w-0 flex-1 items-center justify-center self-stretch overflow-hidden"
+              :style="pcRightPanelStyle"
+            >
+              <TicketLayoutControls
+                variant="pc-help"
+                :is-interaction-locked="isInteractionLocked"
+                :control-btn-style="pcControlBtnStyle"
+                :help-icon-style="pcHelpIconStyle"
+                @open-help="openTicketTaskPop()"
+              />
+              <component
+                :is="gameComponent"
+                :key="gameId"
+                :ref="setGameRef"
+                v-bind="gameComponentProps"
+                v-on="gameComponentListeners"
+              />
+            </main>
+          </div>
+        </TicketActivityStateGate>
+      </div>
+
+      <TicketWinnerTicker
+        v-if="activitySession && !isLoading && !loadError"
+        class="w-full"
+        :style="pcTickerStyle"
+        :items="winnerRecords"
+        compact
       />
-
-      <TicketActivityStateGate
-        :is-loading="isLoading"
-        :load-error="loadError"
-        :activity-session="activitySession"
-        state-layout="desktop"
-        :panel-style="pcFallbackPanelStyle"
-        @retry="emit('retry')"
-      >
-        <div class="pc-modal-body flex items-stretch" :style="pcModalBodyStyle">
-          <aside
-            class="pc-modal-panel pc-modal-panel--left flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
-            :style="pcLeftPanelSyncedStyle"
-          >
-            <div class="flex w-full shrink-0 flex-col items-center">
-              <TicketModalHeader v-bind="headerData" align="center" layout="pc" />
-            </div>
-            <TicketVoucherPcPanel
-              :voucher-props="voucherSwitcherProps"
-              :section-divider-style="pcSectionDividerStyle"
-              @select="emit('select', $event)"
-              @prev="emit('prev')"
-              @next="emit('next')"
-              @open-voucher-list="emit('open-voucher-list')"
-            />
-          </aside>
-
-          <main
-            ref="rightPanelRef"
-            class="pc-modal-panel pc-modal-panel--right relative isolate flex h-full min-h-0 min-w-0 flex-1 items-center justify-center self-stretch overflow-hidden"
-            :style="pcRightPanelStyle"
-          >
-            <TicketLayoutControls
-              variant="pc-help"
-              :is-interaction-locked="isInteractionLocked"
-              :control-btn-style="pcControlBtnStyle"
-              :help-icon-style="pcHelpIconStyle"
-              @open-help="openTicketTaskPop()"
-            />
-            <component
-              :is="gameComponent"
-              :key="gameId"
-              :ref="setGameRef"
-              v-bind="gameComponentProps"
-              v-on="gameComponentListeners"
-            />
-          </main>
-        </div>
-      </TicketActivityStateGate>
     </div>
-
-    <TicketWinnerTicker
-      v-if="activitySession && !isLoading && !loadError"
-      class="w-full"
-      :style="pcTickerStyle"
-      :items="winnerRecords"
-      compact
-    />
   </div>
 </template>
 
@@ -84,6 +91,10 @@ const emit = defineEmits<TicketActivityCoreEmits>()
 
 const {
   rightPanelRef,
+  stackRef,
+  isTicketPcModalScaled,
+  pcFitSlotStyle,
+  pcFitScaleStyle,
   pcStackStyle,
   pcModalBodyStyle,
   pcModalShellStyle,

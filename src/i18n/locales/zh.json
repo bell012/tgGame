@@ -543,6 +543,8 @@
     "playWithBalanceIn": "使用余额币种游玩",
     "confirmAndPlay": "确认并开始",
     "signInPrompt": "欢迎来到 {gameName}，请先登录后继续。",
+    "guestCta": "注册可得存款奖金",
+    "guestCtaH5": "登陆得奖励！",
     "liveStatsTitle": "实时数据",
     "betId": "投注ID",
     "bet": "投注",

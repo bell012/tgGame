@@ -30,9 +30,10 @@
               @click="slot.gameIndex != null && emit('select', slot.gameIndex)"
             >
               <img
-                :src="resolveIcon(slot)"
+                :src="resolveGridIcon(slot)"
                 :alt="slot.label ?? slot.id"
                 class="block h-full w-full shrink-0 object-contain"
+                @error="handleGridIconError(slot)"
               />
             </button>
             <div v-else :style="pcGridPlaceholderStyle" aria-hidden="true" />
@@ -143,7 +144,7 @@ import {
   TICKET_MOBILE_LAYOUT,
   VOUCHER_CAROUSEL_ROW_MIN_HEIGHT
 } from '../../shared/layout-tokens/ticketMobileLayout'
-import { computed, type CSSProperties } from 'vue'
+import { computed, ref, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(
@@ -173,6 +174,29 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { gridSlots, resolveIcon, countHighlightColor, isSlotActive, isGameActive } =
   useTicketVoucherSwitcher(props)
+
+const failedGridIconIds = ref(new Set<string>())
+
+const localGameIcon = (gameId?: VoucherGridSlot['gameId']) => getGameIcon(gameId ?? 'lucky_spin')
+
+/** 接口图加载失败后改用本地玩法图标；本地图再失败时不再换回原地址。 */
+const resolveGridIcon = (slot: VoucherGridSlot) => {
+  if (failedGridIconIds.value.has(slot.id)) {
+    return localGameIcon(slot.gameId)
+  }
+
+  return resolveIcon(slot)
+}
+
+const handleGridIconError = (slot: VoucherGridSlot) => {
+  if (failedGridIconIds.value.has(slot.id) || resolveIcon(slot) === localGameIcon(slot.gameId)) {
+    return
+  }
+
+  const nextFailedIds = new Set(failedGridIconIds.value)
+  nextFailedIds.add(slot.id)
+  failedGridIconIds.value = nextFailedIds
+}
 
 const voucherLayout = TICKET_MOBILE_LAYOUT.voucher
 const pcVoucherLayout = TICKET_PC_LAYOUT.voucher

@@ -1,13 +1,13 @@
 <template>
-  <div class="flex min-h-0 flex-1 flex-col bg-[#292D2E]">
+  <div class="flex min-h-0 flex-1 flex-col bg-bg-5">
     <RedPacketSubHeader :title="t('redPacketPanel.myRedemptions')" @back="emit('back')" />
 
     <div class="relative flex shrink-0 flex-col gap-[16px] px-[16px] pt-[16px]">
       <div class="flex items-center gap-[8px]">
-        <span class="text-[14px] font-[700] leading-[17px] text-white">
+        <span class="text-[14px] font-[700] leading-[17px] text-text-1">
           {{ t('redPacketPanel.totalRedeemed') }}
         </span>
-        <span class="text-[16px] font-[700] leading-[19px] text-[#2AEE88]">
+        <span class="text-[16px] font-[700] leading-[19px] text-theme-primary">
           {{ totalMoney.toFixed(2) }}
         </span>
       </div>
@@ -17,13 +17,11 @@
           v-for="dropdown in dropdowns"
           :key="dropdown.key"
           type="button"
-          class="flex h-[38px] min-w-0 flex-1 items-center justify-between gap-[8px] rounded-[8px] border border-[rgba(255,255,255,0.1)] bg-[rgba(0,0,0,0.2)] px-[12px]"
+          class="flex h-[38px] min-w-0 flex-1 items-center justify-between gap-[8px] rounded-[8px] border border-opacity-10 bg-mask-20 px-[12px]"
           @click="toggleDropdown(dropdown.key)"
         >
-          <span class="truncate text-[14px] leading-[20px] text-white">{{ dropdown.label }}</span>
-          <img
-            :src="dropdownArrow"
-            alt=""
+          <span class="truncate text-[14px] leading-[20px] text-text-1">{{ dropdown.label }}</span>
+          <DropdownArrow
             class="size-[24px] shrink-0 transition-transform"
             :class="openDropdown === dropdown.key ? 'rotate-180' : ''"
           />
@@ -33,18 +31,19 @@
       <template v-if="activeDropdown">
         <div class="fixed inset-0 z-10" @click="openDropdown = null" />
         <ul
-          class="absolute top-[calc(100%+9px)] z-20 flex w-[240px] flex-col rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#292D2E] p-[12px]"
+          class="absolute top-[calc(100%+9px)] z-20 flex w-[240px] flex-col rounded-[8px] border border-opacity-5 bg-bg-5 p-[12px]"
           :class="activeDropdown.key === 'type' ? 'left-[16px]' : 'right-[16px]'"
         >
           <li v-for="option in activeDropdown.options" :key="option.value">
             <button
               type="button"
-              class="flex w-full items-center justify-between rounded-[8px] p-[12px] text-[14px] leading-[20px] text-white"
-              :class="option.selected ? 'bg-[#3B4142] font-[700]' : ''"
+              class="flex w-full items-center justify-between rounded-[8px] p-[12px] text-[14px] leading-[20px] text-text-1"
+              :class="option.selected ? 'bg-bg-3 font-[700]' : ''"
               @click="activeDropdown.select(option.value)"
             >
               <span>{{ option.label }}</span>
-              <img :src="option.selected ? checkOnIcon : checkOffIcon" alt="" class="size-[16px]" />
+              <CheckOnIcon v-if="option.selected" class="size-[16px]" />
+              <CheckOffIcon v-else class="size-[16px]" />
             </button>
           </li>
         </ul>
@@ -58,28 +57,28 @@
       <div
         v-for="record in list"
         :key="record.orderNo ?? record.redEnvelopeId"
-        class="flex items-center justify-between gap-[8px] rounded-[10px] bg-[#323738] p-[16px]"
+        class="flex items-center justify-between gap-[8px] rounded-[10px] bg-bg-2 p-[16px]"
       >
         <div class="flex min-w-0 flex-col gap-[4px]">
-          <span class="truncate text-[14px] font-[700] leading-[17px] text-white">
+          <span class="truncate text-[14px] font-[700] leading-[17px] text-text-1">
             {{ getTypeLabel(record) }}
           </span>
-          <span class="text-[12px] leading-[15px] text-[#7B7D7D]">
+          <span class="text-[12px] leading-[15px] text-text-3">
             {{ t('redPacketPanel.claimTime', { time: formatFullDateTime(record.updateTime) }) }}
           </span>
         </div>
-        <span class="shrink-0 text-[14px] font-[700] leading-[17px] text-white">
+        <span class="shrink-0 text-[14px] font-[700] leading-[17px] text-text-1">
           +{{ record.amount ?? 0 }}
         </span>
       </div>
 
       <p
         v-if="!loading && !list.length"
-        class="py-[20px] text-center text-[14px] leading-[20px] text-[#7B7D7D]"
+        class="py-[20px] text-center text-[14px] leading-[20px] text-text-3"
       >
         <template v-if="error">
           {{ t('redPacketPanel.loadFailed') }}
-          <button type="button" class="ml-[4px] text-[#FFD59E]" @click="retry">
+          <button type="button" class="ml-[4px] text-secondary-9" @click="retry">
             {{ t('redPacketPanel.retry') }}
           </button>
         </template>
@@ -95,9 +94,9 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RedEnvelopeItem, RedEnvelopeType } from '@/api/interface/red-envelope'
-import checkOffIcon from '@/static/svg/red-packet/check-off.svg?url'
-import checkOnIcon from '@/static/svg/red-packet/check-on.svg?url'
-import dropdownArrow from '@/static/svg/red-packet/dropdown-arrow.svg?url'
+import CheckOffIcon from '@/static/svg/red-packet/check-off.svg?component'
+import CheckOnIcon from '@/static/svg/red-packet/check-on.svg?component'
+import DropdownArrow from '@/static/svg/red-packet/dropdown-arrow.svg?component'
 import {
   MEMBER_RECORD_PERIODS,
   RED_ENVELOPE_TYPES,
@@ -198,6 +197,6 @@ const toggleDropdown = (key: DropdownKey) => {
 
 .red-packet-scroll::-webkit-scrollbar-thumb {
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-opacity-5);
 }
 </style>

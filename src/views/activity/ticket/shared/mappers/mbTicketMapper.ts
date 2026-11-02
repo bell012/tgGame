@@ -1,5 +1,6 @@
 import Api from '@/api'
 import type { MbTicketRecord } from '@/api/interface/activity'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getGameIcon } from '../assets'
 import type { TicketGameId, VoucherGameItem } from '../types'
 import { getTicketActivityEndUseTime } from '../utils/ticketActivityCountdown'
@@ -275,7 +276,7 @@ export const mapMbTicketRecordToVoucherItem = (
 ): VoucherGameItem => {
   const gameId = TICKET_TYPE_TO_GAME_ID[Number(record.type)]
   const languageInfo = resolveLanguageInfo(record.languageInfo, normalizeLanguageCode(languageCode))
-  const iconFromApi = normalizeText(languageInfo?.imageUrl)
+  const iconFromApi = resolveGameImageUrl(languageInfo?.imageUrl)
 
   return {
     id: `ticket-${record.rowId ?? record.ticketId ?? index}`,

@@ -1,14 +1,14 @@
 <template>
-  <div class="flex min-h-0 flex-1 flex-col bg-[#292D2E]">
+  <div class="flex min-h-0 flex-1 flex-col bg-bg-5">
     <RedPacketSubHeader :title="t('redPacketPanel.redemptionHistory')" @back="emit('back')">
       <template #right>
         <button
           type="button"
           aria-label="my redemptions"
-          class="flex size-[30px] items-center justify-center rounded-[6px] bg-[rgba(255,255,255,0.1)]"
+          class="flex size-[30px] items-center justify-center rounded-[6px] bg-opacity-10"
           @click="emit('openMine')"
         >
-          <img :src="myRecordsIcon" alt="" class="size-[16px]" />
+          <MyRecordsIcon class="size-[16px]" />
         </button>
       </template>
     </RedPacketSubHeader>
@@ -17,18 +17,18 @@
       <div class="flex flex-col items-center gap-[30px] px-[16px] pt-[30px]">
         <div class="flex flex-col items-center gap-[8px]">
           <div
-            class="flex size-[80px] items-center justify-center overflow-hidden rounded-full bg-[rgba(255,255,255,0.15)]"
+            class="flex size-[80px] items-center justify-center overflow-hidden rounded-full bg-opacity-15"
           >
             <img :src="userAvatar" alt="" class="size-[69px] rounded-full object-cover" />
           </div>
-          <span class="text-[16px] font-[700] leading-[19px] text-white">{{ userName }}</span>
-          <span class="text-[14px] leading-[20px] text-[#B3BEC1]">
+          <span class="text-[16px] font-[700] leading-[19px] text-text-1">{{ userName }}</span>
+          <span class="text-[14px] leading-[20px] text-text-2">
             {{ t(claimedRecord ? 'redPacketPanel.goodLuck' : 'redPacketPanel.comeBackTomorrow') }}
           </span>
         </div>
         <p
           v-if="!loading || list.length"
-          class="text-center text-[24px] font-[700] leading-[29px] text-[#FFD59E]"
+          class="text-center text-[24px] font-[700] leading-[29px] text-secondary-9"
         >
           {{
             claimedRecord
@@ -40,7 +40,7 @@
 
       <div class="mt-[30px] flex flex-col items-center gap-[16px]">
         <div class="flex w-full flex-col items-center gap-[8px]">
-          <p class="w-[calc(100%-32px)] text-[12px] leading-[15px] text-[#7B7D7D]">
+          <p class="w-[calc(100%-32px)] text-[12px] leading-[15px] text-text-3">
             {{
               t('redPacketPanel.claimedSummary', {
                 count: total,
@@ -49,7 +49,7 @@
               })
             }}
           </p>
-          <div class="h-px w-full bg-[rgba(255,255,255,0.06)]" />
+          <div class="h-px w-full bg-opacity-5" />
         </div>
 
         <div class="flex w-[calc(100%-32px)] flex-col gap-[16px]">
@@ -59,33 +59,33 @@
             class="flex flex-col items-end gap-[16px]"
           >
             <div class="flex w-full items-center gap-[10px]">
-              <div class="size-[44px] shrink-0 overflow-hidden rounded-[7px] bg-white">
+              <div class="size-[44px] shrink-0 overflow-hidden rounded-[7px] bg-common-100">
                 <img :src="recordAvatar" alt="" class="size-full object-cover" />
               </div>
               <div class="flex min-w-0 flex-1 items-center justify-between gap-[8px]">
                 <div class="flex min-w-0 flex-col gap-[4px]">
-                  <span class="truncate text-[14px] leading-[20px] text-white">
+                  <span class="truncate text-[14px] leading-[20px] text-text-1">
                     {{ record.memberId }}
                   </span>
-                  <span class="text-[12px] leading-[15px] text-[#7B7D7D]">
+                  <span class="text-[12px] leading-[15px] text-text-3">
                     {{ formatFullDateTime(record.updateTime) }}
                   </span>
                 </div>
-                <span class="shrink-0 text-[14px] font-[700] leading-[17px] text-white">
+                <span class="shrink-0 text-[14px] font-[700] leading-[17px] text-text-1">
                   {{ record.amount ?? 0 }} {{ record.currency ?? '' }}
                 </span>
               </div>
             </div>
-            <div class="h-px w-[calc(100%-54px)] bg-[rgba(255,255,255,0.06)]" />
+            <div class="h-px w-[calc(100%-54px)] bg-opacity-5" />
           </div>
 
           <p
             v-if="!loading && !list.length"
-            class="py-[20px] text-center text-[14px] leading-[20px] text-[#7B7D7D]"
+            class="py-[20px] text-center text-[14px] leading-[20px] text-text-3"
           >
             <template v-if="error">
               {{ t('redPacketPanel.loadFailed') }}
-              <button type="button" class="ml-[4px] text-[#FFD59E]" @click="retry">
+              <button type="button" class="ml-[4px] text-secondary-9" @click="retry">
                 {{ t('redPacketPanel.retry') }}
               </button>
             </template>
@@ -103,7 +103,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RedEnvelopeItem } from '@/api/interface/red-envelope'
-import myRecordsIcon from '@/static/svg/red-packet/my-records.svg?url'
+import MyRecordsIcon from '@/static/svg/red-packet/my-records.svg?component'
 import recordAvatar from '@/static/svg/red-packet/record-avatar.png'
 import { useUserStore } from '@/stores/user'
 import { getCurrencySymbol } from '@/utils/locale'
@@ -154,6 +154,6 @@ const wonAmountText = computed(() => {
 
 .red-packet-scroll::-webkit-scrollbar-thumb {
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-opacity-5);
 }
 </style>
