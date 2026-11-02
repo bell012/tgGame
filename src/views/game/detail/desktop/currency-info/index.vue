@@ -28,9 +28,7 @@
           {{ t('gameDetail.signInPrompt', { gameName: displayGameName }) }}
         </div>
         <div class="play-btn w-[408px] h-[40px] cursor-pointer" @click="handleSignIn">
-          <div class="w-[16px] h-[16px]">
-            <play-icon class="w-full h-full" />
-          </div>
+          <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
           <div class="text-[15px] font-bold text-[var(--color-text-level-4)]">
             {{ t('gameDetail.guestCta') }}
           </div>
@@ -43,7 +41,7 @@
 <script setup lang="ts">
 import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
-import PlayIcon from '@/static/svg/game/detail/play.svg'
+import playIcon from '@/static/img/game/detail/play.png'
 import SmartImage from '@/components/common/SmartImage.vue'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useThemeStore } from '@/stores/theme'
