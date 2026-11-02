@@ -29,11 +29,7 @@
       <!-- 主内容容器 -->
       <div :class="isFullscreenRoute ? 'min-h-full' : 'flex min-h-full items-start gap-4'">
         <!-- 路由内容区域 -->
-        <section
-          ref="routeContentRef"
-          class="min-w-0 flex-1"
-          :class="{ 'mobile-tab-stage': isMobile }"
-        >
+        <section class="min-w-0 flex-1" :class="{ 'mobile-tab-stage': isMobile }">
           <!-- 主内容区：滑动路由场景下优先渲染背景页，避免 keep-alive 在双 router-view 间切换失效 -->
           <router-view
             v-if="mainAreaRoute"
@@ -43,18 +39,30 @@
             <template v-if="isMobile">
               <!-- 缓存容器保持稳定，Tab 切换只激活页面，不重建整棵组件树。 -->
               <!-- 登录身份变化时清理缓存，避免复用上一账号的页面数据。 -->
-              <KeepAlive :key="mobileCacheScope" :max="8">
+              <Transition
+                name="bottom-tab"
+                :css="isBottomTabTransition"
+                @after-enter="finishBottomTabTransition"
+              >
+                <KeepAlive :key="mobileCacheScope" :max="8">
+                  <component
+                    :is="Component"
+                    v-if="shouldCacheMobileRoute(viewRoute)"
+                    :key="getMainRouteViewKey(viewRoute)"
+                  />
+                </KeepAlive>
+              </Transition>
+              <Transition
+                name="bottom-tab"
+                :css="isBottomTabTransition"
+                @after-enter="finishBottomTabTransition"
+              >
                 <component
                   :is="Component"
-                  v-if="shouldCacheMobileRoute(viewRoute)"
+                  v-if="!shouldCacheMobileRoute(viewRoute)"
                   :key="getMainRouteViewKey(viewRoute)"
                 />
-              </KeepAlive>
-              <component
-                :is="Component"
-                v-if="!shouldCacheMobileRoute(viewRoute)"
-                :key="getMainRouteViewKey(viewRoute)"
-              />
+              </Transition>
             </template>
             <template v-else>
               <KeepAlive>
@@ -168,11 +176,6 @@ import {
   withLocalePrefix
 } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
-import {
-  cancelBottomTabTransition,
-  cancelUnrelatedTabTransition,
-  isBottomTabSnapshotActive
-} from '@/utils/bottomTabTransition'
 import NotificationDetailPage from '@/views/menu/notifications/detail/index.vue'
 import NotificationListPage from '@/views/menu/notifications/index.vue'
 import { storeToRefs } from 'pinia'
@@ -208,7 +211,6 @@ const mobileCacheScope = computed(() => userStore.userInfo?.tradeToken || 'guest
 const { visible: checkInVisible } = storeToRefs(checkInModalStore)
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
 const mainContentRef = ref<HTMLElement | null>(null)
-const routeContentRef = ref<HTMLElement | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 const isSidebarCollapsed = ref(false)
 const showNotificationPanel = ref(false)
@@ -219,19 +221,32 @@ const hasViewportModeInitialized = ref(false)
 
 const route = useRoute()
 const router = useRouter()
+const isBottomTabTransition = ref(false)
+const removeBottomTabTransitionGuard = router.beforeEach((to, from) => {
+  const fromRoute = from as RouteLocationNormalizedLoaded
+  const toRoute = to as RouteLocationNormalizedLoaded
+  isBottomTabTransition.value =
+    isMobile.value &&
+    (isBottomTabRoute(fromRoute) || isMobileMenuRoute(fromRoute)) &&
+    (isBottomTabRoute(toRoute) || isMobileMenuRoute(toRoute)) &&
+    getBottomTabIndex(fromRoute) !== getBottomTabIndex(toRoute) &&
+    fromRoute.meta?.slideTransition !== true &&
+    toRoute.meta?.slideTransition !== true
+})
+const removeBottomTabTransitionAfterEach = router.afterEach((_to, _from, failure) => {
+  if (failure) isBottomTabTransition.value = false
+})
+const finishBottomTabTransition = () => {
+  isBottomTabTransition.value = false
+}
+onBeforeUnmount(() => {
+  removeBottomTabTransitionGuard()
+  removeBottomTabTransitionAfterEach()
+})
 const consumeNativeHistoryTransition = useNativeHistoryTransition(
   router,
   () => isMobile.value && route.meta?.slideTransition === true
 )
-
-// 离开当前目标路由时中止快照动画，避免与抽屉或下一次导航叠加。
-const removeTabTransitionGuard = router.beforeEach(to => {
-  cancelUnrelatedTabTransition(to.fullPath)
-})
-onBeforeUnmount(() => {
-  removeTabTransitionGuard()
-  cancelBottomTabTransition()
-})
 
 useCheckInAutoPopup()
 
@@ -282,6 +297,8 @@ const getBottomTabIndex = (currentRoute: RouteLocationNormalizedLoaded) => {
 }
 const isBottomTabRoute = (currentRoute: RouteLocationNormalizedLoaded) =>
   getBottomTabIndex(currentRoute) >= 0
+const isMobileMenuRoute = (currentRoute: RouteLocationNormalizedLoaded) =>
+  String(currentRoute.name || '').replace(/^Locale/, '') === 'menu'
 
 const shouldCacheMobileRoute = (currentRoute: RouteLocationNormalizedLoaded) =>
   isBottomTabRoute(currentRoute) || currentRoute.meta?.keepAlive === true
@@ -372,17 +389,12 @@ const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
 
 // 缓存页面各自保留滚动位置，在 DOM 更新后、浏览器绘制前恢复，避免先露出错误位置再跳动。
 const mobileScrollPositions = new Map<string, { windowTop: number; mainTop: number }>()
-let previousBottomTabIndex = -1
 watch(
   () => {
     const currentRoute = mainAreaRoute.value
     return isMobile.value && currentRoute ? getMainRouteViewKey(currentRoute) : ''
   },
-  async (key, previousKey, onCleanup) => {
-    const fromTabIndex = previousBottomTabIndex
-    const targetRoute = mainAreaRoute.value
-    const toTabIndex = isMobile.value && targetRoute ? getBottomTabIndex(targetRoute) : -1
-    previousBottomTabIndex = toTabIndex
+  async (key, previousKey) => {
     if (!key) return
     if (previousKey) {
       mobileScrollPositions.set(previousKey, {
@@ -392,57 +404,13 @@ watch(
     }
     if (!mainAreaRoute.value || !isBottomTabRoute(mainAreaRoute.value)) return
 
-    let cancelled = false
-    const animationCleanups: Array<() => void> = []
-    onCleanup(() => {
-      cancelled = true
-      // 快速连续切换、离开 Tab 或卸载布局时取消旧动画，不排队等待退场。
-      animationCleanups.forEach(cleanup => cleanup())
-    })
     await nextTick()
-    // 连续快速点击时只恢复最终目标页，避免旧任务覆盖新页面的位置。
-    if (cancelled) return
     const position = mobileScrollPositions.get(key)
     mainContentRef.value?.scrollTo({ top: position?.mainTop ?? 0, behavior: 'instant' })
     window.scrollTo({ top: position?.windowTop ?? 0, behavior: 'instant' })
-
-    // 快照动画负责整屏滑入滑出；抽屉进出期间也不叠加 Tab 动画。
-    if (isBottomTabSnapshotActive() || slideRouteStack.value.length > 0) return
-    // 安卓直接播放合成滑动；仅在不同 Tab 之间播放，首屏、语言切换和页内筛选即时更新。
-    if (fromTabIndex < 0 || toTabIndex < 0 || fromTabIndex === toTabIndex) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    const offset = toTabIndex > fromTabIndex ? '100%' : '-100%'
-    const targets = routeContentRef.value?.querySelectorAll<HTMLElement>('[data-tab-transition]')
-    targets?.forEach(element => {
-      if (typeof element.animate !== 'function') return
-
-      // 只在本次滑动期间提示浏览器准备变换层，结束或中断后恢复，避免长列表常驻额外图层。
-      const previousWillChange = element.style.willChange
-      element.style.willChange = 'transform'
-      const animation = element.animate(
-        [{ transform: `translate3d(${offset}, 0, 0)` }, { transform: 'translate3d(0, 0, 0)' }],
-        {
-          duration: 300,
-          easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
-        }
-      )
-      let cleaned = false
-      const cleanup = () => {
-        if (cleaned) return
-        cleaned = true
-        animation.onfinish = null
-        animation.cancel()
-        element.style.willChange = previousWillChange
-      }
-      // 同步清理旧动画的图层提示，防止快速切换时旧回调覆盖新动画的状态。
-      animation.onfinish = cleanup
-      animationCleanups.push(cleanup)
-    })
   },
   { immediate: true }
 )
-
 const resolveRouteSnapshot = (fullPath: string) => {
   return markRaw(router.resolve(fullPath) as RouteLocationNormalizedLoaded)
 }
