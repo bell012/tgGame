@@ -32,7 +32,7 @@
             <play-icon class="w-full h-full" />
           </div>
           <div class="text-[15px] font-bold text-[var(--color-text-level-4)]">
-            {{ t('home.sign_In') }}
+            {{ t('gameDetail.guestCta') }}
           </div>
         </div>
       </div>

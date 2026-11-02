@@ -183,7 +183,9 @@ const gameCovernameShow = computed(() => {
   return Number.isFinite(value) && value > 0
 })
 
-const playButtonText = computed(() => (isLogin.value ? t('gameDetail.playNow') : t('home.sign_In')))
+const playButtonText = computed(() =>
+  isLogin.value ? t('gameDetail.playNow') : t('gameDetail.guestCtaH5')
+)
 
 const handlePlayAction = () => {
   if (!isLogin.value) {
