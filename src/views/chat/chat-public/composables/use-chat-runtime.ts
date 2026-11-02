@@ -832,7 +832,7 @@ export function useChatRuntime() {
     }
   }
 
-  /** 请求在线客服列表并按后端排序字段稳定展示。 */
+  /** 请求在线客服列表；在线客服优先，再按后端排序字段稳定展示。 */
   const loadConversations = async ({ silent = false }: { silent?: boolean } = {}) => {
     if (isLoadingConversations) return
 
@@ -856,7 +856,13 @@ export function useChatRuntime() {
       }
 
       const customerConversations = toArray<OnlineChatCustomer>(response.result)
-        .sort((left, right) => (Number(left.sort) || 0) - (Number(right.sort) || 0))
+        .sort((left, right) => {
+          const leftIsOnline = String(left.onlineStatus) === '0'
+          const rightIsOnline = String(right.onlineStatus) === '0'
+
+          if (leftIsOnline !== rightIsOnline) return leftIsOnline ? -1 : 1
+          return (Number(left.sort) || 0) - (Number(right.sort) || 0)
+        })
         .map(item => ({ ...item, id: String(item.id) }))
       conversations.value = await Promise.all(
         customerConversations.map(hydrateConversationHistoryPreview)
