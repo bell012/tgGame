@@ -19,7 +19,7 @@ import type { SiteConfig } from '@/stores/siteConfig'
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
 
-  // 当前语言（zh 或 eng）
+  // 当前语言（eng、zh 或 vi）
   const currentLanguage = ref<Locale>(getStoredLocale())
 
   // 仅表示本次刷新已应用站点默认配置并完成语言路由切换，不从本地存储恢复。
@@ -95,7 +95,7 @@ export const useLocaleStore = defineStore('locale', () => {
     const defaultLanguage = normalizeSiteDefaultLanguage(baseSiteConfig?.defaultLanguageCode)
     const defaultCurrency = normalizeSiteDefaultCurrency(baseSiteConfig?.defaultCurrency)
 
-    // defaultLanguageCode 控制当前语言和路由语言前缀，例如 eng / zh。
+    // defaultLanguageCode 控制当前语言和路由语言前缀，例如 eng / zh / vi。
     if (defaultLanguage) {
       currentLanguage.value = defaultLanguage
       i18n.global.locale.value = getLanguageCode(defaultLanguage) as Locale

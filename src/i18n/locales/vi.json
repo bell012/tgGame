@@ -1,0 +1,2773 @@
+{
+  "hashGame": {
+    "games": "Trò chơi Hash",
+    "online": "Trực tuyến",
+    "collapse": "Thu gọn",
+    "lastBlock": "Khối trước",
+    "currentBlock": "Khối hiện tại",
+    "verify": "Xác minh",
+    "history": "Lịch sử",
+    "hide": "Ẩn",
+    "show": "Mở rộng",
+    "bigSmall": "Lớn/Nhỏ",
+    "oddEven": "Lẻ/Chẵn",
+    "big": "Lớn",
+    "small": "Nhỏ",
+    "odd": "Lẻ",
+    "even": "Chẵn",
+    "bigMark": "Lớn",
+    "smallMark": "Nhỏ",
+    "oddMark": "Lẻ",
+    "evenMark": "Chẵn",
+    "streak": "{name} liên tiếp:{count}",
+    "betting": "Cược Hash",
+    "fairness": "Kết quả on-chain · Bất biến · Công bằng",
+    "editChips": "Chọn chip",
+    "chipSettings": "Cài tiền cược nhanh",
+    "chipSettingsHint": "Nhấn chip để sửa mức cược nhanh.",
+    "chipAmount": "Tiền cược nhanh",
+    "saveChips": "Lưu",
+    "invalidChipAmount": "Nhập số tiền hợp lệ lớn hơn 0.",
+    "duplicateChipAmount": "Mức cược nhanh không được trùng.",
+    "cancel": "Hủy",
+    "repeat": "Lặp lại",
+    "pickChips": "Chọn chip và đặt cược",
+    "refreshBalance": "Làm mới số dư",
+    "selectCurrency": "Chọn tiền tệ",
+    "records": "Lịch sử cược",
+    "recordsMenu": "Menu lịch sử cược",
+    "recentBets": "Cược gần đây",
+    "gameRules": "Luật chơi",
+    "more": "Thêm",
+    "currency": "Tiền tệ",
+    "bets": "Số cược",
+    "betAmount": "Tiền cược",
+    "todayProfitLoss": "Lãi/lỗ hôm nay",
+    "betBlock": "Khối đặt cược",
+    "result": "Kết quả",
+    "actions": "Thao tác",
+    "betSelection": "Lựa chọn cược",
+    "profitLoss": "Lãi/lỗ",
+    "game": "Trò chơi",
+    "betId": "Mã cược",
+    "resultBlock": "Khối kết quả",
+    "blockHash": "Hash khối",
+    "betTime": "Thời gian cược",
+    "back": "Quay lại",
+    "chat": "Trò chuyện",
+    "close": "Đóng"
+  },
+  "onlineCustomer": {
+    "title": "Hỗ trợ trực tuyến",
+    "close": "Đóng hỗ trợ",
+    "loading": "Đang tải hỗ trợ…",
+    "retry": "Thử lại",
+    "requestFailed": "Tải hỗ trợ thất bại，vui lòng thử lại",
+    "unavailable": "Hiện không có nhân viên hỗ trợ",
+    "unsupported": "Chưa hỗ trợ loại dịch vụ này",
+    "invalidUrl": "Địa chỉ hỗ trợ không hợp lệ，vui lòng thử lại sau",
+    "frameFailed": "Không tải được trang hỗ trợ，vui lòng thử lại"
+  },
+  "aboutPage": {
+    "title": "Về chúng tôi",
+    "cardTitle": "Về TG.GAME",
+    "introTitle": "Về TG.GAME",
+    "introParagraph1": "TG.GAME là nền tảng giải trí trực tuyến tổng hợp，mang đến trải nghiệm đa dạng、tiện lợi、mượt mà.",
+    "introParagraph2": "Nền tảng có nhiều lựa chọn như slot、casino trực tiếp、Crash và cược thể thao，cho phép khám phá nhiều trò chơi và sự kiện chỉ với một tài khoản.",
+    "experienceTitle": "Giải trí đa dạng",
+    "experienceParagraph1": "Chúng tôi liên tục bổ sung trò chơi và cải thiện trải nghiệm，giúp bạn dễ dàng tìm và tận hưởng trò chơi yêu thích.",
+    "experienceParagraph2": "Từ game kinh điển đến nội dung thịnh hành，chúng tôi luôn mang đến nhiều lựa chọn.",
+    "stabilityTitle": "Trải nghiệm ổn định",
+    "stabilityParagraph1": "Chúng tôi chú trọng độ ổn định、bảo mật tài khoản và giao dịch thuận tiện. Bằng cách tối ưu hệ thống、thanh toán và kiểm soát rủi ro，chúng tôi mang đến trải nghiệm mượt mà.",
+    "improvementTitle": "Không ngừng cải tiến",
+    "improvementParagraph1": "Trải nghiệm người dùng thúc đẩy TG.GAME không ngừng cải tiến.",
+    "improvementParagraph2": "Dựa trên nhu cầu người dùng，chúng tôi nâng cấp tính năng、trò chơi và dịch vụ，giúp giải trí trực tuyến dễ dàng hơn.",
+    "closing": "TG.GAME —— Khám phá giải trí không giới hạn."
+  },
+  "legalPage": {
+    "title": "Điều khoản pháp lý",
+    "cardTitle": "Về TG.GAME",
+    "welcome": "Chào mừng đến TG.GAME.",
+    "description": "Trước khi đăng ký、truy cập hoặc sử dụng dịch vụ TG.GAME，hãy đọc kỹ điều khoản. Tiếp tục sử dụng nghĩa là bạn đồng ý tuân thủ điều khoản và các quy định của nền tảng.",
+    "eligibilityTitle": "1. Điều kiện tham gia",
+    "eligibilityParagraph1": "Người dùng phải đủ tuổi cá cược hợp pháp tại nơi cư trú và từ 18 tuổi trở lên.",
+    "eligibilityParagraph2": "Bạn chịu trách nhiệm bảo đảm việc sử dụng TG.GAME phù hợp luật địa phương. Nếu bị cấm，không được truy cập hoặc sử dụng.",
+    "accountUsageTitle": "2. Sử dụng tài khoản",
+    "accountUsageParagraph1": "Người dùng phải đăng ký bằng thông tin chính xác，bảo mật mật khẩu và thông tin xác minh.",
+    "accountUsageParagraph2": "Tài khoản chỉ dành cho cá nhân，không được bán、cho thuê、chuyển nhượng、chia sẻ hoặc giao cho bên thứ ba.",
+    "accountUsageParagraph3": "Khi phát hiện đăng nhập bất thường、thông tin danh tính sai lệch hoặc rủi ro，nền tảng có thể xác minh bảo mật và áp dụng biện pháp kiểm soát.",
+    "gamesBettingTitle": "3. Trò chơi và cược",
+    "gamesBettingParagraph1": "Trước khi cược，hãy kiểm tra lựa chọn、số tiền và luật chơi.",
+    "gamesBettingParagraph2": "Cược đã được hệ thống xác nhận thường không thể sửa hoặc hủy. Kết quả và thanh toán dựa trên hồ sơ hệ thống và luật chơi tương ứng.",
+    "gamesBettingParagraph3": "Nếu xảy ra lỗi hệ thống、mạng、dữ liệu hoặc kỹ thuật，nền tảng có quyền kiểm tra hồ sơ và xử lý phù hợp.",
+    "depositsWithdrawalsTitle": "4. Nạp và rút tiền",
+    "depositsWithdrawalsParagraph1": "Chỉ dùng phương thức thanh toán do bạn sở hữu hợp pháp hoặc được ủy quyền.",
+    "depositsWithdrawalsParagraph2": "Để bảo vệ tài khoản và tiền，nền tảng có thể yêu cầu xác minh danh tính（KYC）hoặc giấy tờ cần thiết.",
+    "depositsWithdrawalsParagraph3": "Quy định、hạn mức và thời gian xử lý nạp rút theo thông tin hiển thị trên nền tảng.",
+    "promotionsRewardsTitle": "5. Ưu đãi và thưởng",
+    "promotionsRewardsParagraph1": "Nền tảng có thể cung cấp thưởng、hoàn tiền、phiếu ưu đãi và khuyến mãi theo từng thời điểm.",
+    "promotionsRewardsParagraph2": "Mỗi chương trình có điều kiện、thời hạn、yêu cầu vòng cược và quy tắc riêng；hãy đọc trước khi tham gia. Cấm dùng nhiều tài khoản、giao dịch giả、trục lợi hoặc khai thác lỗi để nhận thưởng.",
+    "fairUseTitle": "6. Sử dụng công bằng",
+    "fairUseParagraph1": "Cấm gian lận、trục lợi、rửa tiền、chuyển tiền phi pháp、tấn công hệ thống、thao túng trò chơi hoặc lợi dụng lỗi nền tảng.",
+    "fairUseParagraph2": "Nền tảng có quyền kiểm tra hoạt động bất thường、tài khoản vi phạm và áp dụng biện pháp kiểm soát rủi ro.",
+    "responsibleGamingTitle": "7. Cờ bạc có trách nhiệm",
+    "responsibleGamingParagraph1": "TG.GAME khuyến khích giải trí lành mạnh và có trách nhiệm.",
+    "responsibleGamingParagraph2": "Hãy quản lý thời gian và ngân sách phù hợp khả năng tài chính，không xem cờ bạc là đầu tư、thu nhập ổn định hay cách giải quyết nợ.",
+    "responsibleGamingParagraph3": "Nếu cờ bạc ảnh hưởng xấu đến cuộc sống、công việc hoặc tài chính，hãy ngừng chơi và tìm hỗ trợ phù hợp.",
+    "privacyDataTitle": "8. Quyền riêng tư và dữ liệu",
+    "privacyDataParagraph1": "Nền tảng có thể thu thập、xử lý dữ liệu cần thiết để cung cấp dịch vụ、xác minh danh tính、bảo mật、quản lý rủi ro và tuân thủ luật.",
+    "privacyDataParagraph2": "Dữ liệu được xử lý và bảo vệ theo chính sách quyền riêng tư và pháp luật hiện hành.",
+    "serviceChangesTitle": "9. Thay đổi dịch vụ",
+    "serviceChangesParagraph1": "Do bảo trì、nâng cấp、thay đổi dịch vụ bên thứ ba、luật hoặc quy định，nền tảng có thể điều chỉnh tính năng、trò chơi và quy tắc.",
+    "serviceChangesParagraph2": "Một số dịch vụ có thể tạm ngừng、chậm trễ hoặc không khả dụng.",
+    "updatesTitle": "10. Cập nhật điều khoản",
+    "updatesParagraph1": "TG.GAME có thể sửa điều khoản theo pháp luật、phát triển kinh doanh hoặc nhu cầu vận hành.",
+    "updatesParagraph2": "Điều khoản mới sẽ được công bố trên nền tảng. Tiếp tục sử dụng TG.GAME đồng nghĩa chấp nhận điều khoản mới.",
+    "notice": "Hãy cá cược có trách nhiệm. Cấm người dưới 18 tuổi."
+  },
+  "loginRegister": {
+    "agreementPrefix": "Tôi đủ 18 tuổi và đồng ý với",
+    "agreementMiddle": "và",
+    "userAgreement": "Thỏa thuận người dùng",
+    "privacyPolicy": "Chính sách riêng tư",
+    "policy": {
+      "title": "Chính sách riêng tư tóm tắt",
+      "sections": [
+        {
+          "title": "1. Giới thiệu",
+          "paragraphs": [
+            "Cảm ơn bạn đã dùng [Product Name]（sau đây gọi là“nền tảng”）.",
+            "Chúng tôi coi trọng dữ liệu cá nhân và quyền riêng tư của bạn.",
+            "Chính sách này（gọi tắt là“chính sách”）giải thích cách chúng tôi thu thập、sử dụng、lưu trữ、bảo vệ và chia sẻ dữ liệu cá nhân.",
+            "Vui lòng đọc và hiểu chính sách trước khi sử dụng nền tảng.",
+            "Nếu không đồng ý với bất kỳ phần nào，vui lòng ngừng sử dụng."
+          ]
+        },
+        {
+          "title": "2.Thông tin thu thập",
+          "paragraphs": ["Khi bạn dùng nền tảng，chúng tôi có thể thu thập:"],
+          "orderedList": [
+            "Thông tin cơ bản",
+            "Số điện thoại、email、tên người dùng、ảnh đại diện、mật khẩu đăng nhập（lưu mã hóa）",
+            "Dữ liệu xác minh（KYC），chỉ thu thập khi cần xác minh danh tính",
+            "Họ tên、số/chi tiết giấy tờ、dữ liệu khuôn mặt、ảnh giấy tờ",
+            "Thiết bị và nhật ký",
+            "Mẫu thiết bị、phiên bản hệ điều hành、địa chỉ IP、giờ đăng nhập、nhật ký thao tác、lịch sử duyệt",
+            "Dữ liệu giao dịch（gồm ví và thanh toán）",
+            "Lịch sử nạp、rút、giao dịch、địa chỉ blockchain（như USDT、BTC v.v.）",
+            "Vị trí（tùy chọn）",
+            "Vị trí IP、dữ liệu GPS（sau khi bạn đồng ý）"
+          ]
+        },
+        {
+          "title": "3.Cách sử dụng dữ liệu",
+          "paragraphs": ["Chúng tôi có thể dùng thông tin thu thập cho các mục đích:"],
+          "bulletList": [
+            "Tạo và quản lý tài khoản",
+            "Xác minh danh tính và hoàn tất KYC",
+            "Cung cấp dịch vụ và xử lý giao dịch",
+            "Bảo mật nền tảng，ngăn gian lận và rủi ro",
+            "Cải thiện tính năng và trải nghiệm",
+            "Hỗ trợ khách hàng và giải quyết tranh chấp",
+            "Tuân thủ pháp luật và quy định hiện hành"
+          ]
+        },
+        {
+          "title": "4.Lưu trữ và bảo vệ dữ liệu",
+          "subsections": [
+            {
+              "title": "1.Cách lưu trữ",
+              "paragraphs": [
+                "Dữ liệu được lưu bằng mã hóa（như AES/HTTPS）. Mật khẩu được mã hóa một chiều（như hash）."
+              ]
+            },
+            {
+              "title": "2.Thời hạn lưu",
+              "paragraphs": ["Dữ liệu được giữ trong thời gian cung cấp dịch vụ hoặc theo luật."]
+            },
+            {
+              "title": "3.Biện pháp bảo mật",
+              "paragraphs": [
+                "Chúng tôi dùng truyền tải mã hóa（SSL/TLS）、kiểm soát truy cập、kiểm toán và biện pháp bảo mật khác."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "5.Chia sẻ và tiết lộ dữ liệu",
+          "paragraphs": [
+            "Chúng tôi không bán dữ liệu cá nhân của bạn. Tuy nhiên，dữ liệu có thể được chia sẻ trong các trường hợp:"
+          ],
+          "subsections": [
+            {
+              "title": "1.Yêu cầu pháp lý",
+              "paragraphs": ["Khi được yêu cầu theo luật、tòa án、cơ quan nhà nước hoặc quản lý."]
+            },
+            {
+              "title": "2.Đối tác kinh doanh",
+              "paragraphs": ["Chúng tôi có thể chia sẻ dữ liệu cần thiết với:"],
+              "bulletList": ["Đơn vị thanh toán", "Đơn vị KYC", "Đơn vị quản lý rủi ro"]
+            },
+            {
+              "title": "3.Chuyển giao kinh doanh",
+              "paragraphs": [
+                "Khi sáp nhập、mua lại、tái cấu trúc、bán hoặc chuyển giao kinh doanh."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "6.Quyền người dùng",
+          "paragraphs": [
+            "Bạn có thể có quyền xem、sửa、xóa dữ liệu cá nhân、xóa tài khoản、rút lại đồng ý hoặc khiếu nại.",
+            "Nếu cần hỗ trợ，hãy liên hệ bộ phận chăm sóc khách hàng."
+          ]
+        },
+        {
+          "title": "7.Cookie và công nghệ theo dõi",
+          "paragraphs": [
+            "Chúng tôi có thể dùng Cookie để ghi nhớ đăng nhập、cải thiện trải nghiệm、phân tích truy cập và hành vi.",
+            "Bạn có thể quản lý hoặc tắt Cookie trong trình duyệt."
+          ]
+        },
+        {
+          "title": "8.Bảo vệ trẻ vị thành niên",
+          "paragraphs": [
+            "Nền tảng chỉ dành cho người từ 18 tuổi. Nếu phát hiện người chưa đủ tuổi，chúng tôi sẽ xóa dữ liệu theo luật hiện hành."
+          ]
+        },
+        {
+          "title": "9.Chuyển dữ liệu xuyên biên giới",
+          "paragraphs": [
+            "Để vận hành và cung cấp dịch vụ quốc tế，dữ liệu có thể được chuyển đến quốc gia hoặc khu vực khác.",
+            "Chúng tôi áp dụng biện pháp phù hợp để bảo vệ dữ liệu theo luật."
+          ]
+        },
+        {
+          "title": "10.Cập nhật chính sách",
+          "paragraphs": [
+            "Chúng tôi có thể cập nhật chính sách. Thay đổi sẽ được công bố trên nền tảng hoặc thông báo bằng cách khác.",
+            "Vui lòng kiểm tra chính sách định kỳ."
+          ]
+        }
+      ]
+    }
+  },
+  "home": {
+    "title": "Chào mừng đến TG Game",
+    "home": "Trang chủ",
+    "sign_In": "Đăng nhập",
+    "sign_Up": "Đăng ký",
+    "language": "Ngôn ngữ",
+    "view_currency": "Hiển thị theo tiền tệ",
+    "search": "Tìm kiếm",
+    "select_currency": "Chọn tiền tệ hiển thị. Số tiền sẽ là giá trị gần đúng.",
+    "none": "Không",
+    "none_select_currency": "Nếu chưa chọn tiền tệ，một số khoản vẫn hiển thị bằng tiền pháp định đã chọn gần nhất",
+    "RecentBigWins": "Thắng lớn gần đây",
+    "favorites_games": "Game yêu thích",
+    "recommended_games": "Game đề xuất",
+    "All": "Tất cả",
+    "BCOriginals": "BC độc quyền",
+    "Slots": "Slot",
+    "LiveCasino": "Casino trực tiếp",
+    "Casino": "Casino",
+    "labelLabel": "Trải nghiệm game BC độc quyền、casino trực tiếp và slot.",
+    "Sports": "Thể thao",
+    "SportsLabel": "Đặt cược ngay！Hơn 80 môn như bóng đá、cricket、NFL và esports đang chờ bạn！",
+    "contract": "Hợp đồng",
+    "slots": "Game điện tử",
+    "fishing": "Bắn cá",
+    "Fishing": "Bắn cá",
+    "table": "Game bài",
+    "live": "Casino trực tiếp",
+    "lottery": "Xổ số",
+    "Lottery": "Xổ số",
+    "LiveSports": "Thể thao trực tiếp",
+    "DepositBonus": "Thưởng nạp tiền",
+    "Live": "Trực tiếp",
+    "LatestRound&Race": "Cược mới và thắng lớn",
+    "Game": "Trò chơi",
+    "Player": "Người chơi",
+    "BetAmount": "Tiền cược",
+    "Multiplier": "Hệ số",
+    "Profit": "Lợi nhuận",
+    "LatestBet": "Cược mới nhất",
+    "HighRoller": "Bảng xếp hạng",
+    "WagerContest": "Cuộc thi cược",
+    "TGOriginals": "TG độc quyền",
+    "TableGames": "Game bàn",
+    "HotGames": "Game nổi bật",
+    "RecommendedGames": "Game đề xuất",
+    "RelatedGames": "Game liên quan",
+    "JoinNow": "Tham gia ngay",
+    "ExclusivePromotions": "Ưu đãi riêng",
+    "DontDisplayThisForNextToday": "Không hiện lại hôm nay",
+    "Poker": "Poker",
+    "banner_sign_up": "Đăng ký ngay，nhận",
+    "banner_sign_up_amount": "Lên đến ",
+    "banner_sign_up_amount1": "$20,000,00",
+    "RecordTime": "Thời gian ghi nhận"
+  },
+  "common": {
+    "loading": "Đang tải...",
+    "loadingMore": "Đang tải thêm...",
+    "noMoreData": "Hết dữ liệu",
+    "noData": "Chưa có dữ liệu",
+    "error": "Lỗi",
+    "upload_file_too_large_failed": "Tệp quá lớn，tải lên thất bại！",
+    "requestError": "Lỗi yêu cầu",
+    "success": "Thành công",
+    "confirm": "Xác nhận",
+    "cancel": "Hủy",
+    "account": "Tài khoản",
+    "username": "Người dùng",
+    "phone": "Điện thoại",
+    "select_country": "Chọn quốc gia",
+    "search_country": "Tìm quốc gia",
+    "enter_account": "Nhập số điện thoại",
+    "enter_username": "6–16 ký tự（chữ hoặc số）",
+    "invitation_code": "Mã giới thiệu",
+    "enter_invitation_code": "Nhập mã giới thiệu（tùy chọn）",
+    "password": "Mật khẩu",
+    "enter_password": "6–16 ký tự（chữ và số）",
+    "confirm_password": "Xác nhận mật khẩu",
+    "enter_confirm_password": "Nhập lại mật khẩu",
+    "remember_me": "Nhớ mật khẩu",
+    "forget_password": "Quên mật khẩu",
+    "reset_password": "Đặt lại mật khẩu",
+    "captcha": "Mã xác minh hình ảnh",
+    "enter_captcha": "Nhập mã trong ảnh",
+    "no_account": "Chưa có tài khoản？",
+    "sign_up_now": "Đăng ký ngay",
+    "have_account": "Đã có tài khoản？",
+    "log_in_now": "Đăng nhập ngay",
+    "continue": "Khám phá trước",
+    "verification": "Mã xác minh",
+    "enter_verification": "Nhập mã xác minh",
+    "get_code": "Lấy mã",
+    "welcome_deposit_bonus": "Thưởng nạp đầu",
+    "free_daily_lucky_spin": "Quay may mắn miễn phí mỗi ngày",
+    "free_perks": "Quà miễn phí",
+    "daily_free_rewards_bonuses": "Thưởng miễn phí hằng ngày",
+    "stay_untamed": "Luôn khác biệt",
+    "sign_up_get_welcome_bonus": "Đăng ký nhận thưởng lớn",
+    "log_in_directly": "Đăng nhập trực tiếp",
+    "log_in_using_secret_key": "Đăng nhập bằng khóa bí mật",
+    "filter": "Lọc",
+    "apply": "Áp dụng",
+    "internalServerError": "Lỗi máy chủ nội bộ",
+    "unknownError": "Lỗi không xác định",
+    "sessionExpired": "Phiên hết hạn，vui lòng đăng nhập lại",
+    "globalSetting": "Cài đặt chung",
+    "security": "Bảo mật",
+    "preferences": "Tùy chọn",
+    "changeLoginPassword": "Đổi mật khẩu đăng nhập",
+    "mobileVerification": "Xác minh điện thoại",
+    "verificationCodeSentTo": "Mã xác minh đã gửi đến",
+    "sendCode": "Gửi mã xác minh",
+    "resendCode": "Gửi lại mã xác minh",
+    "resendInSeconds": "Gửi lại sau {seconds} giây",
+    "didntReceiveCode": "Chưa nhận được mã？",
+    "didntReceiveCodeIntro": "Thử các bước sau:",
+    "didntReceiveCodeTip1": "Kiểm tra số điện thoại đã nhập.",
+    "didntReceiveCodeTip2": "Kiểm tra chặn SMS hoặc lọc tin nhắn rác.",
+    "didntReceiveCodeTip3": "Chờ vài phút，SMS có thể đến chậm.",
+    "newPassword": "Mật khẩu mới",
+    "enterNewPassword": "Nhập mật khẩu mới",
+    "reEnterNewPassword": "Nhập lại mật khẩu mới",
+    "updatePassword": "Cập nhật mật khẩu",
+    "phoneNumberUnavailable": "Không lấy được số điện thoại",
+    "gotIt": "Đã hiểu",
+    "ok": "OK",
+    "pleaseEnterThePhoneNumber": "Nhập số điện thoại",
+    "pleaseEnterCorrectPhoneNumber": "Nhập số điện thoại hợp lệ",
+    "pleaseEnterCorrectPhone": "Nhập số điện thoại hợp lệ",
+    "usernameRuleInvalid": "Tên người dùng phải có 6-16 chữ hoặc số",
+    "invitationCodeRuleInvalid": "Mã giới thiệu phải có 6 chữ số",
+    "passwordRuleInvalid": "Mật khẩu phải có 6–16 ký tự gồm chữ và số",
+    "passwordMismatch": "Mật khẩu nhập không khớp",
+    "transactionPasswordRuleInvalid": "Mật khẩu giao dịch phải có 6 chữ số",
+    "changeMobileNumber": "Đổi số điện thoại",
+    "setMobileNumber": "Cài số điện thoại",
+    "newMobileNumber": "Số điện thoại mới",
+    "enterNewMobileNumber": "Nhập số điện thoại mới",
+    "successfully": "Đã cập nhật số điện thoại.",
+    "setTransactionPassword": "Cài mật khẩu giao dịch",
+    "changeTransactionPassword": "Đổi mật khẩu giao dịch",
+    "transactionPassword": "Mật khẩu giao dịch",
+    "confirmTransactionPassword": "Xác nhận mật khẩu giao dịch",
+    "transactionPasswordSetSuccessfully": "Đã cài mật khẩu giao dịch.",
+    "transactionPasswordChangedSuccessfully": "Đã đổi mật khẩu giao dịch.",
+    "delete": "Xóa"
+  },
+  "theme": {
+    "toggle": "Đổi giao diện",
+    "light": "Chế độ sáng",
+    "dark": "Chế độ tối",
+    "system": "Theo hệ thống"
+  },
+  "bottom_tab_bar": {
+    "menu": "Menu",
+    "explore": "Tìm kiếm",
+    "casino": "Casino",
+    "sports": "Thể thao",
+    "chat": "Trò chuyện"
+  },
+  "chatPublic": {
+    "customerServiceList": "Danh sách hỗ trợ",
+    "global": "Toàn cầu",
+    "mockLastMessage": "Đã nhận đơn hàng 1,000 tệ của bạn.",
+    "mockServiceGreeting": "Xin chào！Tôi có thể giúp gì？",
+    "mockUserQuestion": "Làm sao để đăng ký tài khoản？",
+    "customerServiceName": "CSKH {name}",
+    "online": "Trực tuyến",
+    "offline": "Ngoại tuyến",
+    "typing": "Đang nhập...",
+    "noAgentsOnline": "Hiện không có nhân viên trực tuyến.",
+    "depositIssues": "Vấn đề nạp tiền",
+    "withdrawalIssues": "Vấn đề rút tiền",
+    "accountIssues": "Vấn đề tài khoản",
+    "depositIssue": "Vấn đề nạp tiền",
+    "withdrawalIssue": "Vấn đề rút tiền",
+    "accountIssue": "Vấn đề tài khoản",
+    "depositQuestion": "Nạp tiền chưa vào thì làm sao？",
+    "withdrawalQuestion": "Rút tiền vẫn đang xử lý thì sao？",
+    "accountQuestion": "Cách cập nhật hoặc khôi phục tài khoản？",
+    "inputPlaceholder": "Nhập nội dung...",
+    "you": "Tôi",
+    "customerService": "CSKH",
+    "image": "Ảnh",
+    "video": "Video",
+    "imageMessagePreview": "[Tin nhắn ảnh]",
+    "videoMessagePreview": "[Tin nhắn video]",
+    "redPacketMessagePreview": "[Lì xì]",
+    "oneVideo": "1 video",
+    "morning": "Buổi sáng",
+    "afternoon": "Buổi chiều",
+    "allEmojis": "Tất cả emoji",
+    "send": "Gửi",
+    "photo": "Album",
+    "takePhoto": "Chụp ảnh",
+    "reply": "Trả lời",
+    "replyTo": "Trả lời {name}",
+    "onePhoto": "1 ảnh",
+    "redPacketGoodLuck": "Chúc may mắn！",
+    "claimRedPacket": "Nhận lì xì",
+    "supportRedPacket": "Lì xì CSKH",
+    "claimed": "Đã nhận",
+    "congratulations": "Chúc mừng bạn",
+    "redPacketCredited": "Thưởng đã cộng vào số dư tài khoản.",
+    "claimedRedPacketPrefix": "Bạn đã nhận",
+    "redPacket": "Lì xì",
+    "claimedRedPacketSuffix": "，từ {name}",
+    "search": "Tìm kiếm",
+    "searchHint": "Tìm nhanh nội dung chat.",
+    "noSearchResults": "Không tìm thấy kết quả.",
+    "noMore": "Không còn nội dung",
+    "imagePreview": "{current}/{total}",
+    "photoPreview": "Xem trước ảnh",
+    "download": "Tải xuống",
+    "previousImage": "Ảnh trước",
+    "nextImage": "Ảnh sau",
+    "mediaDownloadHint": "Chụp màn hình để lưu.",
+    "videoSaveHint": "Quay màn hình để lưu.",
+    "imageSaveHint": "Chụp màn hình để lưu.",
+    "savedSuccessfully": "Đã lưu",
+    "customerServiceUnavailable": "CSKH hiện không khả dụng.",
+    "customerServiceReconnecting": "Đang kết nối lại CSKH，thử lại sau.",
+    "onlyImageFiles": "Chỉ hỗ trợ tệp ảnh.",
+    "imageFileTooLarge": "Ảnh và GIF không được quá 10MB.",
+    "onlyVideoFiles": "Chỉ hỗ trợ tệp video.",
+    "videoFileTooLarge": "Video không được quá 100MB.",
+    "onlyImageVideoFiles": "Chỉ hỗ trợ ảnh và video.",
+    "mediaSizeLimit": "Ảnh và GIF tối đa 10MB，video tối đa 100MB.",
+    "imageUploadFailed": "Tải ảnh thất bại.",
+    "videoUploadFailed": "Tải video thất bại.",
+    "redPacketClaimFailed": "Nhận lì xì thất bại.",
+    "videoPreview": "Xem trước video",
+    "playVideo": "Phát video",
+    "pauseVideo": "Tạm dừng video",
+    "videoProgress": "Tiến trình video",
+    "fullscreen": "Toàn màn hình",
+    "retry": "Gửi lại",
+    "sendImage": "{current} / {total}",
+    "close": "Đóng"
+  },
+  "search": {
+    "placeholder": "Tìm trò chơi",
+    "select": "Chọn",
+    "history": "Lịch sử",
+    "clear": "Xóa lịch sử tìm",
+    "suggested": "Gợi ý",
+    "sortDefault": "Mặc định",
+    "sort": "Sắp xếp:",
+    "providers": "Nhà cung cấp:",
+    "botClear": "Xóa tất cả",
+    "all": "Tất cả",
+    "stay": "Sắp ra mắt—nhiều bất ngờ đang chờ！"
+  },
+  "casino": {
+    "banner_title": "Luôn khác biệt",
+    "banner_sign_up": "Đăng ký ngay，nhận đến",
+    "banner_subtitle": "Trong casino hoặc cược thể thao",
+    "join_now": "Tham gia ngay",
+    "placeholder": "Tìm trò chơi",
+    "search_tips": "Nhập ít nhất 2 ký tự để tìm",
+    "history": "Lịch sử",
+    "clear": "Xóa lịch sử tìm",
+    "suggested": "Gợi ý",
+    "sort": "Sắp xếp",
+    "providers": "Nhà cung cấp",
+    "bot_clear": "Xóa tất cả",
+    "show_blocked": "Hiện game bị chặn",
+    "all": "Tất cả",
+    "latest_bet": "Cược mới nhất",
+    "high_roller": "Bảng xếp hạng",
+    "lobby": "Sảnh",
+    "tg_originals": "TG độc quyền",
+    "hot_games": "Game nổi bật",
+    "favorites": "Game yêu thích",
+    "recent": "Game gần đây",
+    "filter_hot": "Phổ biến",
+    "filter_new": "Mới nhất",
+    "view_all": "Xem tất cả"
+  },
+  "gameDetail": {
+    "playWithSelectedCurrency": "Chơi bằng tiền tệ đã chọn",
+    "selectedCurrency": "Tiền tệ đã chọn",
+    "selectCurrencyTitle": "Chọn tiền tệ",
+    "currencySectionCash": "Tiền mặt",
+    "settingTooltip": "Cài đặt",
+    "favoriteTooltip": "Yêu thích",
+    "playNowHint": "Nhấn“Chơi ngay”để bắt đầu. Chúc may mắn và vui vẻ！",
+    "playNow": "Chơi ngay",
+    "playWithBalanceIn": "Chơi bằng tiền tệ trong số dư",
+    "confirmAndPlay": "Xác nhận và chơi",
+    "signInPrompt": "Chào mừng đến {gameName}，vui lòng đăng nhập để tiếp tục.",
+    "guestCta": "Đăng ký để nhận thưởng tiền nạp",
+    "guestCtaH5": "Đăng nhập để nhận thưởng!",
+    "liveStatsTitle": "Thống kê trực tiếp",
+    "betId": "Mã cược ID",
+    "bet": "Đặt cược",
+    "profit": "Tiền thắng",
+    "wagered": "Tổng cược",
+    "win": "Thắng",
+    "lose": "Thua",
+    "highWin": "Thắng lớn",
+    "luckyWin": "Thắng may mắn",
+    "review": "Bình luận",
+    "houseEdge": "Lợi thế nhà cái",
+    "rtpReturnToPlayer": "RTP（tỷ lệ hoàn trả）",
+    "maxWin": "Thưởng tối đa",
+    "stakesRange": "Khoảng cược",
+    "by": "Bởi",
+    "payout": "Tiền trả thưởng",
+    "multiplierUnit": "lần",
+    "wager": "Đặt cược",
+    "mult": "Hệ số",
+    "allBets": "Tất cả cược",
+    "myBets": "Cược của tôi",
+    "noData": "Chưa có dữ liệu",
+    "anonymous": "Ẩn danh",
+    "outOfFive": "Thang điểm 5",
+    "rateThisGame": "Đánh giá trò chơi",
+    "ratings": "{count} đánh giá",
+    "comments": "Bình luận",
+    "leaveYourComment": "Viết bình luận",
+    "loadingComments": "Đang tải bình luận...",
+    "refreshingComments": "Đang làm mới bình luận...",
+    "collapse": "Thu gọn",
+    "expand": "Mở rộng",
+    "noCommentsYet": "Chưa có bình luận.",
+    "sortNewestFirst": "Mới nhất trước",
+    "sortTopComments": "Bình luận nổi bật",
+    "sortTopLikes": "Nhiều lượt thích nhất",
+    "replyToUser": "Trả lời {name}",
+    "leaveCommentsTitle": "Đăng bình luận",
+    "post": "Đăng",
+    "commentDefaultPlaceholder": "Thêm bình luận",
+    "starActiveAlt": "Sao đã chọn",
+    "starInactiveAlt": "Sao chưa chọn",
+    "settingLike": "Thích",
+    "settingShare": "Chia sẻ",
+    "settingMovieMode": "Chế độ rạp phim",
+    "settingFloatMode": "Chế độ nổi",
+    "stayTunedComingSoon": "Sắp ra mắt，còn nhiều điều thú vị！",
+    "shareThisGame": "Chia sẻ game",
+    "shareViaSocialMedia": "Chia sẻ qua mạng xã hội",
+    "shareInviteHint": "Mời bạn qua các kênh sau",
+    "shareViaWebLink": "Chia sẻ bằng liên kết",
+    "copy": "Sao chép",
+    "shareChannelMore": "Thêm",
+    "shareChannelFacebook": "Facebook",
+    "shareChannelWhatsapp": "WhatsApp",
+    "shareChannelTelegram": "Telegram",
+    "shareChannelTiktok": "TikTok",
+    "shareDefaultTitle": "Chia sẻ",
+    "shareLinkCopySuccess": "Đã sao chép liên kết chia sẻ",
+    "copyFailedRetry": "Sao chép thất bại，thử lại",
+    "exitGameConfirm": "Bạn muốn thoát trò chơi？",
+    "invalidGameUrl": "Liên kết game không hợp lệ"
+  },
+  "common_footer": {
+    "top": {
+      "left_title": "Casino tiền mã hóa trực tuyến",
+      "left_desc_1": "Khám phá hơn 1000 slot、bàn dealer trực tiếp、Crash và game độc quyền，cùng cược thể thao trước trận và trực tiếp. Nạp tức thì、phí thấp、rút nhanh.",
+      "left_desc_2": "Hệ thống công bằng có thể kiểm chứng và RNG đã kiểm toán bảo vệ mỗi cược. Casino và thể thao dùng chung một ví；giao diện tối ưu di động giúp chơi mọi lúc. Người mới có thưởng chào mừng và hoàn cược định kỳ. Cần hỗ trợ？CSKH 24/7 luôn sẵn sàng. Đơn giản、an toàn，dành cho giải trí tiền mã hóa.",
+      "right_title": "Giúp chúng tôi cải thiện trải nghiệm",
+      "feedback_reward": "Chia sẻ ý kiến để có cơ hội nhận thưởng！",
+      "feedback_email_label": "Liên hệ:",
+      "security_notice": "Nếu phát hiện lỗ hổng hoặc rò rỉ dữ liệu，hãy liên hệ chúng tôi（chỉ nhận vấn đề bảo mật，nội dung khác không được xử lý）.",
+      "security_email_label": "Email bảo mật:"
+    },
+    "sections": {
+      "casino": "Casino",
+      "sports": "Thể thao",
+      "promo": "Khuyến mãi",
+      "support": "Hỗ trợ",
+      "support_legal": "Hỗ trợ / Pháp lý",
+      "about_us": "Về chúng tôi",
+      "global_community": "Tham gia cộng đồng toàn cầu",
+      "local_community": "Tham gia cộng đồng địa phương"
+    },
+    "bottom": {
+      "left_desc_1": "Điểm đến game tiền mã hóa được hàng triệu người tin dùng. Chúng tôi kết hợp giải trí táo bạo、lối chơi mới và cộng đồng sôi động để mang lại cảm giác hấp dẫn. Chơi hết mình、nhận thưởng，luôn tự tin.",
+      "left_desc_2": "Khi truy cập và sử dụng TG.GAME，bạn xác nhận hiểu và đồng ý chịu ràng buộc pháp lý bởi《Điều khoản dịch vụ》và《Chính sách chơi có trách nhiệm》.",
+      "left_desc_3": "Giao dịch tiền mã hóa theo định nghĩa không phải cờ bạc，nên không thuộc phạm vi giấy phép cá cược của chúng tôi.",
+      "right_desc_1": "TG.GAME do Twocent Technology Limited vận hành，công ty TNHH đăng ký tại Belize，số đăng ký 41939，địa chỉ Sea Urchin Street #2, San Pedro, Ambergris Caye, Belize。BC.GAME được Chính quyền đảo tự trị Anjouan thuộc Liên bang Comoros cấp phép và quản lý，số giấy phép ALSI-202410011-FI1.",
+      "right_desc_2": "TG.GAME đáp ứng mọi yêu cầu tuân thủ và được phép cung cấp trò chơi may rủi và dịch vụ cá cược theo pháp luật."
+    },
+    "alt": {
+      "award": "Giải thưởng",
+      "certification": "Chứng nhận",
+      "logo": "Logo TG.GAME"
+    },
+    "links": {
+      "bc_store": "Cửa hàng BC",
+      "notice_board": "Bảng thông báo",
+      "law_enforcement": "Cơ quan thực thi pháp luật",
+      "live_support": "Hỗ trợ trực tuyến"
+    },
+    "copyright": "Bản quyền ©2026 Twocent Technology Limited。Bảo lưu mọi quyền。1BTC=$89,730.16"
+  },
+  "sidebar_menu": {
+    "app_download": {
+      "title": "Ứng dụng",
+      "subtitle": "Mở khóa tính năng đặc biệt Nâng tầm giải trí"
+    },
+    "bc_token": {
+      "title": "Token BC"
+    },
+    "casino": {
+      "title": "Casino",
+      "children": {
+        "favorites": "Yêu thích của tôi",
+        "recent": "Chơi gần đây",
+        "tg_originals": "Game TG độc quyền",
+        "hot_games": "Game nổi bật",
+        "slots": "Game điện tử",
+        "live_casino": "Casino trực tiếp",
+        "table_games": "Game bài",
+        "fishing": "Game bắn cá",
+        "game_providers": "Nhà phát hành"
+      }
+    },
+    "sports": {
+      "label": "Thể thao",
+      "children": {
+        "fifa": "FIFA",
+        "soccer": "Bóng đá",
+        "basketball": "Bóng rổ",
+        "tennis": "Quần vợt",
+        "badminton": "Cầu lông",
+        "boxing": "Quyền Anh",
+        "darts": "Phi tiêu",
+        "american_football": "Bóng bầu dục Mỹ",
+        "table_tennis": "Bóng bàn",
+        "volleyball": "Bóng chuyền",
+        "auto_racing": "Đua xe",
+        "baseball": "Bóng chày"
+      }
+    },
+    "anniversary": {
+      "label": "Kỷ niệm thành lập"
+    },
+    "lottery": {
+      "label": "Xổ số",
+      "children": {
+        "my_bets": "Cược của tôi",
+        "all_lotteries": "Tất cả xổ số",
+        "favorites": "Yêu thích của tôi",
+        "popular": "Xổ số nổi bật"
+      }
+    },
+    "crypto": {
+      "label": "Hợp đồng tương lai crypto",
+      "children": {
+        "crypto_1": "Tiền mã hóa 1",
+        "crypto_2": "Tiền mã hóa 2"
+      }
+    },
+    "promotions": {
+      "label": "Chương trình ưu đãi",
+      "children": {
+        "invite_rewards": "Thưởng mời bạn"
+      }
+    },
+    "links": {
+      "vip": {
+        "prefix": "VIP",
+        "name": "Câu lạc bộ"
+      },
+      "rebate": "Hoàn cược",
+      "bonus": "Tiền thưởng",
+      "recommend": "Giới thiệu",
+      "forum": "Diễn đàn",
+      "verified": "Công bằng kiểm chứng",
+      "responsible": "Chơi có trách nhiệm",
+      "blog": "Blog",
+      "betting_insights": "Phân tích cược thể thao"
+    },
+    "sponsorships": {
+      "label": "Tài trợ",
+      "items": {
+        "sponsorship_journey": "Hành trình tài trợ",
+        "o_higgins": "O'Higgins",
+        "jason_derulo": "Jason Derulo",
+        "lil_pump": "Lil Pump",
+        "colby_covington": "Colby Covington",
+        "miami_club": "CLB Miami",
+        "tg_game_esports": "TG Game Esports",
+        "st_kitts_nevis_patriots": "St Kitts & Nevis Patriots",
+        "kwara_united": "Kwara United",
+        "sashimi_poker": "Sashimi Poker",
+        "leicester_city": "Leicester City",
+        "krasava": "Krasava",
+        "deccan_gladiators": "Deccan Gladiators",
+        "jean_silva": "Jean Silva"
+      }
+    },
+    "support": {
+      "label": "Hỗ trợ",
+      "items": {
+        "help_center": "Trung tâm trợ giúp",
+        "faq": "Câu hỏi thường gặp",
+        "ceo_inbox": "Hộp thư CEO"
+      }
+    },
+    "legal": {
+      "label": "Điều khoản pháp lý",
+      "items": {
+        "tg_licenses": "Giấy phép BC",
+        "gamble_aware": "Cược có trách nhiệm",
+        "fairness": "Tính công bằng",
+        "privacy_policy": "Chính sách riêng tư",
+        "terms_of_service": "Điều khoản dịch vụ",
+        "aml": "AML"
+      }
+    },
+    "about_us": {
+      "label": "Về chúng tôi",
+      "items": {
+        "achievement": "Thành tựu",
+        "news": "Tin tức",
+        "work_with_us": "Hợp tác với chúng tôi",
+        "business_contacts": "Liên hệ kinh doanh",
+        "license": "Giấy phép",
+        "help_desk": "Bàn hỗ trợ",
+        "verify_representative": "Xác minh đại diện",
+        "design_resources": "Tài nguyên thiết kế"
+      }
+    },
+    "customer_service": "Hỗ trợ trực tuyến",
+    "language": {
+      "zh_cn": "Tiếng Trung giản thể",
+      "eng": "English"
+    },
+    "theme": {
+      "dark": "Chế độ tối",
+      "light": "Chế độ sáng"
+    }
+  },
+  "wallet": {
+    "title": "Ví",
+    "betHistory": "Lịch sử đặt cược",
+    "deposit": "Nạp tiền",
+    "withdraw": "Rút tiền",
+    "myOrders": "Đơn hàng của tôi",
+    "myOrdersPage": {
+      "depositDetails": "Chi tiết nạp tiền",
+      "withdrawalDetails": "Chi tiết rút tiền",
+      "depositAmount": "Số tiền nạp",
+      "withdrawalAmount": "Số tiền rút",
+      "depositBonus": "Thưởng nạp tiền",
+      "withdrawalBonus": "Thưởng rút tiền",
+      "noMoreOrders": "Không còn đơn hàng",
+      "filterGroups": {
+        "date": "Chọn ngày",
+        "type": "Chọn loại",
+        "status": "Chọn trạng thái"
+      },
+      "table": {
+        "type": "Loại",
+        "time": "Thời gian",
+        "amount": "Số tiền",
+        "status": "Trạng thái"
+      }
+    },
+    "rollover": "Kiểm tra vòng cược",
+    "rolloverDetails": "Chi tiết vòng cược",
+    "actualTurnover": "Doanh số thực tế",
+    "requiredTurnover": "Doanh số yêu cầu",
+    "applicableGames": "Game áp dụng",
+    "allGames": "Tất cả game",
+    "orderStatus": "Trạng thái đơn",
+    "security": "Cài đặt bảo mật"
+  },
+  "betHistory": {
+    "title": "Lịch sử đặt cược",
+    "noBetHistoryYet": "Chưa có lịch sử cược",
+    "startPlaying": "Bắt đầu chơi",
+    "betAmount": "Tiền cược",
+    "winLoss": "Thắng/Thua",
+    "earlySettlement": "Rút cược sớm",
+    "win": "Thắng",
+    "loss": "Thua",
+    "type": "Loại",
+    "time": "Thời gian",
+    "payout": "Thanh toán",
+    "profit": "Lợi nhuận",
+    "amount": "Số tiền",
+    "balance": "Số dư",
+    "noMore": "Hết dữ liệu",
+    "status": "Trạng thái",
+    "filterGroups": {
+      "date": "Chọn ngày",
+      "winLoss": "Chọn thắng/thua",
+      "status": "Chọn trạng thái",
+      "gameType": "Chọn loại game",
+      "platform": "Chọn nền tảng",
+      "transaction": "Loại giao dịch"
+    },
+    "filters": {
+      "all": "Tất cả",
+      "slot": "Slot",
+      "chess": "Game bài",
+      "fishing": "Bắn cá",
+      "live": "Casino trực tiếp",
+      "allAssets": "Tất cả tài sản",
+      "past24Hours": "24 giờ qua",
+      "past7Days": "7 ngày qua",
+      "past30Days": "30 ngày qua"
+    },
+    "filterOptions": {
+      "all": "Tất cả",
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "last3Days": "3 ngày gần đây",
+      "last15Days": "15 ngày gần đây",
+      "last30Days": "30 ngày gần đây",
+      "settled": "Đã thanh toán",
+      "unsettled": "Chưa thanh toán",
+      "lottery": "Xổ số",
+      "sports": "Thể thao",
+      "live": "Casino trực tiếp",
+      "electronic": "Game điện tử",
+      "chess": "Game bài",
+      "fishing": "Bắn cá",
+      "esports": "Esports"
+    }
+  },
+  "customSelect": {
+    "placeholder": "Vui lòng chọn"
+  },
+  "sportsHistory": {
+    "oddsType": "Loại kèo",
+    "confirmCashOut": "OK",
+    "close": "Đóng",
+    "singleBet": "Cược đơn",
+    "comboBet": "Cược xiên",
+    "cashOut": "Rút cược sớm",
+    "betCount": "{count} cược",
+    "comboBadge": "Xiên",
+    "totalOdds": "Tổng tỷ lệ cược",
+    "confirmed": "Xác nhận",
+    "pending": "Chờ xử lý",
+    "rejected": "Từ chối",
+    "cancelled": "Hủy",
+    "win": "Thắng",
+    "loss": "Thua",
+    "draw": "Hòa",
+    "halfWin": "Thắng nửa",
+    "halfLoss": "Thua nửa",
+    "partialLoss": "Thua một phần",
+    "eventCancelled": "Trận đấu bị hủy",
+    "betCancelled": "Cược bị hủy",
+    "cashedOut": "Đã rút cược",
+    "processing": "Đang xử lý",
+    "live": "Đang diễn ra",
+    "halfTime": "Hiệp 1",
+    "fullTime": "Cả trận",
+    "eventTime": "Thời gian trận đấu",
+    "result": "Kết quả trận đấu",
+    "copyOrder": "Sao chép mã đơn",
+    "copyFailed": "Sao chép thất bại，thử lại"
+  },
+  "betDetails": {
+    "title": "Chi tiết cược",
+    "currency": "Tiền tệ",
+    "winLoss": "Thắng/Thua",
+    "orderNo": "Mã đơn",
+    "createdAt": "Thời gian tạo",
+    "confirm": "Xác nhận",
+    "buyBackSuccess": "Gửi yêu cầu rút cược sớm thành công",
+    "buyBackSubmitFailed": "Gửi yêu cầu rút cược sớm thất bại，thử lại sau",
+    "copy": "Đã sao chép",
+    "oddsTypes": {
+      "malay": "Kèo Malaysia",
+      "hongKong": "Kèo Hồng Kông",
+      "europe": "Kèo châu Âu",
+      "indonesia": "Kèo Indonesia"
+    }
+  },
+  "rewardDetails": {
+    "title": "Phiếu cược",
+    "shareDialogAria": "Chia sẻ khoảnh khắc nổi bật",
+    "closeShare": "Đóng",
+    "shareMomentTitle": "Chiến thắng thật ngọt ngào！",
+    "shareMomentFallback": "Giải thưởng lớn của bạn",
+    "shareViaSocial": "Chia sẻ qua mạng xã hội",
+    "copyLink": "Sao chép liên kết",
+    "copyLinkSuccess": "Đã sao chép liên kết",
+    "copyLinkFail": "Sao chép thất bại，thử lại",
+    "shareEmailSubject": "Xem này"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "detail": "Chi tiết thông báo",
+    "item": "Thông báo",
+    "tabsAria": "Tab thông báo",
+    "deleteAria": "Xóa thông báo",
+    "closeDeleteDialogAria": "Đóng hộp thoại xóa",
+    "tabs": {
+      "promotions": "Thông báo chung",
+      "transactions": "Giao dịch",
+      "system": "Tin nhắn"
+    },
+    "showUnread": "Chỉ chưa đọc",
+    "markAllAsRead": "Đánh dấu tất cả đã đọc",
+    "promotionsSystemEmptyMessage": "Sắp ra mắt，nhiều điều thú vị！",
+    "transactionsEmptyMessage": "Hiện chưa có dữ liệu.",
+    "tapToViewDetails": "Nhấn để xem chi tiết",
+    "loading": "Đang tải thông báo...",
+    "jumpOpenFailed": "Mở liên kết thất bại，thử lại sau.",
+    "loadingMore": "Đang tải thêm thông báo...",
+    "noMore": "Hết thông báo",
+    "transactions": {
+      "depositSuccess": "Bạn đã nạp {amount} thành công，chúc chơi vui！",
+      "depositFailed": "Nạp {amount} thất bại，thử lại hoặc liên hệ CSKH.",
+      "depositProcessing": "Đã gửi chứng từ nạp {amount}，đang chờ kiểm tra.",
+      "withdrawalSuccess": "Yêu cầu rút {amount} đã hoàn tất.",
+      "withdrawalFailed": "Rút {amount} thất bại，thử lại hoặc liên hệ CSKH.",
+      "withdrawalProcessing": "Yêu cầu rút {amount} đang xử lý，vui lòng đợi."
+    },
+    "deleteDialog": {
+      "title": "Xóa thông báo",
+      "description": "Xóa thông báo này？",
+      "confirm": "Xóa",
+      "confirmLoading": "Đang xóa..."
+    }
+  },
+  "taskCenter": {
+    "title": "Trung tâm nhiệm vụ",
+    "pageTitle": "Nhiệm vụ",
+    "general": "Nhiệm vụ thường",
+    "entrant": "Quà người mới",
+    "reward": "Phần thưởng",
+    "rewardCap": "Giới hạn",
+    "todayDeposit": "Nạp hôm nay",
+    "todayValidBets": "Cược hợp lệ hôm nay",
+    "activity": "Điểm hoạt động：",
+    "currentActivity": "Điểm hoạt động hiện tại：",
+    "open": "Mở",
+    "reset": "Đặt lại：",
+    "days": "ngày",
+    "hours": "giờ",
+    "minutes": "phút",
+    "seconds": "giây",
+    "resetCountdown": "{days} ngày {hours} giờ {minutes} phút {seconds} giây",
+    "activityHint": "Nhận rương hoạt động trước 1 giờ sáng hôm sau，quá hạn sẽ mất.",
+    "activityChestTip": "Mở nhận thưởng {bonus}，phải đạt vòng cược {multiple} lần mới được rút.",
+    "activityChestDetails": "Chi tiết thưởng điểm {activity}",
+    "activityChestActions": {
+      "claimed": "Đã nhận",
+      "claim": "Nhận",
+      "open": "Mở"
+    },
+    "activityProgress": "Tiến độ hoạt động：",
+    "activityDetails": "Chi tiết hoạt động",
+    "rechargeProgress": "Số tiền nạp：",
+    "inProgress": "Đang diễn ra",
+    "goToTask": "Đi làm ngay",
+    "claimNow": "Nhận ngay",
+    "claimAll": "Nhận tất cả",
+    "completed": "Hoàn thành",
+    "waitSettle": "Chờ thanh toán",
+    "expired": "Đã hết hạn",
+    "claimFailed": "Nhận thất bại，thử lại sau",
+    "claimRecordMissing": "Không tìm thấy nhiệm vụ có thể nhận，làm mới và thử lại",
+    "conditionLabels": {
+      "betAmount": "Cược：",
+      "winAmount": "Thắng：",
+      "lostAmount": "Thua：",
+      "rewardAmount": "Tiền thưởng："
+    },
+    "empty": "Hiện chưa có dữ liệu.",
+    "loadFailed": "Tải nhiệm vụ thất bại，thử lại sau",
+    "unsupportedTask": "Chưa hỗ trợ mở nhiệm vụ này",
+    "taskInformation": "Thông tin nhiệm vụ",
+    "close": "Đóng",
+    "loading": "Đang tải",
+    "tierClaimReminder": {
+      "title": "Lưu ý",
+      "description": "Bạn vẫn có thể đạt mốc cao hơn để nhận nhiều thưởng hơn，nhận ngay bây giờ？",
+      "notNow": "Chưa nhận"
+    },
+    "claimSuccessToast": {
+      "title": "Nhận thành công",
+      "bonusReceived": "Đã nhận thưởng：{amount}",
+      "activityPointsEarned": "Đã nhận điểm hoạt động：{points}"
+    }
+  },
+  "referral": {
+    "title": "Đại lý",
+    "pcTabs": {
+      "referral": "Đại lý",
+      "commissionRules": "Quy tắc hoa hồng",
+      "commissionRecords": "Lịch sử hoa hồng",
+      "referralRecords": "Lịch sử giới thiệu"
+    },
+    "estimatedCommission": "Hoa hồng dự kiến",
+    "myCommission": "Hoa hồng của tôi",
+    "claim": "Nhận",
+    "claimHint": "Có thể nhận hoa hồng mỗi ngày.",
+    "dataOverview": "Tổng quan dữ liệu",
+    "totalReferrals": "Tổng số người mời",
+    "newReferralsToday": "Lượt mời mới hôm nay",
+    "newReferralsYesterday": "Lượt mời mới hôm qua",
+    "newReferralsThisWeek": "Lượt mời mới tuần này",
+    "newReferralsLastWeek": "Lượt mời mới tuần trước",
+    "statisticsHint": "Đang hiển thị thống kê theo tuần.",
+    "shareHint": "Lưu mã QR và chia sẻ để bạn bè tham gia nhanh.",
+    "viewQrCode": "Xem mã QR",
+    "shareToEarn": "Chia sẻ nhận hoa hồng",
+    "myQrCodeTitle": "Mã QR của tôi",
+    "myQrCodeDescription": "Mời bạn tham gia TG GAME，cùng chơi và nhận thưởng！",
+    "saveQrCode": "Lưu mã QR",
+    "qrSaved": "Đã lưu mã QR",
+    "closeDialog": "Đóng cửa sổ",
+    "shareOptionsHint": "Mời bạn qua các cách sau",
+    "randomSendHint": "Gửi ngẫu nhiên cho người dùng",
+    "randomSharePrefix": "Mời người dùng sau qua link đại lý:",
+    "sendViaWhatsApp": "Gửi qua WhatsApp",
+    "sendViaSms": "Gửi qua SMS",
+    "shareDefaultText": "Tham gia qua link đại lý của tôi:",
+    "myReferralLink": "Link đại lý của tôi",
+    "copy": "Sao chép",
+    "save": "Lưu",
+    "socialShareTitle": "Chia sẻ qua mạng xã hội",
+    "copySuccess": "Đã sao chép",
+    "copyFailed": "Sao chép thất bại",
+    "noClaimableCommission": "Chưa có hoa hồng để nhận",
+    "claimPending": "Đã gửi yêu cầu nhận",
+    "customerService": "Liên hệ CSKH",
+    "toast": {
+      "claimSuccess": "Nhận thành công",
+      "claimFailed": "Nhận thất bại"
+    },
+    "comingSoon": "Sắp ra mắt，nhiều điều thú vị！！",
+    "cta": "Mời ngay",
+    "common": {
+      "filter": "Lọc",
+      "apply": "Áp dụng",
+      "noData": "Chưa có dữ liệu"
+    },
+    "invitePoster": {
+      "saveImage": "Lưu poster",
+      "copyLink": "Sao chép liên kết",
+      "inviteNow": "Chia sẻ ngay",
+      "posterAlt": "Poster mời bạn",
+      "saveHint": "Chụp màn hình để lưu poster.",
+      "saveStarted": "Đã bắt đầu tải ảnh",
+      "saveFailed": "Lưu ảnh thất bại"
+    },
+    "messagePopup": {
+      "title": "Nội dung giới thiệu",
+      "description": "Khi sao chép sẽ thêm nội dung này trước liên kết",
+      "presets": {
+        "exclusiveRewards": "Nhấn để nhận ngay",
+        "earnTogether": "Tham gia ngay，nhận thưởng riêng",
+        "unlockBonus": "Mời bạn，mở khóa phần thưởng bất ngờ"
+      }
+    },
+    "h5": {
+      "quickActions": {
+        "tasks": "Nhiệm vụ",
+        "details": "Chi tiết",
+        "rules": "Quy tắc",
+        "guide": "Hướng dẫn"
+      },
+      "marquee": "Chúc mừng {account} lên đầu bảng！",
+      "shareChannels": {
+        "facebook": "Facebook",
+        "whatsapp": "Whatsapp",
+        "telegram": "Telegram",
+        "telegramGroup": "Telegram",
+        "tiktok": "Tiktok",
+        "tiktokLive": "Tiktok",
+        "copy": "Sao chép"
+      },
+      "howToShare": "Cách chia sẻ",
+      "referralMessage": "Nội dung giới thiệu",
+      "inviteRewardPrefix": "Mời",
+      "inviteRewardSuffix": "bạn và nhận",
+      "taskDetails": "Chi tiết nhiệm vụ",
+      "copyMessageSuccess": "Đã sao chép nội dung giới thiệu",
+      "shareGuideHint": "Mời bạn qua mạng xã hội hoặc sao chép nội dung giới thiệu."
+    },
+    "commissionBoost": {
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "thisWeek": "Tuần này",
+      "lastWeek": "Tuần trước",
+      "thisMonth": "Tháng này",
+      "lastMonth": "Tháng trước",
+      "friends": "Bạn bè",
+      "currentLevel": "Cấp hiện tại:",
+      "activeFriends": "Bạn hợp lệ:",
+      "activeFriendSingular": "{count} bạn hợp lệ",
+      "activeFriendPlural": "{count} bạn hợp lệ",
+      "dataUpdatesEveryHour": "Dữ liệu cập nhật mỗi giờ",
+      "rules": "Quy tắc"
+    },
+    "taskPage": {
+      "title": "Nhiệm vụ",
+      "resetHint": {
+        "daily": "Đặt lại nhiệm vụ：{countdown}，nhận hoa hồng mỗi ngày sau 00:00.",
+        "weekly": "Đặt lại nhiệm vụ：{countdown}，nhận hoa hồng mỗi thứ Hai sau 00:00.",
+        "monthly": "Đặt lại nhiệm vụ：{countdown}，nhận thưởng vào ngày 1 hằng tháng sau 00:00."
+      },
+      "rewardsToClaim": "Thưởng chờ nhận",
+      "tabs": {
+        "commissionRules": "Quy tắc hoa hồng",
+        "inviteRegister": "Mời đăng ký",
+        "cumulativeDeposit": "Tổng nạp",
+        "directBet": "Cược tuyến dưới trực tiếp",
+        "commissionBoost": "Tăng hoa hồng",
+        "recommendedWallet": "Ví"
+      },
+      "friendUnit": "người bạn",
+      "friendsUnit": "người bạn",
+      "currentProgress": "Tiến độ hiện tại",
+      "maxRewardThisDay": "Thưởng tối đa hôm nay",
+      "maxRewardThisWeek": "Thưởng tối đa tuần này",
+      "maxRewardThisMonth": "Thưởng tối đa tháng này",
+      "invitedSignUps": "Số đăng ký được mời",
+      "depositAmount": "Số tiền nạp",
+      "commissionBoost": "Tăng hoa hồng",
+      "depositors": "Số người nạp",
+      "reward": "Phần thưởng",
+      "status": "Trạng thái",
+      "achieved": "Đã đạt",
+      "notAchieved": "Chưa đạt",
+      "validInviteTitle": "Thế nào là lời mời hợp lệ？",
+      "validInviteDescription": "Bạn bè{period} nạp tổng ít nhất {rechargeAmount}，hoặc cược hợp lệ ít nhất {betAmount} sẽ được tính là mời hợp lệ.",
+      "periodLabel": {
+        "daily": "Hôm nay",
+        "weekly": "Tuần này",
+        "monthly": "Tháng này"
+      },
+      "taskRulesTitle": "Quy tắc nhiệm vụ",
+      "progressReminder": {
+        "title": "Lưu ý",
+        "description": "Bạn bè cần điền hồ sơ cơ bản và dùng IP、thiết bị、tài khoản riêng để tính tiến độ hợp lệ. Nếu có thắc mắc，hãy liên hệ CSKH.",
+        "primaryButton": "Liên hệ CSKH",
+        "secondaryButton": "Quy tắc nhiệm vụ"
+      }
+    },
+    "rulesPage": {
+      "title": "Quy tắc",
+      "guideTitle": "Hướng dẫn",
+      "howToEarnTitle": "Cách kiếm tiền",
+      "referralRulesTitle": "Quy tắc giới thiệu",
+      "playGuideHint": "Video hướng dẫn chưa có",
+      "friendCount": "{count} người",
+      "steps": {
+        "shareTitle": "Bước 01",
+        "shareText": "Chia sẻ với bạn bè",
+        "rewardTitle": "Bước 02",
+        "rewardText": "Nhận thưởng khi 1 bạn hoàn tất cược hợp lệ",
+        "unlockTitle": "Bước 03",
+        "unlockText": "Chia sẻ càng nhiều，thưởng càng cao"
+      },
+      "table": {
+        "level": "Cấp độ",
+        "activeFriends": "Bạn hợp lệ",
+        "rate": "Tỷ lệ"
+      }
+    },
+    "detailsPage": {
+      "title": "Chi tiết",
+      "filter": "Lọc",
+      "topUpTitle": "Thống kê nạp tiền",
+      "detailText": "Chi tiết",
+      "showNow": "Xem ngay",
+      "avatarAlt": "Ảnh đại diện",
+      "friendDetailHint": "Chưa hỗ trợ chi tiết bạn bè:",
+      "dateSelection": "Chọn ngày",
+      "friendsFilter": {
+        "linkSource": "Nguồn liên kết",
+        "registrationTime": "Ngày đăng ký",
+        "unknownLinkSource": "Nguồn không rõ"
+      },
+      "date": {
+        "all": "Tất cả",
+        "today": "Hôm nay",
+        "yesterday": "Hôm qua",
+        "last3Days": "3 ngày gần đây",
+        "last15Days": "15 ngày gần đây",
+        "last30Days": "30 ngày gần đây"
+      },
+      "tabs": {
+        "friends": "Bạn bè",
+        "stats": "Thống kê",
+        "rewardHistory": "Lịch sử thưởng",
+        "claimHistory": "Lịch sử nhận"
+      },
+      "summary": {
+        "newFriends": "Bạn mới",
+        "activeFriends": "Bạn hợp lệ",
+        "validBets": "Cược hợp lệ"
+      },
+      "topUpSummary": {
+        "firstDepositors": "Số người nạp đầu",
+        "depositors": "Số người nạp",
+        "depositAmount": "Số tiền nạp"
+      },
+      "rewardHistory": {
+        "time": "Thời gian",
+        "commission": "Hoa hồng"
+      },
+      "claimHistory": {
+        "totalCommission": "Tổng hoa hồng",
+        "time": "Thời gian",
+        "rewards": "Phần thưởng"
+      },
+      "labels": {
+        "deposit": "Nạp tiền：",
+        "validBets": "Cược hợp lệ："
+      },
+      "status": {
+        "active": "Hợp lệ",
+        "inactive": "Chưa kích hoạt"
+      }
+    },
+    "friendDetailPage": {
+      "title": "Chi tiết",
+      "total": "Tổng",
+      "labels": {
+        "lastLoginTime": "Lần đăng nhập cuối：",
+        "userId": "ID người dùng：",
+        "name": "Tên："
+      },
+      "dateTabs": {
+        "today": "Hôm nay",
+        "yesterday": "Hôm qua",
+        "last3Days": "3 ngày gần đây",
+        "last15Days": "15 ngày gần đây",
+        "last30Days": "30 ngày gần đây"
+      },
+      "statsTabs": {
+        "gameStats": "Thống kê trò chơi",
+        "topUpStats": "Thống kê nạp tiền"
+      },
+      "summary": {
+        "validBets": "Cược hợp lệ",
+        "profit": "Lãi/lỗ",
+        "depositAmount": "Số tiền nạp",
+        "numberOfDeposits": "Số lần nạp"
+      },
+      "table": {
+        "game": "Trò chơi",
+        "validBets": "Cược hợp lệ",
+        "profit": "Lãi/lỗ",
+        "paymentMethod": "Phương thức thanh toán",
+        "depositAmount": "Số tiền nạp",
+        "numberOfDeposits": "Số lần nạp"
+      },
+      "tableValues": {
+        "slots": "Slot"
+      },
+      "gameTypes": {
+        "lottery": "Xổ số",
+        "sports": "Thể thao",
+        "liveCasino": "Casino trực tiếp",
+        "slots": "Slot",
+        "tableGames": "Game bài",
+        "fishing": "Bắn cá",
+        "esports": "Esports"
+      }
+    },
+    "commissionRecords": {
+      "title": "Danh sách hoa hồng",
+      "searchPlaceholder": "Tìm tài khoản thành viên",
+      "summaryTitle": "Lọc và tổng hợp",
+      "totalAmount": "Tổng：{amount}",
+      "subAccount": "Tài khoản phụ：{account}",
+      "empty": "Chưa có lịch sử hoa hồng",
+      "filterTitles": {
+        "game": "Lọc trò chơi",
+        "outcome": "Lọc lãi/lỗ",
+        "status": "Lọc trạng thái",
+        "time": "Lọc thời gian",
+        "platform": "Lọc nền tảng",
+        "settlementType": "Chu kỳ thanh toán"
+      },
+      "table": {
+        "account": "Tài khoản",
+        "settlementType": "Chu kỳ thanh toán",
+        "commission": "Hoa hồng",
+        "dateTime": "Ngày và giờ"
+      },
+      "filters": {
+        "all_games": "Tất cả game",
+        "slots": "Slot",
+        "sports": "Thể thao",
+        "casino": "Casino",
+        "all": "Tất cả",
+        "win": "Lãi/lỗ",
+        "loss": "Chỉ thua",
+        "completed": "Hoàn thành",
+        "pending": "Đang xử lý",
+        "unclaimed": "Chưa nhận",
+        "claimed": "Đã nhận",
+        "expired": "Đã hết hạn",
+        "daily": "Thanh toán hằng ngày",
+        "weekly": "Thanh toán hằng tuần",
+        "monthly": "Thanh toán hằng tháng",
+        "today": "Hôm nay",
+        "week": "Tuần này",
+        "month": "Tháng này"
+      }
+    },
+    "referralRecords": {
+      "title": "Danh sách giới thiệu",
+      "searchPlaceholder": "Tìm tài khoản thành viên",
+      "empty": "Chưa có lịch sử giới thiệu",
+      "filterTitles": {
+        "status": "Lọc trạng thái",
+        "time": "Lọc thời gian"
+      },
+      "filters": {
+        "all": "Tất cả",
+        "valid": "Hợp lệ",
+        "invalid": "Không hợp lệ",
+        "today": "Hôm nay",
+        "week": "Tuần này",
+        "month": "Tháng này"
+      }
+    }
+  },
+  "personalCenter": {
+    "totalBalance": "Tổng số dư",
+    "referralGet": "Giới thiệu và nhận",
+    "commission": "Hoa hồng",
+    "copy": "Sao chép",
+    "copySuccess": "Đã sao chép",
+    "inviteFriends": "Mời bạn bè",
+    "inviteFriendsAndGet": "Giới thiệu bạn và nhận",
+    "inviteFriendsEarnBonus": "Mời bạn bè，kiếm thưởng",
+    "shareViaWebLink": "Chia sẻ bằng liên kết",
+    "copyLink": "Sao chép liên kết",
+    "upgrade": "Nâng cấp",
+    "vipLevelGoalCompleted": "Bạn đã đạt mục tiêu VIP này",
+    "deposit": "Nạp tiền",
+    "validBet": "Cược hợp lệ",
+    "buy": "Mua",
+    "swap": "Đổi",
+    "vaultPro": "Két Pro",
+    "transaction": "Giao dịch",
+    "transactionDetails": "Chi tiết giao dịch",
+    "remarks": "Ghi chú",
+    "rollover": "Kiểm tra vòng cược",
+    "betHistory": "Lịch sử đặt cược",
+    "notification": "Thông báo",
+    "referEarn": "Giới thiệu nhận thưởng",
+    "myVouchers": "Voucher của tôi",
+    "rebate": "Hoàn cược",
+    "affiliate": "Liên minh",
+    "globalSetting": "Cài đặt chung",
+    "language": "Ngôn ngữ",
+    "currency": "Tiền tệ",
+    "theme": "Giao diện",
+    "chinese": "Tiếng Trung",
+    "english": "Tiếng Anh",
+    "liveSupport": "CSKH trực tuyến",
+    "leaveFeedback": "Gửi phản hồi",
+    "joinCommunity": "Tham gia cộng đồng",
+    "signOut": "Đăng xuất",
+    "signOutTitle": "Đăng xuất",
+    "signOutDescription": "Bạn muốn đăng xuất？",
+    "myProfile": {
+      "title": "Hồ sơ của tôi",
+      "profileId": "ID",
+      "edit": "Chỉnh sửa",
+      "statistics": "Thống kê",
+      "totalWins": "Tổng thắng",
+      "totalBets": "Tổng số cược",
+      "totalWagered": "Tổng tiền cược",
+      "topFavoriteGames": "Top 3 game yêu thích",
+      "noFavorites": "Sắp ra mắt—nhiều bất ngờ đang chờ！",
+      "betAmount": "Tiền cược",
+      "joinedOn": "Tham gia ngày {date}"
+    },
+    "editProfile": {
+      "title": "Sửa hồ sơ",
+      "username": "Tên người dùng",
+      "usernameHint": "Cần 6–20 ký tự gồm chữ và số",
+      "avatarFrame": "Khung ảnh đại diện",
+      "unlockHint": "Đạt VIP {level} để mở khóa",
+      "allUnlockedHint": "Đã mở khóa mọi khung ảnh",
+      "unused": "Chưa sử dụng",
+      "inUse": "Đang dùng",
+      "editAvatar": "Sửa ảnh đại diện",
+      "uploadFromLocal": "Tải từ thiết bị",
+      "takePhoto": "Chụp ảnh",
+      "chooseFromAlbum": "Chọn từ album điện thoại",
+      "cancel": "Hủy",
+      "select": "Chọn",
+      "cropHint": "Kéo và phóng to ảnh để điều chỉnh",
+      "zoom": "Thu phóng",
+      "save": "Lưu",
+      "saveSuccess": "Đã lưu"
+    },
+    "feedback": {
+      "pageTitle": "Phản hồi",
+      "detailTitle": "Chi tiết phản hồi",
+      "tabs": {
+        "create": "Gửi phản hồi",
+        "mine": "Phản hồi của tôi"
+      },
+      "createTab": {
+        "sectionTitle": "Loại phản hồi",
+        "requiredType": "Bắt buộc",
+        "uploadPhotos": "Tải ảnh lên",
+        "submitFeedback": "Gửi",
+        "rewardRulesTitle": "Quy tắc thưởng",
+        "rewardRulesDescription": "Chúng tôi thưởng cho phản hồi hữu ích giúp cải thiện sản phẩm và dịch vụ. Sau khi duyệt，thưởng sẽ cộng vào tài khoản."
+      },
+      "myTab": {
+        "rewardAmount": "Tiền thưởng",
+        "rewardIconAlt": "Biểu tượng thưởng phản hồi",
+        "claim": "Nhận",
+        "loading": "Đang tải...",
+        "empty": "Chưa có phản hồi",
+        "ticketNoPrefix": "Mã phản hồi："
+      },
+      "claimPopup": {
+        "title": "Nhận thành công",
+        "description": "Thưởng đã vào ví của bạn.",
+        "confirm": "OK",
+        "bowAlt": "Trang trí nơ"
+      },
+      "detail": {
+        "feedbackNo": "Mã phản hồi",
+        "processingStatus": "Trạng thái",
+        "submitTime": "Thời gian tạo",
+        "feedbackType": "Loại",
+        "feedbackContent": "Nội dung phản hồi",
+        "screenshotAlt": "Ảnh chụp {index}",
+        "previewImageAlt": "Xem trước ảnh"
+      },
+      "feedbackType": {
+        "bugReport": "Báo lỗi",
+        "featureSuggestion": "Đề xuất tính năng",
+        "otherIssues": "Vấn đề khác",
+        "depositIssue": "Vấn đề nạp tiền"
+      },
+      "placeholder": {
+        "default": "Nhập phản hồi của bạn"
+      },
+      "status": {
+        "accepted": "Đã duyệt",
+        "pending": "Chờ xử lý",
+        "rejected": "Không duyệt"
+      },
+      "resultHint": {
+        "accepted": "Đề xuất của bạn đã được chấp nhận và thưởng đã được trao，cảm ơn bạn！",
+        "pending": "Vui lòng đợi，chúng tôi đang xem xét phản hồi.",
+        "rejected": "Cảm ơn góp ý，lần này chưa được chấp nhận. Hãy tiếp tục chia sẻ ý kiến."
+      },
+      "reply": {
+        "team": "Đội ngũ CSKH",
+        "rewardCurrency": "Xu game",
+        "acceptedIntro": "Xin chào，cảm ơn bạn đã góp ý về“{topic}”.",
+        "acceptedBody": "Chúng tôi đã đưa vấn đề này vào ưu tiên phát triển. Sắp tới sẽ tăng cường giám sát và phân tích dữ liệu để phát hiện hành vi bất thường. Chúng tôi cũng dự kiến thêm chức năng báo cáo để người chơi góp phần giữ môi trường công bằng.",
+        "acceptedReward": "Cảm ơn đóng góp của bạn，chúng tôi tặng {rewardAmount}{currency}. Hãy vào Phản hồi - Phản hồi của tôi để nhận！",
+        "rejected": "Xin chào，đã xem xét đề xuất nhưng phiên bản hiện tại chưa hỗ trợ. Cảm ơn bạn đã thông cảm."
+      },
+      "uploadStatus": {
+        "uploading": "Đang tải lên...",
+        "success": "Tải lên thành công",
+        "failed": "Tải lên thất bại"
+      },
+      "toast": {
+        "selectFeedbackType": "Chọn loại phản hồi",
+        "enterFeedbackContent": "Nhập nội dung phản hồi",
+        "imageUploading": "Đang tải ảnh，vui lòng gửi sau",
+        "uploadFailed": "Tải lên thất bại",
+        "submitFailed": "Gửi thất bại",
+        "submitSuccess": "Gửi thành công",
+        "fetchFeedbackListFailed": "Không tải được danh sách phản hồi",
+        "claimFailed": "Nhận thất bại",
+        "claimSuccess": "Nhận thành công",
+        "noClaimableReward": "Chưa có thưởng để nhận",
+        "fetchFeedbackDetailFailed": "Không tải được chi tiết phản hồi"
+      }
+    }
+  },
+  "userMenu": {
+    "wallet": "Ví",
+    "withdraw": "Rút tiền",
+    "buyCrypto": "Mua tiền mã hóa",
+    "transactions": "Lịch sử giao dịch",
+    "betHistory": "Lịch sử đặt cược",
+    "rolloverOverview": "Tổng quan vòng cược",
+    "vipClub": "CLB VIP",
+    "vaultPro": "Két Pro",
+    "referral": "Giới thiệu",
+    "myProfile": "Hồ sơ của tôi",
+    "globalSettings": "Cài đặt chung",
+    "logOut": "Đăng xuất"
+  },
+  "deposit": {
+    "title": "Nạp tiền",
+    "methods": "Phương thức nạp",
+    "tabs": {
+      "crypto": "Tiền mã hóa",
+      "fiat": "Tiền pháp định"
+    },
+    "deposit_more": "Thêm",
+    "deposit_channel": "Kênh nạp tiền",
+    "deposit_amount": "Số tiền nạp",
+    "how_to_deposit": "Cách nạp tiền",
+    "deposit_amount_input_placeholder": "Chọn số tiền nạp",
+    "deposit_amount_input_or_select_placeholder": "Chọn hoặc nhập số tiền nạp.",
+    "deposit_amount_preset_placeholder": "Chọn số tiền nạp có sẵn.",
+    "deposit_now": "Nạp ngay",
+    "load_from_wallet": "Nạp từ ví của bạn",
+    "wallet_bonus_alt": "Thưởng ví",
+    "wagering_no": "Không yêu cầu vòng cược",
+    "wagering_multiple": "Vòng cược {multiple}x",
+    "withdrawal_no_wagering_tip": "Rút tiền không cần vòng cược",
+    "bonus": "Tiền thưởng",
+    "bonus_label": "Thưởng {ratio}%",
+    "unavailable": "Chưa khả dụng",
+    "deposit_order": "Đơn nạp tiền",
+    "order_currency": "Tiền tệ",
+    "order_payment_amount": "Số tiền thanh toán",
+    "order_deposit_bonus": "Thưởng nạp tiền",
+    "order_status": "Trạng thái đơn",
+    "order_no": "Mã đơn hàng",
+    "order_created_at": "Thời gian tạo",
+    "order_deposit_method": "Phương thức nạp",
+    "order_network": "Mạng lưới",
+    "order_total_payment": "Tổng thanh toán",
+    "order_final_amount": "Số tiền nhận",
+    "order_exchange_rate": "Tỷ giá",
+    "order_completed": "Đơn hoàn tất",
+    "order_cancelled": "Đơn đã hủy",
+    "order_failed": "Đơn thất bại",
+    "order_pay_and_upload_tips": "Thanh toán và tải chứng từ trong thời hạn",
+    "order_save_qr_code": "Lưu mã QR",
+    "order_save_qr_code_loading": "Đang tạo ảnh...",
+    "order_save_qr_code_success": "Đang tải mã QR xuống",
+    "order_save_qr_code_preview_tip": "Ảnh đã mở，nhấn giữ để lưu",
+    "order_save_qr_code_manual_tip": "Chụp màn hình để lưu mã QR",
+    "order_copy_address": "Sao chép địa chỉ",
+    "copy_success": "Đã sao chép",
+    "copy_failed": "Sao chép thất bại",
+    "cancel_order_title": "Hủy đơn hàng",
+    "cancel_order_tips": "Chọn lý do hủy",
+    "cancel_order_confirm_cancel": "Xác nhận hủy",
+    "cancel_order_reason_1": "Tôi đổi ý",
+    "cancel_order_reason_2": "Mã QR thanh toán hết hạn",
+    "cancel_order_reason_3": "Tôi muốn đặt lại",
+    "deposit_order_bottom_tips": "Nếu không thanh toán，hãy hủy đơn. Nhiều đơn chưa thanh toán có thể khiến tài khoản bị hạn chế.",
+    "upload_proof": "Tải chứng từ",
+    "upload_proof_title": "Tải chứng từ thanh toán",
+    "upload_proof_tips_1_1": "Tải ảnh chụp đầy đủ chi tiết giao dịch，gồm ",
+    "upload_proof_tips_1_2": "Số tiền、địa chỉ、trạng thái、thời gian và ID giao dịch.",
+    "upload_proof_tips_2": "Bạn chịu trách nhiệm về mọi thiệt hại do tải sai ảnh chứng từ.",
+    "upload_view_btn_text": "Xem biên lai mẫu",
+    "upload_btn_text": "Thêm chứng từ",
+    "upload_proof_confirm_btn_text": "Tải chứng từ ngay",
+    "payment_receipt_sample_title": "Chứng từ mẫu",
+    "payment_receipt_sample_alt": "Chứng từ mẫu",
+    "delete_image_alt": "Xóa ảnh",
+    "upload_status_uploading": "Đang tải lên...",
+    "upload_status_success": "Tải lên thành công",
+    "upload_status_failed": "Tải lên thất bại",
+    "upload_proof_again_btn_text": "Tải lại chứng từ",
+    "upload_proof_verifying_marquee": "Đã nhận thanh toán，đang xác minh đơn hàng. Cảm ơn bạn đã chờ.",
+    "upload_proof_reminder_title": "Lưu ý",
+    "upload_proof_reminder_line_1": "· Để tiền được ghi có，hãy tải đúng ảnh chứng từ thanh toán.",
+    "upload_proof_reminder_line_2": "· Nếu đã tải chứng từ，hãy chờ khoảng 1-5 phút để kiểm tra.",
+    "cancel_failed": "Hủy thất bại",
+    "query_order_failed": "Tra cứu đơn thất bại",
+    "status": {
+      "pending": "Chờ xử lý",
+      "success": "Thành công",
+      "failed": "Thất bại",
+      "processing": "Đang xử lý"
+    }
+  },
+  "withdraw": {
+    "title": "Rút tiền",
+    "crypto": "Tiền mã hóa",
+    "fiat": "Tiền pháp định",
+    "methods": "Phương thức rút",
+    "e_wallet_address": "Địa chỉ ví điện tử",
+    "e_wallet_title": "Ví điện tử",
+    "add_e_wallet": "Thêm ví điện tử",
+    "account": "Tài khoản",
+    "account_placeholder": "Nhập tài khoản của bạn",
+    "e_wallet_notice": "Hãy bảo đảm thông tin ví điện tử chính xác，bạn chịu mọi tổn thất nếu nhập sai！",
+    "phone_number": "Số điện thoại",
+    "phone_placeholder": "Nhập số điện thoại",
+    "name": "Họ tên",
+    "name_placeholder": "Nhập họ tên",
+    "withdraw_currency": "Tiền tệ rút",
+    "select_network": "Chọn mạng",
+    "receive_crypto": "Tiền mã hóa nhận",
+    "change": "Thay đổi",
+    "receive_address": "Địa chỉ nhận",
+    "receive_address_placeholder": "Nhập địa chỉ nhận",
+    "add_address": "Thêm địa chỉ {currency}",
+    "address_list_title": "Địa chỉ {currency}",
+    "receiving_address_label": "Địa chỉ nhận {currency}",
+    "receive_address_input_placeholder": "Nhập hoặc dán địa chỉ {currency}",
+    "network_label": "Mạng lưới",
+    "receiving_address_text": "Địa chỉ nhận",
+    "default_wallet": "Ví mặc định",
+    "amount": "Số tiền rút",
+    "amount_placeholder": "Nhập số tiền rút",
+    "balance": "Số dư",
+    "crypto_help": "Cách rút tiền mã hóa？",
+    "crypto_address_notice": "Hãy kiểm tra kỹ địa chỉ nhận. Nếu chuyển sai địa chỉ，tiền sẽ không thể lấy lại.",
+    "default_address_cannot_be_changed": "Không thể sửa địa chỉ mặc định",
+    "default_address_cannot_be_deleted": "Không thể xóa địa chỉ mặc định",
+    "default_account_cannot_be_changed": "Không thể sửa tài khoản mặc định",
+    "default_account_cannot_be_deleted": "Không thể xóa tài khoản mặc định",
+    "unavailable": "Chưa khả dụng",
+    "phone_number_unavailable": "Không lấy được số điện thoại",
+    "add_account_failed": "Thêm tài khoản thất bại",
+    "update_default_account_failed": "Cập nhật tài khoản mặc định thất bại",
+    "delete_account_failed": "Xóa tài khoản thất bại",
+    "delete_receive_address_not_supported": "Chưa hỗ trợ xóa tài khoản nhận",
+    "delete_receive_account_title": "Delete Notification",
+    "delete_receive_account_desc": "Xóa địa chỉ nhận của {name}？",
+    "withdraw_now": "Rút ngay",
+    "you_get": "Dự kiến nhận",
+    "kind_reminder_title": "Lưu ý",
+    "kind_reminder_desc": "Hãy cài mật khẩu giao dịch trước khi tiếp tục！",
+    "go_to_settings": "Đi đến cài đặt",
+    "do_not_set_yet": "Để sau",
+    "payment_password": "Mật khẩu thanh toán",
+    "verification_transaction_password": "Xác minh mật khẩu giao dịch",
+    "sms_verification": "Xác minh SMS",
+    "sms_sent_to": "Mã xác minh đã gửi đến",
+    "resend_code": "Gửi lại",
+    "resend_in_seconds": "Gửi lại sau {seconds} giây",
+    "withdraw_order": "Đơn rút tiền",
+    "order_processing_title": "Yêu cầu rút tiền đang xử lý.",
+    "order_completed_title": "Đơn rút tiền hoàn tất",
+    "order_completed": "Đơn hoàn tất",
+    "order_cancelled": "Đơn đã hủy",
+    "order_no": "Mã đơn hàng",
+    "created_at": "Thời gian tạo",
+    "withdraw_method": "Phương thức rút",
+    "reminder": "Lưu ý",
+    "order_help_text": "Nếu cần hỗ trợ đơn hàng，hãy",
+    "chat_with_us": "Liên hệ chúng tôi.",
+    "confirm_withdrawal": "Xác nhận rút",
+    "sms_code_invalid": "Mã SMS không hợp lệ.",
+    "balance_insufficient": "Không đủ số dư.",
+    "pending_order_exists": "Yêu cầu rút tiền đang xử lý.",
+    "bet_requirement_unfinished": "Hãy hoàn thành vòng cược yêu cầu trước khi rút.",
+    "missing_account": "Chọn tài khoản rút trước.",
+    "submit_failed": "Gửi yêu cầu rút thất bại.",
+    "status": {
+      "pending": "Chờ xử lý",
+      "locked": "Đã khóa",
+      "failed": "Thất bại",
+      "success": "Thành công",
+      "processing": "Đang xử lý",
+      "pay_failed": "Chi trả thất bại"
+    }
+  },
+  "transaction": {
+    "win": "Thắng",
+    "loss": "Thua",
+    "type": "Loại",
+    "time": "Thời gian",
+    "amount": "Số tiền",
+    "balance": "Số dư",
+    "status": "Lọc trạng thái",
+    "completed": "Hoàn thành",
+    "notCompleted": "Chưa hoàn thành",
+    "filterGroups": {
+      "type": "Chọn loại giao dịch"
+    },
+    "typeOptions": {
+      "game": "Trò chơi",
+      "deposit": "Nạp tiền",
+      "withdraw": "Rút tiền",
+      "refund": "Hoàn tiền",
+      "manual_Deposit": "Nạp thủ công",
+      "system_Deduction": "Khấu trừ hệ thống",
+      "deposit_Bonus": "Ưu đãi nạp tiền",
+      "withdrawa_Bonus": "Thưởng thêm khi rút",
+      "bonus_Credit": "Thưởng tiền tặng",
+      "weekly_Bonus": "Thưởng tuần",
+      "monthly_Bonus": "Thưởng tháng",
+      "VIP_Upgrade_Bonus": "Thưởng lên VIP",
+      "rebate": "Hoàn tiền cược",
+      "task_Reward": "Thưởng nhiệm vụ",
+      "feedback_Reward": "Thưởng góp ý",
+      "commission": "Nhận hoa hồng",
+      "referral_Bonus": "Thưởng giới thiệu",
+      "referral_Spin": "Quay thưởng",
+      "red_Packet": "Sự kiện lì xì",
+      "check-in_Reward": "Thưởng điểm danh",
+      "login_Reward": "Thưởng đăng nhập",
+      "download_Reward": "Thưởng tải ứng dụng",
+      "sign-up_Reward": "Thưởng đăng ký",
+      "bonus_Event_Reward": "Thưởng sự kiện",
+      "cash_Voucher": "Thưởng đổi tiền mặt",
+      "golden_Egg_Voucher": "Thưởng đập trứng vàng",
+      "lucky_Spin_Voucher": "Thưởng vòng quay",
+      "red_Packet_Voucher": "Thưởng lì xì may mắn",
+      "mystery_Box_Voucher": "Thưởng hộp bí ẩn"
+    }
+  },
+  "vipPage": {
+    "cards": {
+      "levelUp": "Thưởng lên cấp",
+      "daily": "Thưởng ngày",
+      "weekly": "Thưởng tuần",
+      "monthly": "Thưởng tháng"
+    },
+    "progress": {
+      "validBetRequirement": "Yêu cầu cược hợp lệ",
+      "depositRequirement": "Yêu cầu nạp tiền"
+    },
+    "ongoing": "Đang diễn ra",
+    "claimed": "Đã nhận",
+    "locked": "Đã khóa",
+    "completed": "Đã đạt",
+    "exclusiveBenefitsTitle": "Quyền lợi riêng VIP {vipId}",
+    "tabs": {
+      "benefitsComparison": "So sánh quyền lợi",
+      "vipRules": "Quy tắc VIP"
+    },
+    "benefitsComparison": {
+      "currentLevel": "Cấp hiện tại：V{vipId}",
+      "unlockLevel": "Mở khóa V{vipId}",
+      "totalRewards": "Tổng thưởng dự kiến"
+    },
+    "goalHint": {
+      "unlocked": "Nâng cấp thành công，đã mở khóa quyền lợi",
+      "keepGoing": "Tiếp tục để mở khóa VIP cao hơn",
+      "achieved": "Đã đạt cấp cao nhất，hưởng mọi quyền lợi"
+    },
+    "benefitExplainPopup": {
+      "title": "Quyền lợi VIP riêng",
+      "item1": "1. Sau mỗi lần nâng VIP，bạn có thể nhận thưởng lên cấp tại trang quyền lợi VIP. Thưởng yêu cầu vòng cược 1 lần.",
+      "item2": "2. Khi đạt cấp VIP tương ứng，bạn có thể nhận thưởng tuần vào thứ Hai tại trang quyền lợi VIP. Thưởng yêu cầu vòng cược 1 lần.",
+      "item3": "3. Khi đạt cấp VIP tương ứng，bạn có thể nhận thưởng tháng vào ngày 1 tại trang quyền lợi VIP. Thưởng yêu cầu vòng cược 1 lần.",
+      "confirm": "Xác nhận",
+      "cancel": "Hủy"
+    },
+    "claimPopup": {
+      "title": "Nhận thành công",
+      "description": "Thưởng đã vào ví của bạn.",
+      "ok": "OK"
+    },
+    "levelUpConfirmPopup": {
+      "title": "Thưởng lên cấp",
+      "rewardCount": "Tổng {count} khoản thưởng",
+      "rewardCountPrefix": "Tổng",
+      "rewardCountSuffix": "khoản thưởng",
+      "description": "Xác nhận để cộng toàn bộ vào số dư",
+      "rewardItemTitle": "Thưởng lên VIP{vipId}",
+      "balanceHint": "Xem thưởng đã nhận trong số dư",
+      "claim": "Nhận"
+    },
+    "retention": {
+      "title": "Yêu cầu duy trì cấp VIP",
+      "minimumDeposit": "Nạp tối thiểu",
+      "minimumValidBet": "Cược hợp lệ tối thiểu"
+    },
+    "rulesTitle": "Giải thích quy tắc",
+    "rule": "Quy tắc",
+    "rules": {
+      "rule1": {
+        "title": "1.Điều kiện lên cấp",
+        "description": "Khi đáp ứng yêu cầu nạp tiền hoặc vòng cược hợp lệ，thành viên tự động lên VIP và nhận thưởng tương ứng. Nếu đạt nhiều cấp，nhận thưởng của tất cả cấp đó. Thưởng lên cấp có thể nhận ngay và không hết hạn."
+      },
+      "rule2": {
+        "title": "2. Thưởng tuần",
+        "description": "Khi đạt cấp VIP tương ứng，thành viên có thể nhận thưởng tuần của cấp hiện tại；nếu lên nhiều cấp cùng lúc，chỉ nhận thưởng cấp VIP hiện tại. Có thể nhận sau 00:00 thứ Hai，quá kỳ sẽ hết hạn."
+      },
+      "rule3": {
+        "title": "3. Thưởng tháng",
+        "description": "Khi đạt cấp VIP tương ứng，thành viên có thể nhận thưởng tháng của cấp hiện tại；nếu lên nhiều cấp cùng lúc，chỉ nhận thưởng cấp VIP hiện tại. Có thể nhận sau 00:00 ngày 1 mỗi tháng，quá kỳ sẽ hết hạn."
+      },
+      "rule4": {
+        "title": "4. Yêu cầu duy trì cấp",
+        "description": "Sau khi đổi cấp VIP，thành viên phải hoàn thành vòng cược hợp lệ của cấp đó trong 31 ngày để giữ cấp. Nếu tiếp tục lên cấp，yêu cầu được tính lại theo cấp mới."
+      },
+      "rule5": {
+        "title": "5. Quy tắc hạ cấp",
+        "description": "Nếu không đạt yêu cầu giữ cấp trong 31 ngày sau khi lên cấp，hệ thống sẽ tự điều chỉnh cấp VIP khi kỳ đánh giá kết thúc. Quyền lợi sau đó dựa theo cấp mới."
+      },
+      "rule6": {
+        "title": "6. Hết hạn thưởng",
+        "description": "Mọi phần thưởng phải nhận trong thời hạn quy định，quá hạn sẽ mất hiệu lực."
+      },
+      "rule7": {
+        "title": "7. Quy tắc vòng cược",
+        "description": "Thưởng VIP phải hoàn tất 1 lần vòng cược hợp lệ mới được rút. Cược hợp lệ ở mọi nền tảng game đều được tính."
+      },
+      "rule8": {
+        "title": "8. Miễn trừ trách nhiệm",
+        "description": "Chương trình chỉ dành cho chủ tài khoản tham gia bình thường；nếu phát hiện bot、script、lợi dụng lỗi、cược trục lợi hoặc hành vi bất thường，nền tảng có quyền khóa tài khoản và hủy thưởng mà không thông báo."
+      },
+      "rule9": {
+        "title": "9. Quyền giải thích cuối cùng",
+        "description": "Nhận thưởng VIP nghĩa là đồng ý điều khoản chương trình. Nền tảng giữ quyền giải thích cuối cùng."
+      }
+    }
+  },
+  "securitySettings": {
+    "pageTitle": "Cài đặt bảo mật",
+    "cards": {
+      "loginPassword": {
+        "title": "Mật khẩu đăng nhập",
+        "desc": "Đổi mật khẩu thường xuyên để bảo vệ tài khoản.",
+        "action": "Đổi mật khẩu đăng nhập"
+      },
+      "transactionPassword": {
+        "title": "Mật khẩu giao dịch",
+        "desc": "Dùng xác minh rút tiền và thao tác nhạy cảm，giúp bảo vệ tài sản.",
+        "action": "Đổi mật khẩu giao dịch"
+      },
+      "mobile": {
+        "title": "Số điện thoại",
+        "desc": "Xác minh số điện thoại để tăng bảo mật và nhận thông báo quan trọng.",
+        "action": "Đổi số điện thoại"
+      },
+      "twoFactor": {
+        "title": "Xác minh hai bước",
+        "desc": "Bật xác minh hai bước để ngăn truy cập trái phép.",
+        "action": "Bật xác minh hai bước"
+      },
+      "passkey": {
+        "title": "Khóa truy cập",
+        "desc": "Dùng khóa truy cập để xác minh nhanh và an toàn hơn.",
+        "action": "Bật khóa truy cập"
+      },
+      "antiPhishing": {
+        "title": "Mã chống giả mạo",
+        "desc": "Cài mã riêng để nhận biết thông tin chính thức và tránh lừa đảo.",
+        "action": "Cài mã chống giả mạo"
+      }
+    },
+    "menu": {
+      "security": "Bảo mật",
+      "preferences": "Tùy chọn",
+      "personalVerification": "Xác minh cá nhân",
+      "paymentMethods": "Phương thức thanh toán",
+      "whitelistManagement": "Quản lý danh sách trắng"
+    },
+    "hintNotAvailable": "Chưa khả dụng."
+  },
+  "preferencesSettings": {
+    "pageTitle": "Cài đặt tùy chọn",
+    "accountSettings": "Cài đặt tài khoản",
+    "displayCurrency": "Tiền tệ hiển thị",
+    "changeLanguage": "Đổi ngôn ngữ",
+    "theme": "Giao diện",
+    "privacySettings": "Cài đặt riêng tư",
+    "hideGameDataInProfile": "Ẩn dữ liệu chơi game trong hồ sơ",
+    "hideUsernameFromPublicList": "Ẩn tên người dùng khỏi danh sách công khai",
+    "currencyPopupTitle": "Tiền tệ",
+    "currencyPopupSectionLabel": "Tiền mặt",
+    "languagePopupTitle": "Ngôn ngữ"
+  },
+  "payment_methods": {
+    "title": "Quản lý tài khoản nhận",
+    "sms_content_text": "Xác minh SMS khi thêm tài khoản nhận",
+    "busiPwd_content_text": "Xác minh mật khẩu giao dịch khi thêm tài khoản nhận",
+    "account_detail_title": "Chi tiết tài khoản nhận"
+  },
+  "rebatePage": {
+    "title": "Hoàn cược",
+    "claim": "Nhận",
+    "goBet": "Đặt cược ngay",
+    "actionTabs": {
+      "records": "Lịch sử hoàn cược",
+      "rules": "Quy tắc hoàn cược"
+    },
+    "overview": {
+      "todayValidBets": "Cược hợp lệ hôm nay",
+      "eligibleTurnover": "Vòng cược tính hoàn",
+      "claimableAmount": "Số tiền có thể nhận"
+    },
+    "progress": {
+      "currentRebate": "Tỷ lệ hoàn cược hiện tại",
+      "nextRebate": "Tỷ lệ hoàn cược tiếp theo",
+      "currentValidBets": "Cược hợp lệ hiện tại"
+    },
+    "table": {
+      "validBets": "Cược hợp lệ",
+      "rebateRate": "Tỷ lệ hoàn cược"
+    },
+    "eligiblePopup": {
+      "title": "Vòng cược tính hoàn",
+      "pendingRebateTurnover": "Vòng cược chờ hoàn",
+      "promoBonusTurnoverDeduction": "Khấu trừ vòng cược thưởng",
+      "eligibleRebateTurnover": "Vòng cược tính hoàn",
+      "calculationRuleTitle": "Quy tắc tính：",
+      "calculationRuleContent": "Vòng cược chờ hoàn - Khấu trừ vòng cược thưởng = Vòng cược tính hoàn.",
+      "promoBonusNoteTitle": "Giải thích khấu trừ vòng cược thưởng：",
+      "promoBonusNoteContent": "Vòng cược từ tiền thưởng ưu đãi không tính hoàn cược."
+    },
+    "rulesPopup": {
+      "title": "Quy tắc hoàn cược",
+      "sections": {
+        "rebateExplanation": {
+          "title": "Giải thích hoàn cược：",
+          "content": "Hoàn cược tính theo cược hợp lệ và tỷ lệ tương ứng，cược càng nhiều，hoàn càng cao."
+        },
+        "calculationPeriod": {
+          "title": "Chu kỳ tính：",
+          "content": "Chỉ tính cược hợp lệ trong kỳ hệ thống quy định（như 7 hoặc 30 ngày gần nhất）. Dữ liệu ngoài kỳ sẽ tự xóa và không được tính."
+        },
+        "claimRules": {
+          "title": "Quy tắc nhận：",
+          "content": "Khi đủ điều kiện có thể nhận hoàn cược，số tiền tối thiểu phải lớn hơn 0.01，theo hiển thị trên trang."
+        },
+        "payoutMethod": {
+          "title": "Cách trả thưởng：",
+          "content": "Tiền hoàn cược được cộng bằng tiền mặt vào tài khoản，số thực nhận theo hệ thống."
+        },
+        "validBetRules": {
+          "title": "Quy tắc cược hợp lệ：",
+          "content": "Chỉ cược tuân thủ quy định mới được tính. Các trường hợp sau không được hoàn:",
+          "items": [
+            "Cược vô hiệu、cược hủy；",
+            "Cược đối ứng và hành vi bất thường；",
+            "Một số cược khuyến mãi và trò chơi chỉ định."
+          ]
+        },
+        "calculationFormula": {
+          "title": "Công thức：",
+          "content": "Tiền hoàn cược = Cược hợp lệ × Tỷ lệ hoàn cược.\\nTỷ lệ có thể khác nhau theo game，xem trên trang."
+        }
+      }
+    },
+    "records": {
+      "title": "Lịch sử hoàn cược",
+      "periodTabs": {
+        "today": "Hôm nay",
+        "yesterday": "Hôm qua",
+        "last3Days": "3 ngày gần đây",
+        "last7Days": "7 ngày gần đây",
+        "last15Days": "15 ngày gần đây",
+        "last30Days": "30 ngày gần đây"
+      },
+      "summary": {
+        "validBets": "Cược hợp lệ",
+        "turnoverDeduction": "Khấu trừ vòng cược",
+        "eligibleTurnover": "Vòng cược tính hoàn",
+        "rebateAmount": "Tiền hoàn cược"
+      },
+      "turnoverDeductionReminder": "Một số cược hợp lệ từ ưu đãi không được hoàn，xem quy định chương trình.",
+      "rebateAmountReminder": "Số tiền nhận phải đáp ứng giới hạn nhận trong ngày.",
+      "reminderTitle": "Lưu ý"
+    }
+  },
+  "activityPromotions": {
+    "title": "Trung tâm sự kiện",
+    "detailTitle": "Chi tiết hoạt động",
+    "empty": "Hiện chưa có dữ liệu",
+    "notFound": "Không tìm thấy sự kiện"
+  },
+  "rewardCenter": {
+    "title": "Trung tâm phần thưởng",
+    "claim": "Nhận",
+    "claimAll": "Nhận tất cả",
+    "ok": "OK",
+    "empty": "Hiện chưa có dữ liệu",
+    "loadingMore": "Đang tải thêm",
+    "noMore": "Hết dữ liệu",
+    "noClaimable": "Chưa có thưởng để nhận",
+    "randomAmount": "Số tiền ngẫu nhiên",
+    "upTo": "Tối đa {amount}",
+    "claimSuccessTitle": "Nhận thành công",
+    "claimSuccessDesc": "Thưởng đã vào ví của bạn",
+    "popup": {
+      "title": "Trung tâm phần thưởng",
+      "pendingTotalLabel": "Tổng thưởng chờ nhận：",
+      "claimableTotalLabel": "Tổng thưởng có thể nhận：",
+      "enterCenter": "Trung tâm phần thưởng",
+      "empty": "Hiện chưa có thưởng để nhận",
+      "promoTitle": "Nạp để mở khóa thưởng",
+      "promoDesc": "Nạp tiền để nhận thưởng",
+      "newUserOnly": "Dành riêng người mới",
+      "summaryTitle": "Tổng thưởng chờ nhận"
+    },
+    "tabs": {
+      "pending": "Chờ nhận",
+      "claimed": "Đã nhận"
+    },
+    "summary": {
+      "claimedTotal": "Tổng thưởng đã nhận："
+    },
+    "filters": {
+      "date": "Ngày"
+    },
+    "filterOptions": {
+      "all": "Tất cả",
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "last3Days": "3 ngày gần đây",
+      "last15Days": "15 ngày gần đây",
+      "last30Days": "30 ngày gần đây"
+    },
+    "claimNotSupported": "Thưởng này chưa hỗ trợ nhận riêng",
+    "claimMissingRowId": "Nhận thất bại，thiếu dữ liệu thưởng",
+    "activityTypes": {
+      "rebate": "Thưởng hoàn tiền",
+      "recharge": "Sự kiện nạp tiền",
+      "checkIn": "Sự kiện điểm danh",
+      "rescue": "Sự kiện cứu trợ",
+      "agentCommission": "Sự kiện hoa hồng đại lý",
+      "rebateCashback": "Thưởng hoàn cược",
+      "vipDay": "Thưởng VIP ngày",
+      "vipWeek": "Thưởng VIP tuần",
+      "vipMonth": "Thưởng VIP tháng",
+      "vipUpgrade": "Thưởng lên VIP",
+      "task": "Thưởng nhiệm vụ",
+      "entrantTask": "Nhiệm vụ người mới"
+    },
+    "changeTypes": {
+      "game": "Chuyển trò chơi",
+      "deposit": "Nạp tiền thành viên",
+      "withdraw": "Rút tiền thành viên",
+      "refund": "Hoàn rút tiền thành viên",
+      "manualDeposit": "Nạp thủ công",
+      "systemDeduction": "Trừ tiền thủ công",
+      "bonusCredit": "Thưởng tiền tặng",
+      "rebate": "Hoàn cược",
+      "currencyTransfer": "Chuyển đổi tiền tệ",
+      "weeklyBonus": "Thưởng tuần",
+      "monthlyBonus": "Thưởng tháng",
+      "vipUpgradeBonus": "Thưởng lên VIP",
+      "depositBonus": "Ưu đãi nạp tiền",
+      "taskReward": "Thưởng nhiệm vụ",
+      "bet": "Đặt cược",
+      "win": "Trúng thưởng",
+      "pointsExchange": "Đổi điểm",
+      "activityPoints": "Điểm hoạt động",
+      "commission": "Nhận hoa hồng",
+      "referralBonus": "Thưởng giới thiệu",
+      "newcomerBenefit": "Quà người mới",
+      "reliefFundEvent": "Sự kiện cứu trợ",
+      "redPacketReward": "Lì xì",
+      "checkInEvent": "Sự kiện điểm danh",
+      "rebateEvent": "Sự kiện hoàn tiền",
+      "rechargeEvent": "Sự kiện nạp tiền",
+      "redemptionCodeEvent": "Sự kiện mã đổi thưởng",
+      "agentEvent": "Sự kiện đại lý",
+      "promotionSubmissionEvent": "Sự kiện gửi quảng bá",
+      "agentRebateEvent": "Sự kiện hoa hồng đại lý",
+      "luckyBonus": "Thưởng may mắn",
+      "feedbackReward": "Thưởng góp ý",
+      "referralSpin": "Chia sẻ quay thưởng",
+      "dailyBonus": "Thưởng ngày",
+      "thirdPartyBet": "Cược nền tảng bên thứ ba",
+      "cancelThirdPartyBet": "Hủy cược nền tảng bên thứ ba",
+      "vaultChange": "Biến động két",
+      "liveBattleBet": "Cược đối kháng trực tiếp",
+      "liveBattleWin": "Thắng đối kháng trực tiếp",
+      "liveBattleTournamentReward": "Thưởng giải đấu đối kháng",
+      "manualPointsCredit": "Cộng điểm thủ công",
+      "manualPointsDeduction": "Trừ điểm thủ công",
+      "withdrawalBonus": "Thưởng thêm khi rút",
+      "treasureBoxBonus": "Thưởng rương báu",
+      "memberTransfer": "Chuyển tiền thành viên",
+      "lotteryWin": "Trúng xổ số",
+      "registrationFee": "Phí đăng ký",
+      "tournamentBonus": "Thưởng giải đấu",
+      "handlingFee": "Phí xử lý",
+      "ticketRegistrationFee": "Phí đăng ký(vé)",
+      "tournamentTicket": "Vé giải đấu",
+      "tournamentEventReward": "Thưởng sự kiện giải đấu",
+      "loanTransferOut": "Chuyển tiền vay ra",
+      "redPacketEvent": "Sự kiện lì xì",
+      "memberCredit": "Cộng tiền thành viên",
+      "memberDeduction": "Trừ tiền thành viên",
+      "agentCommission": "Hoa hồng đại lý",
+      "doubleOrNothing": "Được ăn cả ngã về không",
+      "checkInReward": "Thưởng điểm danh",
+      "rechargeBonusReward": "Thưởng ưu đãi nạp",
+      "jackpotEvent": "Sự kiện jackpot",
+      "starTurnoverReward": "Thưởng cược hạng sao",
+      "loginReward": "Thưởng đăng nhập",
+      "downloadReward": "Thưởng tải ứng dụng",
+      "signUpReward": "Thưởng đăng ký",
+      "cashVoucher": "Thưởng đổi tiền mặt",
+      "redPacketVoucher": "Thưởng lì xì may mắn",
+      "goldenEggVoucher": "Thưởng đập trứng vàng",
+      "luckySpinVoucher": "Thưởng vòng quay",
+      "groupBuyReward": "Thưởng Pinduoduo",
+      "gameToContractAccount": "Chuyển từ tài khoản game sang hợp đồng",
+      "contractToGameAccount": "Chuyển từ hợp đồng sang tài khoản game",
+      "bonusEventReward": "Thưởng sự kiện",
+      "redPacketEventReward": "Thưởng sự kiện lì xì",
+      "mysteryBoxVoucher": "Thưởng hộp bí ẩn",
+      "platformToMainAccount": "Chuyển nền tảng về tài khoản chính",
+      "designatedAccountWin": "Thắng tiền tài khoản chỉ định",
+      "designatedAccountReset": "Đặt lại tài khoản chỉ định"
+    }
+  },
+  "sports": {
+    "bet_history": "Lịch sử đặt cược",
+    "loadFailed": "Tải dữ liệu thể thao thất bại，thử lại.",
+    "platformLoginFailed": "Đăng nhập nền tảng thể thao thất bại，thử lại.",
+    "serviceUnavailable": "Dịch vụ thể thao tạm gián đoạn，thử lại sau.",
+    "collectOnly": "Chỉ mục yêu thích",
+    "balanceUnavailable": "Số dư thể thao chưa khả dụng，làm mới để tiếp tục.",
+    "balanceRefreshFailed": "Làm mới số dư thể thao thất bại，thử lại.",
+    "betInfoFailed": "Không lấy được thông tin cược，hãy đóng và mở lại phiếu cược.",
+    "betLoginFailed": "Kết nối thể thao thất bại，thử lại sau.",
+    "betInfoSelectionUnavailable": "Kèo đã chọn không khả dụng，vui lòng chọn lại.",
+    "betInfoEuropeanOddsRequired": "Tra cứu cược xiên cần tỷ lệ kèo châu Âu.",
+    "betInfoPending": "Đang tra cứu cược…",
+    "betInfoQueued": "Đang chờ tra cứu cược…",
+    "betInfoNotRequested": "Chưa tra cứu cược.",
+    "betParlayNeedTwo": "Cược xiên cần ít nhất 2 trận khác nhau.",
+    "betSelectionLimit": "Chọn tối đa {count} trận khác nhau.",
+    "betFeatureUnavailable": "Tính năng chưa mở.",
+    "betCurrencyChanged": "Đã đổi tiền tệ，đã xóa lựa chọn cược.",
+    "betSelectionError": "{selection}：{reason}",
+    "betEnterStake": "Nhập tiền cược.",
+    "betSelectionExpired": "Lựa chọn cược hết hạn，vui lòng xóa.",
+    "betOddsAutoUpdate": "Tự cập nhật tỷ lệ cược",
+    "betSubmit": "Xác nhận cược",
+    "betSubmitting": "Đang gửi…",
+    "betSubmitSuccess": "Đã xác nhận cược.",
+    "betSubmitPartial": "Một số cược đã xác nhận，các mục còn lại được giữ. Hãy kiểm tra kết quả，đừng gửi trùng.",
+    "betSubmitFailed": "Đặt cược thất bại，đã giữ lựa chọn và số tiền.",
+    "betSubmitPending": "Cược đang được xử lý，đừng gửi lại.",
+    "betSubmitUnknown": "Kết quả cược chưa xác nhận，hãy xem lịch sử để tránh cược trùng.",
+    "betSubmitEmpty": "Không có cược để gửi，kiểm tra lựa chọn và số tiền.",
+    "betAmountInvalid": "Nhập số tiền hợp lệ tối đa 2 chữ số thập phân.",
+    "betLimit": "Giới hạn {min}–{max}",
+    "betMarketClosed": "Kèo đã đóng",
+    "betParlayUnsupported": "Không hỗ trợ cược xiên cho lựa chọn này.",
+    "betOddsType1": "Kèo Malaysia",
+    "betOddsType2": "Kèo Hồng Kông",
+    "betOddsType3": "Kèo châu Âu",
+    "betOddsType4": "Kèo Indonesia",
+    "betOddsType6": "Kèo Mỹ",
+    "betSlip": {
+      "autoAcceptBetterOdds": "Tự nhận tỷ lệ tốt hơn",
+      "closeOddsSettings": "Đóng cài đặt tỷ lệ",
+      "oddsSettingsHelp": "Hướng dẫn cài tỷ lệ",
+      "oddsSettingsDescription": "Bật để chấp nhận thay đổi tỷ lệ khi gửi cược xiên；tắt để không tự chấp nhận. Cài đặt lưu vào tài khoản hiện tại.",
+      "confirming": "Đang xác nhận cược…",
+      "reuseUnavailable": "Một số lựa chọn không khả dụng hoặc chưa xác nhận nên không thêm lại.",
+      "title": "Phiếu cược",
+      "singleBet": "Cược đơn",
+      "singleBets": "Cược đơn",
+      "parlayBet": "Cược xiên",
+      "collapse": "Thu gọn phiếu cược",
+      "expand": "Mở rộng phiếu cược",
+      "close": "Đóng phiếu cược",
+      "refreshBalance": "Làm mới số dư",
+      "refreshBalanceWithAmount": "Làm mới số dư，hiện có {amount}",
+      "emptyTitle": "Bắt đầu cược",
+      "emptyDescription": "Trận đấu đã chọn sẽ hiển thị ở đây.",
+      "addEvent": "Thêm trận đấu",
+      "toWin": "Tiền trả thưởng dự kiến",
+      "winnings": "Tiền trả thưởng dự kiến",
+      "totalStake": "Tổng tiền cược：",
+      "placeBet": "Cược：",
+      "addToParlay": "Thêm vào cược xiên",
+      "addToAcca": "Thêm vào cược xiên",
+      "clear": "Xóa phiếu cược",
+      "oddsSettings": "Cài đặt tỷ lệ cược",
+      "edit": "Chỉnh sửa",
+      "max": "Tối đa",
+      "stakeFor": "Tiền cược cho {selection}",
+      "removeSelection": "Xóa {selection}",
+      "removeSelectionFrom": "Xóa {selection} khỏi {fixture}",
+      "oddsIncreased": "Tỷ lệ tăng",
+      "oddsDecreased": "Tỷ lệ giảm",
+      "live": "Cược trực tiếp",
+      "versus": "VS",
+      "empty": "Chưa nhập",
+      "enterAmount": "Nhập số tiền",
+      "setStake": "Đặt tiền cược là {amount}",
+      "decimalPoint": "Dấu thập phân",
+      "deleteDigit": "Xóa chữ số cuối",
+      "hideKeyboard": "Ẩn bàn phím",
+      "editQuickAmounts": "Sửa tiền cược nhanh",
+      "closeQuickAmounts": "Đóng sửa tiền cược nhanh",
+      "customOrder": "Thứ tự tùy chỉnh",
+      "dragHint": "Giữ và kéo để sắp xếp",
+      "keyboardReorderHint": "Dùng phím lên xuống trên nút kéo để sắp xếp số tiền.",
+      "quickAmountPlaceholder": "Nhập tiền cược nhanh",
+      "quickAmountLabel": "Mức cược nhanh thứ {count}",
+      "reorderQuickAmount": "Đổi vị trí mức cược nhanh thứ {count}",
+      "reorderQuickAmountHint": "Đổi thứ tự mức nhanh thứ {count}. Dùng phím lên xuống.",
+      "quickAmountMoved": "Đã chuyển mức cược nhanh đến vị trí {count}.",
+      "quickAmountsPositive": "Nhập sáu số tiền lớn hơn 0 và tối đa hai chữ số thập phân.",
+      "quickAmountsUnique": "Nhập sáu mức tiền cược nhanh khác nhau.",
+      "quickAmountsSaveFailed": "Lưu mức cược nhanh thất bại，thử lại.",
+      "save": "Lưu",
+      "shortcuts": "Lối tắt đặt cược",
+      "history": "Lịch sử đặt cược",
+      "historyCount": "Lịch sử cược，{count} mục",
+      "selectionCount": "Phiếu cược，{count} lựa chọn",
+      "fold": "Xiên {count} trận 1 vé",
+      "combo": "Tổ hợp {count}",
+      "systems": {
+        "1": "3 xiên 4",
+        "2": "4 xiên 11",
+        "3": "5 xiên 26",
+        "4": "6 xiên 57",
+        "5": "7 xiên 120",
+        "6": "8 xiên 247",
+        "7": "Hệ thống 9 trận",
+        "8": "Hệ thống 10 trận"
+      },
+      "result": {
+        "title": "Kết quả cược",
+        "placed": "Cược thành công",
+        "rejected": "Cược thất bại",
+        "close": "Đóng kết quả cược",
+        "success": "Cược thành công！",
+        "failed": "Cược thất bại！",
+        "history": "Xem cược của tôi",
+        "reuse": "Chọn lại",
+        "share": "Chia sẻ"
+      }
+    },
+    "insufficientBalance": "Không đủ số dư thể thao.",
+    "betBalanceAdjusted": "Số dư thiếu，đã chỉnh về mức cược tối đa.",
+    "favouriteFailed": "Chưa xác nhận yêu thích，hãy làm mới trận và thử lại.",
+    "retry": "Thử lại",
+    "noEvents": "Không có trận phù hợp bộ lọc.",
+    "loadingEvents": "Đang tải trận đấu…",
+    "matchCard": {
+      "totalScore": "Tổng tỷ số",
+      "periodScore": "Tỷ số giai đoạn {number}：{score}",
+      "periods": {
+        "paused": "Nghỉ/Tạm dừng",
+        "finished": "Đã kết thúc",
+        "notStarted": "Chưa bắt đầu",
+        "firstHalf": "Hiệp một",
+        "secondHalf": "Hiệp hai",
+        "overtime": "Hiệp phụ",
+        "quarter": "Hiệp {number}",
+        "set": "Set {number}",
+        "game": "Ván {number}",
+        "frame": "Ván {number}",
+        "inning": "Ván {number}"
+      },
+      "corners": "Phạt góc {score}",
+      "redCards": "{count} thẻ đỏ",
+      "yellowCards": "{count} thẻ vàng",
+      "addFavorite": "Thêm trận yêu thích",
+      "removeFavorite": "Bỏ yêu thích trận"
+    },
+    "homepage": {
+      "popularMatches": "Trận nổi bật",
+      "upcomingMatches": "Trận sắp diễn ra",
+      "matchesByLeague": "Giải đấu {sport}",
+      "marketsCount": "{count} kèo",
+      "matchCount": "{count} trận",
+      "expandAllLeagues": "Mở tất cả giải đấu",
+      "collapseAllLeagues": "Thu gọn các giải đấu",
+      "matchPagination": "Phân trang trận đấu"
+    },
+    "video": "Video",
+    "animation": "Hoạt ảnh",
+    "noVideo": "Chưa có video",
+    "noAnimation": "Chưa có hoạt ảnh",
+    "mediaFullscreen": "Phát toàn màn hình",
+    "mediaExitFullscreen": "Thoát toàn màn hình",
+    "mediaClose": "Đóng trình phát",
+    "loadingAnimation": "Đang tải hoạt ảnh",
+    "loadingLive": "Đang tải trực tiếp",
+    "liveLoadFailed": "Kết nối trực tiếp thất bại",
+    "backToLive": "Về trực tiếp",
+    "loginToWatch": "Đăng nhập để xem",
+    "logIn": "Đăng nhập",
+    "noAccountYet": "Chưa có tài khoản？",
+    "joinNow": "Tham gia ngay",
+    "oddsHome": "Chủ",
+    "oddsAway": "Khách",
+    "oddsDraw": "Hòa",
+    "oddsOver": "Tài",
+    "oddsUnder": "Xỉu",
+    "filterTabs": {
+      "rolling": "Cược trực tiếp",
+      "today": "Hôm nay",
+      "early": "Kèo sớm",
+      "parlay": "Cược xiên"
+    },
+    "leagueTabs": {
+      "filters": {
+        "league": "Giải đấu",
+        "time": "Thời gian"
+      },
+      "allLeagues": "Tất cả giải đấu",
+      "selectLeague": "Chọn giải đấu",
+      "search": "Tìm kiếm",
+      "searchLeagueOrTeam": "Tìm giải đấu hoặc đội",
+      "selectAll": "Chọn tất cả",
+      "filter": "Lọc"
+    },
+    "eventDetails": {
+      "filterAll": "Tất cả",
+      "betSlipFab": "Phiếu cược",
+      "oddsFormatLabel": "Định dạng tỷ lệ cược",
+      "oddsFormatOptionsAria": "Tùy chọn định dạng tỷ lệ",
+      "oddsFormatDisclaimer": "Chúng tôi cố gắng bảo đảm dữ liệu trên trang chính xác，nhưng chỉ mang tính tham khảo，không nên là căn cứ duy nhất. Chúng tôi không chịu trách nhiệm về sai sót.",
+      "oddsFormatShortTypes": {
+        "1": "Kèo Malaysia",
+        "2": "Kèo Hồng Kông",
+        "3": "Kèo châu Âu",
+        "4": "Kèo Indonesia",
+        "6": "Kèo Mỹ"
+      },
+      "oddsFormatTypes": {
+        "1": "Kèo Malaysia",
+        "2": "Kèo Hồng Kông",
+        "3": "Kèo châu Âu",
+        "4": "Kèo Indonesia",
+        "6": "Kèo Mỹ"
+      },
+      "noBettingMarkets": "Không có kèo khả dụng.",
+      "matchEnded": "Trận đã kết thúc"
+    }
+  },
+  "menu": {
+    "crypto-account": "Tài khoản crypto",
+    "game-categories": "Casino",
+    "sports": "TG Thể thao",
+    "hashGame": "Trò chơi Hash",
+    "recently-played": "Chơi gần đây",
+    "favorites": "Trung tâm yêu thích",
+    "vouchers": "Voucher",
+    "cash-voucher": "Đổi tiền mặt",
+    "lucky-red-envelope": "Lì xì may mắn",
+    "smash-golden-egg": "Đập trứng vàng",
+    "mystery-box": "Mở hộp bí ẩn",
+    "lucky-spin": "Vòng quay may mắn",
+    "task-center": "Trung tâm nhiệm vụ",
+    "promotions": "Trung tâm sự kiện",
+    "red-packet": "Sự kiện lì xì",
+    "red-envelope-event": "Sự kiện lì xì",
+    "credit-loan": "Vay không cần trả",
+    "my-vouchers": "Voucher của tôi",
+    "lottery-event": "Sự kiện xổ số",
+    "lucky-wheel": "Vòng quay may mắn",
+    "promo-code": "Mã ưu đãi",
+    "vip-center": "Trung tâm VIP",
+    "referral": "Đại lý của tôi",
+    "rebate": "Hoàn tiền cược",
+    "my-orders": "Đơn hàng của tôi",
+    "bet-history": "Lịch sử cược",
+    "transaction": "Chi tiết tài chính",
+    "rewards": "Trung tâm phần thưởng",
+    "rollover": "Kiểm tra vòng cược",
+    "payment-methods": "Quản lý tài khoản nhận",
+    "security": "Bảo mật tài khoản",
+    "sponsorships": "Hợp tác tài trợ",
+    "leave-feedback": "Phản hồi",
+    "legal": "Điều khoản pháp lý",
+    "about": "Về chúng tôi"
+  },
+  "luckySpinPage": {
+    "title": "Bạn nhận được Lucky Spin",
+    "subtitle": "Thắng tối đa {amount}",
+    "spinExpiresIn": "Đếm ngược hết hạn lượt quay",
+    "won": "Đã thắng",
+    "youHave": "Bạn có",
+    "vouchers": "vé",
+    "expiresOn": "Ngày hết hạn",
+    "loadFailed": "Tải thất bại，thử lại",
+    "retry": "Thử lại",
+    "prev": "Trước",
+    "next": "Sau",
+    "reminder": {
+      "title": "Lưu ý",
+      "deposit": "Nạp tiền",
+      "finished": "Hoàn thành",
+      "completed": "Hoàn thành",
+      "introUnlock": "Hoàn thành nhiệm vụ sau để mở khóa {voucherName}",
+      "introUnlockPrefix": "Hoàn thành nhiệm vụ sau để mở khóa",
+      "introReward": "Thắng tối đa {amount} tiền mặt",
+      "introRewardPrefix": "Thắng tối đa",
+      "introRewardSuffix": "Tiền mặt",
+      "rulesTitle": "Quy tắc sự kiện",
+      "unlocked": "Chúc mừng！{voucherName} của bạn đã mở khóa"
+    },
+    "result": {
+      "congratulations": "Chúc mừng！",
+      "congratsWon": "Chúc mừng！Bạn đã thắng",
+      "sorry": "Rất tiếc！",
+      "spinAgain": "Quay lần nữa",
+      "noPrize": "Không trúng",
+      "wonReward": "Bạn đã nhận một phần thưởng",
+      "creditedToWallet": "Đã cộng vào ví của bạn",
+      "extraSpin": "Bạn có thêm một lượt quay！",
+      "betterLuck": "Chúc may mắn lần sau！",
+      "receivedVouchers": "Bạn nhận được {count} voucher sự kiện",
+      "nextRound": "Vòng tiếp",
+      "ok": "OK",
+      "useNow": "Dùng ngay"
+    }
+  },
+  "ticketPage": {
+    "noVoucherForActivity": "Bạn không có voucher hợp lệ cho sự kiện này",
+    "mbTicketListFailed": "Tải danh sách voucher thất bại，thử lại sau",
+    "goldenEgg": {
+      "title": "Bạn nhận được lượt đập trứng vàng",
+      "expiresIn": "Đếm ngược hết hạn trứng vàng",
+      "smashEggAriaLabel": "Đập trứng vàng thứ {index}"
+    },
+    "mysteryBox": {
+      "title": "Bạn nhận được lượt mở hộp bí ẩn",
+      "expiresIn": "Đếm ngược hết hạn hộp bí ẩn"
+    },
+    "cashVoucher": {
+      "title": "Bạn nhận được voucher tiền mặt",
+      "expiresIn": "Đếm ngược hết hạn voucher tiền mặt"
+    },
+    "redPacket": {
+      "title": "Bạn nhận được lì xì",
+      "expiresIn": "Đếm ngược hết hạn lì xì",
+      "openAction": "Mở",
+      "resultCongrats": "Chúc mừng！"
+    },
+    "taskPop": {
+      "title": "Lưu ý",
+      "closeAriaLabel": "Đóng nhắc nhở nhiệm vụ",
+      "voucherName": "Tên voucher",
+      "introUnlockPrefix": "Hoàn thành nhiệm vụ sau để mở khóa",
+      "introReward": "Nhận thưởng tiền mặt",
+      "gotIt": "Đã hiểu",
+      "actions": {
+        "completed": "Hoàn thành",
+        "deposit": "Nạp tiền",
+        "betNow": "Đặt cược ngay",
+        "invite": "Mời",
+        "add": "Thêm",
+        "link": "Liên kết"
+      },
+      "rules": {
+        "title": "Quy tắc sự kiện",
+        "items": {
+          "completeRequirements": "Trong sự kiện，hoàn thành yêu cầu voucher để nhận {voucherName} và thưởng tiền mặt.",
+          "completeRequirementsPrefix": "Trong sự kiện，hoàn thành yêu cầu voucher để nhận ",
+          "completeRequirementsSuffix": " và thưởng tiền mặt.",
+          "cashCredited": "Thưởng tiền mặt sẽ cộng thẳng vào số dư tài khoản，có thể xem trong số dư.",
+          "onceOnly": "Mỗi người chỉ được tham gia một lần trong sự kiện，không cộng dồn lượt，hãy dùng kịp thời.",
+          "irregularActivity": "Nếu phát hiện vi phạm như gian lận、giao dịch giả、tạo cược giả hoặc lạm dụng，nền tảng có quyền hủy tư cách và giữ lại thưởng.",
+          "finalInterpretation": "Nền tảng giữ quyền giải thích cuối cùng. Nếu có thắc mắc，liên hệ CSKH trực tuyến.."
+        }
+      },
+      "accumulation": {
+        "startingFromDate": "Từ {date}，",
+        "startingFromSpecifiedDate": "Từ ngày chỉ định，",
+        "afterAccountCreated": "Sau khi tạo tài khoản，",
+        "afterReceivingVoucher": "Sau khi nhận voucher，"
+      },
+      "tasks": {
+        "totalDepositAmount": "Tổng tiền nạp {operator} {amount}",
+        "totalDepositCount": "Số lần nạp {operator} {count}",
+        "validBetAmount": "Cược hợp lệ {operator} {amount}",
+        "gameLossAmount": "Tiền thua game {operator} {amount}",
+        "validInvitedFriends": "Bạn mời hợp lệ {operator} {count}",
+        "addWithdrawalMethod": "Thêm phương thức rút",
+        "addAccountName": "Thêm tên tài khoản",
+        "linkMobileNumber": "Liên kết điện thoại"
+      },
+      "help": {
+        "totalDepositAmount": {
+          "title": "Tổng tiền nạp",
+          "content": "{prefix}Tổng tiền nạp phải đạt mức yêu cầu để hoàn thành nhiệm vụ."
+        },
+        "validDepositAmount": {
+          "title": "Tiền nạp hợp lệ",
+          "content": "Chỉ tiền nạp qua kênh được chỉ định mới được tính. Kênh khác hoặc giao dịch bất thường không hợp lệ."
+        },
+        "validDepositChannels": {
+          "title": "Kênh nạp hợp lệ",
+          "fallback": "Kênh nạp được chỉ định."
+        },
+        "totalDepositCount": {
+          "title": "Tổng số lần nạp",
+          "content": "{prefix}Số lần nạp phải đạt yêu cầu để hoàn thành nhiệm vụ."
+        },
+        "validDepositCount": {
+          "title": "Số lần nạp hợp lệ",
+          "content": "Chỉ tiền nạp qua kênh được chỉ định mới được tính. Kênh khác hoặc giao dịch bất thường không hợp lệ."
+        },
+        "totalTurnover": {
+          "title": "Tổng vòng cược",
+          "content": "{prefix}Tổng vòng cược phải đạt mức yêu cầu để hoàn thành nhiệm vụ."
+        },
+        "validTurnover": {
+          "title": "Vòng cược hợp lệ",
+          "content": "Chỉ vòng cược ở game chỉ định mới được tính，game khác hoặc cược bất thường không hợp lệ."
+        },
+        "validTurnoverScope": {
+          "title": "Phạm vi vòng cược hợp lệ",
+          "fallback": "Game chỉ định."
+        },
+        "lossAmount": {
+          "title": "Tiền thua",
+          "content": "{prefix}Tổng tiền thua game phải đạt mức yêu cầu để hoàn thành nhiệm vụ."
+        },
+        "inviteRegistration": {
+          "title": "Mời đăng ký",
+          "content": "Sau khi nhận voucher，mời đủ số bạn hợp lệ để hoàn thành nhiệm vụ."
+        },
+        "withdrawalAccount": {
+          "title": "Tài khoản rút tiền",
+          "content": "Thưởng của bạn đã sẵn sàng，liên kết tài khoản rút để nhận！"
+        },
+        "withdrawalName": {
+          "title": "Tên người rút",
+          "content": "Thưởng đã sẵn sàng，thêm tên người rút để nhận！"
+        },
+        "phoneNumber": {
+          "title": "Số điện thoại",
+          "content": "Thưởng đã sẵn sàng，liên kết điện thoại để nhận！"
+        }
+      }
+    }
+  },
+  "checkIn": {
+    "title": "Thưởng điểm danh hằng ngày",
+    "subtitle": "Điểm danh mỗi ngày để nhận thưởng",
+    "promoStartsAt": "Sự kiện bắt đầu：{date}",
+    "promoEndsAt": "Sự kiện kết thúc：{date}",
+    "action": "Điểm danh ngay",
+    "rewardSectionTitle": "Xem trước thưởng điểm danh",
+    "rewardReceivedThisTime": "Thưởng lần này",
+    "congratulations": "Chúc mừng nhận thưởng！",
+    "youGotAReward": "Bạn đã nhận thưởng",
+    "luckySpinReward": "Thưởng vòng quay x1",
+    "redPacketReward": "Thưởng lì xì x1",
+    "goldenEggReward": "Thưởng trứng vàng x1",
+    "cashVoucherReward": "Voucher tiền mặt x1",
+    "mysteryBoxReward": "Thưởng hộp bí ẩn x1",
+    "useNow": "Dùng ngay",
+    "reminderTitle": "Lưu ý",
+    "reminderPromptAll": "Hoàn thành 2 điều kiện sau để điểm danh.",
+    "reminderPromptAny": "Hoàn thành 1 trong các điều kiện sau để điểm danh.",
+    "reminderPromptSingle": "Hoàn thành điều kiện sau để điểm danh.",
+    "deposit": "Nạp tiền",
+    "validBet": "Cược hợp lệ",
+    "rewardCount": "{count} ngày",
+    "dayLabel": "Ngày {day}",
+    "claimed": "Đã nhận",
+    "rulesAriaLabel": "Mở quy tắc điểm danh",
+    "closeAriaLabel": "Đóng cửa sổ điểm danh",
+    "reminderCloseAriaLabel": "Đóng nhắc nhở điểm danh",
+    "bindPhonePromptTitle": "Lưu ý",
+    "bindPhonePromptHeadline": "Hãy liên kết số điện thoại trước",
+    "bindPhonePromptDescription": "Liên kết số điện thoại trước khi tiếp tục.",
+    "bindPhonePromptAction": "Liên kết ngay",
+    "bindPhonePromptCloseAriaLabel": "Đóng nhắc nhở liên kết điện thoại"
+  },
+  "vouchers": {
+    "myVouchers": "Voucher của tôi",
+    "voucherHistory": "Lịch sử voucher",
+    "validFrom": "Ngày hết hạn",
+    "expiresIn": "Thời gian còn lại",
+    "useNow": "Dùng ngay",
+    "totalBonusWon": "Tổng thưởng đã nhận",
+    "usedAt": "Thời gian sử dụng",
+    "type": "Loại",
+    "cashVoucher": "Voucher tiền mặt",
+    "redPacketVoucher": "Voucher lì xì",
+    "goldenEggVoucher": "Voucher trứng vàng",
+    "luckySpinVoucher": "Voucher vòng quay",
+    "mysteryBoxVoucher": "Voucher hộp bí ẩn",
+    "claimNow": "Nhận ngay"
+  },
+  "redPacketPanel": {
+    "empty": "Chưa có lì xì",
+    "emptySender": "TG Bonus Desk",
+    "emptyTime": "11/07 12:18",
+    "emptyMessage": "Ưu đãi hấp dẫn sắp đến，quay lại nhận lì xì sau nhé.",
+    "loadFailed": "Tải thất bại，",
+    "retry": "Thử lại",
+    "congratulations": "Chúc mừng",
+    "congratulationsExclaim": "Chúc mừng bạn！",
+    "timeLeft": "Thời gian còn lại：",
+    "depositNow": "Nạp ngay",
+    "betNow": "Đặt cược ngay",
+    "claimNow": "Nhận ngay",
+    "claimed": "Đã nhận",
+    "credited": "Đã cộng vào số dư",
+    "expiredTitle": "Ôi！",
+    "expiredDesc": "Lì xì đã hết hạn！",
+    "expiryDate": "Ngày hết hạn：",
+    "soldOutTitle": "Chậm mất rồi！",
+    "soldOutDesc": "Lì xì đã hết！",
+    "conditionLabel": {
+      "recharge": "Số tiền nạp：",
+      "loss": "Tiền thua：",
+      "bet": "Tiền cược："
+    },
+    "conditionHint": {
+      "recharge": { "prefix": "Nạp đủ", "suffix": "Có thể nhận" },
+      "loss": { "prefix": "Thua đủ", "suffix": "Có thể nhận" },
+      "bet": { "prefix": "Cược đủ", "suffix": "Có thể nhận" }
+    },
+    "claimHistory": "Lịch sử nhận",
+    "redemptionHistory": "Lịch sử nhận",
+    "myRedemptions": "Lịch sử nhận của tôi",
+    "totalRedeemed": "Tổng đã nhận：",
+    "claimTime": "Thời gian nhận：{time}",
+    "claimedSummary": "Đã nhận {count} gói，tổng {amount} {currency}",
+    "wonTitle": "Chúc mừng nhận {amount}！",
+    "allGoneTitle": "Chậm rồi，lì xì đã hết！",
+    "goodLuck": "Chúc phát tài và may mắn！",
+    "comeBackTomorrow": "Mai quay lại nhận nhé！",
+    "noRecords": "Chưa có lịch sử",
+    "allType": "Tất cả loại",
+    "allTime": "Tất cả thời gian",
+    "type": {
+      "1": "Lì xì hằng ngày",
+      "2": "Lì xì thưởng nạp",
+      "3": "Lì xì hoàn tiền thua",
+      "4": "Lì xì may mắn"
+    },
+    "period": {
+      "all": "Tất cả",
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "last7Days": "7 ngày gần đây",
+      "last15Days": "15 ngày gần đây",
+      "last30Days": "30 ngày gần đây"
+    }
+  },
+  "creditLoan": {
+    "title": "Khoản vay",
+    "loanRecords": "Lịch sử vay",
+    "bettingRecords": "Lịch sử cược",
+    "loanBalance": "Số dư vay：",
+    "transfer": "Chuyển ra",
+    "availableCredit": "Hạn mức khả dụng (USD)",
+    "borrowNow": "Vay ngay",
+    "slogan": "Trả ít hơn，nạp nhiều hơn，giới thiệu nhiều hơn，chơi nhiều hơn！",
+    "gameLobby": "Sảnh game",
+    "loanDetails": "Chi tiết khoản vay",
+    "all": "Tất cả",
+    "empty": "Chưa có dữ liệu",
+    "repaymentFreeTitle": "Vay không cần trả",
+    "repaymentFreeDesc": "Không cần trả，VIP càng cao，hạn mức vay càng lớn",
+    "gameType": "Loại game",
+    "loanPop": {
+      "title": "Vay thành công！",
+      "accept": "OK",
+      "desc": "Đã cộng vào số dư khoản vay."
+    },
+    "records": {
+      "all": "Tất cả",
+      "loans": "Vay",
+      "transfers": "Chuyển ra",
+      "type": "Loại",
+      "time": "Thời gian",
+      "amount": "Số tiền",
+      "loanAmount": "Số tiền vay",
+      "loanTransferOut": "Chuyển tiền vay ra",
+      "refreshing": "Đang làm mới..."
+    },
+    "betRecords": {
+      "loan": "Khoản vay",
+      "pending": "Chờ thanh toán",
+      "completed": "Hoàn thành"
+    },
+    "transferSuccess": {
+      "title": "Chuyển thành công",
+      "desc": "Đã chuyển tiền vay sang số dư tài khoản."
+    },
+    "transferPop": {
+      "title": "Chuyển ra",
+      "loanBalance": "Số dư vay",
+      "transferableBalance": "Số dư có thể chuyển",
+      "transferAll": "Chuyển toàn bộ",
+      "desc": "Tiền vay sẽ chuyển vào số dư tài khoản. Sau khi chuyển，số dư vay về 0，có thể vay lại thứ Hai tới."
+    },
+    "rules": {
+      "rule1": "Mọi khoản vay đều không cần trả.",
+      "rule2": "Thắng từ tiền vay chỉ được chuyển tối đa bằng số tiền vay ban đầu.",
+      "rule3": "Cấp VIP càng cao，hạn mức vay càng lớn.",
+      "rule4": "Hạn mức vay cập nhật mỗi thứ Hai.",
+      "rule5": "Số dư vay về 0 vào Chủ nhật lúc 23:59，hạn mức được khôi phục thứ Hai kế tiếp.",
+      "rule6": "Chương trình dành cho người chơi thật，dùng nhiều tài khoản hoặc thông đồng trục lợi sẽ bị khóa tài khoản."
+    },
+    "ruleHighlights": {
+      "rule4": "Duy trì lịch sử nạp và cược để khôi phục hoặc tăng hạn mức vay！",
+      "rule5": "Nếu có lãi，hãy chuyển về số dư tài khoản trước khi hệ thống xóa tự động."
+    },
+    "cycleRules": {
+      "daily": {
+        "rule4": "Hạn mức vay cập nhật hằng ngày.",
+        "rule5": "Số dư vay về 0 mỗi ngày lúc 23:59，hạn mức phục hồi ngày hôm sau."
+      },
+      "weekly": {
+        "rule4": "Hạn mức vay cập nhật mỗi {day}.",
+        "rule5": "Số dư vay về 0 vào {prevDay} lúc 23:59，hạn mức phục hồi vào {day}."
+      },
+      "monthly": {
+        "rule4": "Hạn mức vay cập nhật ngày {day} hằng tháng.",
+        "rule5": "Số dư vay về 0 lúc 23:59 ngày trước ngày {day} mỗi tháng，hạn mức phục hồi ngày {day}."
+      }
+    },
+    "weekdays": {
+      "mon": "Thứ Hai",
+      "tue": "Thứ Ba",
+      "wed": "Thứ Tư",
+      "thu": "Thứ Năm",
+      "fri": "Thứ Sáu",
+      "sat": "Thứ Bảy",
+      "sun": "Chủ Nhật"
+    }
+  }
+}

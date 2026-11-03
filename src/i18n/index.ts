@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n'
 import eng from './locales/en.json'
 import zh from './locales/zh.json'
+import vi from './locales/vi.json'
 import { getLanguageCode, DEFAULT_LOCALE } from '@/utils/locale'
 
 const i18n = createI18n({
@@ -13,6 +14,9 @@ const i18n = createI18n({
     },
     zh: {
       ...zh
+    },
+    vi: {
+      ...vi
     }
   }
 })
