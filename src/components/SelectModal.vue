@@ -136,6 +136,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { getLocaleOptions, getLocaleSearchKeywords, type Locale } from '@/utils/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
@@ -144,6 +145,7 @@ import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
 
 const { t } = useI18n()
 const localeStore = useLocaleStore()
+const { currencySelectOptions } = useDisplayCurrency()
 
 interface Language {
   code: Locale
@@ -204,10 +206,12 @@ const languages = computed<Language[]>(() => {
 })
 
 // 货币列表
-const currencies: Currency[] = [
-  { code: 'USD', flag: new URL('@/static/img/flag/USD.webp', import.meta.url).href },
-  { code: 'CNY', flag: new URL('@/static/img/flag/CNY.webp', import.meta.url).href }
-]
+const currencies = computed<Currency[]>(() =>
+  currencySelectOptions.value.map(option => ({
+    code: option.value,
+    flag: option.icon
+  }))
+)
 
 // 搜索支持拼音首字母和中文
 const filteredLanguages = computed(() => {
@@ -223,11 +227,11 @@ const filteredLanguages = computed(() => {
 })
 
 const filteredCurrencies = computed(() => {
-  if (!searchQuery.value) return currencies
+  if (!searchQuery.value) return currencies.value
 
   const query = searchQuery.value.toLowerCase().trim()
 
-  return currencies.filter(currency => {
+  return currencies.value.filter(currency => {
     return currency.code.toLowerCase().includes(query)
   })
 })
