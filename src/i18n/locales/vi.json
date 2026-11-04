@@ -403,8 +403,8 @@
   },
   "theme": {
     "toggle": "Đổi giao diện",
-    "light": "Chế độ sáng",
-    "dark": "Chế độ tối",
+    "light": "Màu sáng",
+    "dark": "Màu tối",
     "system": "Theo hệ thống"
   },
   "bottom_tab_bar": {
@@ -786,8 +786,8 @@
       "eng": "English"
     },
     "theme": {
-      "dark": "Chế độ tối",
-      "light": "Chế độ sáng"
+      "dark": "Màu tối",
+      "light": "Màu sáng"
     }
   },
   "wallet": {

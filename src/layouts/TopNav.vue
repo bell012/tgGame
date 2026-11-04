@@ -88,7 +88,7 @@
         <template v-if="!isLoggedIn">
           <!-- 登入 -->
           <div
-            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[16px] font-bold sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-opacity-10 mr-1 sm:mr-2"
+            class="cursor-pointer min-w-[84px] h-[35px] sm:min-w-[100px] sm:h-[40px] text-[16px] font-bold sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-opacity-10 mr-1 sm:mr-2"
             @click="openLoginModal"
           >
             {{ t('home.sign_In') }}
