@@ -12,6 +12,15 @@ export type RedEnvelopeType = 1 | 2 | 3 | 4
 /** 弹窗展示状态：1 立即充值，2 立即投注，3 立即领取，4 已领取，5 已过期，6 已领完。 */
 export type RedEnvelopeShowState = 1 | 2 | 3 | 4 | 5 | 6
 
+export const SHOW_STATE = {
+  deposit: 1,
+  bet: 2,
+  claim: 3,
+  claimed: 4,
+  expired: 5,
+  soldOut: 6
+} as const satisfies Record<string, RedEnvelopeShowState>
+
 /** 会员红包列表项。 */
 export interface RedEnvelopeItem {
   redEnvelopeId: number

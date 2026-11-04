@@ -34,7 +34,7 @@
 
       <div
         ref="listRef"
-        class="red-packet-list flex min-h-0 flex-1 flex-col gap-[20px] overflow-y-auto p-[20px_10px]"
+        class="scrollbar-thin flex min-h-0 flex-1 flex-col gap-[20px] overflow-y-auto p-[20px_10px]"
       >
         <RedPacketCard
           v-for="item in list"
@@ -65,15 +65,7 @@
           </div>
         </div>
 
-        <p
-          v-else-if="showLoadError"
-          class="m-auto text-center text-[14px] leading-[20px] text-text-3"
-        >
-          {{ t('redPacketPanel.loadFailed') }}
-          <button type="button" class="ml-[4px] text-secondary-9" @click="retry">
-            {{ t('redPacketPanel.retry') }}
-          </button>
-        </p>
+        <RedPacketListStatus v-else-if="showLoadError" class="m-auto" error @retry="retry" />
 
         <div ref="sentinelRef" class="h-px shrink-0" />
       </div>
@@ -124,6 +116,7 @@ import {
 import MyRedemptions from './MyRedemptions.vue'
 import RedPacketCard from './RedPacketCard.vue'
 import RedPacketHistory from './RedPacketHistory.vue'
+import RedPacketListStatus from './RedPacketListStatus.vue'
 import RedPacketPopup from './RedPacketPopup.vue'
 
 const props = withDefaults(defineProps<{ displayMode?: RedPacketDisplayMode }>(), {
@@ -190,14 +183,3 @@ const handleNavigate = (path: string) => {
   navigateTo(path)
 }
 </script>
-
-<style scoped>
-.red-packet-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.red-packet-list::-webkit-scrollbar-thumb {
-  border-radius: 12px;
-  background: var(--color-opacity-5);
-}
-</style>

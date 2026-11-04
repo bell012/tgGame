@@ -109,25 +109,31 @@ export default defineConfig(() => {
           ]
         }
       }),
-      createWebpAssetsPlugin(),
       createPwaAssetsPlugin(),
-      viteImagemin({
-        filter: /\.(png|jpe?g)$/i,
-        mozjpeg: {
-          quality: 80
-        },
+      // pngquant / mozjpeg / cwebp 预编译包是 x86_64。arm64 上 spawn 会 errno -86，
+      // 所以只在 x64 走原来的压缩；arm64 跳过这三个原生二进制，其余构建不变。
+      ...(process.arch === 'arm64'
+        ? []
+        : [
+            createWebpAssetsPlugin(),
+            viteImagemin({
+              filter: /\.(png|jpe?g)$/i,
+              mozjpeg: {
+                quality: 80
+              },
 
-        pngquant: {
-          // png 压缩
-          quality: [0.7, 0.85],
-          speed: 4
-        },
+              pngquant: {
+                // png 压缩
+                quality: [0.7, 0.85],
+                speed: 4
+              },
 
-        optipng: false,
-        svgo: false,
-        gifsicle: false,
-        jpegTran: false
-      }),
+              optipng: false,
+              svgo: false,
+              gifsicle: false,
+              jpegTran: false
+            })
+          ]),
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['mask-icon.svg'],

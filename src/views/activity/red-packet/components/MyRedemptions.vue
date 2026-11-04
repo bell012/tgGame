@@ -52,7 +52,7 @@
 
     <div
       ref="listRef"
-      class="red-packet-scroll flex min-h-0 flex-1 flex-col gap-[8px] overflow-y-auto p-[16px]"
+      class="scrollbar-thin flex min-h-0 flex-1 flex-col gap-[8px] overflow-y-auto p-[16px]"
     >
       <div
         v-for="record in list"
@@ -72,18 +72,13 @@
         </span>
       </div>
 
-      <p
+      <RedPacketListStatus
         v-if="!loading && !list.length"
-        class="py-[20px] text-center text-[14px] leading-[20px] text-text-3"
-      >
-        <template v-if="error">
-          {{ t('redPacketPanel.loadFailed') }}
-          <button type="button" class="ml-[4px] text-secondary-9" @click="retry">
-            {{ t('redPacketPanel.retry') }}
-          </button>
-        </template>
-        <template v-else>{{ t('redPacketPanel.noRecords') }}</template>
-      </p>
+        class="py-[20px]"
+        :error="!!error"
+        :empty-text="t('redPacketPanel.noRecords')"
+        @retry="retry"
+      />
 
       <div ref="sentinelRef" class="h-px shrink-0" />
     </div>
@@ -97,13 +92,14 @@ import type { RedEnvelopeItem, RedEnvelopeType } from '@/api/interface/red-envel
 import CheckOffIcon from '@/static/svg/red-packet/check-off.svg?component'
 import CheckOnIcon from '@/static/svg/red-packet/check-on.svg?component'
 import DropdownArrow from '@/static/svg/red-packet/dropdown-arrow.svg?component'
+import { formatFullDateTime } from '../format'
 import {
   MEMBER_RECORD_PERIODS,
   RED_ENVELOPE_TYPES,
   useMemberRecords,
   type MemberRecordPeriod
 } from '../useMemberRecords'
-import { formatFullDateTime } from '../useNow'
+import RedPacketListStatus from './RedPacketListStatus.vue'
 import RedPacketSubHeader from './RedPacketSubHeader.vue'
 
 type DropdownKey = 'type' | 'period'
@@ -136,67 +132,59 @@ const getTypeLabel = (record: RedEnvelopeItem) =>
     ? typeLabel(record.redEnvelopeType)
     : (record.redEnvelopeName ?? '')
 
-const dropdowns = computed(() => [
-  { key: 'type' as const, label: typeLabel(selectedType.value) },
-  {
-    key: 'period' as const,
+interface DropdownOption {
+  value: string
+  label: string
+  selected: boolean
+}
+
+const dropdownConfig = computed(() => ({
+  type: {
+    label: typeLabel(selectedType.value),
+    options: [null, ...RED_ENVELOPE_TYPES].map(type => ({
+      value: String(type ?? ''),
+      label: typeLabel(type),
+      selected: selectedType.value === type
+    })),
+    select: (value: string) => {
+      selectedType.value = value ? (Number(value) as RedEnvelopeType) : null
+    }
+  },
+  period: {
     label:
       selectedPeriod.value === 'all'
         ? t('redPacketPanel.allTime')
-        : t(`redPacketPanel.period.${selectedPeriod.value}`)
-  }
-])
-
-interface DropdownPanel {
-  key: DropdownKey
-  options: { value: string; label: string; selected: boolean }[]
-  select: (value: string) => void
-}
-
-const activeDropdown = computed<DropdownPanel | null>(() => {
-  if (openDropdown.value === 'type') {
-    return {
-      key: 'type',
-      options: [null, ...RED_ENVELOPE_TYPES].map(type => ({
-        value: String(type ?? ''),
-        label: typeLabel(type),
-        selected: selectedType.value === type
-      })),
-      select: value => {
-        selectedType.value = value ? (Number(value) as RedEnvelopeType) : null
-        openDropdown.value = null
-      }
+        : t(`redPacketPanel.period.${selectedPeriod.value}`),
+    options: MEMBER_RECORD_PERIODS.map(period => ({
+      value: period,
+      label: t(`redPacketPanel.period.${period}`),
+      selected: selectedPeriod.value === period
+    })),
+    select: (value: string) => {
+      selectedPeriod.value = value as MemberRecordPeriod
     }
   }
-  if (openDropdown.value === 'period') {
-    return {
-      key: 'period',
-      options: MEMBER_RECORD_PERIODS.map(period => ({
-        value: period,
-        label: t(`redPacketPanel.period.${period}`),
-        selected: selectedPeriod.value === period
-      })),
-      select: value => {
-        selectedPeriod.value = value as MemberRecordPeriod
-        openDropdown.value = null
-      }
+}))
+
+const dropdowns = computed(() =>
+  (['type', 'period'] as const).map(key => ({ key, label: dropdownConfig.value[key].label }))
+)
+
+const activeDropdown = computed(() => {
+  const key = openDropdown.value
+  if (!key) return null
+  const config = dropdownConfig.value[key]
+  return {
+    key,
+    options: config.options as DropdownOption[],
+    select: (value: string) => {
+      config.select(value)
+      openDropdown.value = null
     }
   }
-  return null
 })
 
 const toggleDropdown = (key: DropdownKey) => {
   openDropdown.value = openDropdown.value === key ? null : key
 }
 </script>
-
-<style scoped>
-.red-packet-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.red-packet-scroll::-webkit-scrollbar-thumb {
-  border-radius: 12px;
-  background: var(--color-opacity-5);
-}
-</style>

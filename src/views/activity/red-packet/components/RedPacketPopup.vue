@@ -4,7 +4,7 @@
     @click.self="emit('close')"
   >
     <div class="flex w-[260px] flex-col items-center gap-[24px]">
-      <div class="relative w-[260px]" :class="hasProgress ? 'h-[404px]' : 'h-[360px]'">
+      <div class="relative w-[260px]" :style="{ height: `${popupLayout.height}px` }">
         <img
           :src="backgroundSrc"
           alt=""
@@ -15,8 +15,8 @@
         <p
           v-if="showTitle"
           class="absolute inset-x-0 text-center text-[24px] font-[700] leading-[29px]"
-          :class="isClaimed ? 'top-[20px] text-packet-title' : 'text-secondary-9'"
-          :style="!isClaimed ? { top: hasProgress ? '20px' : '24px' } : undefined"
+          :class="isClaimed ? 'text-packet-title' : 'text-secondary-9'"
+          :style="{ top: `${popupLayout.titleTop}px` }"
         >
           {{
             isClaimed
@@ -50,7 +50,8 @@
         <!-- 进度区：剩余时间 + 单/多条件 -->
         <div
           v-if="hasProgress"
-          class="absolute left-[14px] top-[164px] flex w-[232px] flex-col items-center gap-[14px]"
+          class="absolute left-[14px] flex w-[232px] flex-col items-center gap-[14px]"
+          :style="{ top: `${popupLayout.progressTop}px` }"
         >
           <div class="flex items-center gap-[4px]">
             <span class="flex items-center gap-[6px] text-[12px] leading-[15px] text-common-100">
@@ -67,8 +68,8 @@
               v-if="isSingleCondition && activeCondition"
               class="relative mb-[4px] rounded-[8px] bg-secondary-9 px-[7px] text-[10px] font-[700] leading-[16px]"
             >
-              <span class="text-secondary-2">{{ formatNumber(activeCondition.gather) }}</span>
-              <span class="text-text-4">/{{ formatNumber(activeCondition.cond) }}</span>
+              <span class="text-secondary-2">{{ formatAmount(activeCondition.gather, 2) }}</span>
+              <span class="text-text-4">/{{ formatAmount(activeCondition.cond, 2) }}</span>
               <span
                 class="absolute left-1/2 top-full -translate-x-1/2 border-x-[4.5px] border-t-[4px] border-x-transparent border-t-secondary-9"
               />
@@ -87,7 +88,7 @@
                 class="text-center text-[12px] leading-[15px] text-common-100"
               >
                 {{ t(`redPacketPanel.conditionHint.${activeCondition.key}.prefix`) }}
-                <span class="text-secondary-6">{{ formatNumber(activeCondition.cond) }}+</span>
+                <span class="text-secondary-6">{{ formatAmount(activeCondition.cond, 2) }}+</span>
                 {{ t(`redPacketPanel.conditionHint.${activeCondition.key}.suffix`) }}
               </p>
 
@@ -95,7 +96,7 @@
                 <p v-for="condition in conditions" :key="condition.key" class="text-common-100">
                   {{ t(`redPacketPanel.conditionLabel.${condition.key}`) }}
                   <span class="text-secondary-6">
-                    {{ formatNumber(condition.gather) }}/{{ formatNumber(condition.cond) }}
+                    {{ formatAmount(condition.gather, 2) }}/{{ formatAmount(condition.cond, 2) }}
                   </span>
                 </p>
               </div>
@@ -106,7 +107,8 @@
         <!-- 已过期 / 已领完 提示 -->
         <div
           v-if="isExpired || isSoldOut"
-          class="absolute inset-x-0 top-[229px] flex flex-col items-center gap-[4px] text-[24px] font-[700] leading-[29px] text-secondary-9"
+          class="absolute inset-x-0 flex flex-col items-center gap-[4px] text-[24px] font-[700] leading-[29px] text-secondary-9"
+          :style="{ top: `${popupLayout.statusTop}px` }"
         >
           <span>{{
             t(isExpired ? 'redPacketPanel.expiredTitle' : 'redPacketPanel.soldOutTitle')
@@ -120,7 +122,7 @@
           :src="coinIcon"
           alt=""
           class="pointer-events-none absolute size-[84px]"
-          :style="{ left: `${hasProgress ? 89 : 88}px`, top: `${coinTop - 10}px` }"
+          :style="{ left: `${popupLayout.coinLeft}px`, top: `${coinStyleTop}px` }"
         />
 
         <!-- 按钮 -->
@@ -128,7 +130,7 @@
           v-if="buttonText"
           type="button"
           class="red-packet-popup-button absolute left-[26px] flex w-[208px] items-center justify-center rounded-[68px] px-[12px] pb-[10px] pt-[12px] text-[16px] font-[700] leading-[19px] text-packet-button-text disabled:cursor-default"
-          :style="{ top: `${buttonTop}px` }"
+          :style="{ top: `${popupLayout.buttonTop}px` }"
           :disabled="isClaimed || claiming"
           @click="handleButtonClick"
         >
@@ -137,14 +139,16 @@
 
         <p
           v-if="isClaimed"
-          class="absolute inset-x-0 top-[303px] text-center text-[12px] leading-[15px] text-secondary-9"
+          class="absolute inset-x-0 text-center text-[12px] leading-[15px] text-secondary-9"
+          :style="{ top: `${popupLayout.creditedTop}px` }"
         >
           {{ t('redPacketPanel.credited') }}
         </p>
 
         <p
           v-if="isExpired"
-          class="absolute inset-x-0 top-[321px] flex items-center justify-center gap-[6px] text-[12px] leading-[15px]"
+          class="absolute inset-x-0 flex items-center justify-center gap-[6px] text-[12px] leading-[15px]"
+          :style="{ top: `${popupLayout.expiryTop}px` }"
         >
           <span class="text-common-100">{{ t('redPacketPanel.expiryDate') }}</span>
           <span class="font-[700] text-secondary-6">{{ expiryDateText }}</span>
@@ -153,7 +157,8 @@
         <button
           v-if="isClaimed"
           type="button"
-          class="absolute left-1/2 top-[327px] flex -translate-x-1/2 items-center gap-[2px] whitespace-nowrap text-[12px] leading-[15px] text-secondary-9"
+          class="absolute left-1/2 flex -translate-x-1/2 items-center gap-[2px] whitespace-nowrap text-[12px] leading-[15px] text-secondary-9"
+          :style="{ top: `${popupLayout.historyTop}px` }"
           @click="emit('history')"
         >
           {{ t('redPacketPanel.claimHistory') }}
@@ -180,7 +185,12 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import type { RedEnvelopeItem, RedEnvelopeSchedule } from '@/api/interface/red-envelope'
+import {
+  SHOW_STATE,
+  type RedEnvelopeItem,
+  type RedEnvelopeSchedule,
+  type RedEnvelopeShowState
+} from '@/api/interface/red-envelope'
 import clockIcon from '@/static/svg/red-packet/clock.svg?url'
 import coinIcon from '@/static/svg/red-packet/coin.svg?url'
 import hiddenAmountIcon from '@/static/svg/red-packet/hidden-amount.svg?url'
@@ -188,16 +198,109 @@ import popupBgOpened from '@/static/svg/red-packet/popup-bg-opened.webp'
 import popupBgProgress from '@/static/svg/red-packet/popup-bg-progress.svg?url'
 import popupBg from '@/static/svg/red-packet/popup-bg.svg?url'
 import popupCloseIcon from '@/static/svg/red-packet/popup-close.svg?url'
-import { getCurrencySymbol } from '@/utils/locale'
-import { formatCountdown, formatDateTime, useNow } from '../useNow'
+import {
+  formatAmount,
+  formatCountdown,
+  formatDateTime,
+  formatMoney,
+  isDailyRedEnvelope
+} from '../format'
+import { useNow } from '../useNow'
 
 type ConditionKey = 'recharge' | 'loss' | 'bet'
+type PopupLayoutKey = 'progress' | 'claimable' | 'claimed' | 'expired' | 'soldOut'
 
 interface RedPacketCondition {
   key: ConditionKey
   gather: number
   cond: number
 }
+
+interface PopupLayout {
+  height: number
+  titleTop?: number
+  amountTop: number
+  /** 每日红包隐藏金额时的金额区 top，仅进度中和可领取会用到。 */
+  hiddenAmountTop?: number
+  coinTop: number
+  coinLeft: number
+  buttonTop?: number
+  progressTop?: number
+  statusTop?: number
+  creditedTop?: number
+  expiryTop?: number
+  historyTop?: number
+}
+
+interface PopupButton {
+  textKey: string
+  to?: string
+}
+
+/** 金币图相对布局 coinTop 上移，和原先模板里的 -10 一致。 */
+const COIN_VISUAL_OFFSET = 10
+
+const POPUP_LAYOUT: Record<PopupLayoutKey, PopupLayout> = {
+  progress: {
+    height: 404,
+    titleTop: 20,
+    amountTop: 69,
+    hiddenAmountTop: 83,
+    coinTop: 267,
+    coinLeft: 89,
+    buttonTop: 337,
+    progressTop: 164
+  },
+  claimable: {
+    height: 360,
+    titleTop: 24,
+    amountTop: 69,
+    hiddenAmountTop: 83,
+    coinTop: 192,
+    coinLeft: 88,
+    buttonTop: 264
+  },
+  claimed: {
+    height: 360,
+    titleTop: 20,
+    amountTop: 57,
+    coinTop: 190,
+    coinLeft: 88,
+    buttonTop: 256,
+    creditedTop: 303,
+    historyTop: 327
+  },
+  expired: {
+    height: 360,
+    amountTop: 38,
+    coinTop: 143,
+    coinLeft: 88,
+    statusTop: 229,
+    expiryTop: 321
+  },
+  soldOut: {
+    height: 360,
+    amountTop: 50,
+    coinTop: 143,
+    coinLeft: 88,
+    statusTop: 229
+  }
+}
+
+const BUTTON_CONFIG: Partial<Record<RedEnvelopeShowState, PopupButton>> = {
+  [SHOW_STATE.deposit]: { textKey: 'redPacketPanel.depositNow', to: '/deposit' },
+  [SHOW_STATE.bet]: { textKey: 'redPacketPanel.betNow', to: '/casino' },
+  [SHOW_STATE.claim]: { textKey: 'redPacketPanel.claimNow' },
+  [SHOW_STATE.claimed]: { textKey: 'redPacketPanel.claimed' }
+}
+
+/** 领取接口若仍返回这些状态，说明还不能记成已领取。 */
+const RESULT_STATES_TO_KEEP = new Set<RedEnvelopeShowState>([
+  SHOW_STATE.deposit,
+  SHOW_STATE.bet,
+  SHOW_STATE.expired,
+  SHOW_STATE.soldOut
+])
 
 const props = defineProps<{
   item: RedEnvelopeItem
@@ -218,19 +321,39 @@ const claiming = ref(false)
 const currentSchedule = ref<RedEnvelopeSchedule>(props.schedule)
 
 const showState = computed(() => currentSchedule.value.showState)
-const hasProgress = computed(() => showState.value === 1 || showState.value === 2)
-const isClaimable = computed(() => showState.value === 3)
-const isClaimed = computed(() => showState.value === 4)
-const isExpired = computed(() => showState.value === 5)
-const isSoldOut = computed(() => showState.value === 6)
+const hasProgress = computed(
+  () => showState.value === SHOW_STATE.deposit || showState.value === SHOW_STATE.bet
+)
+const isClaimable = computed(() => showState.value === SHOW_STATE.claim)
+const isClaimed = computed(() => showState.value === SHOW_STATE.claimed)
+const isExpired = computed(() => showState.value === SHOW_STATE.expired)
+const isSoldOut = computed(() => showState.value === SHOW_STATE.soldOut)
 const showTitle = computed(() => hasProgress.value || isClaimable.value || isClaimed.value)
 
-const isDaily = computed(() => props.item.redEnvelopeType === 1)
+const isDaily = computed(() => isDailyRedEnvelope(props.item))
 const hideAmount = computed(() => isDaily.value && !isClaimed.value)
+
+const layoutKey = computed<PopupLayoutKey>(() => {
+  if (hasProgress.value) return 'progress'
+  if (isClaimed.value) return 'claimed'
+  if (isExpired.value) return 'expired'
+  if (isSoldOut.value) return 'soldOut'
+  return 'claimable'
+})
+
+const popupLayout = computed(() => POPUP_LAYOUT[layoutKey.value])
+
+const amountTop = computed(() => {
+  const layout = popupLayout.value
+  if (hideAmount.value && layout.hiddenAmountTop !== undefined) return layout.hiddenAmountTop
+  return layout.amountTop
+})
+
+const coinStyleTop = computed(() => popupLayout.value.coinTop - COIN_VISUAL_OFFSET)
 
 const amountText = computed(() => {
   const amount = currentSchedule.value.amount ?? props.item.amount ?? 0
-  return `${getCurrencySymbol(props.item.currency)}${amount}`
+  return formatMoney(props.item.currency, amount)
 })
 
 const conditions = computed<RedPacketCondition[]>(() => {
@@ -253,7 +376,8 @@ const isUnmet = (condition?: RedPacketCondition) => !!condition && condition.gat
 /** 进度条跟随当前按钮：充值看充值进度，投注看投注或亏损中第一个未达标的。 */
 const activeCondition = computed<RedPacketCondition | undefined>(() => {
   if (isSingleCondition.value) return conditions.value[0]
-  if (showState.value === 1) return findCondition('recharge') ?? conditions.value[0]
+  if (showState.value === SHOW_STATE.deposit)
+    return findCondition('recharge') ?? conditions.value[0]
   const bet = findCondition('bet')
   const loss = findCondition('loss')
   return [bet, loss].find(isUnmet) ?? bet ?? loss ?? conditions.value[0]
@@ -275,51 +399,19 @@ const backgroundSrc = computed(() => {
   return popupBg
 })
 
-const amountTop = computed(() => {
-  if (isClaimed.value) return 57
-  if (isExpired.value) return 38
-  if (isSoldOut.value) return 50
-  return hideAmount.value ? 83 : 69
-})
-
-const coinTop = computed(() => {
-  if (hasProgress.value) return 267
-  if (isClaimable.value) return 192
-  if (isClaimed.value) return 190
-  return 143
-})
-
-const buttonTop = computed(() => {
-  if (hasProgress.value) return 337
-  if (isClaimed.value) return 256
-  return 264
-})
-
-const buttonText = computed(() => {
-  switch (showState.value) {
-    case 1:
-      return t('redPacketPanel.depositNow')
-    case 2:
-      return t('redPacketPanel.betNow')
-    case 3:
-      return t('redPacketPanel.claimNow')
-    case 4:
-      return t('redPacketPanel.claimed')
-    default:
-      return ''
-  }
-})
-
-const formatNumber = (value: number) => String(Number(value.toFixed(2)))
+const buttonConfig = computed(() => BUTTON_CONFIG[showState.value])
+const buttonText = computed(() => (buttonConfig.value ? t(buttonConfig.value.textKey) : ''))
 
 const handleClaim = async () => {
   if (claiming.value) return
   claiming.value = true
   try {
     const result = await Api.redEnvelope.claimRewards(props.item.redEnvelopeId)
-    const nextState = [1, 2, 5, 6].includes(result.showState) ? result.showState : 4
+    const nextState = RESULT_STATES_TO_KEEP.has(result.showState)
+      ? result.showState
+      : SHOW_STATE.claimed
     currentSchedule.value = { ...currentSchedule.value, ...result, showState: nextState }
-    if (nextState === 4) {
+    if (nextState === SHOW_STATE.claimed) {
       emit('claimed', currentSchedule.value)
     }
   } finally {
@@ -328,9 +420,10 @@ const handleClaim = async () => {
 }
 
 const handleButtonClick = () => {
-  if (showState.value === 1) return emit('navigate', '/deposit')
-  if (showState.value === 2) return emit('navigate', '/casino')
-  if (showState.value === 3) return handleClaim()
+  const config = buttonConfig.value
+  if (!config) return
+  if (config.to) return emit('navigate', config.to)
+  if (showState.value === SHOW_STATE.claim) return handleClaim()
 }
 </script>
 

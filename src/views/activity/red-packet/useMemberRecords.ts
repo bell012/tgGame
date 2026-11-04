@@ -8,17 +8,16 @@ import type {
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useUserStore } from '@/stores/user'
 
-export type MemberRecordPeriod =
-  'all' | 'today' | 'yesterday' | 'last7Days' | 'last15Days' | 'last30Days'
-
-export const MEMBER_RECORD_PERIODS: MemberRecordPeriod[] = [
+export const MEMBER_RECORD_PERIODS = [
   'all',
   'today',
   'yesterday',
   'last7Days',
   'last15Days',
   'last30Days'
-]
+] as const
+
+export type MemberRecordPeriod = (typeof MEMBER_RECORD_PERIODS)[number]
 
 export const RED_ENVELOPE_TYPES: RedEnvelopeType[] = [1, 2, 3, 4]
 
@@ -31,6 +30,13 @@ export interface MemberRecordFilters {
 const DAY_MS = 24 * 60 * 60 * 1000
 const PAGE_SIZE = 20
 
+/** 近 N 天含今天，所以起始日是 todayStart - (N - 1) 天。 */
+const RECENT_PERIOD_DAYS = {
+  last7Days: 7,
+  last15Days: 15,
+  last30Days: 30
+} as const satisfies Partial<Record<MemberRecordPeriod, number>>
+
 const getStartOfDay = (timestamp: number) => {
   const date = new Date(timestamp)
   date.setHours(0, 0, 0, 0)
@@ -42,18 +48,11 @@ export const getPeriodRange = (period: MemberRecordPeriod, now = Date.now()) => 
   if (period === 'all') return {}
   const todayStart = getStartOfDay(now)
   const todayEnd = todayStart + DAY_MS - 1
-  switch (period) {
-    case 'today':
-      return { startTime: todayStart, endTime: todayEnd }
-    case 'yesterday':
-      return { startTime: todayStart - DAY_MS, endTime: todayStart - 1 }
-    case 'last7Days':
-      return { startTime: todayStart - 6 * DAY_MS, endTime: todayEnd }
-    case 'last15Days':
-      return { startTime: todayStart - 14 * DAY_MS, endTime: todayEnd }
-    case 'last30Days':
-      return { startTime: todayStart - 29 * DAY_MS, endTime: todayEnd }
-  }
+  if (period === 'today') return { startTime: todayStart, endTime: todayEnd }
+  if (period === 'yesterday') return { startTime: todayStart - DAY_MS, endTime: todayStart - 1 }
+
+  const days = RECENT_PERIOD_DAYS[period]
+  return { startTime: todayStart - (days - 1) * DAY_MS, endTime: todayEnd }
 }
 
 export function useMemberRecords(options: {
@@ -103,6 +102,7 @@ export function useMemberRecords(options: {
     list: computed(() => scroll.list.value as RedEnvelopeItem[]),
     total: computed(() => scroll.total.value ?? 0),
     totalMoney,
+    memberId,
     loading: scroll.loading,
     error: scroll.error,
     retry: scroll.retry

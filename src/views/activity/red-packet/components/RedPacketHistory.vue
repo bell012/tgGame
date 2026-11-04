@@ -13,7 +13,7 @@
       </template>
     </RedPacketSubHeader>
 
-    <div ref="listRef" class="red-packet-scroll min-h-0 flex-1 overflow-y-auto pb-[20px]">
+    <div ref="listRef" class="scrollbar-thin min-h-0 flex-1 overflow-y-auto pb-[20px]">
       <div class="flex flex-col items-center gap-[30px] px-[16px] pt-[30px]">
         <div class="flex flex-col items-center gap-[8px]">
           <div
@@ -44,7 +44,7 @@
             {{
               t('redPacketPanel.claimedSummary', {
                 count: total,
-                amount: formatAmount(totalMoney),
+                amount: formatAmount(totalMoney, 4),
                 currency: currencyText
               })
             }}
@@ -79,18 +79,13 @@
             <div class="h-px w-[calc(100%-54px)] bg-opacity-5" />
           </div>
 
-          <p
+          <RedPacketListStatus
             v-if="!loading && !list.length"
-            class="py-[20px] text-center text-[14px] leading-[20px] text-text-3"
-          >
-            <template v-if="error">
-              {{ t('redPacketPanel.loadFailed') }}
-              <button type="button" class="ml-[4px] text-secondary-9" @click="retry">
-                {{ t('redPacketPanel.retry') }}
-              </button>
-            </template>
-            <template v-else>{{ t('redPacketPanel.noRecords') }}</template>
-          </p>
+            class="py-[20px]"
+            :error="!!error"
+            :empty-text="t('redPacketPanel.noRecords')"
+            @retry="retry"
+          />
         </div>
       </div>
 
@@ -106,10 +101,10 @@ import type { RedEnvelopeItem } from '@/api/interface/red-envelope'
 import MyRecordsIcon from '@/static/svg/red-packet/my-records.svg?component'
 import recordAvatar from '@/static/svg/red-packet/record-avatar.png'
 import { useUserStore } from '@/stores/user'
-import { getCurrencySymbol } from '@/utils/locale'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
+import { formatAmount, formatFullDateTime, formatMoney } from '../format'
 import { useMemberRecords } from '../useMemberRecords'
-import { formatFullDateTime } from '../useNow'
+import RedPacketListStatus from './RedPacketListStatus.vue'
 import RedPacketSubHeader from './RedPacketSubHeader.vue'
 
 const props = defineProps<{ item: RedEnvelopeItem }>()
@@ -122,13 +117,12 @@ const userStore = useUserStore()
 const listRef = ref<HTMLElement | null>(null)
 const sentinelRef = ref<HTMLElement | null>(null)
 
-const { list, total, totalMoney, loading, error, retry } = useMemberRecords({
+const { list, total, totalMoney, memberId, loading, error, retry } = useMemberRecords({
   filters: () => ({ redEnvelopeId: props.item.redEnvelopeId }),
   sentinel: sentinelRef,
   root: listRef
 })
 
-const memberId = computed(() => userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId ?? '')
 const userName = computed(() => userStore.userInfo?.nickName || memberId.value)
 const userAvatar = computed(() => resolveProfileAvatarUrl(userStore.userInfo?.headPortrait))
 
@@ -138,22 +132,9 @@ const claimedRecord = computed(() =>
 
 const currencyText = computed(() => list.value[0]?.currency ?? props.item.currency ?? '')
 
-const formatAmount = (value: number) => String(Number(value.toFixed(4)))
-
 const wonAmountText = computed(() => {
   const record = claimedRecord.value
   if (!record) return ''
-  return `${getCurrencySymbol(record.currency)}${formatAmount(record.amount ?? 0)}`
+  return formatMoney(record.currency, record.amount ?? 0, 4)
 })
 </script>
-
-<style scoped>
-.red-packet-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.red-packet-scroll::-webkit-scrollbar-thumb {
-  border-radius: 12px;
-  background: var(--color-opacity-5);
-}
-</style>

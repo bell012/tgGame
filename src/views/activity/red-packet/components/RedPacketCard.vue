@@ -60,8 +60,8 @@ import BubbleEar from '@/static/svg/red-packet/bubble-ear.svg?component'
 import clockIcon from '@/static/svg/red-packet/clock.svg?url'
 import tgAvatar from '@/static/svg/red-packet/tg-avatar.svg?url'
 import { resolveGameImageUrl } from '@/utils/image'
-import { getCurrencySymbol } from '@/utils/locale'
-import { formatCountdown, formatDateTime, useNow } from '../useNow'
+import { formatCountdown, formatDateTime, formatMoney, isDailyRedEnvelope } from '../format'
+import { useNow } from '../useNow'
 
 const props = defineProps<{ item: RedEnvelopeItem }>()
 
@@ -75,12 +75,12 @@ const avatarSrc = computed(() => {
   return resolveGameImageUrl(props.item.logo) || tgAvatar
 })
 
-const isDaily = computed(() => props.item.redEnvelopeType === 1)
+const isDaily = computed(() => isDailyRedEnvelope(props.item))
 
 const title = computed(() =>
   isDaily.value
     ? props.item.redEnvelopeDesc
-    : `${getCurrencySymbol(props.item.currency)}${props.item.amount ?? 0}`
+    : formatMoney(props.item.currency, props.item.amount ?? 0)
 )
 
 const subtitle = computed(() => (isDaily.value ? '' : props.item.redEnvelopeDesc))
