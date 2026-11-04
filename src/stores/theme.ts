@@ -5,7 +5,7 @@ import { syncIdleStatusBarColor } from '@/utils/sheetStatusBar'
 export type Theme = 'light' | 'dark'
 
 export const useThemeStore = defineStore('theme', () => {
-  const theme = ref<Theme>('light')
+  const theme = ref<Theme>('dark')
   const systemPreference = ref<Theme>('light')
 
   const syncSystemThemeColor = () => {
@@ -32,10 +32,19 @@ export const useThemeStore = defineStore('theme', () => {
   }
 
   const initTheme = () => {
-    const savedTheme = localStorage.getItem('theme') as Theme | null
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-
-    systemPreference.value = prefersDark ? 'dark' : 'light'
+    const storedTheme = localStorage.getItem('theme')
+    const savedTheme: Theme | null =
+      storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : null
+    const colorSchemeQuery =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-color-scheme: dark)')
+        : null
+    // 若浏览器不支持系统主题查询，统一使用深色作为兜底。
+    systemPreference.value = colorSchemeQuery
+      ? colorSchemeQuery.matches
+        ? 'dark'
+        : 'light'
+      : 'dark'
 
     if (savedTheme) {
       theme.value = savedTheme
@@ -45,10 +54,11 @@ export const useThemeStore = defineStore('theme', () => {
 
     applyTheme(theme.value)
 
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    colorSchemeQuery?.addEventListener('change', e => {
       systemPreference.value = e.matches ? 'dark' : 'light'
+      // 没有手动选择时继续跟随手机系统或 PC 浏览器主题；手动选择会在刷新后保留。
       if (!localStorage.getItem('theme')) {
-        setTheme(systemPreference.value)
+        theme.value = systemPreference.value
       }
     })
   }
@@ -81,7 +91,8 @@ export const useThemeStore = defineStore('theme', () => {
 
   const useSystemTheme = () => {
     localStorage.removeItem('theme')
-    setTheme(systemPreference.value)
+    theme.value = systemPreference.value
+    applyTheme(theme.value)
   }
 
   watch(theme, newTheme => {

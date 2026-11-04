@@ -721,7 +721,7 @@ export interface GetSelectedEventInfoParams {
   IsCombo: boolean
   /** Boolean，必填：是否同时返回同赛事组别的关联赛事；仅查询目标卡片时传 false。 */
   IncludeGroupEvents: boolean
-  /** String，必填：体育语言码，例如 ENG 英文、CHS 中文，不使用本站 eng/zh。 */
+  /** String，必填：体育语言码，例如 ENG 英文、CHS 中文、VN 越南文，不使用本站 eng/zh/vi。 */
   LanguageCode: SportsLanguageCode
   /** List<Int>，可选：返回的玩法 ID；1 让球、2 大小、3 独赢。已验证过滤有效，但每种玩法可能有多条盘口线。 */
   BetTypeIds?: number[]

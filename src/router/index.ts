@@ -1044,7 +1044,8 @@ router.beforeEach((to, _from, next) => {
     saveInvitationCode(invitationCode)
   }
 
-  const targetLocale = persistedLocale ?? routeLocale ?? DEFAULT_LOCALE
+  // URL 中明确指定的语言优先，确保刷新时保留当前语言。
+  const targetLocale = routeLocale ?? persistedLocale ?? DEFAULT_LOCALE
   const canonicalPath = withLocalePrefix(to.path, targetLocale)
 
   if (canonicalPath !== to.path) {
@@ -1063,7 +1064,8 @@ router.beforeEach((to, _from, next) => {
     i18n.global.locale.value = targetLocale
   }
 
-  if (localStorage.getItem('language') !== languageCode) {
+  // 仅在 URL 明确指定语言或已有保存选项时写入，避免首次访问时保存临时默认语言。
+  if ((persistedLocale || routeLocale) && localStorage.getItem('language') !== languageCode) {
     localStorage.setItem('language', languageCode)
   }
 

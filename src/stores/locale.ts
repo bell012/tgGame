@@ -6,6 +6,7 @@ import {
   getLocaleFromRouteParam,
   getLanguageCode,
   getStoredLocale,
+  getPersistedLocale,
   getStorageLanguageCode,
   DEFAULT_LOCALE,
   type Locale
@@ -19,7 +20,7 @@ import type { SiteConfig } from '@/stores/siteConfig'
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
 
-  // 当前语言（zh 或 eng）
+  // 当前语言（eng、zh 或 vi）
   const currentLanguage = ref<Locale>(getStoredLocale())
 
   // 仅表示本次刷新已应用站点默认配置并完成语言路由切换，不从本地存储恢复。
@@ -32,12 +33,17 @@ export const useLocaleStore = defineStore('locale', () => {
   watch(
     () => router.currentRoute.value.params.locale,
     newLocale => {
-      const routeLocale = getLocaleFromRouteParam(newLocale as string | undefined) ?? DEFAULT_LOCALE
-      const languageCode = getStorageLanguageCode(routeLocale) as Locale
+      const routeLocale = getLocaleFromRouteParam(newLocale as string | undefined)
+      const activeLocale = routeLocale ?? DEFAULT_LOCALE
+      const languageCode = getStorageLanguageCode(activeLocale) as Locale
 
       if (currentLanguage.value !== languageCode) {
         currentLanguage.value = languageCode
         i18n.global.locale.value = getLanguageCode(languageCode) as Locale
+      }
+
+      // 无前缀的根路径尚未确定最终语言，不能把临时英文回退值记成用户选择。
+      if (routeLocale && localStorage.getItem('language') !== languageCode) {
         localStorage.setItem('language', languageCode)
       }
     },
@@ -65,9 +71,10 @@ export const useLocaleStore = defineStore('locale', () => {
       i18n.global.locale.value = getLanguageCode(savedLanguage) as Locale
     }
 
-    localStorage.setItem('language', currentLanguage.value)
-    console.log('[LocaleStore] initLanguage - currentLanguage:', currentLanguage.value)
-    console.log('[LocaleStore] initLanguage - currentCurrency:', currentCurrency.value)
+    // 站点默认语言加载前不保存临时回退语言，以便区分首次访问和用户已保存的选择。
+    if (routeLocale) {
+      localStorage.setItem('language', currentLanguage.value)
+    }
   }
 
   // 将 /sy/dlicgh 返回的默认语言转换成项目内部使用的语言 code。
@@ -95,8 +102,9 @@ export const useLocaleStore = defineStore('locale', () => {
     const defaultLanguage = normalizeSiteDefaultLanguage(baseSiteConfig?.defaultLanguageCode)
     const defaultCurrency = normalizeSiteDefaultCurrency(baseSiteConfig?.defaultCurrency)
 
-    // defaultLanguageCode 控制当前语言和路由语言前缀，例如 eng / zh。
-    if (defaultLanguage) {
+    // 仅在用户没有保存语言时应用站点默认值；已保存的选择在刷新后继续生效。
+    const hasSavedLanguage = Boolean(getPersistedLocale())
+    if (defaultLanguage && !hasSavedLanguage) {
       currentLanguage.value = defaultLanguage
       i18n.global.locale.value = getLanguageCode(defaultLanguage) as Locale
       localStorage.setItem('language', defaultLanguage)
@@ -108,7 +116,7 @@ export const useLocaleStore = defineStore('locale', () => {
 
     try {
       // 公告必须等这次导航结束后才能显示，避免先弹出，再被首页重新挂载移除。
-      if (defaultLanguage) {
+      if (defaultLanguage && !hasSavedLanguage) {
         await switchLanguage(defaultLanguage)
       }
     } catch (error) {
