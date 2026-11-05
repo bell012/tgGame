@@ -39,7 +39,7 @@
       <div class="grid w-full grid-cols-8 gap-[8px] border-b border-opacity-10 py-6">
         <div
           class="aspect-[5/3] w-full min-w-0 overflow-hidden rounded-[14px] bg-bg-5"
-          v-for="(src, i) in row2AwardSrcs"
+          v-for="(src, i) in row2DisplayAwardSrcs"
           :key="`award-${i}`"
         >
           <SmartImage
@@ -313,6 +313,8 @@ import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService
 
 import { computed, onMounted, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { storeToRefs } from 'pinia'
+import { useThemeStore } from '@/stores/theme'
 
 import { navigateTo } from '@/utils/router'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
@@ -355,6 +357,23 @@ const row2AwardSrcs = [
   new URL('@/static/img/commonFooter/row2/d-98-DA42CT6W.png', import.meta.url).href,
   new URL('@/static/img/commonFooter/row2/d-99-NFJF9gM_.png', import.meta.url).href
 ]
+
+/** 第二排奖项图（浅色模式） */
+const row2AwardLightSrcs = [
+  new URL('@/static/img/commonFooter/row1/Frame1.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row1/Frame2.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row1/Frame3.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row1/Frame4.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row1/Frame5.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row1/Frame6.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row1/Frame7.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row1/Frame8.png', import.meta.url).href
+]
+
+const { theme } = storeToRefs(useThemeStore())
+const row2DisplayAwardSrcs = computed(() =>
+  theme.value === 'light' ? row2AwardLightSrcs : row2AwardSrcs
+)
 
 const footer4_2Image = new URL('@/static/img/commonFooter/footer_4_2.png', import.meta.url).href
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'

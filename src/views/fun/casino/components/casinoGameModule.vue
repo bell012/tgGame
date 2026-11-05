@@ -27,7 +27,7 @@
         </h2>
         <button
           type="button"
-          class="button inactive ml-auto flex h-8 shrink-0 items-center justify-center gap-0.5 rounded-lg bg-opacity-10 px-2 text-xs font-bold leading-none text-text-1 whitespace-nowrap sm:text-sm"
+          class="button inactive ml-auto flex h-8 shrink-0 items-center justify-center gap-0.5 rounded-lg bg-bg-2 px-2 text-xs font-bold leading-none text-text-1 whitespace-nowrap sm:text-sm"
           @click="handleViewAll(props.module)"
         >
           {{ t('casino.all') }}
@@ -39,7 +39,7 @@
           <button
             type="button"
             class="button inactive flex size-8 shrink-0 items-center justify-center rounded-lg p-0"
-            :class="canScrollLeft ? 'bg-opacity-10' : 'bg-bg-4'"
+            :class="canScrollLeft ? 'bg-bg-2' : 'bg-bg-2'"
             :disabled="!canScrollLeft"
             @click="scrollLeft"
           >
@@ -50,7 +50,7 @@
           <button
             type="button"
             class="button inactive flex size-8 shrink-0 items-center justify-center rounded-lg p-0"
-            :class="canScrollRight ? 'bg-opacity-10' : 'bg-bg-4'"
+            :class="canScrollRight ? 'bg-bg-2' : 'bg-bg-2'"
             :disabled="!canScrollRight"
             @click="scrollRight"
           >
