@@ -26,6 +26,33 @@
         <p class="m-0 text-sm leading-tight text-text-1">$0.00783</p>
       </div>
     </div> -->
+    <!-- 应用程式 -->
+    <div v-if="!isCollapsed" class="mt-1.5">
+      <div
+        class="block app-download-card rounded-lg cursor-pointer"
+        @click="handleAppDownloadClick"
+      >
+        <div class="flex justify-between items-center">
+          <div class="flex-1 p-2.5 pr-0">
+            <h3 class="text-sm font-semibold text-text-1 mb-1">
+              {{ t('sidebar_menu.app_download.title') }}
+            </h3>
+            <p class="text-xs text-text-2 leading-tight">
+              {{ t('sidebar_menu.app_download.subtitle') }}
+            </p>
+          </div>
+          <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
+            <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
+              <img
+                src="@/static/img/home/pwa.png"
+                alt=""
+                class="w-full h-full object-cover rounded"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="flex flex-col">
       <div
         v-for="(menuGroup, groupIndex) in sidebarMenuGroups"
@@ -301,34 +328,6 @@
           </span>
         </div>
       </div>
-      <!-- 应用程式 -->
-      <!-- <div v-if="!isCollapsed" class="mt-3 mb-2">
-        <div
-          class="block app-download-card rounded-lg cursor-pointer"
-          @click="handleAppDownloadClick"
-        >
-          <div class="flex justify-between items-center">
-            <div class="flex-1 p-2.5 pr-0">
-              <h3 class="text-sm font-semibold text-text-1 mb-1">
-                {{ t('sidebar_menu.app_download.title') }}
-              </h3>
-              <p class="text-xs text-text-2 leading-tight">
-                {{ t('sidebar_menu.app_download.subtitle') }}
-              </p>
-            </div>
-            <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
-              <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
-                <img
-                  src="@/static/img/home/pwa.png"
-                  alt=""
-                  class="w-full h-full object-cover rounded"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
-
       <!-- 语言切换 -->
       <div
         :class="[
@@ -679,9 +678,9 @@ const openLanguagePopup = () => {
   emit('open-language-modal')
 }
 // 应用程式下载点击
-// const handleAppDownloadClick = () => {
-//   navigateTo('/app-download')
-// }
+const handleAppDownloadClick = () => {
+  navigateTo('/app-download')
+}
 
 // 切换菜单展开/折叠的通用方法
 const toggleMenu = (menuId: string) => {
