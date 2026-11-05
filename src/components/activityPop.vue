@@ -31,7 +31,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import activityImg from '@/static/img/home/activityImg.png'
+import activityImg from '@/static/img/home/activityimg.png'
 
 const emit = defineEmits<{ close: [] }>()
 const close = () => emit('close')

@@ -116,7 +116,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import Api from '@/api'
 import type { LatestListItem } from '@/api/interface/game'
-import placeholderImg from '@/static/img/home/errImg.png'
+import placeholderImg from '@/static/img/home/errimg.png'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'

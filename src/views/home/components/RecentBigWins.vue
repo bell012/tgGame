@@ -93,7 +93,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { RecentBigWinsItem } from '@/api/interface/home.interface'
-import placeholderImg from '@/static/img/home/errImg1.png'
+import placeholderImg from '@/static/img/home/errimg1.png'
 import vip0Icon from '@/static/img/vip/vip0.png'
 import vip1Vip2Icon from '@/static/img/vip/vip1-vip2.png'
 import vip3Vip4Icon from '@/static/img/vip/vip3-vip4.png'

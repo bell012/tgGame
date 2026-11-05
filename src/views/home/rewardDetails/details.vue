@@ -102,7 +102,7 @@
 import { computed, ref } from 'vue'
 import ArrowRight2Icon from '@/static/svg/arrow_right2.svg?component'
 import shareTriggerImg from '@/static/svg/coin/share.svg?url'
-import placeholderImg from '@/static/img/home/errImg1.png'
+import placeholderImg from '@/static/img/home/errimg1.png'
 import ellipseBg from '@/views/home/img/Ellipse.png'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { formatUsDateTime12h } from '@/utils/date'
