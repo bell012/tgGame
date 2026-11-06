@@ -735,20 +735,20 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-shell {
-  background: linear-gradient(180deg, #2a2f35 0%, #23282e 100%);
+  background: var(--color-comment-popup-shell);
 }
 
 .comment-popup-shell-desktop {
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--color-comment-popup-shadow-desktop);
 }
 
 .comment-popup-shell-mobile {
   background: var(--color-background-level-1);
-  box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--color-comment-popup-shadow-mobile);
 }
 
 .comment-popup-title {
-  color: #fff;
+  color: var(--color-comment-popup-title);
 }
 
 .comment-popup-close {
@@ -764,9 +764,9 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-textarea {
-  border: 1px solid var(--color-input-level-2, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--color-input-level-2);
   border-radius: 8px;
-  background: var(--color-input-level-1, rgba(255, 255, 255, 0.06));
+  background: var(--color-input-level-1);
   color: var(--color-text-level-1);
   caret-color: var(--color-theme-level-1);
 }
@@ -783,11 +783,9 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: 8px;
   opacity: 0.6;
-  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
-  box-shadow:
-    0 0 12px 0 rgba(35, 238, 136, 0.3),
-    0 -2px 0 0 #1dca6a inset;
-  color: #061a10;
+  background: var(--color-play-gradient);
+  box-shadow: var(--color-play-shadow);
+  color: var(--color-play-text);
   appearance: none;
   -webkit-appearance: none;
   transition:
@@ -812,9 +810,9 @@ onBeforeUnmount(() => {
 }
 
 .comment-emoji-panel {
-  --emoji-panel-bg: #323738;
+  --emoji-panel-bg: var(--color-background-level-2);
   --emoji-footer-bg: var(--color-background-level-9);
-  --emoji-panel-shadow: 0 6.826px 30.716px rgba(0, 0, 0, 0.5);
+  --emoji-panel-shadow: var(--color-comment-emoji-shadow);
   position: absolute;
   border: none;
   padding: 0;
@@ -921,7 +919,7 @@ onBeforeUnmount(() => {
 }
 
 .comment-emoji-item:hover {
-  background: #39424b;
+  background: var(--color-comment-emoji-hover);
 }
 
 .comment-emoji-category {
@@ -936,23 +934,6 @@ onBeforeUnmount(() => {
 .comment-emoji-category-active {
   background: transparent;
   color: inherit;
-}
-
-.comment-popup-panel.is-light .comment-popup-shell {
-  background: #eef3fa;
-}
-
-.comment-popup-panel.is-light .comment-popup-shell-desktop {
-  box-shadow: 0 16px 36px rgba(24, 38, 64, 0.24);
-}
-
-.comment-popup-panel.is-light .comment-popup-shell-mobile {
-  background: var(--color-background-level-1);
-  box-shadow: 0 -12px 28px rgba(24, 38, 64, 0.2);
-}
-
-.comment-popup-panel.is-light .comment-popup-title {
-  color: #1d2a3d;
 }
 
 .comment-popup-panel.is-light .comment-popup-close {
@@ -982,12 +963,7 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-emoji-panel {
-  --emoji-panel-bg: #ffffff;
-  --emoji-footer-bg: var(--color-background-level-9);
-  --emoji-panel-shadow: 0 0 41.807px rgba(172, 172, 172, 0.53);
   border: none;
-  background: var(--emoji-panel-bg);
-  box-shadow: var(--emoji-panel-shadow);
 }
 
 .comment-popup-panel.is-light .comment-emoji-divider {
@@ -1001,10 +977,6 @@ onBeforeUnmount(() => {
 .comment-popup-panel.is-light .comment-emoji-category .comment-emoji-category-icon,
 .comment-popup-panel.is-light .comment-emoji-category-active .comment-emoji-category-icon {
   filter: none;
-}
-
-.comment-popup-panel.is-light .comment-emoji-item:hover {
-  background: #e8f0fa;
 }
 
 .comment-popup-panel.is-light .comment-emoji-category {

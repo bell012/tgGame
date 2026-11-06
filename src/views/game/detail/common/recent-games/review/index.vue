@@ -375,7 +375,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 5px;
   background: var(--color-background-level-2);
-  box-shadow: 0 7px 31px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--color-sort-menu-shadow);
 }
 
 .sort-menu-popup::after {
@@ -409,12 +409,12 @@ onBeforeUnmount(() => {
 }
 
 .sort-menu-popup-light {
-  background: #ffffff;
-  box-shadow: 0 0 49px rgba(172, 172, 172, 0.53);
+  background: var(--color-background-level-2);
+  box-shadow: var(--color-sort-menu-shadow);
 }
 
 .sort-menu-popup-light::after {
-  border-top-color: #ffffff;
+  border-top-color: var(--color-background-level-2);
 }
 
 .sort-menu-popup-item {
@@ -424,9 +424,7 @@ onBeforeUnmount(() => {
 
 .sort-menu-popup-item-active {
   color: var(--color-text-level-1);
-  background:
-    linear-gradient(90deg, rgba(0, 255, 96, 0.3) 0%, rgba(0, 255, 96, 0) 70%),
-    var(--color-opacity-5);
+  background: var(--color-sort-item-active), var(--color-opacity-5);
 }
 
 .sort-popup-enter-active,

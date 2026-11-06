@@ -1,7 +1,7 @@
 <template>
   <popShell v-model="visible" transition-type="modal">
     <section
-      class="mx-auto flex h-[704px] w-[480px] flex-col overflow-hidden rounded-[12px] bg-bg-1 shadow-[0_18px_54px_rgba(0,0,0,0.32)]"
+      class="mx-auto flex h-[704px] w-[480px] flex-col overflow-hidden rounded-[12px] bg-bg-1 shadow-popup-54"
     >
       <div class="relative flex items-center justify-center bg-bg-2 px-4 py-3">
         <h3 class="text-[16px] font-[700] leading-[20px] text-text-1">

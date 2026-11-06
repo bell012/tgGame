@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
   padding: 10px;
   border-radius: 12px;
   border-color: var(--color-opacity-10);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.36);
+  box-shadow: var(--shadow-currency-panel);
 }
 
 .tp-desktop-list {
@@ -188,45 +188,5 @@ onBeforeUnmount(() => {
   background-color: var(--color-input-level-2);
   height: 100%;
   border-radius: 10px;
-}
-
-:global(:root.light) .tp-panel {
-  background: #f8fbff;
-  border-color: rgba(95, 116, 145, 0.26);
-  box-shadow:
-    0 18px 44px rgba(27, 41, 66, 0.2),
-    0 4px 14px rgba(27, 41, 66, 0.12);
-}
-
-:global(:root.light) .tp-panel.tp-panel-desktop {
-  box-shadow:
-    0 18px 44px rgba(27, 41, 66, 0.2),
-    0 4px 14px rgba(27, 41, 66, 0.12);
-}
-
-:global(:root.light) .tp-panel input {
-  background: #fff;
-  border-color: rgba(95, 116, 145, 0.34);
-}
-
-:global(:root.light) .tp-panel input:focus {
-  border-color: #23cf74;
-  box-shadow: 0 0 0 3px rgba(35, 207, 116, 0.18);
-}
-
-:global(:root.light) .tp-panel .tp-item {
-  border: 1px solid transparent;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-:global(:root.light) .tp-panel .tp-item:hover {
-  background: rgba(88, 114, 152, 0.08);
-}
-
-:global(:root.light) .tp-panel .tp-item.tp-item-selected {
-  background: rgba(35, 207, 116, 0.16);
-  border-color: rgba(35, 207, 116, 0.36);
 }
 </style>

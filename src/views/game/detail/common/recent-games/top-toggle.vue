@@ -130,14 +130,4 @@ const openProviderGames = () => {
   cursor: pointer;
   text-align: left;
 }
-
-:global(:root.light .top-toggle-card) {
-  background: transparent;
-}
-
-:global(:root.light .toggle-arrow-wrap) {
-  background: var(--color-opacity-10);
-  border: none;
-  box-shadow: none;
-}
 </style>

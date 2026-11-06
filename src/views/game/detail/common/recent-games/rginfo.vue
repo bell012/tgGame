@@ -144,7 +144,7 @@ const stakesRangeText = computed(() => {
 </script>
 <style lang="scss" scoped>
 .stats-divider {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-recent-games-divider);
 }
 
 .stats-label {
@@ -153,9 +153,5 @@ const stakesRangeText = computed(() => {
 
 .stats-value {
   font-weight: 700;
-}
-
-:global(:root.light .stats-divider) {
-  border-bottom-color: rgba(17, 17, 17, 0.08);
 }
 </style>

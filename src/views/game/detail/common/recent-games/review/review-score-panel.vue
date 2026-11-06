@@ -105,8 +105,8 @@ const emit = defineEmits<{
 <style scoped lang="scss">
 .review-score-overview {
   --review-star-active: var(--color-theme-level-1);
-  --review-star-muted: #687779;
-  background: #202424;
+  --review-star-muted: var(--color-recent-games-star-muted);
+  background: var(--color-recent-games-panel);
 }
 
 .score-head {
@@ -146,7 +146,7 @@ const emit = defineEmits<{
   --review-star-muted: var(--color-icon-level-2);
   min-height: 76px;
   padding: 10px 8px;
-  background: #202424;
+  background: var(--color-recent-games-panel);
 }
 
 .review-action-card-label {
@@ -158,17 +158,7 @@ const emit = defineEmits<{
   height: 26px;
   min-width: 26px;
   border-radius: 26px;
-  border: 1px solid #202424;
+  border: 1px solid var(--color-recent-games-avatar-border);
   object-fit: cover;
-}
-
-:global(:root.light .review-score-overview),
-:global(:root.light .review-action-card) {
-  --review-star-muted: var(--color-icon-level-2);
-  background: #f4f4f4;
-}
-
-:global(:root.light .rating-avatar) {
-  border-color: #ffffff;
 }
 </style>

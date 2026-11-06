@@ -114,8 +114,4 @@ provide('currency-select-on-select', handleSelect)
   position: relative;
   top: -0.5px;
 }
-
-:global(:root.light) .currency-select-trigger {
-  background: var(--color-opacity-10);
-}
 </style>

@@ -138,13 +138,4 @@ onMounted(() => {
   align-items: center;
   gap: 4px;
 }
-
-:global(:root.light) .currency-info-container .play-card {
-  background: var(--color-background-level-5);
-  border: 1px solid rgba(96, 116, 144, 0.28);
-  box-shadow:
-    0 14px 36px rgba(28, 45, 74, 0.18),
-    0 4px 12px rgba(28, 45, 74, 0.1);
-  backdrop-filter: blur(6px);
-}
 </style>

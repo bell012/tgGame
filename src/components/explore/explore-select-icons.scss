@@ -33,12 +33,6 @@ $explore-select-icon-size-desktop: 16px;
   }
 }
 
-:global(:root.light) .explore-select-item--selected {
-  @media (min-width: 641px) {
-    background-color: var(--color-theme-level-3);
-  }
-}
-
 .explore-select-item-label {
   font-size: 13px;
   font-weight: 400;
@@ -77,7 +71,7 @@ $explore-select-icon-size-desktop: 16px;
   flex-shrink: 0;
   width: $explore-select-icon-size-mobile;
   height: $explore-select-icon-size-mobile;
-  color: var(--color-opacity-6);
+  color: var(--color-explore-checkbox-unchecked);
 
   @media (min-width: 641px) {
     width: $explore-select-icon-size-desktop;
@@ -93,14 +87,4 @@ $explore-select-icon-size-desktop: 16px;
   display: flex;
   flex-direction: column;
   gap: 0;
-}
-
-// H5 深色：厂商选择弹窗搜索框
-@media (max-width: 640px) {
-  :global(html.dark) {
-    .explore-select-search-input {
-      background-color: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-  }
 }

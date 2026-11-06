@@ -429,25 +429,6 @@ onBeforeUnmount(() => {
   box-shadow: none;
 }
 
-:global(:root.light) .bet-tabs {
-  border-radius: 10px;
-  background: var(--color-background-level-5);
-  border: none;
-}
-
-:global(:root.light) .bet-tab {
-  border-radius: 8px;
-  color: var(--color-text-level-2);
-  background: transparent;
-}
-
-:global(:root.light) .bet-tab.active {
-  background: var(--color-background-level-3);
-  border: none;
-  box-shadow: none;
-  color: var(--color-text-level-1);
-}
-
 .table-wrap {
   margin-top: 14px;
   width: 100%;
@@ -728,59 +709,37 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (min-width: 768px) {
-  :global(:root:not(.light)) .bet-tabs {
-    background: var(--color-background-level-3);
-    border: none;
-  }
-
-  :global(:root:not(.light)) .bet-tab {
-    border: none;
-    background: transparent;
-    color: var(--color-text-level-2);
-  }
-
-  :global(:root:not(.light)) .bet-tab.active {
-    background: var(--color-background-level-2);
-    color: var(--color-text-level-1);
-  }
-
-  :global(:root:not(.light)) .table-wrap {
-    background: var(--color-background-level-3);
-  }
-}
-
 /* H5 + 浅色主题：Latest Bet 区域样式 */
 .bets-list--h5-light .bet-tabs {
-  background: #e4e6e6;
+  background: var(--color-background-level-8);
 }
 
 .bets-list--h5-light .bet-tab {
-  background: #e4e6e6;
+  background: var(--color-background-level-8);
 }
 
 .bets-list--h5-light .bet-tab.active {
-  background: #ffffff;
+  background: var(--color-background-level-2);
   color: var(--color-text-level-1);
 }
 
 .bets-list--h5-light .table-wrap,
 .bets-list--h5-light .table-scroll-shell {
-  background: #e4e6e6;
+  background: var(--color-background-level-8);
 }
 
 .bets-list--h5-light .table-head th {
-  background: #ffffff;
+  background: var(--color-background-level-2);
   font-weight: 400;
 }
 
 .bets-list--h5-light .table tbody tr,
 .bets-list--h5-light .table tbody tr td {
-  background: #e4e6e6 !important;
+  background: var(--color-background-level-8) !important;
 }
 
 .bets-list--h5-light .table-wrap :deep(.detail-high-roller-table) {
-  background: #e4e6e6 !important;
+  background: var(--color-background-level-8) !important;
 }
 
 .bets-list--h5-light .table-wrap :deep(.detail-high-roller-table table) {
@@ -789,26 +748,26 @@ onBeforeUnmount(() => {
 
 .bets-list--h5-light .table-wrap :deep(.detail-high-roller-table thead),
 .bets-list--h5-light .table-wrap :deep(.detail-high-roller-table thead td) {
-  background: #ffffff !important;
+  background: var(--color-background-level-2) !important;
   font-weight: 400;
 }
 
 .bets-list--h5-light .table-wrap :deep(.detail-high-roller-table tbody tr),
 .bets-list--h5-light .table-wrap :deep(.detail-high-roller-table tbody tr td) {
-  background: #e4e6e6 !important;
+  background: var(--color-background-level-8) !important;
 }
 
 /* H5 + 深色主题：Latest Bet 区域 Tab 样式 */
 .bets-list--h5-dark .bet-tabs {
-  background: #323738;
+  background: var(--color-background-level-2);
 }
 
 .bets-list--h5-dark .bet-tab {
-  background: #323738;
+  background: var(--color-background-level-2);
 }
 
 .bets-list--h5-dark .bet-tab.active {
-  background: #3b4142;
+  background: var(--color-background-level-3);
   color: var(--color-text-level-1);
 }
 </style>

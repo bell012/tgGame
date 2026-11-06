@@ -537,7 +537,7 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(2, 8, 14, 0.75);
+  background: var(--color-feedback-preview-mask);
 }
 
 .feedback-desktop-preview-image-wrap {
@@ -568,7 +568,7 @@ watch(
   background-color: var(--color-opacity-30);
   transform: translateY(-50%);
 
-  /* arrow_right.svg 自带 #B3BEC1 填充，设计稿箭头为白色 */
+  /* arrow_right.svg 自带灰色填充，设计稿箭头为白色 */
   :deep(path) {
     fill: var(--color-text-level-1);
   }

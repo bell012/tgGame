@@ -954,12 +954,6 @@ defineExpose({
   stroke-linejoin: round;
   shape-rendering: geometricPrecision;
 }
-:global(:root.light) .top-nav-currency-arrow-bg {
-  background: #d5dbe1;
-}
-:global(:root.light) .top-nav-currency-arrow {
-  color: #3b4142;
-}
 .text {
   font-size: 14px;
   font-weight: 600;

@@ -64,7 +64,7 @@ const heroMedia = computed(() =>
   resolveHeroMedia(result.value, resultTicketRecord.value, resolvedHeroImage.value)
 )
 
-const DEFAULT_RESULT_HERO_TITLE_GRADIENT = 'linear-gradient(180deg, #fffdf8 0%, #f9cf7b 100%)'
+const DEFAULT_RESULT_HERO_TITLE_GRADIENT = 'var(--color-ticket-hero-title)'
 
 const HERO_LOTTIE_TITLE_THEME = {
   cash_voucher_result: 'cash_voucher',

@@ -1321,7 +1321,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(3, 10, 18, 0.65);
+  background: var(--color-menu-mask);
 }
 
 @media (min-width: 641px) {
@@ -1337,7 +1337,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   overflow: hidden;
   border-radius: 8px;
   background: var(--color-background-level-1);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
+  box-shadow: var(--shadow-popup-36);
 }
 
 .leave-feedback-modal-close {

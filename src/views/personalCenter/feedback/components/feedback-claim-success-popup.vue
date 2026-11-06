@@ -77,7 +77,7 @@ const { t } = useI18n()
   align-items: center;
   justify-content: center;
   padding: 0 24px;
-  background: rgba(2, 8, 14, 0.7);
+  background: var(--color-feedback-claim-mask);
   backdrop-filter: blur(2px);
 }
 
@@ -87,11 +87,8 @@ const { t } = useI18n()
   width: min(100%, 340px);
   border-radius: 30px;
   padding: 74px 22px 26px;
-  background: linear-gradient(180deg, #24a35a 0%, #17753f 56%, #0d3e2a 100%);
-  box-shadow:
-    0 18px 42px rgba(0, 0, 0, 0.42),
-    0 1px 0 rgba(255, 255, 255, 0.2) inset,
-    0 -34px 42px rgba(4, 22, 14, 0.45) inset;
+  background: var(--color-feedback-claim-card);
+  box-shadow: var(--color-feedback-claim-shadow);
 }
 
 .feedback-claim-popup-star {
@@ -131,7 +128,7 @@ const { t } = useI18n()
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
-  color: #fff;
+  color: var(--color-common-100);
 }
 
 .feedback-claim-popup-title {
@@ -141,7 +138,7 @@ const { t } = useI18n()
   font-weight: 700;
   line-height: 1.25;
   white-space: nowrap;
-  color: #fff;
+  color: var(--color-common-100);
 }
 
 .feedback-claim-popup-description {
@@ -149,7 +146,7 @@ const { t } = useI18n()
   text-align: center;
   font-size: 14px;
   line-height: 1.4;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--color-feedback-claim-muted);
 }
 
 .feedback-claim-popup-confirm {
@@ -161,8 +158,8 @@ const { t } = useI18n()
   justify-content: center;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(90deg, #2ef58f 0%, #68ee7d 100%);
-  color: #00140b;
+  background: var(--color-feedback-claim-button);
+  color: var(--color-feedback-claim-button-text);
   font-size: 18px;
   font-weight: 700;
 }
