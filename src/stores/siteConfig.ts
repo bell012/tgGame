@@ -179,6 +179,10 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
     return resolveGameImageUrl(getSiteLanguageConfig(channelId, languageCode)?.homeTopVersion)
   }
 
+  const getSignLogoUrl = (channelId: string | number, languageCode = getLanguageCode()) => {
+    return resolveGameImageUrl(getSiteLanguageConfig(channelId, languageCode)?.signLogoUrl)
+  }
+
   const refreshSiteConfig = async (data: DlicghRequest = {}) => {
     // Deduplicate concurrent sy/dlicgh requests; all callers share the same pending promise.
     if (pendingRequest) {
@@ -237,6 +241,7 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
     getPushMessageMqttConfig,
     getSiteLanguageConfig,
     getHomeTopLogoUrl,
+    getSignLogoUrl,
     initSiteConfig,
     refreshSiteConfig
   }
