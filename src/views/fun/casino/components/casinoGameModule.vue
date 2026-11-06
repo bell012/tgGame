@@ -113,7 +113,7 @@
             :key="resolveModuleGame(game).rowId ?? i"
             class="aspect-[330/438] snap-start"
           >
-            <casinoGameCard
+            <CasinoGameCard
               :game="resolveModuleGame(game)"
               :show-favorite-badge="resolveFavoriteBadge(game)"
               @click="handleClick(resolveModuleGame(game).rowId)"
@@ -153,7 +153,7 @@ import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
 import type { HomeCollectionDisplayItem } from '@/stores/game'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { getGameListTabSlug } from '../casinoPageConfig'
-import casinoGameCard from './casinoGameCard.vue'
+import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
 import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
 import { resolveGameImageUrl } from '@/utils/image'

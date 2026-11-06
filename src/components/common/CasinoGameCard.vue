@@ -1,10 +1,9 @@
 <template>
   <!-- 外层固定命中区域，避免 hover 上移后底边 mouseleave 循环爆闪 -->
-  <div class="group relative h-full w-full">
-    <a
-      href="javascript:void(0);"
-      class="game-item relative flex h-full w-full flex-col items-center overflow-hidden rounded-[12px] transition-transform duration-200 ease-out sm:group-hover:-translate-y-2 active:translate-y-0 inactive"
-      @click="doClick"
+  <a href="javascript:void(0);" class="group relative block h-full w-full" @click="doClick">
+    <div
+      class="game-item relative flex h-full w-full flex-col items-center overflow-hidden rounded-[12px] transition-transform duration-200 ease-out group-active:translate-y-0 inactive"
+      :class="{ 'sm:group-hover:-translate-y-2': hoverLift }"
     >
       <FavoritesGamesIcon
         v-if="showFavoriteBadge"
@@ -15,6 +14,7 @@
       <div
         v-if="gameCovernameShow"
         class="absolute inset-x-0 bottom-2 flex w-full min-w-0 flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra"
+        :class="{ 'transition-opacity sm:group-hover:opacity-0': fadeCaptionOnHover }"
       >
         <GameCoverNameText :name="game.itemName ?? ''" />
         <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
@@ -73,8 +73,8 @@
       >
         <underMaintenanceIcon class="h-9 w-9 text-common-100" />
       </div>
-    </a>
-  </div>
+    </div>
+  </a>
 </template>
 
 <script setup lang="ts">
@@ -95,9 +95,13 @@ const props = withDefaults(
     game: GameDataItem
     /** 收藏模块等场景：左上角收藏角标 */
     showFavoriteBadge?: boolean
+    hoverLift?: boolean
+    fadeCaptionOnHover?: boolean
   }>(),
   {
-    showFavoriteBadge: false
+    showFavoriteBadge: false,
+    hoverLift: true,
+    fadeCaptionOnHover: false
   }
 )
 

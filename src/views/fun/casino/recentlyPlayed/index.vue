@@ -22,7 +22,7 @@
             :key="game.rowId ?? index"
             class="aspect-[330/438]"
           >
-            <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+            <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
           </div>
         </div>
         <ThemedEmptyState
@@ -67,7 +67,7 @@
           :key="game.rowId ?? index"
           class="aspect-[330/438]"
         >
-          <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+          <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
         </div>
       </div>
       <ThemedEmptyState
@@ -99,7 +99,7 @@ import { readPlayedRowIdsFromStorage } from '@/utils/played-games-cache'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
-import casinoGameCard from '../components/casinoGameCard.vue'
+import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 
 const { t } = useI18n()
 const route = useRoute()
