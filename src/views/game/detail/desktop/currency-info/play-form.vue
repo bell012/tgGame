@@ -84,8 +84,8 @@ const { t } = useI18n()
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #49f7a5, #0fd46d 70%);
-  box-shadow: 0 0 6px rgba(35, 238, 136, 0.4);
+  background: var(--color-currency-dot);
+  box-shadow: var(--color-currency-dot-glow);
 }
 
 .small-btn {
@@ -122,7 +122,7 @@ const { t } = useI18n()
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: rgba(35, 238, 136, 0.18);
+  background: var(--color-currency-amount-icon);
   color: var(--color-theme-level-1);
   font-weight: 700;
   display: inline-flex;
@@ -244,13 +244,5 @@ const { t } = useI18n()
 .play-now-hint {
   color: var(--color-text-level-2);
   line-height: 16px;
-}
-
-:global(:root.light) .currency-info-container .form-label {
-  color: #1c2838;
-}
-
-:global(:root.light) .currency-info-container .play-now-hint {
-  color: #4f5f76;
 }
 </style>

@@ -96,9 +96,4 @@ const handleCategoryClick = async (categoryId: string, event: MouseEvent) => {
 .rebate-category-tab.is-active .rebate-category-tab-icon {
   filter: brightness(0);
 }
-
-:global(:root.light) .rebate-category-tab.bg-bg-2 {
-  background: var(--color-background-level-3);
-  color: var(--color-text-level-2);
-}
 </style>

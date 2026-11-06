@@ -29,7 +29,7 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .review-comment-entry-box {
-  background: #202424;
+  background: var(--color-recent-games-panel);
   height: 40px;
 }
 
@@ -65,18 +65,10 @@ const emit = defineEmits<{
 }
 
 .review-emoji-icon {
-  color: #b3bec1;
+  color: var(--color-recent-games-emoji);
 }
 
 .review-emoji-icon :deep(path) {
   fill: currentColor;
-}
-
-:global(:root.light .review-comment-entry-box) {
-  background: #f4f4f4;
-}
-
-:global(:root.light .review-emoji-icon) {
-  color: #6f7f80;
 }
 </style>

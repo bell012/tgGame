@@ -122,20 +122,4 @@ const setPage = (nextPage: number) => {
 .explore-pc-pagination-icon :deep(path) {
   fill: currentColor;
 }
-
-:global(:root.light) .explore-pc-pagination-btn {
-  background: var(--color-background-level-5);
-  border: 1px solid var(--color-background-level-9);
-}
-
-:global(:root.light) .explore-pc-pagination-page.is-active {
-  border-color: var(--color-theme-level-1);
-  background: var(--color-theme-level-1);
-  color: var(--color-text-level-4);
-}
-
-:global(:root.light) .explore-pc-pagination-btn.is-disabled {
-  background: var(--color-background-level-4);
-  color: var(--color-text-level-3);
-}
 </style>

@@ -102,6 +102,82 @@
   --color-red-packet-button-highlight: #ffeeab;
   --color-red-packet-button-inset-bottom: rgba(253, 239, 170, 0.4);
   --color-red-packet-button-inset-top: rgba(255, 251, 229, 0.8);
+
+  /* ========== 游戏详情近期记录 / 评论（随主题翻转） ========== */
+  --color-recent-games-panel: #202424;
+  --color-recent-games-avatar-border: #202424;
+  --color-recent-games-star-muted: #687779;
+  --color-recent-games-emoji: #b3bec1;
+  --color-recent-games-divider: rgba(255, 255, 255, 0.08);
+  --color-recent-games-progress-track: #3a4142;
+
+  /* ========== 播放按钮（不随主题翻转） ========== */
+  --color-play-gradient: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+  --color-play-shadow: 0 0 12px 0 rgba(35, 238, 136, 0.3), 0 -2px 0 0 #1dca6a inset;
+  --color-play-text: #061a10;
+
+  /* ========== 评论弹窗 ========== */
+  --color-comment-popup-shell: linear-gradient(180deg, #2a2f35 0%, #23282e 100%);
+  --color-comment-popup-shadow-desktop: 0 20px 40px rgba(0, 0, 0, 0.45);
+  --color-comment-popup-shadow-mobile: 0 -12px 28px rgba(0, 0, 0, 0.45);
+  --color-comment-popup-title: #ffffff;
+  --color-comment-emoji-hover: #39424b;
+  --color-comment-emoji-shadow: 0 6.826px 30.716px rgba(0, 0, 0, 0.5);
+
+  /* ========== 游戏详情其余本体色 ========== */
+  --color-detail-loading-mask: rgba(8, 12, 18, 0.36);
+  --color-detail-loading-track: rgba(255, 255, 255, 0.34);
+  --color-currency-dot: radial-gradient(circle at 30% 30%, #49f7a5, #0fd46d 70%);
+  --color-currency-dot-glow: 0 0 6px rgba(35, 238, 136, 0.4);
+  --color-currency-amount-icon: rgba(35, 238, 136, 0.18);
+  --shadow-toolbar: 0 8px 24px rgba(0, 0, 0, 0.24);
+  --shadow-share-popup: 0 20px 48px rgba(0, 0, 0, 0.45);
+  --shadow-currency-panel: 0 14px 32px rgba(0, 0, 0, 0.36);
+  --color-sort-menu-shadow: 0 7px 31px rgba(0, 0, 0, 0.5);
+  --color-sort-item-active: linear-gradient(
+    90deg,
+    rgba(0, 255, 96, 0.3) 0%,
+    rgba(0, 255, 96, 0) 70%
+  );
+  --color-recent-games-tab-active: #3c4243;
+  --color-recent-games-tab-idle: #b3bec1;
+  --color-live-stat-text: #ffffff;
+
+  /* ========== 客服、反馈、返水、菜单 ========== */
+  --shadow-customer-panel: 0 8px 32px #0005;
+  --color-customer-close: #3185ff;
+  --color-customer-close-hover: #5299ff;
+  --color-customer-close-active: #2675e8;
+  --color-customer-close-neutral: rgba(255, 255, 255, 0.12);
+  --color-customer-close-neutral-hover: rgba(255, 255, 255, 0.18);
+  --color-customer-close-neutral-active: rgba(255, 255, 255, 0.24);
+  --color-feedback-claim-mask: rgba(2, 8, 14, 0.7);
+  --color-feedback-claim-card: linear-gradient(180deg, #24a35a 0%, #17753f 56%, #0d3e2a 100%);
+  --color-feedback-claim-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.42), 0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 -34px 42px rgba(4, 22, 14, 0.45) inset;
+  --color-feedback-claim-muted: rgba(255, 255, 255, 0.68);
+  --color-feedback-claim-button: linear-gradient(90deg, #2ef58f 0%, #68ee7d 100%);
+  --color-feedback-claim-button-text: #00140b;
+  --color-feedback-preview-mask: rgba(2, 8, 14, 0.75);
+  --shadow-popup-36: 0 12px 30px rgba(0, 0, 0, 0.36);
+  --shadow-popup-44: 0 18px 44px rgba(0, 0, 0, 0.4);
+  --shadow-popup-54: 0 18px 54px rgba(0, 0, 0, 0.32);
+  --color-menu-mask: rgba(3, 10, 18, 0.65);
+  --color-rebate-pill-text: #111a1d;
+  --color-explore-checkbox-unchecked: var(--color-opacity-6);
+
+  /* ========== 票券与赛事头部 ========== */
+  --color-ticket-winner-avatar: #4a4a6a;
+  --color-ticket-voucher-title: #1a1a1a;
+  --color-ticket-result-title: #f7d060;
+  --color-ticket-hero-title: linear-gradient(180deg, #fffdf8 0%, #f9cf7b 100%);
+  --color-ticket-ticker-mask: #000;
+  --color-match-divider: #e7e7e7;
+  --shadow-match-header: 0 1px 4px rgba(24, 64, 106, 0.06);
+  --color-match-header-fade: linear-gradient(180deg, #000000 24%, rgba(0, 0, 0, 0) 100%);
+  --color-iframe-backdrop: #000;
+  --color-iframe-scrim: rgba(0, 0, 0, 0.55);
 }
 
 /**
@@ -125,13 +201,13 @@
   --color-theme-level-3: rgba(30, 215, 119, 0.15);
 
   /* ========== 文字色 (Text) - 浅色模式 ========== */
-  --color-text-level-1: #000000;
+  --color-text-level-1: #262626;
   --color-text-level-2: #5f6d6d;
   --color-text-level-3: #9a9c9c;
   --color-text-level-4: #000000;
 
   /* ========== 图标色 (Icon) - 浅色模式 ========== */
-  --color-icon-level-1: #000000;
+  --color-icon-level-1: #262626;
   --color-icon-level-2: #5f6d6d;
   --color-icon-level-3: #9a9c9c;
   --color-icon-level-4: #000000;
@@ -197,4 +273,32 @@
     rgba(255, 252, 246, 0.81) 100%
   );
   --color-hash-chat-win-frame: linear-gradient(to right, #e5fbbd 0%, #fafdf6 81.67%);
+
+  /* ========== 游戏详情近期记录 / 评论（随主题翻转） ========== */
+  --color-recent-games-panel: #f4f4f4;
+  --color-recent-games-avatar-border: #ffffff;
+  --color-recent-games-star-muted: var(--color-icon-level-2);
+  --color-recent-games-emoji: #6f7f80;
+  --color-recent-games-divider: rgba(17, 17, 17, 0.08);
+  --color-recent-games-progress-track: #e5e5e5;
+
+  /* ========== 评论弹窗 ========== */
+  --color-comment-popup-shell: #eef3fa;
+  --color-comment-popup-shadow-desktop: 0 16px 36px rgba(24, 38, 64, 0.24);
+  --color-comment-popup-shadow-mobile: 0 -12px 28px rgba(24, 38, 64, 0.2);
+  --color-comment-popup-title: #1d2a3d;
+  --color-comment-emoji-hover: #e8f0fa;
+  --color-comment-emoji-shadow: 0 0 41.807px rgba(172, 172, 172, 0.53);
+
+  --color-sort-menu-shadow: 0 0 49px rgba(172, 172, 172, 0.53);
+  --color-recent-games-tab-active: #ffffff;
+  --color-recent-games-tab-idle: #5f6368;
+  --color-live-stat-text: #0f0f0f;
+}
+
+/* H5 深色下，发现页未选中复选框保持原来的描边色。 */
+@media (max-width: 640px) {
+  :root:not(.light) {
+    --color-explore-checkbox-unchecked: #7b7d7d;
+  }
 }

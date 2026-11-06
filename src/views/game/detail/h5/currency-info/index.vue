@@ -41,7 +41,7 @@
             </div>
             <div class="play-btn cursor-pointer" @click="handlePlayAction">
               <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
-              <div class="text-[15px] font-bold text-[#000]">
+              <div class="text-[15px] font-bold text-text-4">
                 {{ playButtonText }}
               </div>
             </div>
@@ -63,7 +63,7 @@
 
         <div v-if="!isLogin" class="play-btn cursor-pointer" @click="handlePlayAction">
           <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
-          <div class="text-[15px] font-bold text-[#000]">
+          <div class="text-[15px] font-bold text-text-4">
             {{ playButtonText }}
           </div>
         </div>
@@ -209,16 +209,10 @@ watch(
   background: var(--color-background-level-2);
 }
 
-:global(:root.light) .currency-info-panel {
-  border: none;
-}
-
 .play-btn {
   border-radius: 8px;
-  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
-  box-shadow:
-    0 0 12px 0 rgba(35, 238, 136, 0.3),
-    0 -2px 0 0 #1dca6a inset;
+  background: var(--color-play-gradient);
+  box-shadow: var(--color-play-shadow);
   height: 36px;
   display: flex;
   justify-content: center;

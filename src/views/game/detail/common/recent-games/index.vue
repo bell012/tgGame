@@ -242,10 +242,6 @@ const tabIndexClick = (next: TabValue) => {
   background: var(--color-background-level-2);
 }
 
-:global(:root.light .recent-games-container) {
-  border: none;
-}
-
 .recent-games-tab {
   height: 100%;
   border-radius: 6px;
@@ -262,23 +258,23 @@ const tabIndexClick = (next: TabValue) => {
 }
 
 .recent-games-tab.active {
-  background-color: #3c4243;
+  background-color: var(--color-recent-games-tab-active);
   color: var(--color-text-level-1);
   font-size: 14px;
   font-weight: 800;
 }
 
 .recent-games-tabs {
-  background: #202424;
+  background: var(--color-recent-games-panel);
 }
 
 .recent-games-tabs-light {
-  background: #f4f4f4 !important;
+  background: var(--color-recent-games-panel) !important;
   border: none;
 }
 
 .recent-games-tabs-light .recent-games-tab.active {
-  background: #ffffff;
+  background: var(--color-recent-games-tab-active);
   border: none;
   box-shadow: none;
   color: var(--color-text-level-1);
@@ -287,7 +283,7 @@ const tabIndexClick = (next: TabValue) => {
 }
 
 .recent-games-tabs-light .recent-games-tab:not(.active) {
-  color: #5f6368;
+  color: var(--color-recent-games-tab-idle);
 }
 
 .recent-games-tab-content {
@@ -327,11 +323,5 @@ const tabIndexClick = (next: TabValue) => {
 .open-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
-}
-
-@media (max-width: 640px) {
-  :global(:root:not(.light)) .recent-games-container {
-    background: #282c2d;
-  }
 }
 </style>

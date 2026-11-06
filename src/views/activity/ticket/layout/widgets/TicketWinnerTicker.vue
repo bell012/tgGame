@@ -12,7 +12,7 @@
         :style="pillStyle"
       >
         <div
-          class="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#4A4A6A]"
+          class="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-ticket-winner"
           :style="avatarStyle"
         >
           <img
@@ -109,8 +109,20 @@ const trackStyle = computed(() => ({
 
 <style scoped lang="scss">
 .ticket-winner-ticker {
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-ticket-ticker-mask) 10%,
+    var(--color-ticket-ticker-mask) 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-ticket-ticker-mask) 10%,
+    var(--color-ticket-ticker-mask) 90%,
+    transparent 100%
+  );
 }
 
 .ticker-track {

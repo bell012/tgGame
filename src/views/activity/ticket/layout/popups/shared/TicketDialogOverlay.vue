@@ -33,7 +33,7 @@
             <section
               role="dialog"
               aria-modal="true"
-              class="modal-container w-full max-w-[480px] rounded-[12px] bg-bg-2 px-6 py-5 shadow-[0_18px_54px_rgba(0,0,0,0.32)]"
+              class="modal-container w-full max-w-[480px] rounded-[12px] bg-bg-2 px-6 py-5 shadow-popup-54"
               @click.stop
             >
               <slot />

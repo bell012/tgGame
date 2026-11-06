@@ -616,13 +616,13 @@ onDeactivated(() => {
     min-height: 0;
   }
 
-  :global(.explore-pc-empty-wrap) {
+  :deep(.explore-pc-empty-wrap) {
     position: relative;
     flex: 1 1 auto;
     min-height: 0;
   }
 
-  :global(.explore-pc-empty-state) {
+  :deep(.explore-pc-empty-state) {
     position: absolute;
     inset: 0;
     display: flex;

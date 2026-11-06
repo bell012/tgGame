@@ -176,7 +176,7 @@ const confirmExit = async () => {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background: #000;
+  background: var(--color-iframe-backdrop);
 }
 
 .game-iframe-page__frame {
@@ -196,7 +196,7 @@ const confirmExit = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-common-100);
   font-size: 14px;
 }
 
@@ -222,7 +222,7 @@ const confirmExit = async () => {
   border: 0;
   border-radius: 9999px;
   padding: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--color-iframe-scrim);
   transform: translateZ(0);
   will-change: transform;
   cursor: pointer;
@@ -264,7 +264,7 @@ const confirmExit = async () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--color-iframe-scrim);
 }
 
 .game-iframe-page__dialog {
@@ -344,10 +344,6 @@ const confirmExit = async () => {
 .game-iframe-page__dialog-cancel {
   margin-top: 13px;
   color: var(--color-text-level-2);
-  background: var(--color-background-level-3);
-}
-
-:global(:root.light) .game-iframe-page__dialog-cancel {
   background: var(--color-background-level-3);
 }
 </style>

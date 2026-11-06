@@ -125,7 +125,7 @@ const shareClick = () => {
   line-height: 16px;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  box-shadow: var(--shadow-toolbar);
   transform: translateX(-50%);
 }
 
@@ -181,20 +181,6 @@ const shareClick = () => {
 
 .toolbar-icon--active :deep(path) {
   fill: var(--color-secondary-level-7);
-}
-
-:global(:root.light) .currency-toolbar {
-  background: var(--color-opacity-10);
-  border-top-color: var(--color-opacity-6);
-}
-
-:global(:root.light) .toolbar-tooltip {
-  background: var(--color-background-level-2);
-  box-shadow: 0 8px 24px rgba(28, 45, 74, 0.12);
-}
-
-:global(:root.light) .toolbar-tooltip::after {
-  border-top-color: var(--color-background-level-2);
 }
 
 @media (min-width: 768px) {

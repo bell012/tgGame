@@ -437,7 +437,7 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(8, 12, 18, 0.36);
+  background: var(--color-detail-loading-mask);
   backdrop-filter: blur(1px);
 }
 
@@ -445,8 +445,8 @@ watch(
   width: 36px;
   height: 36px;
   border-radius: 999px;
-  border: 3px solid rgba(255, 255, 255, 0.34);
-  border-top-color: #fff;
+  border: 3px solid var(--color-detail-loading-track);
+  border-top-color: var(--color-common-100);
   animation: recommended-page-loading-spin 0.8s linear infinite;
 }
 
@@ -454,10 +454,5 @@ watch(
   to {
     transform: rotate(360deg);
   }
-}
-
-:global(:root.light) .recommended-page-loading-spinner {
-  border-color: rgba(27, 36, 49, 0.24);
-  border-top-color: #1b2431;
 }
 </style>

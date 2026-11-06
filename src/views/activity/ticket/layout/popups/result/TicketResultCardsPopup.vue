@@ -9,7 +9,10 @@
     @close="close"
   >
     <div class="flex flex-col items-center">
-      <h2 class="font-[700] text-[#F7D060]" :class="isMobile ? 'text-[20px]' : 'text-[21px]'">
+      <h2
+        class="font-[700] text-ticket-result-title"
+        :class="isMobile ? 'text-[20px]' : 'text-[21px]'"
+      >
         {{ resolvedTitle }}
       </h2>
       <p class="mt-1 text-center text-[13px] font-[700] text-common-80">{{ resolvedSubtext }}</p>

@@ -2,7 +2,7 @@
   <section v-if="match" class="w-full min-w-0 font-inter text-text-1">
     <div
       v-if="view === 'info'"
-      class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl text-white shadow-[0_1px_4px_rgba(24,64,106,0.06)]"
+      class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl text-white shadow-match-header"
       :data-phase="match.phase"
     >
       <img
@@ -183,7 +183,7 @@
           />
           {{ t('sports.video') }}
         </button>
-        <span class="h-[13px] w-px shrink-0 bg-[#E7E7E7]" aria-hidden="true"></span>
+        <span class="h-[13px] w-px shrink-0 bg-match-divider" aria-hidden="true"></span>
         <button
           type="button"
           class="flex min-w-0 flex-1 items-center justify-center gap-[5px] text-sm font-normal leading-5 text-white"
@@ -203,7 +203,7 @@
 
     <div
       v-else
-      class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl shadow-[0_1px_4px_rgba(24,64,106,0.06)]"
+      class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl shadow-match-header"
       :data-view="view"
     >
       <div
@@ -251,9 +251,7 @@
         </div>
       </template>
 
-      <div
-        class="absolute inset-x-0 top-0 bg-[linear-gradient(180deg,#000000_24%,rgba(0,0,0,0)_100%)] pt-[env(safe-area-inset-top)]"
-      >
+      <div class="absolute inset-x-0 top-0 bg-match-header-fade pt-[env(safe-area-inset-top)]">
         <div class="relative h-[49px]">
           <button
             type="button"

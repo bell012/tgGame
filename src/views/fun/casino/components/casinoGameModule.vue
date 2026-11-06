@@ -10,12 +10,20 @@
         </div>
       </div>
       <div
-        class="grid grid-flow-col gap-2 overflow-hidden pt-3 auto-cols-[31.2%] sm:auto-cols-[11.82%]"
+        class="grid grid-flow-col overflow-hidden pt-3"
+        :class="
+          mobileLobbyProviders
+            ? providerRailClasses
+            : 'gap-2 auto-cols-[31.2%] sm:auto-cols-[11.82%]'
+        "
       >
         <div
-          v-for="cardIndex in skeletonCardCount"
+          v-for="cardIndex in mobileLobbyProviders
+            ? Math.min(props.module?.brandItems?.length ?? 0, 10)
+            : skeletonCardCount"
           :key="cardIndex"
-          class="aspect-[330/438] rounded-lg bg-bg-2 animate-pulse"
+          class="rounded-lg bg-bg-2 animate-pulse"
+          :class="mobileLobbyProviders ? 'aspect-square' : 'aspect-[330/438]'"
         />
       </div>
     </template>
@@ -71,16 +79,26 @@
             props.module.brandItems.length > 0
           "
           ref="scrollRef"
-          class="relative -mx-[14px] grid snap-x snap-mandatory grid-flow-col auto-cols-[31.2%] gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth px-[14px] pt-2.5 sm:pt-3 hide-scroll [scroll-padding-inline:14px] sm:mx-0 sm:auto-cols-[11.82%] sm:px-0 sm:[scroll-padding-inline:0]"
+          class="relative grid snap-x snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth pt-2.5 sm:pt-3 hide-scroll"
+          :class="
+            mobileLobbyProviders
+              ? providerRailClasses
+              : '-mx-[14px] auto-cols-[31.2%] gap-2 px-[14px] [scroll-padding-inline:14px] sm:mx-0 sm:auto-cols-[11.82%] sm:px-0 sm:[scroll-padding-inline:0]'
+          "
         >
           <div
             v-for="(brand, i) in getDisplayBrandList(props.module.brandItems)"
             :key="brand.rowId ?? i"
-            class="flex h-16 shrink-0 snap-start items-center justify-center rounded-lg bg-bg-2"
+            class="flex shrink-0 snap-start items-center justify-center rounded-lg bg-bg-2"
+            :class="mobileLobbyProviders ? 'aspect-square' : 'h-16'"
             @click="handleBrandClick(brand)"
           >
-            <div class="h-6 w-4/5 sm:h-11">
-              <gameRemoteImg :img="getBrandImg(brand)" :alt="brand.brandName" />
+            <div :class="mobileLobbyProviders ? 'h-6 w-[35px]' : 'h-6 w-4/5 sm:h-11'">
+              <gameRemoteImg
+                :img="getBrandImg(brand)"
+                :alt="brand.brandName"
+                :class="{ '!rounded-none': mobileLobbyProviders }"
+              />
             </div>
           </div>
         </div>
@@ -88,6 +106,7 @@
           v-else-if="props.module.items && props.module.items.length > 0"
           ref="scrollRef"
           class="relative -mx-[14px] grid snap-x snap-mandatory grid-flow-col auto-cols-[31.2%] gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth px-[14px] pt-2.5 hide-scroll [scroll-padding-inline:14px] sm:mx-0 sm:auto-cols-[11.82%] sm:px-0 sm:[scroll-padding-inline:0]"
+          :class="{ 'sm:!-mr-4 sm:!pr-4': isMobile && props.viewAllMode === 'casino' }"
         >
           <div
             v-for="(game, i) in getDisplayList(props.module.items)"
@@ -155,6 +174,13 @@ const props = withDefaults(
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+const providerRailClasses = '-mr-3.5 auto-cols-[47.3333px] gap-[5px] pr-3.5 sm:-mr-4 sm:pr-4'
+const mobileLobbyProviders = computed(
+  () =>
+    isMobile.value &&
+    props.viewAllMode === 'casino' &&
+    props.module?.sysGameTypeCode === 'providers'
+)
 const skeletonCardCount = computed(() => (isMobile.value ? 4 : 8))
 const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
 const scrollRef = ref<HTMLElement | null>(null)

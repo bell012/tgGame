@@ -234,7 +234,7 @@ const getPlayerName = (item: GameRanListItem) => {
 }
 
 .recent-games-content-box {
-  background: #202424;
+  background: var(--color-recent-games-panel);
 }
 
 .recent-games-skeleton-block {
@@ -255,10 +255,6 @@ const getPlayerName = (item: GameRanListItem) => {
   50% {
     opacity: 1;
   }
-}
-
-:global(:root.light .recent-games-content-box) {
-  background: #f4f4f4;
 }
 
 .win-player-name {

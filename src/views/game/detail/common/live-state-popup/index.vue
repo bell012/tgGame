@@ -191,7 +191,7 @@ const h5PanelSurfaceStyle = computed((): CSSProperties => {
     return {}
   }
   return {
-    background: '#f4f4f4'
+    background: 'var(--color-recent-games-panel)'
   }
 })
 
@@ -200,7 +200,7 @@ const h5StatsShellStyle = computed((): CSSProperties => {
     return {}
   }
   return {
-    background: '#fff'
+    background: 'var(--color-common-100)'
   }
 })
 
@@ -218,7 +218,7 @@ const h5ValueStyle = computed((): CSSProperties => {
     return {}
   }
   return {
-    color: '#0f0f0f'
+    color: 'var(--color-live-stat-text)'
   }
 })
 
@@ -383,47 +383,6 @@ const close = () => {
 .tp-panel-h5 .tp-refresh-icon :deep(path) {
   fill: currentColor;
   stroke: none;
-}
-
-:global(:root.light) .tp-panel-h5.tp-panel-surface {
-  background: #f4f4f4;
-  border: none;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-popup-title {
-  color: #161a1f;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-close-btn {
-  background: #d5dbe1;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-close-icon {
-  color: #6d7580;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-stats-shell {
-  background: #fff;
-  border: none;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-stats-grid {
-  background: var(--color-background-level-9);
-  border: none;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-section-title {
-  color: #0f0f0f;
-  font-weight: 700;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-label {
-  color: #6a727a;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-value {
-  color: #0f0f0f;
-  font-weight: 600;
 }
 
 .tp-panel-desktop.tp-panel-surface {

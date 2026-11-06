@@ -238,11 +238,7 @@ const getReplySummaryText = (comment: ReviewCommentViewItem) => {
 }
 
 .review-comment-state {
-  background: #202424;
-}
-
-:global(:root.light .review-comment-state) {
-  background: #f4f4f4;
+  background: var(--color-recent-games-panel);
 }
 
 .review-comment-avatar {

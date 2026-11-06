@@ -384,7 +384,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(8, 12, 18, 0.36);
+  background: var(--color-detail-loading-mask);
   backdrop-filter: blur(1px);
 }
 
@@ -392,14 +392,9 @@ onUnmounted(() => {
   width: 36px;
   height: 36px;
   border-radius: 999px;
-  border: 3px solid rgba(255, 255, 255, 0.34);
-  border-top-color: #fff;
+  border: 3px solid var(--color-detail-loading-track);
+  border-top-color: var(--color-common-100);
   animation: detail-loading-spin 0.8s linear infinite;
-}
-
-:global(:root.light) .detail-page .detail-loading-spinner {
-  border-color: rgba(27, 36, 49, 0.24);
-  border-top-color: #1b2431;
 }
 
 @keyframes detail-loading-spin {

@@ -233,13 +233,6 @@ const handleGameClick = (item: GameDataItem) => {
     color: var(--color-text-level-1);
   }
 
-  :global(:root.light) .game-list-all-btn {
-    border: 1px solid var(--color-background-level-9);
-    background: var(--color-background-level-5);
-    color: var(--color-text-level-1);
-    font-weight: 500;
-  }
-
   .game-list-scroll-btn {
     display: flex;
     width: 30px;

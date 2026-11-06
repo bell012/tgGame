@@ -122,7 +122,7 @@ defineProps<{
   transform: translate(-50%, -50%);
   border-radius: 9999px;
   background: var(--color-theme-level-1);
-  color: #111a1d;
+  color: var(--color-rebate-pill-text);
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;

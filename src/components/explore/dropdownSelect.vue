@@ -309,12 +309,3 @@ watch(popupShow, val => {
 <style scoped lang="scss">
 @use './explore-select-icons.scss';
 </style>
-
-<style lang="scss">
-/* H5 深色：未选中 checkbox 描边色（不受 scoped data-v 影响） */
-@media (max-width: 640px) {
-  html.dark .explore-select-checkbox.explore-select-checkbox--unchecked {
-    color: #7b7d7d !important;
-  }
-}
-</style>

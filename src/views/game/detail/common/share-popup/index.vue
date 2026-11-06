@@ -94,15 +94,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 type ShareChannelKey =
-  | 'mais'
-  | 'facebook'
-  | 'whatsapp'
-  | 'telegram'
-  | 'email'
-  | 'line'
-  | 'x'
-  | 'skype'
-  | 'linkedin'
+  'mais' | 'facebook' | 'whatsapp' | 'telegram' | 'email' | 'line' | 'x' | 'skype' | 'linkedin'
 type ShareChannel = {
   key: ShareChannelKey
   label: string
@@ -367,7 +359,7 @@ const handleCopy = async () => {
 @use '@/styles/mixins' as *;
 
 .tp-panel {
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-share-popup);
 }
 
 .share-link-box {
@@ -391,24 +383,6 @@ const handleCopy = async () => {
 .share-channel-item {
   width: calc((100% - 32px) / 5);
 }
-
-:global(:root.light) .tp-panel {
-  box-shadow: 0 12px 28px rgba(28, 45, 74, 0.16);
-}
-
-:global(:root.light) .share-link-box {
-  border-color: #d9dee5;
-  background: var(--color-input-level-1);
-}
-
-:global(:root.light) .share-copy-btn {
-  background: var(--color-opacity-10);
-  border-color: #d0d6dd;
-}
-
-// .tp-header {
-//   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-// }
 
 @include popup-transition;
 

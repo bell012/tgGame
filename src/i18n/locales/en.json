@@ -292,6 +292,7 @@
     "table": "TABLE",
     "live": "LIVE",
     "lottery": "LOTTERY",
+    "hash": "HASH",
     "Lottery": "Lottery",
     "LiveSports": "Live Sports",
     "DepositBonus": "Deposit Bonus",
