@@ -20,7 +20,7 @@ import type { SiteConfig } from '@/stores/siteConfig'
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
 
-  // 当前语言（eng、zh 或 vi）
+  // 当前语言（eng、zh 或 vn）
   const currentLanguage = ref<Locale>(getStoredLocale())
 
   // 仅表示本次刷新已应用站点默认配置并完成语言路由切换，不从本地存储恢复。

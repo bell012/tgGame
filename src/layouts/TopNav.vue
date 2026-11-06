@@ -453,11 +453,14 @@ const isLoggedIn = computed(() => {
 })
 
 // sy/dlicgh: channelId 3 为 PC，4 为 H5；logo 需要跟随当前语言切换。
+// H5 未登录用 homeTopVersion，登录后用 signLogoUrl。
 const desktopHomeTopLogoUrl = computed(() =>
   siteConfigStore.getHomeTopLogoUrl(3, currentLanguage.value)
 )
 const mobileHomeTopLogoUrl = computed(() =>
-  siteConfigStore.getHomeTopLogoUrl(4, currentLanguage.value)
+  isLoggedIn.value
+    ? siteConfigStore.getSignLogoUrl(4, currentLanguage.value)
+    : siteConfigStore.getHomeTopLogoUrl(4, currentLanguage.value)
 )
 const ensureHomeTopLogoConfig = () => {
   void siteConfigStore.initSiteConfig()

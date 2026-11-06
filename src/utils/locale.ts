@@ -23,11 +23,11 @@ export const LOCALE_CONFIG = {
     urlPrefix: 'zh',
     searchKeywords: ['简体中文', 'zh']
   },
-  vi: {
-    code: 'vi',
+  vn: {
+    code: 'vn',
     label: 'Tiếng Việt',
-    urlPrefix: 'vi',
-    searchKeywords: ['Tiếng Việt', 'Vietnamese', 'vi']
+    urlPrefix: 'vn',
+    searchKeywords: ['Tiếng Việt', 'Vietnamese', 'vn']
   }
 } as const
 
@@ -40,14 +40,14 @@ export const SUPPORTED_LOCALES = Object.keys(LOCALE_CONFIG) as Locale[]
 /**
  * 系统支持的语言类型。
  *
- * 类型值来自 `LOCALE_CONFIG` 的 key，例如：`eng`、`zh`、`vi`。
+ * 类型值来自 `LOCALE_CONFIG` 的 key，例如：`eng`、`zh`、`vn`。
  */
 export type Locale = keyof typeof LOCALE_CONFIG
 
 /**
  * 系统支持的语言 code。
  *
- * 类型值来自 `LOCALE_CONFIG[*].code`，例如：`eng`、`zh`、`vi`。
+ * 类型值来自 `LOCALE_CONFIG[*].code`，例如：`eng`、`zh`、`vn`。
  */
 export type LocaleCode = (typeof LOCALE_CONFIG)[Locale]['code']
 
@@ -315,8 +315,8 @@ export const withLocalePrefix = (path: string, locale?: string | null): string =
 
 /**
  * 语言代码转换：将存储的语言代码转换为 i18n 使用的语言代码
- * @param language - 存储的语言代码 (zh、eng 或 vi)
- * @returns i18n 使用的语言代码 (zh、eng 或 vi)
+ * @param language - 存储的语言代码 (zh、eng 或 vn)
+ * @returns i18n 使用的语言代码 (zh、eng 或 vn)
  * @example
  */
 export const getLanguageCode = (language?: string): string => {
@@ -325,8 +325,8 @@ export const getLanguageCode = (language?: string): string => {
 
 /**
  * i18n 语言代码转换为存储的语言代码
- * @param i18nLocale - i18n 使用的语言代码 (zh、eng 或 vi)
- * @returns 存储的语言代码 (zh、eng 或 vi)
+ * @param i18nLocale - i18n 使用的语言代码 (zh、eng 或 vn)
+ * @returns 存储的语言代码 (zh、eng 或 vn)
  * @example
  */
 export const getStorageLanguageCode = (i18nLocale: string): string => {

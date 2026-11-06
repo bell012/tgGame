@@ -39,8 +39,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import errorImg from '@/static/img/home/errImg.png'
-import errorImg1 from '@/static/img/home/errImg1.png'
+import errorImg from '@/static/img/home/errimg.png'
+import errorImg1 from '@/static/img/home/errimg1.png'
 import playIcon from '@/static/img/game/detail/play.png'
 import SmartImage from '@/components/common/SmartImage.vue'
 import { useAuthModalStore } from '@/stores/authModal'

@@ -201,13 +201,13 @@
   --color-theme-level-3: rgba(30, 215, 119, 0.15);
 
   /* ========== 文字色 (Text) - 浅色模式 ========== */
-  --color-text-level-1: #000000;
+  --color-text-level-1: #262626;
   --color-text-level-2: #5f6d6d;
   --color-text-level-3: #9a9c9c;
   --color-text-level-4: #000000;
 
   /* ========== 图标色 (Icon) - 浅色模式 ========== */
-  --color-icon-level-1: #000000;
+  --color-icon-level-1: #262626;
   --color-icon-level-2: #5f6d6d;
   --color-icon-level-3: #9a9c9c;
   --color-icon-level-4: #000000;

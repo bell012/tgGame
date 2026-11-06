@@ -155,7 +155,7 @@ export const getPromotionGroupIcon = (group: ActivityGroupItem, activeRouteKey?:
   return toPromotionGroupIconUrl(group.defaultIcon)
 }
 
-/** 从多语言数组里取当前语言文案（zh / eng / vi，与请求头 languageCode 一致） */
+/** 从多语言数组里取当前语言文案（zh / eng / vn，与请求头 languageCode 一致） */
 export const getLanguageName = (items?: ActivityLanguageTextItem[]) => {
   if (!items || items.length === 0) {
     return ''

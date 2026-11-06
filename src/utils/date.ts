@@ -3,7 +3,7 @@ import { getLanguageCode } from './locale'
 const DATE_TIME_FORMAT_LOCALE_MAP: Record<string, string> = {
   zh: 'zh-CN',
   eng: 'en-US',
-  vi: 'vi-VN'
+  vn: 'vi-VN'
 }
 
 const DISPLAY_TIME_LABEL_MAP: Record<
@@ -27,7 +27,7 @@ const DISPLAY_TIME_LABEL_MAP: Record<
     tomorrow: 'Tomorrow',
     yesterday: 'Yesterday'
   },
-  vi: {
+  vn: {
     justNow: 'Vừa xong',
     today: 'Hôm nay',
     tomorrow: 'Ngày mai',
@@ -68,7 +68,7 @@ const getFormattedDatePart = (date: Date, locale: string, options: Intl.DateTime
 const getTwoDigitNumber = (value: number) => String(value).padStart(2, '0')
 
 const formatDisplayClockTime = (date: Date, locale: string, languageCode: string) => {
-  if (isChineseLanguage(languageCode) || languageCode === 'vi') {
+  if (isChineseLanguage(languageCode) || languageCode === 'vn') {
     return `${getTwoDigitNumber(date.getHours())}:${getTwoDigitNumber(date.getMinutes())}`
   }
 

@@ -22,45 +22,29 @@
       <div class="overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
         <div class="-mx-4 bg-layer2">
           <div class="flex w-full flex-col items-stretch gap-2 sm:mt-4 lg:!gap-4">
-            <div class="flex flex-3 gap-2 lg:!gap-4">
+            <div class="flex gap-2 lg:!gap-4">
               <button
-                class="button button-m center relative col-span-2 col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-casino p-[10px] font-extrabold sm:h-[176px] sm:p-5"
+                v-for="card in featureCards"
+                :key="card.path"
+                class="home-category-card relative aspect-[507/333] flex-1 overflow-hidden rounded-xl bg-cover bg-center text-white sm:aspect-auto sm:h-[176px] sm:bg-right"
+                :style="getCardBgStyle(card)"
                 type="button"
-                @click="navigateTo('/casino')"
+                @click="navigateTo(card.path)"
               >
-                <img
-                  class="absolute left-[31%] right-[1px] top-0 h-[100%] sm:left-auto"
-                  src="./img/casino.png"
-                  alt=""
-                />
-                <div class="relative z-10 flex h-full flex-auto flex-col">
-                  <div class="flex items-center">
-                    <div class="color_icon_img casino" style="transform: scale(1)"></div>
-                    <img :src="icon5" alt="" class="w-[19px] sm:w-[32px]" />
-                    <h2 class="ml-0.5 text-[12px] sm:text-[20px] sm:font-bold">
-                      {{ $t('home.Casino') }}
+                <div
+                  class="absolute left-3 top-3 flex flex-col sm:inset-y-0 sm:left-0 sm:top-0 sm:w-[61%] sm:items-center sm:justify-center sm:px-4 sm:text-center"
+                >
+                  <div class="flex items-center gap-1.5 sm:gap-2">
+                    <img :src="card.icon" alt="" class="home-card-icon w-[19px] sm:w-7" />
+                    <h2 class="text-sm font-extrabold uppercase sm:text-xl">
+                      {{ card.name }}
                     </h2>
                   </div>
-                </div>
-              </button>
-              <button
-                class="button button-m center relative col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-sports p-[10px] font-extrabold sm:h-[176px] sm:p-5"
-                type="button"
-                @click="navigateTo('/sports')"
-              >
-                <img
-                  class="absolute left-[34%] right-[1px] top-0 h-[100%] sm:left-auto"
-                  src="./img/sports.png"
-                  alt=""
-                />
-                <div class="relative z-10 flex h-full flex-auto flex-col">
-                  <div class="flex items-center">
-                    <div class="color_icon_img sports" style="transform: scale(1)"></div>
-                    <img :src="icon6" alt="" class="w-[19px] sm:w-[32px]" />
-                    <span class="ml-0.5 text-[12px] sm:text-[20px] sm:font-bold">{{
-                      $t('home.Sports')
-                    }}</span>
-                  </div>
+                  <p
+                    class="mt-2 hidden max-w-[200px] text-sm leading-[18px] text-white/90 sm:block"
+                  >
+                    {{ card.desc }}
+                  </p>
                 </div>
               </button>
             </div>
@@ -70,31 +54,22 @@
             >
               <button
                 v-for="value in listImg"
-                :key="value.name"
-                class="button button-m center relative h-20 w-[calc((100%-2.5rem)/5.1)] shrink-0 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px] lg:min-w-0 lg:w-auto lg:flex-1"
+                :key="value.sysGameTypeCode"
+                class="home-category-card relative aspect-[189/246] w-[calc((100%-2rem)/5)] shrink-0 overflow-hidden rounded-xl bg-cover bg-center text-white sm:aspect-auto sm:h-[120px] sm:w-[calc((100%-2.5rem)/5.1)] sm:bg-right lg:min-w-0 lg:w-auto lg:flex-1"
+                :style="getCardBgStyle(value)"
                 type="button"
                 @click="toCasino(value.sysGameTypeCode)"
-                style="
-                  background-image: linear-gradient(
-                    to left,
-                    rgba(39, 232, 187, 0.2),
-                    transparent 75%
-                  );
-                "
               >
-                <img
-                  class="gameTypeImg absolute left-1/2 top-[10%] -translate-x-1/2 sm:left-[50%] sm:top-[16%] sm:h-[66%] sm:-translate-x-[10%]"
-                  :src="value.img"
-                  alt=""
-                />
-                <div class="pcState absolute left-2 top-2 flex flex-col">
-                  <div class="color_icon_img bcpoker">
-                    <img :src="value.icon" class="w-[32px] h-[32px]" alt="" />
-                  </div>
-                  <h2 class="ml-1 text-[13px] font-extrabold">{{ value.name }}</h2>
+                <div
+                  class="absolute inset-y-0 left-0 hidden w-[58%] flex-col items-center justify-center gap-1.5 sm:flex"
+                >
+                  <img :src="value.icon" alt="" class="home-card-icon w-7" />
+                  <h2 class="text-base font-extrabold uppercase">{{ value.name }}</h2>
                 </div>
-                <div class="h5State absolute bottom-1 left-0 block w-full text-center">
-                  <span class="text-[0.625rem] font-extrabold sm:text-sm">{{ value.name }}</span>
+                <div class="absolute bottom-2 left-0 w-full px-0.5 text-center sm:hidden">
+                  <span class="block truncate text-[0.625rem] font-extrabold uppercase">
+                    {{ value.h5Name }}
+                  </span>
                 </div>
               </button>
             </div>
@@ -318,13 +293,13 @@ import GameList from './components/gameList.vue'
 import LazySection from './components/LazySection.vue'
 import RecentBigWins from './components/RecentBigWins.vue'
 
-import icon1 from './img/Image.svg?url'
-import icon2 from './img/Image1.svg?url'
-import icon3 from './img/Image2.svg?url'
-import icon4 from './img/Image3.svg?url'
-import icon5 from './img/Image5.svg?url'
-import icon6 from './img/Image6.svg?url'
-import icon7 from './img/Image7.svg?url'
+import slotsIcon from './img/Image.svg?url'
+import fishingIcon from './img/Image1.svg?url'
+import liveIcon from './img/Image2.svg?url'
+import lotteryIcon from './img/Image3.svg?url'
+import casinoIcon from './img/Image5.svg?url'
+import sportsIcon from './img/Image6.svg?url'
+import contractIcon from './img/pokerIcon.svg?url'
 
 import ADA from '@/static/svg/coin/ADA.black.svg?url'
 import BNB from '@/static/svg/coin/BNB.black.svg?url'
@@ -344,12 +319,22 @@ import USDT from '@/static/svg/coin/USDT.black.svg?url'
 import VISA from '@/static/svg/coin/VISA.svg?url'
 import XRP from '@/static/svg/coin/XRP.black.svg?url'
 
-import combination from '@/static/img/home/combination.png'
-import placeholderImg from '@/static/img/home/errImg1.png'
-import fishing from '@/static/img/home/fishing.png'
-import live from '@/static/img/home/live.png'
-import slots from '@/static/img/home/slots.png'
-import table from '@/static/img/home/table.png'
+import placeholderImg from '@/static/img/home/errimg1.png'
+import casinoCardImg from '@/static/img/home/casino.png'
+import sportsCardImg from '@/static/img/home/sports.png'
+import slotsCardImg from '@/static/img/home/slots.png'
+import contractCardImg from '@/static/img/home/contract.png'
+import fishingCardImg from '@/static/img/home/fishing.png'
+import liveCardImg from '@/static/img/home/live-casino.png'
+import lotteryCardImg from '@/static/img/home/lottery.png'
+import casinoCardH5Img from '@/static/img/home/h5/casino.png'
+import sportsCardH5Img from '@/static/img/home/h5/sports.png'
+import slotsCardH5Img from '@/static/img/home/h5/slots.png'
+import contractCardH5Img from '@/static/img/home/h5/contract.png'
+// h5 目录下 FISHING / LIVE / Lottery 三张图的文件名与内容错位，按图片内容引用
+import fishingCardH5Img from '@/static/img/home/h5/lottery.png'
+import liveCardH5Img from '@/static/img/home/h5/fishing.png'
+import lotteryCardH5Img from '@/static/img/home/h5/live.png'
 
 interface EventListItem {
   image: string
@@ -389,38 +374,72 @@ const closeH5HomePop = () => {
   showH5HomePop.value = false
 }
 
+const featureCards = computed(() => [
+  {
+    name: t('home.Casino'),
+    desc: t('home.labelLabel'),
+    img: casinoCardImg,
+    h5Img: casinoCardH5Img,
+    icon: casinoIcon,
+    path: '/casino'
+  },
+  {
+    name: t('home.Sports'),
+    desc: t('home.SportsLabel'),
+    img: sportsCardImg,
+    h5Img: sportsCardH5Img,
+    icon: sportsIcon,
+    path: '/sports'
+  }
+])
+
 const listImg = computed(() => [
   {
     name: t('home.slots'),
-    img: slots,
-    icon: icon1,
+    h5Name: t('home.slots'),
+    img: slotsCardImg,
+    h5Img: slotsCardH5Img,
+    icon: slotsIcon,
     sysGameTypeCode: 'DZ'
   },
   {
+    name: t('home.contract'),
+    h5Name: t('home.contract'),
+    img: contractCardImg,
+    h5Img: contractCardH5Img,
+    icon: contractIcon,
+    sysGameTypeCode: 'QP'
+  },
+  {
     name: t('home.fishing'),
-    img: fishing,
-    icon: icon2,
+    h5Name: t('home.fishing'),
+    img: fishingCardImg,
+    h5Img: fishingCardH5Img,
+    icon: fishingIcon,
     sysGameTypeCode: 'BY'
   },
   {
-    name: t('home.live'),
-    img: live,
-    icon: icon3,
+    name: t('home.LiveCasino'),
+    h5Name: t('home.live'),
+    img: liveCardImg,
+    h5Img: liveCardH5Img,
+    icon: liveIcon,
     sysGameTypeCode: 'live'
   },
   {
     name: t('home.lottery'),
-    img: combination,
-    icon: icon4,
+    h5Name: t('home.lottery'),
+    img: lotteryCardImg,
+    h5Img: lotteryCardH5Img,
+    icon: lotteryIcon,
     sysGameTypeCode: 'CP'
-  },
-  {
-    name: t('home.table'),
-    img: table,
-    icon: icon7,
-    sysGameTypeCode: 'QP'
   }
 ])
+
+const getCardBgStyle = (card: { img: string; h5Img: string }) => ({
+  '--home-card-bg-h5': `url('${card.h5Img}')`,
+  '--home-card-bg-pc': `url('${card.img}')`
+})
 
 const homeGameSkeletonCount = computed(() => (isMobile.value ? 2 : 3))
 
@@ -567,27 +586,17 @@ watch(
   background-color: var(--color-background-level-1);
 }
 
-.bg-layer4 {
-  background-color: var(--color-background-level-2);
-}
+/* 断点与模板中的 sm: 保持一致，H5 与 PC 使用不同比例的卡片图 */
+.home-category-card {
+  background-image: var(--home-card-bg-h5);
 
-@media (min-width: 640px) {
-  .sm\:h-\[120px\] {
-    height: 120px;
-  }
-
-  .h5State {
-    display: none;
+  @media (min-width: 640px) {
+    background-image: var(--home-card-bg-pc);
   }
 }
 
-@media (max-width: 639px) {
-  .pcState {
-    display: none;
-  }
-
-  .gameTypeImg {
-    width: 69%;
-  }
+/* 图标源文件为灰/绿配色，卡片上统一显示为白色 */
+.home-card-icon {
+  filter: brightness(0) invert(1);
 }
 </style>

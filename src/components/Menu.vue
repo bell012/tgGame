@@ -26,11 +26,38 @@
         <p class="m-0 text-sm leading-tight text-text-1">$0.00783</p>
       </div>
     </div> -->
+    <!-- 应用程式 -->
+    <div v-if="!isCollapsed" class="mt-1.5">
+      <div
+        class="block app-download-card rounded-lg cursor-pointer"
+        @click="handleAppDownloadClick"
+      >
+        <div class="flex justify-between items-center">
+          <div class="flex-1 p-2.5 pr-0">
+            <h3 class="text-sm font-semibold text-text-1 mb-1">
+              {{ t('sidebar_menu.app_download.title') }}
+            </h3>
+            <p class="text-xs text-text-2 leading-tight">
+              {{ t('sidebar_menu.app_download.subtitle') }}
+            </p>
+          </div>
+          <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
+            <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
+              <img
+                src="@/static/img/home/pwa.png"
+                alt=""
+                class="w-full h-full object-cover rounded"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="flex flex-col">
       <div
         v-for="(menuGroup, groupIndex) in sidebarMenuGroups"
         :key="`group-${groupIndex}`"
-        class="flex flex-col mt-3"
+        class="flex flex-col mt-1.5"
       >
         <div
           v-for="(menu, menuIndex) in menuGroup"
@@ -70,12 +97,12 @@
                   <img
                     v-if="isStringMenuIcon(item)"
                     :src="getMenuImageIcon(item)"
-                    class="pc-menu-icon w-6 h-6 object-contain"
+                    class="pc-menu-icon w-5 h-5 object-contain"
                   />
                   <component
                     v-else
                     :is="getMenuIcon(item)"
-                    class="pc-menu-icon w-6 h-6 text-icon-2"
+                    class="pc-menu-icon w-5 h-5 text-icon-2"
                   />
                 </div>
                 <span
@@ -106,12 +133,12 @@
                   <img
                     v-if="isStringMenuIcon(menu)"
                     :src="getMenuImageIcon(menu)"
-                    class="pc-menu-icon w-6 h-6 object-contain"
+                    class="pc-menu-icon w-5 h-5 object-contain"
                   />
                   <component
                     v-else
                     :is="getMenuIcon(menu)"
-                    class="pc-menu-icon w-6 h-6 text-icon-2"
+                    class="pc-menu-icon w-5 h-5 text-icon-2"
                   />
                 </div>
               </div>
@@ -132,12 +159,12 @@
                       <img
                         v-if="isStringMenuIcon(item)"
                         :src="getMenuImageIcon(item)"
-                        class="pc-menu-icon w-6 h-6 object-contain"
+                        class="pc-menu-icon w-5 h-5 object-contain"
                       />
                       <component
                         v-else
                         :is="getMenuIcon(item)"
-                        class="pc-menu-icon w-6 h-6 text-icon-2"
+                        class="pc-menu-icon w-5 h-5 text-icon-2"
                       />
                     </div>
                   </div>
@@ -168,12 +195,12 @@
                 <img
                   v-if="isStringMenuIcon(menu)"
                   :src="getMenuImageIcon(menu)"
-                  class="pc-menu-icon w-6 h-6 object-contain"
+                  class="pc-menu-icon w-5 h-5 object-contain"
                 />
                 <component
                   v-else
                   :is="getMenuIcon(menu)"
-                  class="pc-menu-icon w-6 h-6 text-icon-2"
+                  class="pc-menu-icon w-5 h-5 text-icon-2"
                 />
               </div>
             </div>
@@ -191,7 +218,15 @@
                 },
                 { 'rounded-none': menuIndex > 0 && menuIndex < menuGroup.length - 1 },
                 { 'launch-card-active': isMenuGroupActive(menu) },
-                { normalLink: menu.section === 'normal' }
+                {
+                  'launch-card-dropdown-active':
+                    hasChildren(menu) && expandedMenus.includes(menu.id) && isMenuGroupActive(menu)
+                },
+                { normalLink: menu.section === 'normal' },
+                {
+                  'border-b border-opacity-6':
+                    menu.id === 'game-categories' && expandedMenus.includes(menu.id)
+                }
               ]"
               @click="handleMenuClick(menu)"
             >
@@ -200,12 +235,12 @@
                   <img
                     v-if="isStringMenuIcon(menu)"
                     :src="getMenuImageIcon(menu)"
-                    class="pc-menu-icon w-6 h-6 object-contain"
+                    class="pc-menu-icon w-5 h-5 object-contain"
                   />
                   <component
                     v-else
                     :is="getMenuIcon(menu)"
-                    class="pc-menu-icon w-6 h-6 text-icon-2"
+                    class="pc-menu-icon w-5 h-5 text-icon-2"
                   />
                 </div>
                 <span v-if="menu.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
@@ -215,7 +250,7 @@
               </div>
               <div
                 v-if="hasChildren(menu)"
-                class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
+                class="w-6 h-6 bg-opacity-6 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
                 :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
                 @click.stop="handleMenuCollapse(menu)"
               >
@@ -252,12 +287,12 @@
                       <img
                         v-if="isStringMenuIcon(item)"
                         :src="getMenuImageIcon(item)"
-                        class="pc-menu-icon w-6 h-6 object-contain"
+                        class="pc-menu-icon w-5 h-5 object-contain"
                       />
                       <component
                         v-else
                         :is="getMenuIcon(item)"
-                        class="pc-menu-icon w-6 h-6 text-icon-2"
+                        class="pc-menu-icon w-5 h-5 text-icon-2"
                       />
                     </div>
                     <span
@@ -290,41 +325,13 @@
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="side.helpIcon" class="pc-menu-icon w-6 h-6 text-icon-2" />
+            <component :is="side.helpIcon" class="pc-menu-icon w-5 h-5 text-icon-2" />
           </div>
           <span v-if="!isCollapsed" class="pc-menu-label text-sm font-[600] text-text-1">
             {{ t('sidebar_menu.customer_service') }}
           </span>
         </div>
       </div>
-      <!-- 应用程式 -->
-      <!-- <div v-if="!isCollapsed" class="mt-3 mb-2">
-        <div
-          class="block app-download-card rounded-lg cursor-pointer"
-          @click="handleAppDownloadClick"
-        >
-          <div class="flex justify-between items-center">
-            <div class="flex-1 p-2.5 pr-0">
-              <h3 class="text-sm font-semibold text-text-1 mb-1">
-                {{ t('sidebar_menu.app_download.title') }}
-              </h3>
-              <p class="text-xs text-text-2 leading-tight">
-                {{ t('sidebar_menu.app_download.subtitle') }}
-              </p>
-            </div>
-            <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
-              <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
-                <img
-                  src="@/static/img/home/pwa.png"
-                  alt=""
-                  class="w-full h-full object-cover rounded"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
-
       <!-- 语言切换 -->
       <div
         :class="[
@@ -334,7 +341,7 @@
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <LanguageIcon class="pc-menu-icon w-6 h-6 text-icon-2" />
+            <LanguageIcon class="pc-menu-icon w-5 h-5 text-icon-2" />
           </div>
           <span v-if="!isCollapsed" class="pc-menu-label text-sm font-[600] text-text-1">{{
             currentLanguageName
@@ -675,9 +682,9 @@ const openLanguagePopup = () => {
   emit('open-language-modal')
 }
 // 应用程式下载点击
-// const handleAppDownloadClick = () => {
-//   navigateTo('/app-download')
-// }
+const handleAppDownloadClick = () => {
+  navigateTo('/app-download')
+}
 
 // 切换菜单展开/折叠的通用方法
 const toggleMenu = (menuId: string) => {
@@ -1157,6 +1164,11 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   border-radius: 8px;
 }
 
+.launch-card-active.launch-card-dropdown-active {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .launch-card-active .pc-menu-icon {
   color: var(--color-theme-level-1);
 }
@@ -1167,8 +1179,8 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   }
 
   .launch-card:hover:not(.launch-card-active) .pc-menu-icon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     color: var(--color-icon-level-1);
   }
 
@@ -1178,8 +1190,8 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   }
 
   .launch-card-active .pc-menu-icon {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     color: var(--color-theme-level-1);
   }
 

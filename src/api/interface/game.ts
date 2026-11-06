@@ -400,7 +400,7 @@ export interface GlobalDicResponse {
       dic_key: string // 对应gameData 中的platformCode
       dic_name: string // error_code || game_code  || platform_code
       dic_value: string // 返回的多语言 游戏名字 或者 平台名字 或者 错误码文案
-      language_code: string // eng || zh || vi
+      language_code: string // eng || zh || vn
     }
   ]
   success: boolean
@@ -450,7 +450,7 @@ export interface LoginPlatformParams {
   currency?: string
   /** 体育平台登录使用的目标币种。 */
   targetCurrency?: string
-  /** 站内语言代码，与公共请求头 languageCode 一致（zh / eng / vi），不是 CHS / ENG。 */
+  /** 站内语言代码，与公共请求头 languageCode 一致（zh / eng / vn）。 */
   languageCode?: string
 }
 
