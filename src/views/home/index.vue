@@ -54,11 +54,11 @@
             >
               <button
                 v-for="value in listImg"
-                :key="value.sysGameTypeCode"
+                :key="value.path"
                 class="home-category-card relative aspect-[189/246] w-[calc((100%-2rem)/5)] shrink-0 overflow-hidden rounded-xl bg-cover bg-center text-white sm:aspect-auto sm:h-[120px] sm:w-[calc((100%-2.5rem)/5.1)] sm:bg-right lg:min-w-0 lg:w-auto lg:flex-1"
                 :style="getCardBgStyle(value)"
                 type="button"
-                @click="toCasino(value.sysGameTypeCode)"
+                @click="navigateTo(value.path)"
               >
                 <div
                   class="absolute inset-y-0 left-0 hidden w-[58%] flex-col items-center justify-center gap-1.5 sm:flex"
@@ -400,7 +400,7 @@ const listImg = computed(() => [
     img: slotsCardImg,
     h5Img: slotsCardH5Img,
     icon: slotsIcon,
-    sysGameTypeCode: 'DZ'
+    path: '/casino/DZ'
   },
   {
     name: t('home.contract'),
@@ -408,7 +408,7 @@ const listImg = computed(() => [
     img: contractCardImg,
     h5Img: contractCardH5Img,
     icon: contractIcon,
-    sysGameTypeCode: 'QP'
+    path: '/casino/QP'
   },
   {
     name: t('home.fishing'),
@@ -416,7 +416,7 @@ const listImg = computed(() => [
     img: fishingCardImg,
     h5Img: fishingCardH5Img,
     icon: fishingIcon,
-    sysGameTypeCode: 'BY'
+    path: '/casino/BY'
   },
   {
     name: t('home.LiveCasino'),
@@ -424,15 +424,15 @@ const listImg = computed(() => [
     img: liveCardImg,
     h5Img: liveCardH5Img,
     icon: liveIcon,
-    sysGameTypeCode: 'live'
+    path: '/casino/live'
   },
   {
-    name: t('home.lottery'),
-    h5Name: t('home.lottery'),
+    name: t('home.hash'),
+    h5Name: t('home.hash'),
     img: lotteryCardImg,
     h5Img: lotteryCardH5Img,
     icon: lotteryIcon,
-    sysGameTypeCode: 'CP'
+    path: '/hash-game'
   }
 ])
 
@@ -442,13 +442,6 @@ const getCardBgStyle = (card: { img: string; h5Img: string }) => ({
 })
 
 const homeGameSkeletonCount = computed(() => (isMobile.value ? 2 : 3))
-
-const toCasino = (sysGameTypeCode: string) => {
-  if (!sysGameTypeCode) {
-    return
-  }
-  navigateTo(`/casino/${sysGameTypeCode}`)
-}
 
 const toGameImageUrl = (value: string) => {
   if (!value) {
