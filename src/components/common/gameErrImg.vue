@@ -28,8 +28,8 @@
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useThemeStore } from '@/stores/theme'
-import errorImg from '@/static/img/home/errImg.png'
-import errorImg1 from '@/static/img/home/errImg1.png'
+import errorImg from '@/static/img/home/errimg.png'
+import errorImg1 from '@/static/img/home/errimg1.png'
 import maintainImg from '@/static/img/home/maintain.png'
 import SmartImage from '@/components/common/SmartImage.vue'
 
