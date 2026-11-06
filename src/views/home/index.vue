@@ -41,7 +41,7 @@
                     </h2>
                   </div>
                   <p
-                    class="mt-2 hidden max-w-[240px] text-sm leading-[18px] text-white/90 sm:block"
+                    class="mt-2 hidden max-w-[200px] text-sm leading-[18px] text-white/90 sm:block"
                   >
                     {{ card.desc }}
                   </p>

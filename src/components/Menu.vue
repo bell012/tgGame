@@ -218,6 +218,10 @@
                 },
                 { 'rounded-none': menuIndex > 0 && menuIndex < menuGroup.length - 1 },
                 { 'launch-card-active': isMenuGroupActive(menu) },
+                {
+                  'launch-card-dropdown-active':
+                    hasChildren(menu) && expandedMenus.includes(menu.id) && isMenuGroupActive(menu)
+                },
                 { normalLink: menu.section === 'normal' },
                 {
                   'border-b border-opacity-6':
@@ -1158,6 +1162,11 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 .launch-card-active {
   background: var(--color-opacity-10);
   border-radius: 8px;
+}
+
+.launch-card-active.launch-card-dropdown-active {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .launch-card-active .pc-menu-icon {
