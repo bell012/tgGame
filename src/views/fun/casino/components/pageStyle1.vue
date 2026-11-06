@@ -13,7 +13,7 @@
     >
       <casinoGameModule :module="item" view-all-mode="casino" />
       <template #placeholder>
-        <casinoGameModule loading />
+        <casinoGameModule :module="item" loading />
       </template>
     </LazySection>
     <LazySection v-if="!hideLatestBet" :eager="!deferOffscreenSections" root-margin="120px 0px">
