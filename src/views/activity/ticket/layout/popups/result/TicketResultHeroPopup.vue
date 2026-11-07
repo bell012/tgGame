@@ -40,7 +40,10 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { TICKET_DIALOG_Z } from '@/views/activity/ticket/shared/constants'
-import { getTicketModalTheme } from '@/views/activity/ticket/shared/design-tokens'
+import {
+  DEFAULT_RESULT_HERO_TITLE_GRADIENT,
+  getTicketModalTheme
+} from '@/views/activity/ticket/shared/design-tokens'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 import TicketDialogOverlay from '../shared/TicketDialogOverlay.vue'
 import { resolveHeroMedia } from './heroMedia'
@@ -63,8 +66,6 @@ const resultTicketRecord = computed(
 const heroMedia = computed(() =>
   resolveHeroMedia(result.value, resultTicketRecord.value, resolvedHeroImage.value)
 )
-
-const DEFAULT_RESULT_HERO_TITLE_GRADIENT = 'var(--color-ticket-hero-title)'
 
 const HERO_LOTTIE_TITLE_THEME = {
   cash_voucher_result: 'cash_voucher',

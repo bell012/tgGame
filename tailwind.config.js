@@ -87,17 +87,11 @@ export default {
         'packet-divider': 'var(--color-red-packet-divider)',
         'packet-title': 'var(--color-red-packet-title)',
         'packet-button-text': 'var(--color-red-packet-button-text)',
-        'packet-amount': 'var(--color-red-packet-amount)',
-
-        'ticket-winner': 'var(--color-ticket-winner-avatar)',
-        'ticket-voucher-title': 'var(--color-ticket-voucher-title)',
-        'ticket-result-title': 'var(--color-ticket-result-title)',
-        'match-divider': 'var(--color-match-divider)'
+        'packet-amount': 'var(--color-red-packet-amount)'
       },
 
       boxShadow: {
-        'popup-54': 'var(--shadow-popup-54)',
-        'match-header': 'var(--shadow-match-header)'
+        'popup-54': 'var(--shadow-popup-54)'
       },
 
       // ========== 背景渐变 (Background Gradient) ==========
@@ -112,8 +106,7 @@ export default {
         'game-table': 'var(--color-game-table)',
         // 哈希游戏聊天室
         'hash-chat-draw-frame': 'var(--color-hash-chat-draw-frame)',
-        'hash-chat-win-frame': 'var(--color-hash-chat-win-frame)',
-        'match-header-fade': 'var(--color-match-header-fade)'
+        'hash-chat-win-frame': 'var(--color-hash-chat-win-frame)'
       },
 
       // ========== SVG 描边色 (Stroke) ==========

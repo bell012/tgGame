@@ -13,7 +13,7 @@
       </template>
     </RedPacketSubHeader>
 
-    <div ref="listRef" class="scrollbar-thin min-h-0 flex-1 overflow-y-auto pb-[20px]">
+    <div ref="listRef" class="red-packet-scrollbar min-h-0 flex-1 overflow-y-auto pb-[20px]">
       <div class="flex flex-col items-center gap-[30px] px-[16px] pt-[30px]">
         <div class="flex flex-col items-center gap-[8px]">
           <div

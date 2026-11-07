@@ -96,6 +96,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import Api from '@/api'
 import type { GameStatisticsResult } from '@/api/interface/game'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'

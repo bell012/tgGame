@@ -108,6 +108,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/views/activity/red-packet/red-packet.css'
 import redPacketSuccessImage from '@/static/img/chat/public/red-packet-success.png'
 import redPacketClose from '@/static/svg/chat/public/red-packet-close.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'

@@ -8,9 +8,9 @@
     :close-aria-label="t('common.cancel')"
     @close="close"
   >
-    <div class="flex flex-col items-center">
+    <div class="ticket-result-cards flex flex-col items-center">
       <h2
-        class="font-[700] text-ticket-result-title"
+        class="font-[700] text-[var(--color-ticket-result-title)]"
         :class="isMobile ? 'text-[20px]' : 'text-[21px]'"
       >
         {{ resolvedTitle }}
@@ -78,3 +78,9 @@ const { vouchers, resolvedTitle, resolvedSubtext, resolvedButtonText } = useTick
   t
 )
 </script>
+
+<style scoped>
+.ticket-result-cards {
+  --color-ticket-result-title: #f7d060;
+}
+</style>

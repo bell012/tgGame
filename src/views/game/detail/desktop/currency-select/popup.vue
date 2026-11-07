@@ -157,6 +157,7 @@ onBeforeUnmount(() => {
 .tp-panel-desktop {
   padding: 10px;
   border-radius: 12px;
+  --shadow-currency-panel: 0 14px 32px rgba(0, 0, 0, 0.36);
   border-color: var(--color-opacity-10);
   box-shadow: var(--shadow-currency-panel);
 }

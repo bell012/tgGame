@@ -531,6 +531,7 @@ watch(
 }
 
 .feedback-desktop-preview-mask {
+  --color-feedback-preview-mask: rgba(2, 8, 14, 0.75);
   position: fixed;
   inset: 0;
   z-index: 100010;

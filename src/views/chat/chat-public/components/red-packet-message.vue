@@ -76,6 +76,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/views/activity/red-packet/red-packet.css'
 import redPacketIcon from '@/static/svg/chat/public/red-packet-icon.svg?url'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

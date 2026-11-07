@@ -52,7 +52,7 @@
 
     <div
       ref="listRef"
-      class="scrollbar-thin flex min-h-0 flex-1 flex-col gap-[8px] overflow-y-auto p-[16px]"
+      class="red-packet-scrollbar flex min-h-0 flex-1 flex-col gap-[8px] overflow-y-auto p-[16px]"
     >
       <div
         v-for="record in list"

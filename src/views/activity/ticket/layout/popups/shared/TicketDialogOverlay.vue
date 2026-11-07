@@ -80,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/components/common/popup-shadow.css'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { LUCKY_SPIN_ASSETS } from '@/views/activity/ticket/shared/assets'
 

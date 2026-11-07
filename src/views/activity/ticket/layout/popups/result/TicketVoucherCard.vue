@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex h-[76.67px] items-center gap-3 rounded-[13px] px-3"
+    class="ticket-voucher-card flex h-[76.67px] items-center gap-3 rounded-[13px] px-3"
     :style="{ background: resolvedBg }"
   >
     <div
@@ -10,7 +10,9 @@
       <img :src="resolvedIcon" alt="" class="max-h-full max-w-full object-contain" />
     </div>
     <div class="min-w-0 flex-1 border-l border-dashed border-black/10 pl-3">
-      <p class="truncate text-[13px] font-[700] text-ticket-voucher-title">{{ data.title }}</p>
+      <p class="truncate text-[13px] font-[700] text-[var(--color-ticket-voucher-title)]">
+        {{ data.title }}
+      </p>
       <p class="mt-0.5 text-[12px] font-[500]" :style="{ color: textColors.reward }">
         {{ data.rewardText }}
       </p>
@@ -46,3 +48,9 @@ const textColors = computed(() => getVoucherCardTextColors(props.data.type))
 
 const resolvedIcon = computed(() => props.data.icon ?? getGameIcon(props.data.type))
 </script>
+
+<style scoped>
+.ticket-voucher-card {
+  --color-ticket-voucher-title: #1a1a1a;
+}
+</style>

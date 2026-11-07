@@ -34,7 +34,7 @@
 
       <div
         ref="listRef"
-        class="scrollbar-thin flex min-h-0 flex-1 flex-col gap-[20px] overflow-y-auto p-[20px_10px]"
+        class="red-packet-scrollbar flex min-h-0 flex-1 flex-col gap-[20px] overflow-y-auto p-[20px_10px]"
       >
         <RedPacketCard
           v-for="item in list"
@@ -99,6 +99,7 @@
 </template>
 
 <script setup lang="ts">
+import '../red-packet.css'
 import { computed, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'

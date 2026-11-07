@@ -359,6 +359,7 @@ const handleCopy = async () => {
 @use '@/styles/mixins' as *;
 
 .tp-panel {
+  --shadow-share-popup: 0 20px 48px rgba(0, 0, 0, 0.45);
   box-shadow: var(--shadow-share-popup);
 }
 

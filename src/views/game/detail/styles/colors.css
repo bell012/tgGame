@@ -1,0 +1,48 @@
+/* 游戏详情模块颜色。随主题变的写在 :root 和 :root.light。 */
+:root {
+  --color-recent-games-panel: #202424;
+  --color-recent-games-avatar-border: #202424;
+  --color-recent-games-star-muted: #687779;
+  --color-recent-games-emoji: #b3bec1;
+  --color-recent-games-divider: rgba(255, 255, 255, 0.08);
+  --color-recent-games-progress-track: #3a4142;
+  --color-recent-games-tab-active: #3c4243;
+  --color-recent-games-tab-idle: #b3bec1;
+
+  --color-play-gradient: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+  --color-play-shadow: 0 0 12px 0 rgba(35, 238, 136, 0.3), 0 -2px 0 0 #1dca6a inset;
+  --color-play-text: #061a10;
+
+  --color-comment-popup-shell: linear-gradient(180deg, #2a2f35 0%, #23282e 100%);
+  --color-comment-popup-shadow-desktop: 0 20px 40px rgba(0, 0, 0, 0.45);
+  --color-comment-popup-shadow-mobile: 0 -12px 28px rgba(0, 0, 0, 0.45);
+  --color-comment-popup-title: #ffffff;
+  --color-comment-emoji-hover: #39424b;
+  --color-comment-emoji-shadow: 0 6.826px 30.716px rgba(0, 0, 0, 0.5);
+
+  --color-detail-loading-mask: rgba(8, 12, 18, 0.36);
+  --color-detail-loading-track: rgba(255, 255, 255, 0.34);
+  --color-sort-menu-shadow: 0 7px 31px rgba(0, 0, 0, 0.5);
+  --color-live-stat-text: #ffffff;
+}
+
+:root.light {
+  --color-recent-games-panel: #f4f4f4;
+  --color-recent-games-avatar-border: #ffffff;
+  --color-recent-games-star-muted: var(--color-icon-level-2);
+  --color-recent-games-emoji: #6f7f80;
+  --color-recent-games-divider: rgba(17, 17, 17, 0.08);
+  --color-recent-games-progress-track: #e5e5e5;
+  --color-recent-games-tab-active: #ffffff;
+  --color-recent-games-tab-idle: #5f6368;
+
+  --color-comment-popup-shell: #eef3fa;
+  --color-comment-popup-shadow-desktop: 0 16px 36px rgba(24, 38, 64, 0.24);
+  --color-comment-popup-shadow-mobile: 0 -12px 28px rgba(24, 38, 64, 0.2);
+  --color-comment-popup-title: #1d2a3d;
+  --color-comment-emoji-hover: #e8f0fa;
+  --color-comment-emoji-shadow: 0 0 41.807px rgba(172, 172, 172, 0.53);
+
+  --color-sort-menu-shadow: 0 0 49px rgba(172, 172, 172, 0.53);
+  --color-live-stat-text: #0f0f0f;
+}

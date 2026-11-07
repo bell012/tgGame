@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/components/common/popup-shadow.css'
 import popShell from '@/components/withdraw/popShell.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'

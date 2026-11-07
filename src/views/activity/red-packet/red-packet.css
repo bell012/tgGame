@@ -1,0 +1,26 @@
+/* 红包本体色，不随主题翻转。活动页和聊天室红包共用。 */
+:root {
+  --color-red-packet-body: #f3674c;
+  --color-red-packet-divider: #e65a3f;
+  --color-red-packet-title: #e71727;
+  --color-red-packet-button-text: #cd1825;
+  --color-red-packet-amount: #e92629;
+  --color-red-packet-button-start: #fce9b5;
+  --color-red-packet-button-end: #fbb357;
+  --color-red-packet-button-shadow: #fc9034;
+  --color-red-packet-button-highlight: #ffeeab;
+  --color-red-packet-button-inset-bottom: rgba(253, 239, 170, 0.4);
+  --color-red-packet-button-inset-top: rgba(255, 251, 229, 0.8);
+}
+
+/* 类选择器压过全局的滚动条 display: none。 */
+.red-packet-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+  height: 6px;
+}
+
+.red-packet-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 12px;
+  background: var(--color-opacity-5);
+}

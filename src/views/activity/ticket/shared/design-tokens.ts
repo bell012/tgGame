@@ -106,6 +106,10 @@ export const LUCKY_SPIN_TOKENS = {
 export const getTicketModalTheme = (theme: TicketModalTheme = 'lucky_spin') =>
   TICKET_MODAL_THEMES[theme] ?? TICKET_MODAL_THEMES.lucky_spin
 
+/** 结果弹窗标题在没有玩法主题时的默认渐变。 */
+export const DEFAULT_RESULT_HERO_TITLE_GRADIENT =
+  'linear-gradient(180deg, #fffdf8 0%, #f9cf7b 100%)'
+
 /** PC 端票券活动弹窗尺寸 token */
 export const TICKET_PC_TOKENS = {
   activityModalWidth: 1000,

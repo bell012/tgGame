@@ -81,6 +81,8 @@ const { t } = useI18n()
 }
 
 .currency-dot {
+  --color-currency-dot: radial-gradient(circle at 30% 30%, #49f7a5, #0fd46d 70%);
+  --color-currency-dot-glow: 0 0 6px rgba(35, 238, 136, 0.4);
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -119,6 +121,7 @@ const { t } = useI18n()
 }
 
 .amount-icon {
+  --color-currency-amount-icon: rgba(35, 238, 136, 0.18);
   width: 18px;
   height: 18px;
   border-radius: 50%;

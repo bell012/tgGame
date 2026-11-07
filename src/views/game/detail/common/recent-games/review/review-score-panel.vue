@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import SmartImage from '@/components/common/SmartImage.vue'
 import ProgressBar from './progress.vue'
 import Star from './star.vue'

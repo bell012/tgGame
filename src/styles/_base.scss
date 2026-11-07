@@ -63,18 +63,6 @@ a {
   scrollbar-width: none;
 }
 
-/* 局部细滚动条。类选择器压过上面全局的 display: none，否则宽度样式不会生效。 */
-.scrollbar-thin::-webkit-scrollbar {
-  display: block;
-  width: 6px;
-  height: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  border-radius: 12px;
-  background: var(--color-opacity-5);
-}
-
 // 输入框样式
 input,
 textarea,

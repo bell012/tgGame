@@ -175,6 +175,7 @@ const confirmExit = async () => {
   width: 100%;
   height: 100vh;
   height: 100dvh;
+  --color-iframe-backdrop: #000;
   overflow: hidden;
   background: var(--color-iframe-backdrop);
 }
@@ -221,6 +222,7 @@ const confirmExit = async () => {
   height: 50px;
   border: 0;
   border-radius: 9999px;
+  --color-iframe-scrim: rgba(0, 0, 0, 0.55);
   padding: 0;
   background: var(--color-iframe-scrim);
   transform: translateZ(0);
@@ -263,6 +265,7 @@ const confirmExit = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  --color-iframe-scrim: rgba(0, 0, 0, 0.55);
   padding: 20px;
   background: var(--color-iframe-scrim);
 }

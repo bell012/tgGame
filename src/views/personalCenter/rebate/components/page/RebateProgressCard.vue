@@ -120,6 +120,7 @@ defineProps<{
   align-items: center;
   justify-content: center;
   transform: translate(-50%, -50%);
+  --color-rebate-pill-text: #111a1d;
   border-radius: 9999px;
   background: var(--color-theme-level-1);
   color: var(--color-rebate-pill-text);

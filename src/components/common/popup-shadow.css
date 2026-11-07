@@ -1,0 +1,6 @@
+/* 多个弹窗共用的阴影，不随主题翻转。 */
+:root {
+  --shadow-popup-36: 0 12px 30px rgba(0, 0, 0, 0.36);
+  --shadow-popup-44: 0 18px 44px rgba(0, 0, 0, 0.4);
+  --shadow-popup-54: 0 18px 54px rgba(0, 0, 0, 0.32);
+}

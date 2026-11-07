@@ -70,6 +70,14 @@ const { t } = useI18n()
 }
 
 .feedback-claim-popup-mask {
+  --color-feedback-claim-mask: rgba(2, 8, 14, 0.7);
+  --color-feedback-claim-card: linear-gradient(180deg, #24a35a 0%, #17753f 56%, #0d3e2a 100%);
+  --color-feedback-claim-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.42), 0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 -34px 42px rgba(4, 22, 14, 0.45) inset;
+  --color-feedback-claim-muted: rgba(255, 255, 255, 0.68);
+  --color-feedback-claim-button: linear-gradient(90deg, #2ef58f 0%, #68ee7d 100%);
+  --color-feedback-claim-button-text: #00140b;
   position: fixed;
   inset: 0;
   z-index: 60;

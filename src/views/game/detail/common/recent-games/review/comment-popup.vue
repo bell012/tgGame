@@ -212,6 +212,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import { useThemeStore } from '@/stores/theme'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'

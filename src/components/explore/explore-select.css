@@ -1,0 +1,10 @@
+/* 发现页和娱乐城下拉共用。默认跟随全局不透明度，H5 深色单独指定描边色。 */
+:root {
+  --color-explore-checkbox-unchecked: var(--color-opacity-6);
+}
+
+@media (max-width: 640px) {
+  :root:not(.light) {
+    --color-explore-checkbox-unchecked: #7b7d7d;
+  }
+}

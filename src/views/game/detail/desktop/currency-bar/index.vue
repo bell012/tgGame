@@ -124,6 +124,7 @@ const shareClick = () => {
   font-weight: 600;
   line-height: 16px;
   white-space: nowrap;
+  --shadow-toolbar: 0 8px 24px rgba(0, 0, 0, 0.24);
   pointer-events: none;
   box-shadow: var(--shadow-toolbar);
   transform: translateX(-50%);

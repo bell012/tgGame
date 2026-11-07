@@ -163,6 +163,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import SmartImage from '@/components/common/SmartImage.vue'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?url'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'

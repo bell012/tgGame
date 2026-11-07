@@ -146,6 +146,7 @@
 </template>
 
 <script lang="ts" setup>
+import './explore-select.css'
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'

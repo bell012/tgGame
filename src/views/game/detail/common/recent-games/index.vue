@@ -60,6 +60,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import Api from '@/api'
 import type { GameRanListItem, GameTypeItem } from '@/api/interface/game'
 import { useGameStore } from '@/stores/game'

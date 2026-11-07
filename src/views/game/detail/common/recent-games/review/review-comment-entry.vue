@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?component'
 
 defineProps<{

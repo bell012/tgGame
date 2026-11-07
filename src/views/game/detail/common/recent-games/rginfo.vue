@@ -29,6 +29,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import { resolveGameMaxWinValue } from '@/views/game/detail/shared'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'

@@ -11,6 +11,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/components/common/popup-shadow.css'
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import FeedbackDetailPage from '../detail/index.vue'
 

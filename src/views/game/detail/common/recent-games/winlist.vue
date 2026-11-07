@@ -147,6 +147,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import RackIcon from '@/static/svg/game/detail/rank1.svg?url'
 import RankIcon2 from '@/static/svg/game/detail/rank2.svg?url'
 import RankIcon3 from '@/static/svg/game/detail/rank3.svg?url'

@@ -68,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import '../explore-select.css'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RadioCheckedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'

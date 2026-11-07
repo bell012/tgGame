@@ -181,7 +181,7 @@ const handleAfterLeave = () => {
   clip-path: inset(0 round 16px);
   background: var(--color-background-level-2);
   color: var(--color-text-level-1);
-  box-shadow: var(--shadow-customer-panel);
+  box-shadow: 0 8px 32px #0005;
 }
 .online-customer-panel.is-pending {
   background: transparent;
@@ -198,9 +198,9 @@ const handleAfterLeave = () => {
     env(safe-area-inset-left);
 }
 .online-customer-close {
-  --close-background: var(--color-customer-close);
-  --close-hover-background: var(--color-customer-close-hover);
-  --close-active-background: var(--color-customer-close-active);
+  --close-background: #3185ff;
+  --close-hover-background: #5299ff;
+  --close-active-background: #2675e8;
   position: absolute;
   z-index: 2;
   top: var(--close-offset);
@@ -217,9 +217,9 @@ const handleAfterLeave = () => {
   -webkit-tap-highlight-color: transparent;
 }
 .online-customer-close.is-neutral {
-  --close-background: var(--color-customer-close-neutral);
-  --close-hover-background: var(--color-customer-close-neutral-hover);
-  --close-active-background: var(--color-customer-close-neutral-active);
+  --close-background: rgba(255, 255, 255, 0.12);
+  --close-hover-background: rgba(255, 255, 255, 0.18);
+  --close-active-background: rgba(255, 255, 255, 0.24);
 }
 .online-customer-close::before {
   content: '';

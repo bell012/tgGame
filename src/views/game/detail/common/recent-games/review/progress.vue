@@ -4,6 +4,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 withDefaults(
   defineProps<{
     percent: number

@@ -73,6 +73,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import { useGameRating } from '@/composables/useGameRating'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import RatingAvatarP1 from '@/static/svg/game/detail/comment/p1.svg?url'
@@ -423,6 +424,11 @@ onBeforeUnmount(() => {
 }
 
 .sort-menu-popup-item-active {
+  --color-sort-item-active: linear-gradient(
+    90deg,
+    rgba(0, 255, 96, 0.3) 0%,
+    rgba(0, 255, 96, 0) 70%
+  );
   color: var(--color-text-level-1);
   background: var(--color-sort-item-active), var(--color-opacity-5);
 }

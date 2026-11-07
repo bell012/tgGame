@@ -41,6 +41,7 @@
   <CommonFooter class="hidden sm:block mt-[40px]" />
 </template>
 <script setup lang="ts">
+import '@/views/game/detail/styles/colors.css'
 import Api from '@/api'
 import { readIsCollections } from '@/api/interface/game'
 import CommonFooter from '@/components/commonFooter.vue'

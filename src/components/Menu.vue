@@ -488,6 +488,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/components/common/popup-shadow.css'
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 
 import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
@@ -1333,6 +1334,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   align-items: center;
   justify-content: center;
   padding: 20px;
+  --color-menu-mask: rgba(3, 10, 18, 0.65);
   background: var(--color-menu-mask);
 }
 

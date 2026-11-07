@@ -59,6 +59,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/components/common/popup-shadow.css'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'

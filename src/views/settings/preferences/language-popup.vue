@@ -74,6 +74,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/components/common/popup-shadow.css'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { Locale } from '@/utils/locale'
 import { useI18n } from 'vue-i18n'
