@@ -1,7 +1,11 @@
 <template>
   <Teleport to="body">
     <transition name="popup-fade">
-      <div v-show="visible" class="sheet-safe-mask z-[999] bg-mask-60-1" @click.self="close" />
+      <div
+        v-show="visible"
+        :class="props.desktop ? 'fixed inset-0 z-[999]' : 'sheet-safe-mask z-[999] bg-mask-60-1'"
+        @click.self="close"
+      />
     </transition>
     <transition :name="props.desktop ? 'popup-scale' : 'up-down'">
       <div
@@ -16,7 +20,7 @@
           :style="props.desktop ? desktopPanelStyle : undefined"
           :class="
             props.desktop
-              ? 'desktop-currency-panel pointer-events-auto overflow-hidden rounded-xl bg-bg-1 px-4 pb-4 pt-3'
+              ? 'desktop-currency-panel pointer-events-auto overflow-hidden rounded-[15px] border border-[rgba(255,255,255,0.20)] bg-popup-1 p-[12px]'
               : 'currency-drawer flex flex-col overflow-hidden rounded-t-xl bg-bg-1 px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2.5'
           "
         >
@@ -44,10 +48,14 @@
               :section-label="t('preferencesSettings.currencyPopupSectionLabel')"
               :list-class="
                 props.desktop
-                  ? 'max-h-[420px] overflow-y-auto overscroll-contain pr-0.5'
+                  ? 'overflow-y-auto overscroll-contain pr-0.5'
                   : 'min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5 h-[100%]'
               "
-              item-class="flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left"
+              :item-class="
+                props.desktop
+                  ? 'mb-1 last:mb-0 flex h-8 w-full items-center justify-between rounded-lg px-2 text-left'
+                  : 'mb-2.5 last:mb-0 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left'
+              "
               selected-item-class="bg-opacity-10"
               @select="handleSelect"
             />
@@ -144,7 +152,7 @@ const desktopPanelStyle = computed(() => {
   const viewportWidth = window.innerWidth
   const viewportHeight = window.innerHeight
   const sideGap = 16
-  const panelWidth = Math.min(Math.max(viewportWidth - sideGap * 2, 300), 560)
+  const panelWidth = 288
 
   const anchor = props.desktopAnchor
   let left = anchor ? anchor.left + anchor.width - panelWidth : (viewportWidth - panelWidth) / 2
@@ -157,7 +165,8 @@ const desktopPanelStyle = computed(() => {
     width: `${panelWidth}px`,
     left: `${left}px`,
     top: `${top}px`,
-    maxHeight: `calc(100vh - ${top + sideGap}px)`
+    height: '128px',
+    maxHeight: '128px'
   }
 })
 </script>

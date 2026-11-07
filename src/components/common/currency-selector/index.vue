@@ -79,12 +79,12 @@ const props = withDefaults(
     searchPlaceholder: '',
     sectionLabel: '',
     listClass: '',
-    sectionLabelClass: 'mb-2.5 text-xs font-[700] text-text-2',
+    sectionLabelClass: 'mb-2.5 text-xs font-[700] text-text-2 sm:text-[#fff]',
     itemClass:
       'mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left',
     selectedItemClass: 'bg-opacity-10',
-    labelClass: 'text-sm font-[700] text-text-1',
-    trailingClass: 'text-xs font-[500] text-text-1',
+    labelClass: 'text-sm font-[700] text-text-1 sm:text-[#fff]',
+    trailingClass: 'text-xs font-[500] text-text-1 sm:text-[#fff]',
     iconClass: 'h-5 w-5 object-contain',
     searchWrapperClass: 'relative mb-[10px]',
     searchInputClass:
