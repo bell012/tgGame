@@ -1178,7 +1178,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 @media (min-width: 641px) {
   .launch-card:hover {
-    background: var(--color-opacity-10);
+    background: var(--color-hover-1);
   }
 
   .launch-card:hover:not(.launch-card-active) .pc-menu-icon {
