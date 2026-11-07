@@ -75,6 +75,10 @@
   --color-input-level-1: rgba(255, 255, 255, 0.06);
   --color-input-level-2: rgba(255, 255, 255, 0.1);
   --color-input-level-3: rgba(0, 0, 0, 0.2);
+  /* ========== 悬停 (hover) ========== */
+  --color-hover-1: #444a4b;
+  /* ========== 小弹窗 (popup) ========== */
+  --color-popup-1: rgba(41, 45, 46, 0.2);
 
   /* ========== 首页分类卡片背景色 (Game Category) - 渐变色 ========== */
   --color-game-casino: linear-gradient(270deg, #265741 0%, #323738 69.69%);
@@ -253,8 +257,12 @@
 
   /* ========== 输入框色 (Input) - 浅色模式 ========== */
   --color-input-level-1: #ffffff;
-  --color-input-level-2: var(--color-background-level-3);
+  --color-input-level-2: #f0f0f0;
   --color-input-level-3: #ffffff;
+  /* ========== 悬停 (hover) ========== */
+  --color-hover-1: #f1f1f1;
+  /* ========== 小弹窗 (popup) ========== */
+  --color-popup-1: rgba(255, 255, 255, 0.2);
 
   /* ========== 首页分类卡片背景色 (Game Category) - 浅色模式 - 渐变色 ========== */
   --color-game-casino: linear-gradient(270deg, #bff9dc 0%, #ecfff5 75%);
@@ -289,7 +297,6 @@
   --color-comment-popup-title: #1d2a3d;
   --color-comment-emoji-hover: #e8f0fa;
   --color-comment-emoji-shadow: 0 0 41.807px rgba(172, 172, 172, 0.53);
-
   --color-sort-menu-shadow: 0 0 49px rgba(172, 172, 172, 0.53);
   --color-recent-games-tab-active: #ffffff;
   --color-recent-games-tab-idle: #5f6368;
