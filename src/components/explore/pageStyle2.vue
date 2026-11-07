@@ -10,7 +10,7 @@
 
     <div v-else-if="pageData.length > 0" class="grid w-full grid-cols-3 gap-[11px] sm:grid-cols-8">
       <div v-for="(game, index) in pageData" :key="game.rowId ?? index" class="aspect-[330/438]">
-        <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+        <CasinoGameCard fade-caption-on-hover :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
 
@@ -46,7 +46,7 @@ import ExplorePcPagination from './ExplorePcPagination.vue'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import casinoGameCard from './casinoGameCard.vue'
+import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 
 interface Props {
   queryOptions?: GameQueryOptions

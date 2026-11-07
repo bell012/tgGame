@@ -60,10 +60,11 @@
       <div
         v-for="(value, index) in normalizedList"
         :key="`${value.rowId ?? 'game'}-${index}`"
-        class="game-list-card aspect-[330/438] snap-start overflow-hidden rounded-lg transition-transform duration-200 ease-out transform-gpu sm:hover:-translate-y-2 active:translate-y-0 inactive"
+        class="game-list-card aspect-[330/438] snap-start rounded-lg transition-transform duration-200 ease-out transform-gpu sm:hover:-translate-y-2 active:translate-y-0 inactive"
       >
-        <casinoGameCard
-          class="size-full"
+        <CasinoGameCard
+          fade-caption-on-hover
+          class="size-full sm:hover:after:absolute sm:hover:after:inset-x-0 sm:hover:after:top-full sm:hover:after:h-2"
           :game="value"
           :hover-lift="false"
           @click="handleGameClick(value)"
@@ -98,7 +99,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateToName } from '@/utils/router'
 import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
 import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
-import casinoGameCard from '@/components/explore/casinoGameCard.vue'
+import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 import type { GameDataItem } from '@/api/interface/game'
 
 interface RawGameItem {

@@ -62,9 +62,12 @@
         <div
           v-for="(menu, menuIndex) in menuGroup"
           :key="menu.id"
-          class="flex flex-col bg-bg-3 rounded-lg"
+          class="flex flex-col bg-bg-2 sm:bg-bg-3 rounded-lg"
         >
-          <div v-if="hasGroupedChildren(menu)" class="bg-bg-3 rounded-lg overflow-visible">
+          <div
+            v-if="hasGroupedChildren(menu)"
+            class="bg-bg-2 sm:bg-bg-3 rounded-lg overflow-visible"
+          >
             <div
               v-for="(item, index) in menu.children"
               :key="item.id"
@@ -116,7 +119,7 @@
 
           <div
             v-else-if="isCollapsed && hasChildren(menu) && expandedMenus.includes(menu.id)"
-            class="bg-bg-3 rounded-lg overflow-visible"
+            class="bg-bg-2 sm:bg-bg-3 rounded-lg overflow-visible"
           >
             <div
               class="mt-[4px]"
@@ -176,7 +179,7 @@
           <div
             v-else-if="isCollapsed"
             :class="[
-              'relative flex items-center justify-between launch-card h-10 bg-bg-3 rounded-lg cursor-pointer menu-item-collapsed',
+              'relative flex items-center justify-between launch-card h-10 bg-bg-2 sm:bg-bg-3 rounded-lg cursor-pointer menu-item-collapsed',
               { 'border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
               { 'rounded-t-lg rounded-b-none': menuIndex === 0 && menuGroup.length > 1 },
               {
@@ -209,7 +212,7 @@
           <template v-else>
             <div
               :class="[
-                'flex items-center justify-between launch-card h-10 bg-bg-3 rounded-lg cursor-pointer',
+                'flex items-center justify-between launch-card h-10 bg-bg-2 sm:bg-bg-3 rounded-lg cursor-pointer',
                 { 'border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
                 { 'rounded-t-lg rounded-b-none': menuIndex === 0 && menuGroup.length > 1 },
                 {
@@ -267,13 +270,13 @@
             <transition name="expand">
               <div
                 v-if="hasChildren(menu) && expandedMenus.includes(menu.id)"
-                class="flex flex-col bg-bg-3 rounded-b-lg"
+                class="flex flex-col bg-bg-2 sm:bg-bg-3 rounded-b-lg"
               >
                 <div
                   v-for="item in menu.children"
                   :key="item.id"
                   :class="[
-                    'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-3 rounded-lg cursor-pointer',
+                    'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 sm:bg-bg-3 rounded-lg cursor-pointer',
                     { 'launch-card-active': isSubmenuBranchActive(item) }
                   ]"
                   @click="handleMenuItemClick(item)"
@@ -315,7 +318,7 @@
       <!-- 线上客服 -->
       <div
         :class="[
-          'flex items-center justify-between launch-card h-10 bg-bg-3 rounded-lg cursor-pointer mt-2.5 sm:mt-3',
+          'flex items-center justify-between launch-card h-10 bg-bg-2 sm:bg-bg-3 rounded-lg cursor-pointer mt-2.5 sm:mt-3',
           { 'relative menu-item-collapsed justify-center': isCollapsed },
           { 'launch-card-active': activeMenuId === 'customer-service' }
         ]"
@@ -335,7 +338,7 @@
       <!-- 语言切换 -->
       <div
         :class="[
-          'flex items-center justify-between launch-card h-10 bg-bg-3 rounded-lg cursor-pointer mt-2'
+          'flex items-center justify-between launch-card h-10 bg-bg-2 sm:bg-bg-3 rounded-lg cursor-pointer mt-2'
         ]"
         @click="openLanguagePopup()"
       >
@@ -1176,7 +1179,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 @media (min-width: 641px) {
   .launch-card:hover {
-    background: var(--color-opacity-10);
+    background: var(--color-hover-1);
   }
 
   .launch-card:hover:not(.launch-card-active) .pc-menu-icon {

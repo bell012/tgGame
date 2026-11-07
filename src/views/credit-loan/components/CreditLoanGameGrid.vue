@@ -16,7 +16,7 @@
       :class="{ 'opacity-60': isLoading && !isMobile }"
     >
       <div v-for="(game, index) in games" :key="game.rowId ?? index" class="aspect-[330/438]">
-        <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+        <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
     <ThemedEmptyState
@@ -53,7 +53,7 @@ import type { GameDataItem } from '@/api/interface/game'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useGameStore } from '@/stores/game'
 import { navigateToName } from '@/utils/router'
-import casinoGameCard from '@/views/fun/casino/components/casinoGameCard.vue'
+import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import defaultImgDark from '@/static/img/explore/default.png'

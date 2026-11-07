@@ -45,7 +45,7 @@
         <!-- 虚线分割线 -->
         <div
           aria-hidden="true"
-          class="reward-dashed-divider relative mx-[-14px] mt-[14px] border-t border-dashed before:absolute before:left-[-8px] before:top-0 before:h-4 before:w-4 before:-translate-y-1/2 before:rounded-full before:bg-bg-1 before:content-[''] after:absolute after:right-[-8px] after:top-0 after:h-4 after:w-4 after:-translate-y-1/2 after:rounded-full after:bg-bg-1 after:content-['']"
+          class="relative mx-[-14px] mt-[14px] border-t border-dashed border-[color:var(--color-recent-games-progress-track)] before:absolute before:left-[-8px] before:top-0 before:h-4 before:w-4 before:-translate-y-1/2 before:rounded-full before:bg-bg-1 before:content-[''] after:absolute after:right-[-8px] after:top-0 after:h-4 after:w-4 after:-translate-y-1/2 after:rounded-full after:bg-bg-1 after:content-['']"
         ></div>
 
         <div class="mt-[14px] flex items-center gap-[10px]">
@@ -196,13 +196,3 @@ const playGame = () => {
   navigateToName('gameDetail', { params: { rowId } })
 }
 </script>
-
-<style scoped>
-.reward-dashed-divider {
-  border-top-color: #474b4c;
-}
-
-:global(:root.light .reward-dashed-divider) {
-  border-top-color: #e5e5e5;
-}
-</style>

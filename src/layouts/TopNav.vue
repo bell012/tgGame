@@ -15,8 +15,35 @@
             ]"
           />
         </span>
+        <!-- H5端 Logo-->
+        <div
+          v-if="isLoggedIn"
+          class="flex sm:hidden w-[49px] h-[49px] ml-0 items-center cursor-pointer mobileLogo"
+          @click="handleHomeClick"
+        >
+          <SmartImage
+            v-if="mobileHomeTopLogoUrl"
+            :src="mobileHomeTopLogoUrl"
+            alt=""
+            class="w-full h-full object-contain"
+          />
+          <MainLogoIcon v-else class="w-full h-full text-text-1" />
+        </div>
+        <div
+          v-else
+          class="flex sm:hidden w-[150px] h-[48px] ml-[7px] items-center justify-start cursor-pointer"
+          @click="handleHomeClick"
+        >
+          <SmartImage
+            v-if="mobileHomeTopLogoUrl"
+            :src="mobileHomeTopLogoUrl"
+            alt=""
+            class="w-full h-full object-contain object-left"
+          />
+          <MainLogoIcon v-else class="w-full h-full text-text-1" />
+        </div>
       </div>
-      <!-- 左侧 -->
+      <!-- pc左侧 -->
       <div class="flex items-center">
         <div
           class="hidden sm:flex cursor-pointer search w-[40px] h-[40px] rounded-lg items-center justify-center"
@@ -43,33 +70,6 @@
             :src="desktopHomeTopLogoUrl"
             alt=""
             class="w-full h-full object-contain"
-          />
-          <MainLogoIcon v-else class="w-full h-full text-text-1" />
-        </div>
-        <!-- H5端 Logo-->
-        <div
-          v-if="isLoggedIn"
-          class="flex sm:hidden w-[26px] h-[26px] items-center cursor-pointer mobileLogo"
-          @click="handleHomeClick"
-        >
-          <SmartImage
-            v-if="mobileHomeTopLogoUrl"
-            :src="mobileHomeTopLogoUrl"
-            alt=""
-            class="w-full h-full object-contain"
-          />
-          <MainLogoIcon v-else class="w-full h-full text-text-1" />
-        </div>
-        <div
-          v-else
-          class="flex sm:hidden w-[150px] h-[48px] items-center justify-start cursor-pointer"
-          @click="handleHomeClick"
-        >
-          <SmartImage
-            v-if="mobileHomeTopLogoUrl"
-            :src="mobileHomeTopLogoUrl"
-            alt=""
-            class="w-full h-full object-contain object-left"
           />
           <MainLogoIcon v-else class="w-full h-full text-text-1" />
         </div>
@@ -973,9 +973,6 @@ defineExpose({
   .top-nav-inner {
     width: 117%;
     --top-nav-scale: 0.85;
-  }
-  .mobileLogo {
-    margin-left: 2px;
   }
 }
 </style>

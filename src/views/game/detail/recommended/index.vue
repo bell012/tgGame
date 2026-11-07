@@ -14,7 +14,8 @@
       >
         <template #item="{ item }">
           <div class="w-full aspect-[330/438]">
-            <casinoGameCard
+            <CasinoGameCard
+              fade-caption-on-hover
               class="size-full text-left"
               :game="toCasinoCardGame(item)"
               @click="handleGameClick(item)"
@@ -60,7 +61,8 @@
         >
           <template #item="{ item }">
             <div class="w-full aspect-[330/438] sm:aspect-auto sm:h-[213px] sm:w-[160px]">
-              <casinoGameCard
+              <CasinoGameCard
+                fade-caption-on-hover
                 class="size-full text-left"
                 :game="toCasinoCardGame(item)"
                 @click="handleGameClick(item)"
@@ -104,7 +106,7 @@ import { computed, nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { GameDataItem as CasinoCardGameDataItem } from '@/api/interface/game'
-import casinoGameCard from '@/components/explore/casinoGameCard.vue'
+import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 import {
   normalizeGameDetailValue,
   queryGameDetailRecommendedItems,

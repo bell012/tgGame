@@ -123,9 +123,10 @@
           </button>
         </div>
         <!-- 顶部横行滚动tab选择 -->
-        <div>
+        <div :class="{ '-mr-3.5 sm:-mr-4': isMobile }">
           <div
             ref="tabScrollRef"
+            :class="{ 'pr-3.5 sm:pr-4': isMobile }"
             class="my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
             @scroll="updateScrollState"
           >
@@ -199,9 +200,16 @@
         </div>
 
         <!-- 6种样式 -->
-        <div class="tabs-content filter-slide-stage min-h-48">
+        <div
+          class="tabs-content filter-slide-stage min-h-48"
+          :class="{ '-mr-3.5 sm:-mr-4': isMobile }"
+        >
           <Transition :name="slideName">
-            <div :key="tabSlideKey" class="filter-slide-pane w-full">
+            <div
+              :key="tabSlideKey"
+              class="filter-slide-pane w-full"
+              :class="{ 'pr-3.5 sm:pr-4': isMobile }"
+            >
               <component :is="getPageStyle" v-bind="currentPageProps" />
             </div>
           </Transition>

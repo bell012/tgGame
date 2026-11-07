@@ -22,7 +22,7 @@
             :key="game.rowId ?? index"
             class="aspect-[330/438]"
           >
-            <casinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
+            <CasinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
           </div>
         </div>
         <ThemedEmptyState
@@ -55,7 +55,7 @@
               :key="`rec-${game.rowId ?? index}`"
               class="aspect-[330/438]"
             >
-              <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+              <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
             </div>
           </div>
         </template>
@@ -92,7 +92,7 @@
           :key="game.rowId ?? index"
           class="aspect-[330/438]"
         >
-          <casinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
+          <CasinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
         </div>
       </div>
       <ThemedEmptyState
@@ -125,7 +125,7 @@
             :key="`rec-pc-${game.rowId ?? index}`"
             class="aspect-[330/438]"
           >
-            <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+            <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
           </div>
         </div>
       </template>
@@ -151,7 +151,7 @@ import { navigateToName } from '@/utils/router'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
-import casinoGameCard from '../components/casinoGameCard.vue'
+import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 import { getCasinoQueryOptions } from '../casinoPageConfig'
 
 const { t } = useI18n()

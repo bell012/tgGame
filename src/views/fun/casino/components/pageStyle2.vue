@@ -20,7 +20,7 @@
         :key="game.rowId ?? i"
         class="aspect-[330/438] sm:aspect-auto sm:h-[213px] sm:w-[160px]"
       >
-        <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+        <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
     <div
@@ -96,7 +96,7 @@ import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import casinoGameCard from './casinoGameCard.vue'
+import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 
 interface Props {
   queryOptions?: GameQueryOptions
