@@ -84,7 +84,7 @@ const pendingTotalText = computed(() =>
 const panelClass = computed(() =>
   props.inline
     ? 'absolute inset-x-0 top-full mx-auto w-[92.5%] rounded-xl bg-mask-60-1 p-[10px] backdrop-blur-[15px]'
-    : 'absolute right-0 top-[calc(100%+8px)] w-[480px] rounded-lg bg-bg-5 px-5 py-4 shadow-[0_18px_44px_rgba(0,0,0,0.4)]'
+    : 'absolute right-0 top-[calc(100%+8px)] w-[480px] rounded-lg border border-[color:var(--color-popup-2)] bg-popup-1 px-5 py-4'
 )
 
 const close = () => emit('update:visible', false)

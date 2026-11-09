@@ -23,7 +23,10 @@
     </button>
   </div>
 
-  <div v-else class="relative rounded-lg bg-bg-3">
+  <div
+    v-else
+    class="relative rounded-lg border border-[color:var(--color-popup-2)] bg-popup-1 transition-colors hover:bg-opacity-6"
+  >
     <span
       class="reward-claim-promo-badge absolute left-0 top-0 rounded-tl-lg rounded-br-lg px-2 py-0.5 text-[10px] font-normal leading-none text-text-1"
     >
