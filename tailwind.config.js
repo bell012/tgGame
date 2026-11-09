@@ -83,6 +83,7 @@ export default {
         'input-3': 'var(--color-input-level-3)',
         'hover-1': 'var(--color-hover-1)',
         'popup-1': 'var(--color-popup-1)',
+        'popup-2': 'var(--color-popup-2)',
 
         // ========== 红包本体色（避免 red- 前缀命中 Tailwind 默认 red 色阶） ==========
         'packet-body': 'var(--color-red-packet-body)',

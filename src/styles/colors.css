@@ -79,6 +79,8 @@
   --color-hover-1: #444a4b;
   /* ========== 小弹窗 (popup) - 深色模式 ========== */
   --color-popup-1: rgba(41, 45, 46, 0.2);
+  /* ========== 小弹窗描边 (popup) - 深色模式 ========== */
+  --color-popup-2: rgba(255, 255, 255, 0.2);
 
   /* ========== 首页分类卡片背景色 (Game Category) - 渐变色 - 深色模式 ========== */
   --color-game-casino: linear-gradient(270deg, #265741 0%, #323738 69.69%);
@@ -174,6 +176,8 @@
   --color-hover-1: #f1f1f1;
   /* ========== 小弹窗 (popup) - 浅色模式 ========== */
   --color-popup-1: rgba(255, 255, 255, 0.2);
+  /* ========== 小弹窗描边 (popup) - 浅色模式 ========== */
+  --color-popup-2: rgba(255, 255, 255, 0.2);
 
   /* ========== 首页分类卡片背景色 (Game Category) - 浅色模式 - 渐变色 ========== */
   --color-game-casino: linear-gradient(270deg, #bff9dc 0%, #ecfff5 75%);
