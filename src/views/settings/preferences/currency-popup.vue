@@ -20,7 +20,7 @@
           :style="props.desktop ? desktopPanelStyle : undefined"
           :class="
             props.desktop
-              ? 'desktop-currency-panel pointer-events-auto overflow-hidden rounded-[15px] border border-[rgba(255,255,255,0.20)] bg-popup-1 p-[12px]'
+              ? 'desktop-currency-panel pointer-events-auto overflow-hidden rounded-[15px] border border-[color:var(--color-popup-2)] bg-popup-1 p-[12px]'
               : 'currency-drawer flex flex-col overflow-hidden rounded-t-xl bg-bg-1 px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2.5'
           "
         >
@@ -53,7 +53,7 @@
               "
               :item-class="
                 props.desktop
-                  ? 'mb-1 last:mb-0 flex h-8 w-full items-center justify-between rounded-lg px-2 text-left'
+                  ? 'mb-1 last:mb-0 flex h-8 w-full items-center justify-between rounded-lg px-2 text-left hover:bg-opacity-6'
                   : 'mb-2.5 last:mb-0 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left'
               "
               selected-item-class="bg-opacity-10"
@@ -166,8 +166,8 @@ const desktopPanelStyle = computed(() => {
     width: `${panelWidth}px`,
     left: `${left}px`,
     top: `${top}px`,
-    height: '128px',
-    maxHeight: '128px'
+    height: '142px',
+    maxHeight: '142px'
   }
 })
 </script>
