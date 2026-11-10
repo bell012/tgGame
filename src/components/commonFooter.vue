@@ -263,7 +263,17 @@
         <!-- 左边：Logo -->
         <div class="flex-1 text-left">
           <div class="h-12 flex items-start">
-            <MainLogoIcon class="h-8 w-auto text-text-1" :alt="t('common_footer.alt.logo')" />
+            <SmartImage
+              v-if="desktopHomeTopLogoUrl"
+              :src="desktopHomeTopLogoUrl"
+              :alt="t('common_footer.alt.logo')"
+              class="h-8 w-auto object-contain"
+            />
+            <MainLogoIcon
+              v-else
+              class="h-8 w-auto text-text-1"
+              :alt="t('common_footer.alt.logo')"
+            />
           </div>
           <!-- 文字说明 -->
           <div class="mt-6 max-w-xl space-y-4">
@@ -315,6 +325,8 @@ import { computed, onMounted, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useThemeStore } from '@/stores/theme'
+import { useLocaleStore } from '@/stores/locale'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 
 import { navigateTo } from '@/utils/router'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
@@ -379,6 +391,12 @@ const footer4_2Image = new URL('@/static/img/commonFooter/footer_4_2.png', impor
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 
 const { t } = useI18n()
+const localeStore = useLocaleStore()
+const siteConfigStore = useSiteConfigStore()
+const { currentLanguage } = storeToRefs(localeStore)
+const desktopHomeTopLogoUrl = computed(() =>
+  siteConfigStore.getHomeTopLogoUrl(3, currentLanguage.value)
+)
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
 const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
 
@@ -888,6 +906,8 @@ const bottomCertification = {
 }
 
 onMounted(() => {
+  siteConfigStore.syncStoredConfig()
+  void siteConfigStore.initSiteConfig()
   void loadCasinoTabButtons()
 })
 </script>

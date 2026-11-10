@@ -350,7 +350,7 @@
     <!-- PC 搜索弹窗 -->
     <ExploreDesktop v-model="showExplorehModal" />
 
-    <DepositPop v-model="showDepositPop" />
+    <!-- <DepositPop v-model="showDepositPop" /> -->
   </header>
 </template>
 
@@ -382,7 +382,7 @@ import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
-import DepositPop from '@/views/wallet/deposit/components/DepositPop.vue'
+// import DepositPop from '@/views/wallet/deposit/components/DepositPop.vue'
 import RewardClaimPopup from '@/views/reward-center/components/RewardClaimPopup.vue'
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, onMounted, ref, watch, type ComponentPublicInstance } from 'vue'
@@ -429,7 +429,7 @@ const showCurrencyPopup = ref(false)
 const currencyPopupAnchor = ref<PopupAnchorRect | null>(null)
 
 const showExplorehModal = ref(false)
-const showDepositPop = ref(false)
+// const showDepositPop = ref(false)
 const showRewardClaimPopup = ref(false)
 const mobileGiftMenuRef = ref<HTMLElement | null>(null)
 const mobileRewardClaimPopupRef = ref<ComponentPublicInstance<RewardClaimPopupExpose> | null>(null)
@@ -681,7 +681,7 @@ const closeTransientTopNavPopups = () => {
   showGuestLocalePopup.value = false
   showCurrencyPopup.value = false
   showExplorehModal.value = false
-  showDepositPop.value = false
+  // showDepositPop.value = false
   showRewardClaimPopup.value = false
   showUserMenu.value = false
   currencyPopupAnchor.value = null
@@ -836,7 +836,8 @@ const openDeposit = () => {
   showCurrencyPopup.value = false
   showUserMenu.value = false
   showRewardClaimPopup.value = false
-  showDepositPop.value = true
+  // 暂时修改：点击充值跳转至独立充值页面
+  navigateTo('/deposit')
 }
 
 const openRewardClaimPopup = () => {
