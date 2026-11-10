@@ -933,13 +933,13 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       handler: () => navigateTo('/sports'),
       groupKey: 'sports'
     },
-    {
-      id: 'hashGame',
-      name: t('menu.hashGame'),
-      icon: newSideIcons.hashGame,
-      handler: () => navigateTo('/hash-game'),
-      groupKey: 'hashGame'
-    },
+    // {
+    //   id: 'hashGame',
+    //   name: t('menu.hashGame'),
+    //   icon: newSideIcons.hashGame,
+    //   handler: () => navigateTo('/hash-game'),
+    //   groupKey: 'hashGame'
+    // },
     ...(isLoggedIn.value
       ? [
           {
@@ -1003,13 +1003,13 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
         redPacketPanelStore.open()
       }
     },
-    {
-      id: 'credit-loan',
-      name: t('menu.credit-loan'),
-      icon: newSideIcons.creditLoanIcon,
-      groupKey: 'credit-loan',
-      handler: () => navigateTo('/credit-loan')
-    },
+    // {
+    //   id: 'credit-loan',
+    //   name: t('menu.credit-loan'),
+    //   icon: newSideIcons.creditLoanIcon,
+    //   groupKey: 'credit-loan',
+    //   handler: () => navigateTo('/credit-loan')
+    // },
     {
       id: 'vip-center',
       name: t('menu.vip-center'),
@@ -1159,12 +1159,12 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 }
 
 .launch-card:hover {
-  background: var(--color-opacity-10);
+  background: var(--color-hover-1);
   border-radius: 8px;
 }
 
 .launch-card-active {
-  background: var(--color-opacity-10);
+  background: var(--color-hover-1);
   border-radius: 8px;
 }
 
@@ -1182,14 +1182,20 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
     background: var(--color-hover-1);
   }
 
-  .launch-card:hover:not(.launch-card-active) .pc-menu-icon {
+  .launch-card:hover :deep(.pc-menu-icon) {
     width: 24px;
     height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    flex-shrink: 0;
+  }
+
+  .launch-card:hover:not(.launch-card-active) :deep(.pc-menu-icon) {
     color: var(--color-icon-level-1);
   }
 
   .launch-card-active {
-    background: var(--color-opacity-10);
+    background: var(--color-hover-1);
     color: var(--color-theme-level-1);
   }
 

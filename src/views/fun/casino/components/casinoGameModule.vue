@@ -14,7 +14,10 @@
         :class="
           mobileLobbyProviders
             ? providerRailClasses
-            : 'gap-2 auto-cols-[31.2%] sm:auto-cols-[11.82%]'
+            : [
+                'gap-2 auto-cols-[31.2%] sm:auto-cols-[11.82%]',
+                isCasinoProviderModule ? 'provider-rail' : ''
+              ]
         "
       >
         <div
@@ -23,7 +26,13 @@
             : skeletonCardCount"
           :key="cardIndex"
           class="rounded-lg bg-bg-2 animate-pulse"
-          :class="mobileLobbyProviders ? 'aspect-square' : 'aspect-[330/438]'"
+          :class="
+            mobileLobbyProviders
+              ? 'aspect-square'
+              : isCasinoProviderModule
+                ? 'provider-tile h-16'
+                : 'aspect-[330/438]'
+          "
         />
       </div>
     </template>
@@ -83,17 +92,32 @@
           :class="
             mobileLobbyProviders
               ? providerRailClasses
-              : '-mx-[14px] auto-cols-[31.2%] gap-2 px-[14px] [scroll-padding-inline:14px] sm:mx-0 sm:auto-cols-[11.82%] sm:px-0 sm:[scroll-padding-inline:0]'
+              : [
+                  '-mx-[14px] auto-cols-[31.2%] gap-2 px-[14px] [scroll-padding-inline:14px] sm:mx-0 sm:auto-cols-[11.82%] sm:px-0 sm:[scroll-padding-inline:0]',
+                  props.viewAllMode === 'casino' ? 'provider-rail' : ''
+                ]
           "
         >
           <div
             v-for="(brand, i) in getDisplayBrandList(props.module.brandItems)"
             :key="brand.rowId ?? i"
             class="flex shrink-0 snap-start items-center justify-center rounded-lg bg-bg-2"
-            :class="mobileLobbyProviders ? 'aspect-square' : 'h-16'"
+            :class="[
+              mobileLobbyProviders ? 'aspect-square' : 'h-16',
+              props.viewAllMode === 'casino' ? 'provider-tile' : ''
+            ]"
             @click="handleBrandClick(brand)"
           >
-            <div :class="mobileLobbyProviders ? 'h-6 w-[35px]' : 'h-6 w-4/5 sm:h-11'">
+            <div
+              :class="
+                mobileLobbyProviders
+                  ? 'h-6 w-[35px]'
+                  : [
+                      'h-6 w-4/5 sm:h-11',
+                      props.viewAllMode === 'casino' ? 'provider-logo-wrap' : ''
+                    ]
+              "
+            >
               <gameRemoteImg
                 :img="getBrandImg(brand)"
                 :alt="brand.brandName"
@@ -180,6 +204,9 @@ const mobileLobbyProviders = computed(
     isMobile.value &&
     props.viewAllMode === 'casino' &&
     props.module?.sysGameTypeCode === 'providers'
+)
+const isCasinoProviderModule = computed(
+  () => props.viewAllMode === 'casino' && props.module?.sysGameTypeCode === 'providers'
 )
 const skeletonCardCount = computed(() => (isMobile.value ? 4 : 8))
 const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
@@ -336,3 +363,28 @@ onUnmounted(() => {
   resizeObserver?.disconnect()
 })
 </script>
+
+<style scoped lang="scss">
+@media (min-width: 641px) {
+  .provider-rail {
+    grid-auto-columns: 64px;
+    gap: 8px;
+  }
+
+  .provider-tile {
+    width: 64px;
+    height: 64px;
+    aspect-ratio: 1;
+  }
+
+  .provider-logo-wrap {
+    width: 40px;
+    height: 40px;
+  }
+
+  .provider-tile :deep(.game-remote-root) {
+    border-radius: 8px;
+    background-color: transparent;
+  }
+}
+</style>

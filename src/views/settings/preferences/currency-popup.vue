@@ -53,7 +53,7 @@
               "
               :item-class="
                 props.desktop
-                  ? 'mb-1 last:mb-0 flex h-8 w-full items-center justify-between rounded-lg px-2 text-left'
+                  ? 'mb-1 last:mb-0 flex h-8 w-full items-center justify-between rounded-lg px-2 text-left hover:bg-opacity-6'
                   : 'mb-2.5 last:mb-0 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left'
               "
               selected-item-class="bg-opacity-10"

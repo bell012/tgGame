@@ -4,17 +4,17 @@
     <transition name="dropdown-fade">
       <div
         v-if="modelValue"
-        class="absolute top-[52px] right-0 w-[240px] bg-bg-5 rounded-lg overflow-hidden z-50"
+        class="absolute top-[52px] right-0 z-50 w-[240px] overflow-hidden rounded-lg border border-[color:var(--color-popup-2)] bg-popup-1"
       >
         <div class="p-2">
           <div
             v-for="item in mainMenus"
             :key="item.id"
-            class="flex items-center gap-2 p-2 cursor-pointer hover:bg-bg-3 hover:rounded-lg transition-colors"
+            class="flex cursor-pointer items-center gap-2 rounded-lg p-2 transition-colors hover:bg-opacity-6"
             @click="item.handler"
           >
-            <component :is="item.icon" class="w-6 h-6" />
-            <span class="text-text-2 text-sm font-[700]">{{ item.name }}</span>
+            <component :is="item.icon" class="h-6 w-6 text-text-1" />
+            <span class="text-text-1 text-sm font-[700]">{{ item.name }}</span>
           </div>
         </div>
       </div>
@@ -53,7 +53,7 @@ const isMobile = useIsMobile()
 // 动态导入图标
 const getIcon = (iconNumber: number) => {
   return defineAsyncComponent(
-    () => import(`@/static/svg/personalCenter/icon${iconNumber}.svg?component`)
+    () => import(`@/static/svg/personalCenter/new-icon/icon${iconNumber}.svg?component`)
   )
 }
 
@@ -135,7 +135,7 @@ const mainMenus = computed(() => [
   {
     id: 'wallet',
     name: t('userMenu.wallet'),
-    icon: getIcon(60),
+    icon: getIcon(1),
     handler: () => {
       console.log('wallet')
       emit('update:modelValue', false)
@@ -144,7 +144,7 @@ const mainMenus = computed(() => [
   {
     id: 'withdraw',
     name: t('userMenu.withdraw'),
-    icon: getIcon(61),
+    icon: getIcon(2),
     handler: () => {
       navigateTo('/withdraw')
       emit('update:modelValue', false)
@@ -153,7 +153,7 @@ const mainMenus = computed(() => [
   {
     id: 'myVouchers',
     name: t('personalCenter.myVouchers'),
-    icon: getIcon(84),
+    icon: getIcon(3),
     handler: () => {
       navigateTo('/myVouchers')
       emit('update:modelValue', false)
@@ -162,7 +162,7 @@ const mainMenus = computed(() => [
   {
     id: 'buy-crypto',
     name: t('userMenu.buyCrypto'),
-    icon: getIcon(62),
+    icon: getIcon(5),
     handler: () => {
       navigateTo('/deposit')
       emit('update:modelValue', false)
@@ -171,7 +171,7 @@ const mainMenus = computed(() => [
   {
     id: 'transactions',
     name: t('userMenu.transactions'),
-    icon: getIcon(63),
+    icon: getIcon(4),
     handler: () => {
       navigateTo('/transaction')
       emit('update:modelValue', false)
@@ -180,7 +180,7 @@ const mainMenus = computed(() => [
   {
     id: 'bet-history',
     name: t('userMenu.betHistory'),
-    icon: getIcon(64),
+    icon: getIcon(6),
     handler: () => {
       navigateTo('/bet-history')
       emit('update:modelValue', false)
@@ -189,7 +189,7 @@ const mainMenus = computed(() => [
   {
     id: 'rollover-overview',
     name: t('personalCenter.rollover'),
-    icon: getIcon(65),
+    icon: getIcon(7),
     handler: () => {
       navigateTo('/rollover')
       emit('update:modelValue', false)
@@ -198,7 +198,7 @@ const mainMenus = computed(() => [
   {
     id: 'vip-club',
     name: t('userMenu.vipClub'),
-    icon: getIcon(66),
+    icon: getIcon(8),
     handler: () => {
       navigateTo('/vip')
       emit('update:modelValue', false)
@@ -207,7 +207,7 @@ const mainMenus = computed(() => [
   // {
   //   id: 'vault-pro',
   //   name: t('userMenu.vaultPro'),
-  //   icon: getIcon(67),
+  //   icon: getIcon(9),
   //   handler: () => {
   //     console.log('Vault Pro clicked')
   //     emit('update:modelValue', false)
@@ -216,7 +216,7 @@ const mainMenus = computed(() => [
   {
     id: 'referral',
     name: t('userMenu.referral'),
-    icon: getIcon(68),
+    icon: getIcon(11),
     handler: () => {
       console.log('Referral clicked')
       emit('update:modelValue', false)
@@ -225,7 +225,7 @@ const mainMenus = computed(() => [
   {
     id: 'my-profile',
     name: t('userMenu.myProfile'),
-    icon: getIcon(69),
+    icon: getIcon(12),
     handler: () => {
       openMyProfilePopup()
     }
@@ -233,7 +233,7 @@ const mainMenus = computed(() => [
   {
     id: 'global-settings',
     name: t('userMenu.globalSettings'),
-    icon: getIcon(70),
+    icon: getIcon(13),
     handler: () => {
       navigateTo('/security')
       emit('update:modelValue', false)
@@ -242,7 +242,7 @@ const mainMenus = computed(() => [
   {
     id: 'log-out',
     name: t('userMenu.logOut'),
-    icon: getIcon(71),
+    icon: getIcon(14),
     handler: () => {
       emit('update:modelValue', false)
       showSignOutPopup.value = true

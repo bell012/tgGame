@@ -297,23 +297,25 @@
         <!-- 语言和币种选择 (未登录时显示) -->
         <div
           v-if="!isLoggedIn"
-          class="flex items-center justify-center w-auto h-[40px] rounded-lg overflow-hidden relative"
+          ref="guestLocaleRef"
+          class="relative flex h-[40px] w-auto items-center justify-center rounded-lg"
         >
           <div
-            class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px]"
-            @click="openLanguageModal"
+            class="search hidden h-[40px] w-[40px] cursor-pointer items-center justify-center sm:flex"
+            @click="toggleGuestLocalePopup"
           >
-            <LanguageIcon class="w-6 h-6 fill-none" />
+            <LanguageIcon class="h-6 w-6 fill-none" />
           </div>
           <template v-if="localeStore.currentCurrency !== 'none'">
             <div class="absolute left-10 top-2 h-6 w-[1px] bg-opacity-10"></div>
             <div
-              class="hidden sm:flex items-center justify-center cursor-pointer search w-auto h-[40px] px-2"
-              @click="openCurrencyModal"
+              class="search hidden h-[40px] w-auto cursor-pointer items-center justify-center px-2 sm:flex"
+              @click="toggleGuestLocalePopup"
             >
               <span class="text">{{ localeStore.currentCurrency }}</span>
             </div>
           </template>
+          <GuestLocaleCurrencyPopup v-model="showGuestLocalePopup" />
         </div>
       </div>
     </div>
@@ -354,6 +356,7 @@
 
 <script setup lang="ts">
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
+import GuestLocaleCurrencyPopup from '@/components/GuestLocaleCurrencyPopup.vue'
 import SelectModal from '@/components/SelectModal.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -420,6 +423,8 @@ const emit = defineEmits<{
 
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
+const showGuestLocalePopup = ref(false)
+const guestLocaleRef = ref<HTMLElement | null>(null)
 const showCurrencyPopup = ref(false)
 const currencyPopupAnchor = ref<PopupAnchorRect | null>(null)
 
@@ -643,6 +648,14 @@ const handleDocumentClick = (event: MouseEvent) => {
     showUserMenu.value = false
   }
 
+  if (
+    showGuestLocalePopup.value &&
+    guestLocaleRef.value &&
+    !guestLocaleRef.value.contains(target)
+  ) {
+    showGuestLocalePopup.value = false
+  }
+
   if (!showRewardClaimPopup.value) {
     return
   }
@@ -665,6 +678,7 @@ const handleDocumentClick = (event: MouseEvent) => {
 // PC/H5 视口模式切换时关闭顶部导航的临时弹层，避免端专属弹窗跨布局残留。
 const closeTransientTopNavPopups = () => {
   showModal.value = false
+  showGuestLocalePopup.value = false
   showCurrencyPopup.value = false
   showExplorehModal.value = false
   showDepositPop.value = false
@@ -756,13 +770,14 @@ const handleToggleSidebar = () => {
   emit('toggle-sidebar')
 }
 
-const openLanguageModal = () => {
-  modalType.value = 'language'
-  showModal.value = true
+const toggleGuestLocalePopup = () => {
+  showModal.value = false
+  showGuestLocalePopup.value = !showGuestLocalePopup.value
 }
 
-const openCurrencyModal = () => {
-  modalType.value = 'currency'
+const openLanguageModal = () => {
+  showGuestLocalePopup.value = false
+  modalType.value = 'language'
   showModal.value = true
 }
 
