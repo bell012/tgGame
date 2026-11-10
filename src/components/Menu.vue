@@ -933,13 +933,13 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       handler: () => navigateTo('/sports'),
       groupKey: 'sports'
     },
-    {
-      id: 'hashGame',
-      name: t('menu.hashGame'),
-      icon: newSideIcons.hashGame,
-      handler: () => navigateTo('/hash-game'),
-      groupKey: 'hashGame'
-    },
+    // {
+    //   id: 'hashGame',
+    //   name: t('menu.hashGame'),
+    //   icon: newSideIcons.hashGame,
+    //   handler: () => navigateTo('/hash-game'),
+    //   groupKey: 'hashGame'
+    // },
     ...(isLoggedIn.value
       ? [
           {
@@ -1003,13 +1003,13 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
         redPacketPanelStore.open()
       }
     },
-    {
-      id: 'credit-loan',
-      name: t('menu.credit-loan'),
-      icon: newSideIcons.creditLoanIcon,
-      groupKey: 'credit-loan',
-      handler: () => navigateTo('/credit-loan')
-    },
+    // {
+    //   id: 'credit-loan',
+    //   name: t('menu.credit-loan'),
+    //   icon: newSideIcons.creditLoanIcon,
+    //   groupKey: 'credit-loan',
+    //   handler: () => navigateTo('/credit-loan')
+    // },
     {
       id: 'vip-center',
       name: t('menu.vip-center'),

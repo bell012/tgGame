@@ -296,7 +296,7 @@ import RecentBigWins from './components/RecentBigWins.vue'
 import slotsIcon from './img/Image.svg?url'
 import fishingIcon from './img/Image1.svg?url'
 import liveIcon from './img/Image2.svg?url'
-import lotteryIcon from './img/Image3.svg?url'
+// import lotteryIcon from './img/Image3.svg?url'
 import casinoIcon from './img/Image5.svg?url'
 import sportsIcon from './img/Image6.svg?url'
 import contractIcon from './img/pokerIcon.svg?url'
@@ -326,7 +326,7 @@ import slotsCardImg from '@/static/img/home/slots.png'
 import contractCardImg from '@/static/img/home/contract.png'
 import fishingCardImg from '@/static/img/home/fishing.png'
 import liveCardImg from '@/static/img/home/live-casino.png'
-import lotteryCardImg from '@/static/img/home/lottery.png'
+// import lotteryCardImg from '@/static/img/home/lottery.png'
 import casinoCardH5Img from '@/static/img/home/h5/casino.png'
 import sportsCardH5Img from '@/static/img/home/h5/sports.png'
 import slotsCardH5Img from '@/static/img/home/h5/slots.png'
@@ -334,7 +334,7 @@ import contractCardH5Img from '@/static/img/home/h5/contract.png'
 // h5 目录下 FISHING / LIVE / Lottery 三张图的文件名与内容错位，按图片内容引用
 import fishingCardH5Img from '@/static/img/home/h5/lottery.png'
 import liveCardH5Img from '@/static/img/home/h5/fishing.png'
-import lotteryCardH5Img from '@/static/img/home/h5/live.png'
+// import lotteryCardH5Img from '@/static/img/home/h5/live.png'
 
 interface EventListItem {
   image: string
@@ -425,15 +425,15 @@ const listImg = computed(() => [
     h5Img: liveCardH5Img,
     icon: liveIcon,
     path: '/casino/live'
-  },
-  {
-    name: t('home.hash'),
-    h5Name: t('home.hash'),
-    img: lotteryCardImg,
-    h5Img: lotteryCardH5Img,
-    icon: lotteryIcon,
-    path: '/hash-game'
   }
+  // {
+  //   name: t('home.hash'),
+  //   h5Name: t('home.hash'),
+  //   img: lotteryCardImg,
+  //   h5Img: lotteryCardH5Img,
+  //   icon: lotteryIcon,
+  //   path: '/hash-game'
+  // }
 ])
 
 const getCardBgStyle = (card: { img: string; h5Img: string }) => ({
