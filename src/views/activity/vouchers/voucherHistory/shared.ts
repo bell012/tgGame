@@ -174,12 +174,12 @@ const resolveItemId = (record: VoucherHistoryRecord): string => {
   return `${record.memberRowId ?? ''}-${record.ticketType ?? ''}-${record.receiveTime ?? ''}`
 }
 
-/** 把金额格式化为带 +/- 符号的字符串；当接口未返回 amount 时返回空串 */
+/** 把金额格式化为带 +/- 符号、固定两位小数的字符串；当接口未返回 amount 时返回空串 */
 const formatAmountText = (amount: number | null): string => {
   if (amount === null) return ''
-  if (amount > 0) return `+${amount}`
-  if (amount < 0) return `${amount}`
-  return '0'
+  const text = amount.toFixed(2)
+  if (amount > 0) return `+${text}`
+  return text
 }
 
 /** 单条记录 → 页面展示项 */
@@ -208,12 +208,8 @@ export const mapRecordToItem = (
 export const calcTotalBonusWon = (items: ReadonlyArray<{ amount: number | null }>): number =>
   items.reduce((sum, item) => (item.amount === null ? sum : sum + item.amount), 0)
 
-/** 把 totalBonusWon 展示文本 */
-export const formatTotalBonusWonText = (total: number): string => {
-  if (total > 0) return `${total}`
-  if (total < 0) return `${total}`
-  return '0'
-}
+/** 把 totalBonusWon 展示为固定两位小数 */
+export const formatTotalBonusWonText = (total: number): string => total.toFixed(2)
 
 /** 根据 total 判断是否还有下一页 */
 export const hasMoreByTotal = (
