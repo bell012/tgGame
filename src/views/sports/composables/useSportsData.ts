@@ -15,7 +15,7 @@ import { useMatchDisplay } from './useMatchDisplay'
 import { createHomepageRefresh } from './refreshScheduler'
 import { useMatchTime } from './useMatchTime'
 
-const MATCH_PAGE_SIZE = 12
+const MATCH_PAGE_SIZE = 24
 
 type SportsDataOptions = {
   getTeamLogoUrl: (id: number) => string
