@@ -1,9 +1,9 @@
 /**
- * 颜色变量 - 暗黑模式（默认）
+ * 颜色变量 - 深色模式（默认）
  */
 
 :root {
-  /* ========== 背景色 (Background) - 暗黑模式 ========== */
+  /* ========== 背景色 (Background) - 深色模式 ========== */
   --color-background-level-1: #242626;
   --color-background-level-2: #323738;
   --color-background-level-3: #3b4142;
@@ -15,24 +15,24 @@
   --color-background-level-9: #282c2d;
   --color-background-odds-hover-light: #d0d2d2;
 
-  /* ========== 主色 (Theme) ========== */
+  /* ========== 主色 (Theme) - 深色模式 ========== */
   --color-theme-level-1: #2aee88;
   --color-theme-level-2: rgba(42, 238, 136, 0.4);
   --color-theme-level-3: rgba(42, 238, 136, 0.15);
 
-  /* ========== 文字色 (Text) ========== */
+  /* ========== 文字色 (Text) - 深色模式 ========== */
   --color-text-level-1: #ffffff;
   --color-text-level-2: #b3bec1;
   --color-text-level-3: #7b7d7d;
   --color-text-level-4: #000000;
 
-  /* ========== 图标色 (Icon) ========== */
+  /* ========== 图标色 (Icon) - 深色模式 ========== */
   --color-icon-level-1: #ffffff;
   --color-icon-level-2: #b3bec1;
   --color-icon-level-3: #7b7d7d;
   --color-icon-level-4: #000000;
 
-  /* ========== 不透明度 (Opacity) ========== */
+  /* ========== 不透明度 (Opacity) - 深色模式 ========== */
   --color-opacity-5: rgba(255, 255, 255, 0.06);
   --color-opacity-6: rgba(255, 255, 255, 0.06);
   --color-opacity-10: rgba(255, 255, 255, 0.1);
@@ -41,7 +41,7 @@
   --color-opacity-60: rgba(255, 255, 255, 0.6);
   --color-opacity-80: rgba(255, 255, 255, 0.8);
 
-  /* ========== 遮罩色 (Mask) ========== */
+  /* ========== 遮罩色 (Mask) - 深色模式 ========== */
   --color-mask-20: rgba(0, 0, 0, 0.2);
   --color-mask-40: rgba(0, 0, 0, 0.4);
   --color-mask-60-1: rgba(0, 0, 0, 0.6);
@@ -49,7 +49,7 @@
   --color-mask-96-3: rgba(35, 38, 38, 0.96);
   --color-mask-100-4: rgba(35, 38, 38, 1);
 
-  /* ========== 次要色 (Secondary) ========== */
+  /* ========== 次要色 (Secondary) - 深色模式 ========== */
   --color-secondary-level-1: rgba(252, 60, 60, 0.15);
   --color-secondary-level-2: #fc3c3c;
   --color-secondary-level-3: rgba(42, 238, 138, 0.15);
@@ -62,25 +62,27 @@
   --color-secondary-level-10: #ffd117;
   --color-secondary-level-11: #1fdcbc;
 
-  /* ========== 辅助色 (Assist) ========== */
+  /* ========== 辅助色 (Assist) - 深色模式 ========== */
   --color-assist-red: #ff3636;
   --color-assist-green: #34e070;
   --color-assist-orange: #ff9822;
 
-  /* ========== 通用色 (Common) ========== */
+  /* ========== 通用色 (Common) - 深色模式 ========== */
   --color-common-100: #ffffff;
   --color-common-60: rgba(255, 255, 255, 0.6);
 
-  /* ========== 输入框色 (Input) ========== */
+  /* ========== 输入框色 (Input) - 深色模式 ========== */
   --color-input-level-1: rgba(255, 255, 255, 0.06);
   --color-input-level-2: rgba(255, 255, 255, 0.1);
   --color-input-level-3: rgba(0, 0, 0, 0.2);
-  /* ========== 悬停 (hover) ========== */
+  /* ========== 悬停 (hover) - 深色模式 ========== */
   --color-hover-1: #444a4b;
-  /* ========== 小弹窗 (popup) ========== */
+  /* ========== 小弹窗 (popup) - 深色模式 ========== */
   --color-popup-1: rgba(41, 45, 46, 0.2);
+  /* ========== 小弹窗描边 (popup) - 深色模式 ========== */
+  --color-popup-2: rgba(255, 255, 255, 0.2);
 
-  /* ========== 首页分类卡片背景色 (Game Category) - 渐变色 ========== */
+  /* ========== 首页分类卡片背景色 (Game Category) - 渐变色 - 深色模式 ========== */
   --color-game-casino: linear-gradient(270deg, #265741 0%, #323738 69.69%);
   --color-game-sports: linear-gradient(270deg, #6a306b 0%, #323738 69.69%);
   --color-game-contract: linear-gradient(to right, #323738, #5a4b37);
@@ -90,7 +92,7 @@
   --color-game-lottery: linear-gradient(to right, #323738, #3b686e);
   --color-game-table: linear-gradient(to right, #323738 0%, #473660 100%);
 
-  /* ========== 哈希游戏聊天室 ========== */
+  /* ========== 哈希游戏聊天室 - 深色模式 ========== */
   --color-hash-chat-draw-frame: linear-gradient(to right, #2c271f 0%, rgba(31, 27, 22, 0.81) 100%);
   --color-hash-chat-win-frame: linear-gradient(to right, #435e11 0%, #131e04 81.67%);
 }
@@ -110,7 +112,7 @@
   --color-background-level-8: #e4e6e6;
   --color-background-level-9: #f0f0f0;
 
-  /* ========== 主色 (Theme) ========== */
+  /* ========== 主色 (Theme) - 浅色模式 ========== */
   --color-theme-level-1: #1ed777;
   --color-theme-level-2: rgba(30, 215, 119, 0.4);
   --color-theme-level-3: rgba(30, 215, 119, 0.15);
@@ -170,10 +172,12 @@
   --color-input-level-1: #ffffff;
   --color-input-level-2: #f0f0f0;
   --color-input-level-3: #ffffff;
-  /* ========== 悬停 (hover) ========== */
+  /* ========== 悬停 (hover) - 浅色模式 ========== */
   --color-hover-1: #f1f1f1;
-  /* ========== 小弹窗 (popup) ========== */
+  /* ========== 小弹窗 (popup) - 浅色模式 ========== */
   --color-popup-1: rgba(255, 255, 255, 0.2);
+  /* ========== 小弹窗描边 (popup) - 浅色模式 ========== */
+  --color-popup-2: rgba(255, 255, 255, 0.2);
 
   /* ========== 首页分类卡片背景色 (Game Category) - 浅色模式 - 渐变色 ========== */
   --color-game-casino: linear-gradient(270deg, #bff9dc 0%, #ecfff5 75%);
@@ -185,7 +189,7 @@
   --color-game-lottery: linear-gradient(to right, #e6f2ff, #beddff);
   --color-game-table: linear-gradient(to right, #f3e7ff, #debeff);
 
-  /* ========== 哈希游戏聊天室 ========== */
+  /* ========== 哈希游戏聊天室 - 浅色模式 ========== */
   --color-hash-chat-draw-frame: linear-gradient(
     to right,
     #fff6ec 0%,
