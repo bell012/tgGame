@@ -39,10 +39,10 @@
           <span class="flex flex-col gap-[6px]">
             <span class="h-px w-full bg-packet-divider" />
             <span class="flex items-center justify-between gap-[8px] text-[12px] leading-[15px]">
-              <span class="truncate text-secondary-9">{{ props.item.redEnvelopeName }}</span>
+              <span class="truncate text-secondary-9">{{ packetName }}</span>
               <span class="flex shrink-0 items-center gap-[4px] text-secondary-6">
-                <img :src="clockIcon" alt="" class="size-[12px]" />
-                {{ countdown }}
+                <img v-if="!statusText" :src="clockIcon" alt="" class="size-[12px]" />
+                {{ statusText || countdown }}
               </span>
             </span>
           </span>
@@ -54,21 +54,39 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { RedEnvelopeItem } from '@/api/interface/red-envelope'
 import redPacketIcon from '@/static/svg/chat/public/red-packet-icon.svg?url'
 import BubbleEar from '@/static/svg/red-packet/bubble-ear.svg?component'
 import clockIcon from '@/static/svg/red-packet/clock.svg?url'
 import tgAvatar from '@/static/svg/red-packet/tg-avatar.svg?url'
 import { resolveGameImageUrl } from '@/utils/image'
-import { formatCountdown, formatDateTime, formatMoney, isDailyRedEnvelope } from '../format'
+import {
+  formatCountdown,
+  formatDateTime,
+  formatMoney,
+  isDailyRedEnvelope,
+  localizedRedPacketType
+} from '../format'
 import { useNow } from '../useNow'
 
 const props = defineProps<{ item: RedEnvelopeItem }>()
 
 const emit = defineEmits<{ click: [item: RedEnvelopeItem] }>()
 
+const { t } = useI18n()
 const now = useNow()
 const avatarFailed = ref(false)
+
+const packetName = computed(() => {
+  const type = localizedRedPacketType(props.item.redEnvelopeType)
+  return type ? t(`redPacketPanel.type.${type}`) : (props.item.redEnvelopeName ?? '')
+})
+
+const packetDesc = computed(() => {
+  const type = localizedRedPacketType(props.item.redEnvelopeType)
+  return type ? t(`redPacketPanel.desc.${type}`) : (props.item.redEnvelopeDesc ?? '')
+})
 
 const avatarSrc = computed(() => {
   if (avatarFailed.value) return tgAvatar
@@ -78,16 +96,24 @@ const avatarSrc = computed(() => {
 const isDaily = computed(() => isDailyRedEnvelope(props.item))
 
 const title = computed(() =>
-  isDaily.value
-    ? props.item.redEnvelopeDesc
-    : formatMoney(props.item.currency, props.item.amount ?? 0)
+  isDaily.value ? packetDesc.value : formatMoney(props.item.currency, props.item.amount ?? 0)
 )
 
-const subtitle = computed(() => (isDaily.value ? '' : props.item.redEnvelopeDesc))
+const subtitle = computed(() => (isDaily.value ? '' : packetDesc.value))
 
 const remainingMs = computed(() => (props.item.expiredTime ?? 0) - now.value)
 
 const countdown = computed(() => formatCountdown(remainingMs.value))
 
-const dimmed = computed(() => props.item.receiveState === 1 || remainingMs.value <= 0)
+const isClaimed = computed(() => props.item.receiveState === 1)
+const isExpired = computed(() => remainingMs.value <= 0)
+
+// 已领取优先于过期。领完状态要打开弹窗才知道，卡片上不展示。
+const statusText = computed(() => {
+  if (isClaimed.value) return t('redPacketPanel.claimed')
+  if (isExpired.value) return t('redPacketPanel.expiredTitle')
+  return ''
+})
+
+const dimmed = computed(() => isClaimed.value || isExpired.value)
 </script>
