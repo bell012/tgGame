@@ -185,7 +185,9 @@ const desktopPanelStyle = computed(() => {
 .desktop-currency-panel {
   position: fixed;
   max-height: min(76vh, 620px);
-  box-shadow: var(--shadow-popup-44);
+  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(40px);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.06);
 }
 
 .popup-scale-enter-active,
