@@ -25,7 +25,7 @@
             <h2
               class="bg-[linear-gradient(180deg,#fffdf8_0%,#f9cf7b_100%)] bg-clip-text text-center text-[28px] font-[700] leading-[34px] text-transparent"
             >
-              {{ props.viewData.title }}
+              {{ displayTitle }}
             </h2>
             <!-- PC 副标题 -->
             <p class="text-center text-[16px] font-[400] leading-[19px] text-common-100">
@@ -378,7 +378,7 @@
         <h2
           class="bg-[linear-gradient(180deg,#fffdf8_0%,#f9cf7b_100%)] bg-clip-text text-center text-[24px] font-[700] leading-[29px] text-transparent"
         >
-          {{ props.viewData.title }}
+          {{ displayTitle }}
         </h2>
         <!-- H5 副标题 -->
         <p class="text-center text-[14px] font-[400] leading-[17px] text-common-100">
@@ -713,6 +713,9 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+// 当前语言没有活动名称时，用签到文案，避免退回单语言的中文 activiName。
+const displayTitle = computed(() => props.viewData.title || t('checkIn.title'))
 
 // PC 奖励卡片骨架数量，对齐 PC 两列布局。
 const pcSkeletonRewards = Array.from({ length: 8 }, (_, index) => index + 1)

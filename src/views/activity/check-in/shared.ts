@@ -547,14 +547,15 @@ export const resolveCheckInActivityDesc = (activity?: ActivityListItem, language
   })
 }
 
-// 解析活动标题，优先使用后端 activiName，兜底 activityName 多语言配置。
+// 解析活动标题。只用当前语言的 activityName。
+// activiName 是单语言字段，这场活动里是中文「活动」。当前语言没填名称时不能用它，否则越南语页面会显示中文。
 const resolveCheckInActivityName = (activity?: ActivityListItem, languageCode?: string) => {
   const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
   const matchedActivityName = activity?.activityName?.find(item => {
     return normalizeCheckInLanguageCode(item.languageCode) === normalizedLanguageCode
   })
 
-  return activity?.activiName || matchedActivityName?.name || ''
+  return matchedActivityName?.name?.trim() || ''
 }
 
 // 根据活动是否开始决定展示开始时间文案还是结束时间文案。
