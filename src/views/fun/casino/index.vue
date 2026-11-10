@@ -109,7 +109,7 @@
       <div class="w-full relative">
         <!-- 左箭头 -->
         <div
-          class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
+          class="casino-tab-arrow absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
           :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
         >
           <button
@@ -127,7 +127,7 @@
           <div
             ref="tabScrollRef"
             :class="{ 'pr-3.5 sm:pr-4': isMobile }"
-            class="my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
+            class="casino-tab-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
             @scroll="updateScrollState"
           >
             <button
@@ -137,10 +137,10 @@
               :class="{
                 'casino-tab-button--active': item.sysGameTypeCode === currentTabCode
               }"
-              class="casino-tab-button flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
+              class="casino-tab-button flex shrink-0 items-center rounded-lg px-[7px] py-[9px] text-xs"
               @click.stop="onTabButton(item)"
             >
-              <div class="h-5 w-5 mr-[7px]">
+              <div class="casino-tab-icon mr-[7px] h-5 w-5">
                 <img
                   v-if="item.sysGameTypeCode !== currentTabCode && typeof item?.icon === 'string'"
                   :src="item.icon"
@@ -164,7 +164,7 @@
               </div>
               <div
                 :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
-                class="font-[700]"
+                class="casino-tab-label font-[700]"
               >
                 {{ item.sysGameTypeName }}
               </div>
@@ -183,7 +183,7 @@
 
         <!-- 右箭头 -->
         <div
-          class="absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
+          class="casino-tab-arrow absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
           :class="
             canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'
           "
@@ -745,9 +745,44 @@ html.android-app-shell .casino-page--mobile {
   background: var(--color-background-level-2);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 641px) {
+  .casino-tab-scroll {
+    gap: 8px;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+  }
+
+  .casino-tab-button {
+    height: 40px;
+    border-radius: 8px;
+    padding: 0 12px;
+    background: var(--color-background-level-2);
+  }
+
+  .casino-tab-button:not(.casino-tab-button--active) .casino-tab-icon,
+  .casino-tab-button:not(.casino-tab-button--active) .casino-tab-icon :deep(svg),
+  .casino-tab-button:not(.casino-tab-button--active) .casino-tab-label {
+    color: var(--color-text-level-1);
+  }
+
+  .casino-tab-button:not(.casino-tab-button--active):hover {
+    background: var(--color-background-level-3);
+  }
+
   .casino-tab-button--active {
-    background: var(--color-background-level-1);
+    background: var(--color-theme-level-1);
+  }
+
+  .casino-tab-button--active .casino-tab-icon,
+  .casino-tab-button--active .casino-tab-icon :deep(svg),
+  .casino-tab-button--active .casino-tab-label {
+    color: var(--color-text-level-4);
+  }
+
+  .casino-tab-arrow {
+    top: 14px;
+    height: 40px;
   }
 }
 </style>
