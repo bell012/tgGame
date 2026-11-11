@@ -15,7 +15,7 @@
       >
         <!-- 单个支付方式卡片 -->
         <div
-          class="shrink-0 basis-[calc((100%-3rem)/4)] flex items-center justify-center p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
+          class="shrink-0 basis-[calc((100%-3rem)/4)] flex items-center justify-center overflow-hidden p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
           :class="{
             'border border-theme-primary bg-theme-3':
               selectedMethod?.columnCode === item.columnCode,
@@ -27,9 +27,11 @@
           @click.stop="selectMethod(item, index)"
         >
           <!-- 支付方式图标 -->
-          <img class="mr-4 h-6" :src="resolveMethodIcon(item)" />
+          <img class="mr-4 h-6 shrink-0" :src="resolveMethodIcon(item)" />
           <!-- 支付方式名称 -->
-          <p class="text-base font-bold leading-normal text-text-1">{{ item.columnName }}</p>
+          <p class="min-w-0 truncate text-base font-bold leading-normal text-text-1">
+            {{ item.columnName }}
+          </p>
         </div>
       </div>
     </div>
@@ -217,7 +219,7 @@ import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import { getCurrentCurrency, getCurrencySymbol } from '@/utils/locale'
+import { getCurrencySymbol, getCurrentCurrency } from '@/utils/locale'
 import { nextTick, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositFiatFlow } from '../shared'
