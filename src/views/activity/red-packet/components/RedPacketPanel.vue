@@ -21,7 +21,9 @@
         v-if="props.displayMode === 'pc'"
         class="relative flex h-[58px] shrink-0 items-center justify-center bg-bg-2"
       >
-        <span class="text-[18px] font-[700] leading-[22px] text-text-1">Red Packet</span>
+        <span class="text-[18px] font-[700] leading-[22px] text-text-1">{{
+          t('menu.red-packet')
+        }}</span>
         <button
           type="button"
           aria-label="close"
@@ -76,10 +78,16 @@
           type="text"
           readonly
           tabindex="-1"
-          placeholder="Muted..."
+          :placeholder="t('redPacketPanel.muted')"
           class="pointer-events-none min-w-0 flex-1 rounded-[10px] bg-opacity-5 px-[12px] py-[10px] text-[14px] leading-[20px] text-text-3 outline-none placeholder:text-text-3"
         />
-        <button type="button" disabled tabindex="-1" class="size-[44px] shrink-0 cursor-default">
+        <button
+          type="button"
+          disabled
+          tabindex="-1"
+          class="size-[44px] shrink-0 cursor-default"
+          :aria-label="t('redPacketPanel.send')"
+        >
           <SendIcon class="size-full" />
         </button>
       </div>

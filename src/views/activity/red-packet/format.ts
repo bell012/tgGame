@@ -1,4 +1,4 @@
-import type { RedEnvelopeItem } from '@/api/interface/red-envelope'
+import type { RedEnvelopeItem, RedEnvelopeType } from '@/api/interface/red-envelope'
 import { getCurrencySymbol } from '@/utils/locale'
 
 const DAILY_RED_ENVELOPE_TYPE = 1
@@ -40,3 +40,9 @@ export const formatMoney = (currency: string | undefined, amount: number, digits
 
 export const isDailyRedEnvelope = (item: Pick<RedEnvelopeItem, 'redEnvelopeType'>) =>
   item.redEnvelopeType === DAILY_RED_ENVELOPE_TYPE
+
+const LOCALIZED_RED_ENVELOPE_TYPES: RedEnvelopeType[] = [1, 2, 3, 4]
+
+// 四种红包才有本地三语文案，其余类型继续用后端单语言字段。
+export const localizedRedPacketType = (type: number): RedEnvelopeType | null =>
+  LOCALIZED_RED_ENVELOPE_TYPES.includes(type as RedEnvelopeType) ? (type as RedEnvelopeType) : null

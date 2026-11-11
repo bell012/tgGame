@@ -43,7 +43,7 @@
             class="max-w-[232px] truncate text-[16px] leading-[19px]"
             :class="isClaimed ? 'text-packet-title' : 'text-secondary-9'"
           >
-            {{ props.item.redEnvelopeName }}
+            {{ packetName }}
           </span>
         </div>
 
@@ -87,9 +87,19 @@
                 v-if="isSingleCondition && activeCondition"
                 class="text-center text-[12px] leading-[15px] text-common-100"
               >
-                {{ t(`redPacketPanel.conditionHint.${activeCondition.key}.prefix`) }}
-                <span class="text-secondary-6">{{ formatAmount(activeCondition.cond, 2) }}+</span>
-                {{ t(`redPacketPanel.conditionHint.${activeCondition.key}.suffix`) }}
+                <template v-if="activeCondition.key === 'recharge'">
+                  {{
+                    t('redPacketPanel.conditionHint.recharge', {
+                      threshold: formatAmount(activeCondition.cond, 2),
+                      currency: props.item.currency ?? ''
+                    })
+                  }}
+                </template>
+                <template v-else>
+                  {{ t(`redPacketPanel.conditionHint.${activeCondition.key}.prefix`) }}
+                  <span class="text-secondary-6">{{ formatAmount(activeCondition.cond, 2) }}+</span>
+                  {{ t(`redPacketPanel.conditionHint.${activeCondition.key}.suffix`) }}
+                </template>
               </p>
 
               <div v-else class="flex flex-col gap-[6px] text-[12px] leading-[15px]">
@@ -112,9 +122,6 @@
         >
           <span>{{
             t(isExpired ? 'redPacketPanel.expiredTitle' : 'redPacketPanel.soldOutTitle')
-          }}</span>
-          <span>{{
-            t(isExpired ? 'redPacketPanel.expiredDesc' : 'redPacketPanel.soldOutDesc')
           }}</span>
         </div>
 
@@ -203,7 +210,8 @@ import {
   formatCountdown,
   formatDateTime,
   formatMoney,
-  isDailyRedEnvelope
+  isDailyRedEnvelope,
+  localizedRedPacketType
 } from '../format'
 import { useNow } from '../useNow'
 
@@ -318,7 +326,13 @@ const { t } = useI18n()
 const now = useNow()
 
 const claiming = ref(false)
+const claimedInThisPopup = ref(false)
 const currentSchedule = ref<RedEnvelopeSchedule>(props.schedule)
+
+const packetName = computed(() => {
+  const type = localizedRedPacketType(props.item.redEnvelopeType)
+  return type ? t(`redPacketPanel.type.${type}`) : (props.item.redEnvelopeName ?? '')
+})
 
 const showState = computed(() => currentSchedule.value.showState)
 const hasProgress = computed(
@@ -400,7 +414,11 @@ const backgroundSrc = computed(() => {
 })
 
 const buttonConfig = computed(() => BUTTON_CONFIG[showState.value])
-const buttonText = computed(() => (buttonConfig.value ? t(buttonConfig.value.textKey) : ''))
+const buttonText = computed(() => {
+  if (!buttonConfig.value) return ''
+  if (isClaimed.value && claimedInThisPopup.value) return t('redPacketPanel.claimSuccess')
+  return t(buttonConfig.value.textKey)
+})
 
 const handleClaim = async () => {
   if (claiming.value) return
@@ -412,6 +430,7 @@ const handleClaim = async () => {
       : SHOW_STATE.claimed
     currentSchedule.value = { ...currentSchedule.value, ...result, showState: nextState }
     if (nextState === SHOW_STATE.claimed) {
+      claimedInThisPopup.value = true
       emit('claimed', currentSchedule.value)
     }
   } finally {

@@ -204,12 +204,84 @@ export const mapRecordToItem = (
   }
 }
 
-/** 计算当前列表中所有 item 的 amount 总和（缺失 amount 的不计入） */
+/** 计算给定记录的 amount 总和（缺失 amount 的不计入） */
 export const calcTotalBonusWon = (items: ReadonlyArray<{ amount: number | null }>): number =>
   items.reduce((sum, item) => (item.amount === null ? sum : sum + item.amount), 0)
 
+const recordAmount = (record: VoucherHistoryRecord) =>
+  typeof record.amount === 'number' && Number.isFinite(record.amount) ? record.amount : 0
+
+const sumRecordAmounts = (records: readonly VoucherHistoryRecord[]) =>
+  records.reduce((sum, record) => sum + recordAmount(record), 0)
+
+const fetchVoucherHistoryResult = async (
+  filterValues: FilterInput,
+  page: number,
+  pageSize: number,
+  t: TranslateFn
+) => {
+  const response = await Api.activity.recordList(
+    buildVoucherHistoryQueryForm({ page, pageSize, filterValues })
+  )
+  if (!response.success) {
+    throw new Error(response.message || t('common.requestError'))
+  }
+  return response.result
+}
+
+/**
+ * 按当前筛选一次加完全部票券奖金。
+ * 先读总条数，再按总条数拉取；接口若截断，就按每页条数把剩余页加完。
+ */
+export const loadAllVoucherBonusTotal = async (filterValues: FilterInput, t: TranslateFn) => {
+  const first = await fetchVoucherHistoryResult(filterValues, 1, VOUCHER_HISTORY_PAGE_SIZE, t)
+  const firstRecords = first?.records ?? []
+  const total = first?.total ?? firstRecords.length
+  if (total <= firstRecords.length) return sumRecordAmounts(firstRecords)
+
+  const all = await fetchVoucherHistoryResult(filterValues, 1, total, t)
+  const allRecords = all?.records ?? []
+  if (allRecords.length >= total) return sumRecordAmounts(allRecords)
+
+  let sum = sumRecordAmounts(firstRecords)
+  let collected = firstRecords.length
+  let page = 2
+  while (collected < total) {
+    const next = await fetchVoucherHistoryResult(filterValues, page, VOUCHER_HISTORY_PAGE_SIZE, t)
+    const records = next?.records ?? []
+    if (records.length === 0) break
+    sum += sumRecordAmounts(records)
+    collected += records.length
+    page += 1
+  }
+  return sum
+}
+
 /** 把 totalBonusWon 展示为固定两位小数 */
 export const formatTotalBonusWonText = (total: number): string => total.toFixed(2)
+
+/** 当前筛选的全量奖金。列表翻页或下滑不会触发重算。 */
+const useVoucherBonusTotal = (getFilters: () => FilterInput, t: TranslateFn) => {
+  const totalBonusWon = ref(0)
+  let requestId = 0
+
+  const refreshTotalBonusWon = async () => {
+    const currentId = ++requestId
+    totalBonusWon.value = 0
+    try {
+      const total = await loadAllVoucherBonusTotal(getFilters(), t)
+      if (currentId !== requestId) return
+      totalBonusWon.value = total
+    } catch (requestError) {
+      if (currentId !== requestId) return
+      console.error(requestError)
+    }
+  }
+
+  const totalBonusWonText = computed(() => formatTotalBonusWonText(totalBonusWon.value))
+
+  return { totalBonusWon, totalBonusWonText, refreshTotalBonusWon }
+}
 
 /** 根据 total 判断是否还有下一页 */
 export const hasMoreByTotal = (
@@ -241,14 +313,16 @@ export const useVoucherHistoryPagedPage = () => {
   const error = ref<unknown | null>(null)
   const currentPage = ref(1)
   const totalPages = ref(1)
+  const { totalBonusWon, totalBonusWonText, refreshTotalBonusWon } = useVoucherBonusTotal(
+    () => filterValues.value,
+    t
+  )
 
-  const totalBonusWon = computed(() => calcTotalBonusWon(dataList.value))
-  const totalBonusWonText = computed(() => formatTotalBonusWonText(totalBonusWon.value))
-
-  /** 拉取指定页数据 */
+  /** 拉取指定页数据。只有第一页会重算全量奖金，翻页保持总额不变。 */
   const fetchData = async (page = 1) => {
     loading.value = true
     error.value = null
+    if (page === 1) void refreshTotalBonusWon()
     try {
       const response = await Api.activity.recordList(
         buildVoucherHistoryQueryForm({
@@ -361,8 +435,23 @@ export const useVoucherHistoryInfinitePage = (options: {
     }
   })
 
-  const totalBonusWon = computed(() => calcTotalBonusWon(dataList.value))
-  const totalBonusWonText = computed(() => formatTotalBonusWonText(totalBonusWon.value))
+  const { totalBonusWon, totalBonusWonText, refreshTotalBonusWon } = useVoucherBonusTotal(
+    () => filterValues.value,
+    t
+  )
+
+  watch(
+    () => options.enabled(),
+    enabled => {
+      if (!enabled) return
+      void refreshTotalBonusWon()
+    },
+    { immediate: true }
+  )
+
+  const refreshHistory = async () => {
+    await Promise.all([refresh(), refreshTotalBonusWon()])
+  }
 
   return {
     t,
@@ -373,6 +462,6 @@ export const useVoucherHistoryInfinitePage = (options: {
     error,
     totalBonusWon,
     totalBonusWonText,
-    refresh
+    refresh: refreshHistory
   }
 }

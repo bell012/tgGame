@@ -23,7 +23,7 @@
           </div>
           <span class="text-[16px] font-[700] leading-[19px] text-text-1">{{ userName }}</span>
           <span class="text-[14px] leading-[20px] text-text-2">
-            {{ t(claimedRecord ? 'redPacketPanel.goodLuck' : 'redPacketPanel.comeBackTomorrow') }}
+            {{ claimedRecord ? packetDesc : t('redPacketPanel.comeBackTomorrow') }}
           </span>
         </div>
         <p
@@ -32,7 +32,7 @@
         >
           {{
             claimedRecord
-              ? t('redPacketPanel.wonTitle', { amount: wonAmountText })
+              ? t('redPacketPanel.wonTitle', { amount: wonAmountText, currency: wonCurrency })
               : t('redPacketPanel.allGoneTitle')
           }}
         </p>
@@ -43,8 +43,8 @@
           <p class="w-[calc(100%-32px)] text-[12px] leading-[15px] text-text-3">
             {{
               t('redPacketPanel.claimedSummary', {
-                count: total,
-                amount: formatAmount(totalMoney, 4),
+                claimedCount: total,
+                claimedAmount: formatAmount(totalMoney, 4),
                 currency: currencyText
               })
             }}
@@ -102,7 +102,7 @@ import MyRecordsIcon from '@/static/svg/red-packet/my-records.svg?component'
 import recordAvatar from '@/static/svg/red-packet/record-avatar.png'
 import { useUserStore } from '@/stores/user'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
-import { formatAmount, formatFullDateTime, formatMoney } from '../format'
+import { formatAmount, formatFullDateTime, localizedRedPacketType } from '../format'
 import { useMemberRecords } from '../useMemberRecords'
 import RedPacketListStatus from './RedPacketListStatus.vue'
 import RedPacketSubHeader from './RedPacketSubHeader.vue'
@@ -132,9 +132,16 @@ const claimedRecord = computed(() =>
 
 const currencyText = computed(() => list.value[0]?.currency ?? props.item.currency ?? '')
 
+const packetDesc = computed(() => {
+  const type = localizedRedPacketType(props.item.redEnvelopeType)
+  return type ? t(`redPacketPanel.desc.${type}`) : (props.item.redEnvelopeDesc ?? '')
+})
+
 const wonAmountText = computed(() => {
   const record = claimedRecord.value
   if (!record) return ''
-  return formatMoney(record.currency, record.amount ?? 0, 4)
+  return formatAmount(record.amount ?? 0, 4)
 })
+
+const wonCurrency = computed(() => claimedRecord.value?.currency ?? props.item.currency ?? '')
 </script>
