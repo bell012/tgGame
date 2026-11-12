@@ -199,7 +199,7 @@
     :dark-image="defaultImgDark"
     :light-image="defaultImgLight"
     :image-alt="$t('notifications.title')"
-    :message="$t('notifications.emptyMessage')"
+    :message="$t('notifications.transactionsEmptyMessage')"
     text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
   />
   <!-- 充值订单弹窗 -->
