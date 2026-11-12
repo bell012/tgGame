@@ -321,7 +321,8 @@
 <script setup lang="ts">
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 
-import { computed, onMounted, type Component } from 'vue'
+import { computed, nextTick, onMounted, type Component } from 'vue'
+import { isNavigationFailure, NavigationFailureType, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useThemeStore } from '@/stores/theme'
@@ -329,6 +330,10 @@ import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 
 import { navigateTo } from '@/utils/router'
+import { stripLocalePrefix } from '@/utils/locale'
+import { isMobileViewport } from '@/composables/useMediaQuery'
+import { sportItems } from '@/views/sports/components/sports-navigation/sport-items'
+import { getSportsPath, isSportsHomepageRoute } from '@/views/sports/shared/navigation'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import ExternalIcon from '@/static/svg/external.svg?component'
 import SmartImage from '@/components/common/SmartImage.vue'
@@ -343,6 +348,7 @@ import FooterGlobalCommunity08 from '@/static/svg/commonFooter/social/footer_glo
 import FooterLocalCommunity01 from '@/static/svg/commonFooter/social/footer_local_community_01.svg?component'
 
 const { open: openOnlineCustomer } = useOnlineCustomerService()
+const route = useRoute()
 
 const GLOBAL_COMMUNITY_ICONS: Component[] = [
   FooterGlobalCommunity01,
@@ -580,89 +586,31 @@ const casinoLinks = computed<FooterLink[]>(() =>
   }))
 )
 
-// 体育链接
-const sportsLinks = computed(() => [
-  {
-    id: 'sports_fifa',
-    name: t('sidebar_menu.sports.children.fifa'),
+// 与体育首页共用球种、顺序及多语言名称。
+const sportsLinks = computed<FooterLink[]>(() =>
+  sportItems.map(item => ({
+    id: `sports_${item.sportId}`,
+    name: t(item.i18nKey),
     hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 FIFA')
+    handler: async () => {
+      const path = getSportsPath(item)
+      const failure = await navigateTo(path)
+      if (failure && !isNavigationFailure(failure, NavigationFailureType.duplicated)) return
+      await nextTick()
+      // 仅底部入口回到赛事区域；失败或已切往其他页面时不改变滚动位置。
+      if (
+        isMobileViewport() ||
+        !isSportsHomepageRoute(route) ||
+        stripLocalePrefix(route.path) !== path
+      )
+        return
+      document
+        .querySelector<HTMLElement>('.main-layout-content')
+        ?.scrollTo({ top: 0, behavior: 'instant' })
+      window.scrollTo({ top: 0, behavior: 'instant' })
     }
-  },
-  {
-    id: 'sports_soccer',
-    name: t('sidebar_menu.sports.children.soccer'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 足球')
-    }
-  },
-  {
-    id: 'sports_basketball',
-    name: t('sidebar_menu.sports.children.basketball'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 篮球')
-    }
-  },
-  {
-    id: 'sports_tennis',
-    name: t('sidebar_menu.sports.children.tennis'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 网球')
-    }
-  },
-  {
-    id: 'sports_badminton',
-    name: t('sidebar_menu.sports.children.badminton'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 羽毛球')
-    }
-  },
-  {
-    id: 'sports_boxing',
-    name: t('sidebar_menu.sports.children.boxing'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 拳击')
-    }
-  },
-  {
-    id: 'sports_darts',
-    name: t('sidebar_menu.sports.children.darts'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 飞镖')
-    }
-  },
-  {
-    id: 'sports_american_football',
-    name: t('sidebar_menu.sports.children.american_football'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 美式足球')
-    }
-  },
-  {
-    id: 'sports_table_tennis',
-    name: t('sidebar_menu.sports.children.table_tennis'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 乒乓球')
-    }
-  },
-  {
-    id: 'sports_volleyball',
-    name: t('sidebar_menu.sports.children.volleyball'),
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('点击 排球')
-    }
-  }
-])
+  }))
+)
 
 // 优惠链接
 const promoLinks = computed(() => [

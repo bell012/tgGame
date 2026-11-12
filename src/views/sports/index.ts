@@ -1,4 +1,5 @@
-import { onMounted, onScopeDispose } from 'vue'
+import { onMounted, onScopeDispose, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
@@ -6,6 +7,7 @@ import { isMobileViewport } from '@/composables/useMediaQuery'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { navigateTo } from '@/utils/router'
+import { stripLocalePrefix, withLocalePrefix, getLocaleFromRouteParam } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import type { CollectOnlyPayload, FilterTabChangePayload } from './components/filter_search'
 import type {
@@ -17,6 +19,7 @@ import { sportItems } from './components/sports-navigation/sport-items'
 import { useBetSlip } from './components/bet-slip/useBetSlip'
 import { useSportsData } from './composables/useSportsData'
 import type { SportsMatch } from './shared/types'
+import { findRouteSport, getSportsPath, isSportsHomepageRoute } from './shared/navigation'
 
 export type { SportsMatch, SportsBetMode, SportsBetSelection, SportsParlay } from './shared/types'
 export { mapSportsMatches } from './shared/match'
@@ -38,6 +41,8 @@ export const getTeamLogoUrl = (id: string | number | null | undefined): string =
 
 export const useSportsPage = () => {
   const sportsStore = useSportsStore()
+  const route = useRoute()
+  const router = useRouter()
   const { unreadBetHistoryCount } = storeToRefs(sportsStore)
   const { requireLogin } = useRequireLoginAction()
   const { t } = useI18n()
@@ -51,9 +56,34 @@ export const useSportsPage = () => {
     getBetTargets: () => refreshTargets.value
   })
   const { matchById, isPageActive, ...pageData } = data
-  const { selectedSportId, selectedFilterKey, sortType, competitionIds, matches, expandedMatchId } =
-    data
+  const { selectedFilterKey, sortType, competitionIds, matches, expandedMatchId } = data
   const { betSlipOpen } = betSlip
+
+  watch(
+    () => route.path,
+    () => {
+      if (!isSportsHomepageRoute(route)) return
+      const sport = route.params.sportSlug
+        ? (findRouteSport(route.params.sportSlug) ?? sportItems[0])
+        : (sportItems.find(item => item.sportId === sportsStore.selectedSportId) ?? sportItems[0])
+      if (!sport) return
+      sportsStore.selectedSportId = sport.sportId
+      const path = getSportsPath(sport)
+      if (stripLocalePrefix(route.path) !== path) {
+        void router.replace({
+          path: withLocalePrefix(
+            path,
+            getLocaleFromRouteParam(
+              typeof route.params.locale === 'string' ? route.params.locale : undefined
+            ) ?? 'eng'
+          ),
+          query: route.query,
+          hash: route.hash
+        })
+      }
+    },
+    { immediate: true }
+  )
 
   const isMatchFavoritePending = (id: string) => {
     const match = matchById.value.get(id)
@@ -87,12 +117,9 @@ export const useSportsPage = () => {
     }
     navigateTo('/sports/bet-history')
   }
-  // 组件已更新球种时，不重复赋值。
   const handleSportChange = (_index: number, key: string) => {
     const sport = sportItems.find(item => item.key === key)
-    if (sport && selectedSportId.value !== sport.sportId) {
-      selectedSportId.value = sport.sportId
-    }
+    if (sport) void navigateTo(getSportsPath(sport), { query: route.query })
   }
   const handleMatchFilterChange = (payload: FilterTabChangePayload) => {
     if (selectedFilterKey.value !== payload.key) selectedFilterKey.value = payload.key
