@@ -9,7 +9,7 @@ import { useSportsStore } from '@/stores/sports'
 import { useSportsAuthStore } from '@/stores/sportsAuth'
 import type { SportsRefreshTarget } from '@/stores/sports'
 import type { SportMarketLine } from '@/api/interface/sport'
-import { stripLocalePrefix } from '@/utils/locale'
+import { isSportsHomepageRoute } from '../shared/navigation'
 import { sportItems } from '../components/sports-navigation/sport-items'
 import { useMatchDisplay } from './useMatchDisplay'
 import { createHomepageRefresh } from './refreshScheduler'
@@ -24,7 +24,7 @@ type SportsDataOptions = {
 
 export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptions) => {
   const route = useRoute()
-  const isHomepageRoute = computed(() => stripLocalePrefix(route.path) === '/sports')
+  const isHomepageRoute = computed(() => isSportsHomepageRoute(route))
   const isMobile = useIsMobile()
   const sportsStore = useSportsStore()
   const sportsAuth = useSportsAuthStore()

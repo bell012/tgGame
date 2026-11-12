@@ -183,7 +183,7 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'sports',
+    path: 'sports/:sportSlug?',
     name: 'sports',
     component: () => import('@/views/sports/index.vue'),
     meta: {
