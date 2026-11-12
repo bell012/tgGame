@@ -160,7 +160,7 @@
           <!-- 预设金额优惠角标 -->
           <span
             v-if="presetDiscountRatioMap[preset] !== undefined"
-            class="pointer-events-none absolute -right-1 -top-1 min-w-8 rounded-lg bg-center bg-contain bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4"
+            class="pointer-events-none absolute -right-1 -top-1 min-w-8 bg-center bg-[length:100%_100%] bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4 whitespace-nowrap"
             :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
           >
             {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}

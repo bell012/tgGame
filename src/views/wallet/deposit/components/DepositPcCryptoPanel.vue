@@ -173,12 +173,12 @@
         </div>
 
         <!-- 预设金额区域 -->
-        <div class="rounded-2xl bg-bg-4 p-2">
+        <div class="mt-4 w-full relative">
           <!-- 预设金额按钮网格 -->
           <div
             ref="presetsRef"
-            class="grid grid-cols-6 gap-2 transition-all duration-300"
-            :class="expanded ? 'max-h-[136px] overflow-y-auto' : 'max-h-[88px] overflow-hidden'"
+            class="grid grid-cols-6 gap-2 p-2 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
+            :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'"
           >
             <!-- 单个预设金额按钮 -->
             <button
@@ -194,7 +194,7 @@
               <!-- 预设金额优惠角标 -->
               <span
                 v-if="presetDiscountRatioMap[preset] !== undefined"
-                class="pointer-events-none absolute -right-1 -top-1 min-w-8 rounded-lg bg-center bg-contain bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4"
+                class="pointer-events-none absolute -right-1 -top-1 min-w-8 bg-center bg-[length:100%_100%] bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4 whitespace-nowrap"
                 :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
               >
                 {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
