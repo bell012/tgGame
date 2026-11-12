@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { sportItems } from './sport-items'
@@ -47,7 +47,7 @@ function handleSelect(index: number) {
   emit('change', index, sportItems[index].key)
 }
 
-function scrollSelectedToCenter() {
+function scrollSelectedToCenter(behavior: 'smooth' | 'instant' = 'smooth') {
   const nav = navRef.value
   if (!nav) {
     return
@@ -64,9 +64,11 @@ function scrollSelectedToCenter() {
   const delta = buttonRect.left + buttonRect.width / 2 - (navRect.left + navRect.width / 2)
   nav.scrollTo({
     left: nav.scrollLeft + delta,
-    behavior: 'smooth'
+    behavior
   })
 }
+
+onMounted(() => scrollSelectedToCenter('instant'))
 
 watch(
   () => props.selectedSportId,

@@ -363,6 +363,11 @@ const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
   const localeKey = String(currentRoute.params.locale || DEFAULT_LOCALE)
   const tabKey = String(currentRoute.params.tabKey || '')
 
+  // 球种路由由体育首页监听切换，不因 URL 变化重建页面及轮询。
+  if (routeName === 'sports' || routeName === 'Localesports') {
+    return `sports-${localeKey}`
+  }
+
   if (routeName === 'casino' || routeName === 'casinoTabKey') {
     return `casino-${localeKey}`
   }

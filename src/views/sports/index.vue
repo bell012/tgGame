@@ -233,7 +233,7 @@ import CommonFooter from '@/components/commonFooter.vue'
 import OddsFormat from './components/odds-format/index.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import { stripLocalePrefix } from '@/utils/locale'
+import { isSportsHomepageRoute } from './shared/navigation'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import emptyImage from '@/static/img/explore/default.png'
 import emptyImageLight from '@/static/img/explore/default_white.png'
@@ -258,7 +258,7 @@ const page = useSportsPage()
 const layoutStore = useLayoutStore()
 const route = useRoute()
 const { vMatchVisibility } = useMatchVisibility({
-  enabled: () => !isMobile.value && stripLocalePrefix(route.path) === '/sports',
+  enabled: () => !isMobile.value && isSportsHomepageRoute(route),
   topInset: () => layoutStore.TOPNAV_HEIGHT,
   onChange: targets => page.setVisibleMatches('pc', targets)
 })
