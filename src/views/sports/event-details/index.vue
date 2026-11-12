@@ -109,7 +109,6 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
@@ -146,6 +145,7 @@ import { mapEventDetailTabToMatchHeader, mapSportsMatchToMatchHeader } from './m
 import { eventToCompetitionGroup, sportsMatchToCompetitionGroups } from './map-seed-match'
 import { useEventDetailsBetSlip } from './use-event-details-betslip'
 import { useEventDetailsSports } from './use-event-details-sports'
+import { useEventDetailsSportCounts } from './use-event-details-sport-counts'
 
 const router = useRouter()
 const route = useRoute()
@@ -167,10 +167,14 @@ const scrollLayoutToTop = () => {
   })
 }
 const sportsStore = useSportsStore()
-const { sportCounts } = storeToRefs(sportsStore)
-const sportNavigationCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
+const sportCounts = useEventDetailsSportCounts(
+  () =>
+    !isMobile.value &&
+    (route.name === 'sportsEventDetails' || route.name === 'LocalesportsEventDetails')
+)
+const sportNavigationCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
 const pcNavigationHeight = ref(0)
 const activeMatchId = ref('')
 const targetEventId = ref('')
