@@ -15,7 +15,8 @@
           mobileLobbyProviders
             ? providerRailClasses
             : [
-                'gap-2 auto-cols-[31.2%] sm:auto-cols-[11.82%]',
+                'gap-2 auto-cols-[31.2%]',
+                isCasinoProviderModule ? 'sm:auto-cols-[11.82%]' : desktopGameColumns,
                 isCasinoProviderModule ? 'provider-rail' : ''
               ]
         "
@@ -129,8 +130,11 @@
         <div
           v-else-if="props.module.items && props.module.items.length > 0"
           ref="scrollRef"
-          class="relative -mx-[14px] grid snap-x snap-mandatory grid-flow-col auto-cols-[31.2%] gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth px-[14px] pt-2.5 hide-scroll [scroll-padding-inline:14px] sm:mx-0 sm:auto-cols-[11.82%] sm:px-0 sm:[scroll-padding-inline:0]"
-          :class="{ 'sm:!-mr-4 sm:!pr-4': isMobile && props.viewAllMode === 'casino' }"
+          class="relative -mx-[14px] grid snap-x snap-mandatory grid-flow-col auto-cols-[31.2%] gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth px-[14px] pt-2.5 hide-scroll [scroll-padding-inline:14px] sm:mx-0 sm:px-0 sm:[scroll-padding-inline:0]"
+          :class="[
+            desktopGameColumns,
+            { 'sm:!-mr-4 sm:!pr-4': isMobile && props.viewAllMode === 'casino' }
+          ]"
         >
           <div
             v-for="(game, i) in getDisplayList(props.module.items)"
@@ -198,6 +202,9 @@ const props = withDefaults(
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+const desktopGameColumns = computed(() =>
+  !isMobile.value ? 'sm:auto-cols-[calc((100%-7*theme(spacing.2))/8)]' : 'sm:auto-cols-[11.82%]'
+)
 const providerRailClasses = '-mr-3.5 auto-cols-[47.3333px] gap-[5px] pr-3.5 sm:-mr-4 sm:pr-4'
 const mobileLobbyProviders = computed(
   () =>
