@@ -6,7 +6,9 @@
       class="reward-claim-panel z-[60] flex max-h-[50vh] min-h-0 flex-col overflow-hidden"
       :class="panelClass"
     >
+      <LiquidGlass v-if="!props.inline" />
       <RewardClaimPopupContent
+        :class="{ 'relative z-[1]': !props.inline }"
         :pending-items="pendingItems"
         :pending-total-text="pendingTotalText"
         :pending-loading="rewardCenterStore.pendingLoading"
@@ -45,6 +47,7 @@ import {
 } from '@/views/reward-center/shared'
 import { navigateTo } from '@/utils/router'
 import RewardClaimPopupContent from './RewardClaimPopupContent.vue'
+import LiquidGlass from '@/components/common/LiquidGlass.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -84,7 +87,7 @@ const pendingTotalText = computed(() =>
 const panelClass = computed(() =>
   props.inline
     ? 'absolute inset-x-0 top-full mx-auto w-[92.5%] rounded-xl bg-mask-60-1 p-[10px] backdrop-blur-[15px]'
-    : 'absolute right-0 top-[calc(100%+8px)] w-[480px] rounded-lg border border-[color:var(--color-popup-2)] bg-popup-1 px-5 py-4'
+    : 'tg-glass-tokens absolute right-0 top-[calc(100%+8px)] w-[480px] rounded-[15px] px-5 py-4 [box-shadow:var(--glass-shadow)]'
 )
 
 const close = () => emit('update:visible', false)
