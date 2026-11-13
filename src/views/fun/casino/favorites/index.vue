@@ -78,7 +78,8 @@
 
       <div
         v-if="isCollectionsListLoading && favoriteGames.length === 0"
-        class="grid w-full grid-cols-8 gap-2.5"
+        class="grid w-full gap-2.5"
+        :class="gridClass"
       >
         <div
           v-for="index in 32"
@@ -86,13 +87,18 @@
           class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
         />
       </div>
-      <div v-else-if="favoriteGames.length > 0" class="grid w-full grid-cols-8 gap-2.5">
+      <div v-else-if="favoriteGames.length > 0" class="grid w-full gap-2.5" :class="gridClass">
         <div
           v-for="(game, index) in favoriteGames"
           :key="game.rowId ?? index"
-          class="aspect-[330/438]"
+          class="min-w-0 aspect-[330/438]"
         >
-          <CasinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
+          <CasinoGameCard
+            responsive-pc
+            :game="game"
+            show-favorite-badge
+            @click="handleClick(game.rowId)"
+          />
         </div>
       </div>
       <ThemedEmptyState
@@ -111,7 +117,8 @@
         </h2>
         <div
           v-if="isRecommendedLoading && recommendedGames.length === 0"
-          class="mt-2.5 grid w-full grid-cols-8 gap-2.5"
+          class="mt-2.5 grid w-full gap-2.5"
+          :class="gridClass"
         >
           <div
             v-for="index in 32"
@@ -119,13 +126,17 @@
             class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
           />
         </div>
-        <div v-else-if="recommendedGames.length > 0" class="mt-2.5 grid w-full grid-cols-8 gap-2.5">
+        <div
+          v-else-if="recommendedGames.length > 0"
+          class="mt-2.5 grid w-full gap-2.5"
+          :class="gridClass"
+        >
           <div
             v-for="(game, index) in recommendedGames"
             :key="`rec-pc-${game.rowId ?? index}`"
-            class="aspect-[330/438]"
+            class="min-w-0 aspect-[330/438]"
           >
-            <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
+            <CasinoGameCard responsive-pc :game="game" @click="handleClick(game.rowId)" />
           </div>
         </div>
       </template>
@@ -145,6 +156,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { navigateToName } from '@/utils/router'
@@ -158,6 +170,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const isMobile = useIsMobile()
+const { gridClass } = usePcGameCardLayout()
 const mobileScrollRef = ref<HTMLElement | null>(null)
 
 const gameStore = useGameStore()

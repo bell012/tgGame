@@ -5,9 +5,12 @@ export const gameCardSidebarCollapsedKey: InjectionKey<Readonly<Ref<boolean>>> =
   'game-card-sidebar-collapsed'
 )
 
+export const PC_GAME_GRID_CLASS_WITHOUT_SIDEBAR =
+  'sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8'
+
 const gridClasses = {
   expanded: 'sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8',
-  collapsed: 'sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8'
+  collapsed: PC_GAME_GRID_CLASS_WITHOUT_SIDEBAR
 } as const
 
 const railClasses = {

@@ -53,7 +53,8 @@
 
       <div
         v-if="isPlayedLoading && playedGames.length === 0"
-        class="grid w-full grid-cols-8 gap-2.5"
+        class="grid w-full gap-2.5"
+        :class="gridClass"
       >
         <div
           v-for="index in 32"
@@ -61,13 +62,13 @@
           class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
         />
       </div>
-      <div v-else-if="playedGames.length > 0" class="grid w-full grid-cols-8 gap-2.5">
+      <div v-else-if="playedGames.length > 0" class="grid w-full gap-2.5" :class="gridClass">
         <div
           v-for="(game, index) in playedGames"
           :key="game.rowId ?? index"
-          class="aspect-[330/438]"
+          class="min-w-0 aspect-[330/438]"
         >
-          <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
+          <CasinoGameCard responsive-pc :game="game" @click="handleClick(game.rowId)" />
         </div>
       </div>
       <ThemedEmptyState
@@ -93,6 +94,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
 import { useGameStore } from '@/stores/game'
 import { navigateToName } from '@/utils/router'
 import { readPlayedRowIdsFromStorage } from '@/utils/played-games-cache'
@@ -105,6 +107,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const isMobile = useIsMobile()
+const { gridClass } = usePcGameCardLayout()
 const mobileScrollRef = ref<HTMLElement | null>(null)
 
 const gameStore = useGameStore()

@@ -1,7 +1,6 @@
 ﻿<template>
   <div class="w-full">
-    <!-- grid：H5 3列 / PC 8列；-->
-    <div v-if="items?.length" class="grid w-full gap-[11px] grid-cols-3 sm:grid-cols-8">
+    <div v-if="items?.length" class="grid w-full gap-[11px]" :class="gridClass">
       <div v-for="(item, i) in items" :key="getItemKey(item, i)" class="min-w-0">
         <slot name="item" :item="item" :index="i">
           <div
@@ -95,6 +94,8 @@ const props = withDefaults(
     nextText?: string
     /** 是否显示分页条 */
     showPager?: boolean
+    /** 可选布局覆盖；未传入时保留原有列数。 */
+    gridClass?: string
   }>(),
   {
     items: () => [],
@@ -102,7 +103,8 @@ const props = withDefaults(
     totalPages: 1,
     prevText: '上一页',
     nextText: '下一页',
-    showPager: true
+    showPager: true,
+    gridClass: 'grid-cols-3 sm:grid-cols-8'
   }
 )
 
