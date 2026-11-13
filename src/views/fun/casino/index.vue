@@ -749,6 +749,35 @@ html.android-app-shell .casino-page--mobile {
   background: var(--color-background-level-2);
 }
 
+@media (max-width: 640px) {
+  .casino-tab-scroll {
+    gap: 7px;
+  }
+
+  .casino-tab-button {
+    background: var(--color-background-level-2);
+  }
+
+  .casino-tab-button .casino-tab-icon,
+  .casino-tab-button .casino-tab-icon :deep(svg),
+  .casino-tab-button .casino-tab-label {
+    color: var(--color-text-level-2);
+  }
+
+  .casino-tab-button--active {
+    background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+    box-shadow:
+      0 0 13px 0 rgba(35, 238, 136, 0.3),
+      0 -2px 0 0 #1dca6a inset;
+  }
+
+  .casino-tab-button--active .casino-tab-icon,
+  .casino-tab-button--active .casino-tab-icon :deep(svg),
+  .casino-tab-button--active .casino-tab-label {
+    color: var(--color-text-level-4);
+  }
+}
+
 @media (min-width: 641px) {
   .casino-tab-scroll {
     gap: 8px;
