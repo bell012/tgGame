@@ -4,7 +4,7 @@
     class="w-full"
     :class="props.mode === 'pc' ? 'flex flex-col gap-5' : 'px-3.5 pb-[110px] pt-3.5'"
   >
-    <!-- H5 横向栏目栏：设计稿为固定宽度的胶囊按钮。 -->
+    <!-- H5 横向栏目栏：由图标、间距、内边距和真实文本宽度自然撑开。 -->
     <section v-if="props.mode === 'mobile'" class="-mx-3.5 overflow-x-auto px-3.5">
       <div class="flex items-center gap-2">
         <button
@@ -15,7 +15,6 @@
           :class="
             tab.key === props.activeTabKey ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-2'
           "
-          :style="{ width: `${tab.mobileWidth}px` }"
           @click="$emit('tab-click', tab.key)"
         >
           <!-- Figma 栏目图标。 -->
