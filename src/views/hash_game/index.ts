@@ -13,7 +13,8 @@ import { globalShowToast } from '@/utils/toast'
 type RoadmapMode = 'size' | 'parity'
 type BetKey = 'big' | 'small' | 'odd' | 'even'
 type ChipOption = { id: number; value: number; hue: number }
-type ChipDraft = { id: number; value: string; hue: number }
+type ChipDraft = { id: number; value: string; hue: number; enabled: boolean }
+type CustomChipDraft = { id: number; value: string; hue: number }
 export const HASH_GAME_PERIOD_OPTIONS = [6, 15, 30, 45] as const
 export type RecentBetRecord = {
   id: string
@@ -66,16 +67,22 @@ const MOCK_HASH_GAME_HISTORY: HashGameHistoryRecord[] = Array.from({ length: 24 
 // H5、PC 共用筹码配置，面额与配色保持在同一项中。
 const CHIP_OPTIONS = [
   { value: 1, hue: 0 },
-  { value: 3, hue: 28 },
   { value: 5, hue: 80 },
   { value: 10, hue: 145 },
   { value: 20, hue: 205 },
   { value: 50, hue: 255 },
   { value: 100, hue: 185 },
+  { value: 200, hue: 225 },
   { value: 500, hue: 320 },
   { value: 1000, hue: 50 },
-  { value: 10000, hue: 105 }
+  { value: 2000, hue: 270 },
+  { value: 5000, hue: 20 },
+  { value: 10000, hue: 105 },
+  { value: 20000, hue: 300 },
+  { value: 50000, hue: 135 },
+  { value: 100000, hue: 285 }
 ] as const
+const CUSTOM_CHIP_HUES = [190, 215, 245, 275, 305]
 
 // 仅展示用的走势，每列为同一结果连续出现的次数。
 const MOCK_RESULT_COLUMNS = [
@@ -130,16 +137,17 @@ export const useHashGamePage = () => {
   const selectedChip = ref(1)
   const chipEditorOpen = ref(false)
   const chipEditorItems = ref<ChipDraft[]>([])
+  const customChipItems = ref<CustomChipDraft[]>(
+    CUSTOM_CHIP_HUES.map((hue, index) => ({
+      id: 15 + index,
+      value: '',
+      hue
+    }))
+  )
   const editingChipId = ref(0)
+  const keypadOpen = ref(false)
+  const keypadValue = ref('')
   const chipEditorError = ref('')
-  const editingChipAmount = computed({
-    get: () => chipEditorItems.value.find(chip => chip.id === editingChipId.value)?.value ?? '',
-    set: (value: string) => {
-      const chip = chipEditorItems.value.find(item => item.id === editingChipId.value)
-      if (chip) chip.value = value
-      chipEditorError.value = ''
-    }
-  })
   const chatVisible = ref(true)
   const selectedBet = ref<BetKey | null>(null)
   let lastSelection: { key: BetKey; chip: number } | null = null
@@ -167,13 +175,16 @@ export const useHashGamePage = () => {
   })
   const mockBet = { odds: '1.96', people: 86, amount: '30.6K', progress: 36 }
 
+  /** 关闭页面中打开的所有浮层。 */
   const closeOverlays = () => {
     periodsOpen.value = false
     historyPopupOpen.value = false
     chipEditorOpen.value = false
+    keypadOpen.value = false
     currencyPopupOpen.value = false
   }
 
+  /** 点击周期菜单外部时收起菜单。 */
   const handlePeriodOutsidePointerDown = (event: PointerEvent) => {
     if (!periodsOpen.value || !(event.target instanceof Node)) return
     if (
@@ -210,11 +221,13 @@ export const useHashGamePage = () => {
     { key: 'even' as const, label: t('hashGame.even'), color: '#FF9822' }
   ])
 
+  /** 切换游戏周期并关闭周期菜单。 */
   const selectPeriod = (seconds: number) => {
     selectedPeriod.value = seconds
     periodsOpen.value = false
   }
 
+  /** 刷新余额；未登录时打开登录弹窗，失败时提示错误。 */
   const refreshBalance = async () => {
     if (isRefreshingBalance.value) return
     if (!userStore.userInfo?.tradeToken && !userStore.acctInfo?.memberId) {
@@ -227,11 +240,13 @@ export const useHashGamePage = () => {
     }
   }
 
+  /** 打开币种选择弹窗并收起周期菜单。 */
   const openCurrencyPopup = () => {
     periodsOpen.value = false
     currencyPopupOpen.value = true
   }
 
+  /** 设置展示币种，并清除当前投注选择。 */
   const selectCurrency = (code: string) => {
     currency.setDisplayCurrency(code)
     currencyPopupOpen.value = false
@@ -239,82 +254,131 @@ export const useHashGamePage = () => {
     lastSelection = null
   }
 
+  /** 返回上一页；没有历史记录时回到首页。 */
   const handleBack = () => {
     if (router.options.history.state.back) router.back()
     else void navigateTo('/', { replace: true })
   }
 
+  /** 打开历史记录弹窗并收起周期菜单。 */
   const openRecords = () => {
     periodsOpen.value = false
     historyPopupOpen.value = true
   }
 
+  /** 关闭历史记录弹窗。 */
   const closeRecords = () => {
     historyPopupOpen.value = false
   }
 
   // 筹码和选项仅作本地选择展示，不调用投注接口、不扣减余额。
+  /** 选择投注项并记录当前筹码，供重复投注使用。 */
   const selectBet = (key: BetKey) => {
     selectedBet.value = key
     lastSelection = { key, chip: selectedChip.value }
   }
+  /** 清除当前投注项。 */
   const cancelSelection = () => {
     selectedBet.value = null
   }
+  /** 恢复上一次投注的投注项和筹码。 */
   const repeatSelection = () => {
     if (!lastSelection) return
     selectedChip.value = lastSelection.chip
     selectedBet.value = lastSelection.key
   }
+  /** 选择筹码金额并关闭筹码设置面板。 */
   const chooseChip = (value: number) => {
     selectedChip.value = value
     chipEditorOpen.value = false
   }
 
+  /** 根据当前启用状态初始化筹码设置面板。 */
   const openChipEditor = () => {
     periodsOpen.value = false
-    chipEditorItems.value = chipOptions.value.map(chip => ({ ...chip, value: String(chip.value) }))
-    editingChipId.value = chipOptions.value.find(chip => chip.value === selectedChip.value)?.id ?? 0
+    chipEditorItems.value = CHIP_OPTIONS.map((chip, id) => ({
+      id,
+      ...chip,
+      value: String(chip.value),
+      enabled: chipOptions.value.some(option => option.id === id)
+    }))
+    customChipItems.value = customChipItems.value.map(chip => ({ ...chip }))
     chipEditorError.value = ''
+    keypadOpen.value = false
     chipEditorOpen.value = true
   }
 
-  const selectEditingChip = (id: number) => {
-    editingChipId.value = id
+  /** 打开指定自定义筹码的金额键盘。 */
+  const editCustomChip = (chip: CustomChipDraft) => {
+    editingChipId.value = chip.id
+    keypadValue.value = ''
+    chipEditorError.value = ''
+    keypadOpen.value = true
+  }
+
+  /** 切换预设筹码是否显示。 */
+  const togglePresetChip = (id: number) => {
+    const chip = chipEditorItems.value.find(item => item.id === id)
+    if (chip) chip.enabled = !chip.enabled
+  }
+
+  /** 在自定义筹码金额中输入数字或删除末位。 */
+  const appendKeypadValue = (key: string) => {
+    if (key === 'delete') keypadValue.value = keypadValue.value.slice(0, -1)
+    else if (keypadValue.value.length < 7) keypadValue.value += key
     chipEditorError.value = ''
   }
 
-  const saveChipEditor = () => {
-    const updatedChips: ChipOption[] = []
-    const amounts = new Set<number>()
-    for (const chip of chipEditorItems.value) {
-      const rawAmount = chip.value.trim()
-      const amount = Number(rawAmount)
-      if (
-        !/^\d+(?:\.\d+)?$/.test(rawAmount) ||
-        !Number.isFinite(amount) ||
-        amount <= 0 ||
-        amount > Number.MAX_SAFE_INTEGER
-      ) {
-        editingChipId.value = chip.id
-        chipEditorError.value = t('hashGame.invalidChipAmount')
-        return
-      }
-      if (amounts.has(amount)) {
-        editingChipId.value = chip.id
-        chipEditorError.value = t('hashGame.duplicateChipAmount')
-        return
-      }
-      amounts.add(amount)
-      updatedChips.push({ id: chip.id, hue: chip.hue, value: amount })
+  /** 校验并保存自定义筹码金额。 */
+  const confirmKeypadValue = () => {
+    const custom = customChipItems.value.find(chip => chip.id === editingChipId.value)
+    if (!custom) return
+    const value = Number(keypadValue.value)
+    if (
+      !/^\d+$/.test(keypadValue.value) ||
+      !Number.isSafeInteger(value) ||
+      value < 1 ||
+      value > 9999999
+    ) {
+      chipEditorError.value = t('hashGame.invalidChipAmount')
+      return
     }
+    const duplicatePreset = chipEditorItems.value.some(chip => Number(chip.value) === value)
+    const duplicateCustom = customChipItems.value.some(
+      chip => chip.id !== custom.id && Number(chip.value) === value
+    )
+    if (duplicatePreset || duplicateCustom) {
+      chipEditorError.value = t('hashGame.duplicateChipAmount')
+      return
+    }
+    custom.value = String(value)
+    keypadOpen.value = false
+    chipEditorError.value = ''
+  }
+
+  /** 保存筹码设置，并同步更新当前及上次选中的筹码。 */
+  const saveChipEditor = () => {
+    const updatedChips: ChipOption[] = [
+      ...customChipItems.value
+        .filter(chip => chip.value)
+        .map(chip => ({
+          id: chip.id,
+          hue: chip.hue,
+          value: Number(chip.value)
+        })),
+      ...chipEditorItems.value
+        .filter(chip => chip.enabled)
+        .map(chip => ({ id: chip.id, hue: chip.hue, value: Number(chip.value) }))
+    ]
 
     // 按固定槽位替换金额，保持配色、排列和当前选中筹码一致。
     const selectedId = chipOptions.value.find(chip => chip.value === selectedChip.value)?.id
     const repeatedId = chipOptions.value.find(chip => chip.value === lastSelection?.chip)?.id
     chipOptions.value = updatedChips
+    customChipItems.value = customChipItems.value.map(chip => ({ ...chip }))
     const selected = updatedChips.find(chip => chip.id === selectedId)
     if (selected) selectedChip.value = selected.value
+    else if (updatedChips.length) selectedChip.value = updatedChips[0].value
     const repeated = updatedChips.find(chip => chip.id === repeatedId)
     if (lastSelection && repeated) lastSelection.chip = repeated.value
     chipEditorOpen.value = false
@@ -338,8 +402,14 @@ export const useHashGamePage = () => {
     selectedChip,
     chipEditorOpen,
     chipEditorItems,
+    customChipItems,
     editingChipId,
-    editingChipAmount,
+    keypadOpen,
+    keypadValue,
+    appendKeypadValue,
+    confirmKeypadValue,
+    editCustomChip,
+    togglePresetChip,
     chipEditorError,
     chatVisible,
     selectedBet,
@@ -363,7 +433,6 @@ export const useHashGamePage = () => {
     repeatSelection,
     chooseChip,
     openChipEditor,
-    selectEditingChip,
     saveChipEditor,
     closeOverlays,
     handlePeriodOutsidePointerDown
