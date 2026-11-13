@@ -1,0 +1,49 @@
+/*
+ * Token bridge adapted from Liquid Glass Components v2.1.0 (MIT).
+ * https://github.com/jcm-developer/liquid-glass-components
+ * Opt in on a chrome-layer container; this file does not apply a glass material.
+ * Components must implement the skill's solid/filter and motion fallbacks.
+ */
+.tg-glass-tokens {
+  --glass-tint: 0.32;
+  --glass-rim: 0.97;
+  --glass-blur: 22px;
+  --glass-blur-fallback: 8px;
+  --glass-saturation: 180%;
+  --glass-refraction: 89;
+  --glass-bezel: 20px;
+  --glass-chroma: 0.9;
+  --glass-solid-bg: var(--color-background-level-2);
+  --glass-solid-text: var(--color-text-level-1);
+  --glass-bg: color-mix(in srgb, var(--color-popup-1) calc(var(--glass-tint) * 100%), transparent);
+  --glass-border: color-mix(
+    in srgb,
+    var(--color-popup-2) calc(var(--glass-rim) * 100%),
+    transparent
+  );
+  --glass-shadow: 0 4px 20px 0 color-mix(in srgb, var(--color-mask-20) 30%, transparent);
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .tg-glass-tokens {
+    --glass-bg: var(--glass-solid-bg);
+    --glass-blur: 0px;
+    --glass-blur-fallback: 0px;
+    --glass-saturation: 100%;
+    --glass-refraction: 0;
+    --glass-shadow: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .tg-glass-tokens {
+    --glass-bg: Canvas;
+    --glass-solid-bg: Canvas;
+    --glass-solid-text: CanvasText;
+    --glass-border: CanvasText;
+    --glass-shadow: none;
+    --glass-refraction: 0;
+    --glass-blur: 0px;
+    --glass-blur-fallback: 0px;
+  }
+}
