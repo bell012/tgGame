@@ -212,7 +212,7 @@ const props = withDefaults(
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
-const { railClass, columns, titleClass, allClass } = usePcGameCardLayout()
+const { railClass, titleClass, allClass } = usePcGameCardLayout()
 const desktopGameColumns = computed(() =>
   !isMobile.value ? railClass.value : 'auto-cols-[31.2%] sm:auto-cols-[11.82%]'
 )
@@ -405,7 +405,7 @@ watch(
   { flush: 'post' }
 )
 
-watch(columns, () => void nextTick(updateRailLayout))
+watch(railClass, () => void nextTick(updateRailLayout))
 
 onUnmounted(() => {
   cancelAnimationFrame(resizeFrame)

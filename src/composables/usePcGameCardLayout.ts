@@ -1,61 +1,39 @@
 import { computed, inject, ref, type InjectionKey, type Ref } from 'vue'
-import { useIsMobile, useMediaQuery } from './useMediaQuery'
+import { useIsMobile } from './useMediaQuery'
 
 export const gameCardSidebarCollapsedKey: InjectionKey<Readonly<Ref<boolean>>> = Symbol(
   'game-card-sidebar-collapsed'
 )
 
-export function resolvePcGameCardColumns(width: number, collapsed: boolean) {
-  if (width <= 640) return null
-  if (width >= 1280) return 8
-  if (width >= 1024) return 7
-  if (width >= 768) return collapsed ? 6 : 5
-  return collapsed ? 5 : 4
-}
-
 const gridClasses = {
-  4: 'grid-cols-4',
-  5: 'grid-cols-5',
-  6: 'grid-cols-6',
-  7: 'grid-cols-7',
-  8: 'grid-cols-8'
+  expanded: 'sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8',
+  collapsed: 'sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8'
 } as const
 
 const railClasses = {
-  4: 'auto-cols-[calc((100%-3*theme(spacing.2))/4)]',
-  5: 'auto-cols-[calc((100%-4*theme(spacing.2))/5)]',
-  6: 'auto-cols-[calc((100%-5*theme(spacing.2))/6)]',
-  7: 'auto-cols-[calc((100%-6*theme(spacing.2))/7)]',
-  8: 'auto-cols-[calc((100%-7*theme(spacing.2))/8)]'
+  expanded:
+    'sm:auto-cols-[calc((100%-3*theme(spacing.2))/4)] md:auto-cols-[calc((100%-4*theme(spacing.2))/5)] lg:auto-cols-[calc((100%-6*theme(spacing.2))/7)] xl:auto-cols-[calc((100%-7*theme(spacing.2))/8)] 2xl:auto-cols-[calc((100%-7*theme(spacing.2))/8)]',
+  collapsed:
+    'sm:auto-cols-[calc((100%-4*theme(spacing.2))/5)] md:auto-cols-[calc((100%-5*theme(spacing.2))/6)] lg:auto-cols-[calc((100%-6*theme(spacing.2))/7)] xl:auto-cols-[calc((100%-7*theme(spacing.2))/8)] 2xl:auto-cols-[calc((100%-7*theme(spacing.2))/8)]'
 } as const
 
 /** 仅输出展示规则，不参与查询条件或分页。 */
 export function usePcGameCardLayout() {
   const isMobile = useIsMobile()
-  const md = useMediaQuery('(min-width: 768px)')
-  const lg = useMediaQuery('(min-width: 1024px)')
-  const xl = useMediaQuery('(min-width: 1280px)')
   const collapsed = inject(gameCardSidebarCollapsedKey, ref(false))
-  const columns = computed(() =>
-    resolvePcGameCardColumns(
-      isMobile.value ? 640 : xl.value ? 1280 : lg.value ? 1024 : md.value ? 768 : 641,
-      collapsed.value
-    )
-  )
+  const menuState = computed(() => (collapsed.value ? 'collapsed' : 'expanded'))
 
   return {
-    columns,
-    gridClass: computed(() => (columns.value ? gridClasses[columns.value] : '')),
-    railClass: computed(() => (columns.value ? railClasses[columns.value] : '')),
+    // 640px 仍由项目判定为 H5，不挂载 PC 的 sm 响应式类。
+    gridClass: computed(() => (isMobile.value ? '' : gridClasses[menuState.value])),
+    railClass: computed(() => (isMobile.value ? '' : railClasses[menuState.value])),
     titleClass: computed(() =>
       isMobile.value
         ? 'text-base sm:text-xl'
-        : lg.value || collapsed.value
+        : collapsed.value
           ? 'text-base'
-          : 'text-sm'
+          : 'text-sm lg:text-base'
     ),
-    allClass: computed(() =>
-      isMobile.value ? 'text-xs sm:text-sm' : lg.value ? 'text-sm' : 'text-xs'
-    )
+    allClass: computed(() => (isMobile.value ? 'text-xs sm:text-sm' : 'text-xs lg:text-sm'))
   }
 }
