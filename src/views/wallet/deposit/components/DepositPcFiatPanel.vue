@@ -15,7 +15,7 @@
       >
         <!-- 单个支付方式卡片 -->
         <div
-          class="shrink-0 basis-[calc((100%-3rem)/4)] flex items-center justify-center p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
+          class="shrink-0 basis-[calc((100%-3rem)/4)] flex items-center justify-center overflow-hidden p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
           :class="{
             'border border-theme-primary bg-theme-3':
               selectedMethod?.columnCode === item.columnCode,
@@ -27,9 +27,11 @@
           @click.stop="selectMethod(item, index)"
         >
           <!-- 支付方式图标 -->
-          <img class="mr-4 h-6" :src="resolveMethodIcon(item)" />
+          <img class="mr-4 h-6 shrink-0" :src="resolveMethodIcon(item)" />
           <!-- 支付方式名称 -->
-          <p class="text-base font-bold leading-normal text-text-1">{{ item.columnName }}</p>
+          <p class="min-w-0 truncate text-base font-bold leading-normal text-text-1">
+            {{ item.columnName }}
+          </p>
         </div>
       </div>
     </div>
@@ -158,7 +160,7 @@
           <!-- 预设金额优惠角标 -->
           <span
             v-if="presetDiscountRatioMap[preset] !== undefined"
-            class="pointer-events-none absolute -right-1 -top-1 min-w-8 rounded-lg bg-center bg-contain bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4"
+            class="pointer-events-none absolute -right-1 -top-1 min-w-8 bg-center bg-[length:100%_100%] bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4 whitespace-nowrap"
             :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
           >
             {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
@@ -197,7 +199,7 @@
     :dark-image="defaultImgDark"
     :light-image="defaultImgLight"
     :image-alt="$t('notifications.title')"
-    :message="$t('notifications.emptyMessage')"
+    :message="$t('notifications.transactionsEmptyMessage')"
     text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
   />
   <!-- 充值订单弹窗 -->
@@ -217,7 +219,7 @@ import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import { getCurrentCurrency, getCurrencySymbol } from '@/utils/locale'
+import { getCurrencySymbol, getCurrentCurrency } from '@/utils/locale'
 import { nextTick, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositFiatFlow } from '../shared'

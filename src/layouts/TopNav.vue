@@ -359,6 +359,7 @@ import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import GuestLocaleCurrencyPopup from '@/components/GuestLocaleCurrencyPopup.vue'
 import SelectModal from '@/components/SelectModal.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useDepositPageRefresh } from '@/composables/useDepositPageRefresh'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import bellDefaultImage from '@/static/img/bell.png'
@@ -828,8 +829,14 @@ const handleCurrencyChange = (code: string) => {
   localeStore.setCurrency(code)
 }
 
+const { refreshDepositPage } = useDepositPageRefresh()
+
 const handleLoggedInCurrencySelect = (code: string) => {
   setDisplayCurrency(code)
+
+  if (!isMobile.value && stripLocalePrefix(route.path) === '/deposit') {
+    refreshDepositPage()
+  }
 }
 
 const openDeposit = () => {

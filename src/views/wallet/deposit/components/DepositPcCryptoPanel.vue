@@ -2,7 +2,7 @@
   <DepositPcCryptoSkeleton v-if="isInitialLoading" />
 
   <!-- 数字币充值面板外层容器 -->
-  <div v-else class="w-full rounded-xl bg-bg-2 p-6 font-['Inter']">
+  <div v-else-if="payMethods.length > 0" class="w-full rounded-xl bg-bg-2 p-6 font-['Inter']">
     <!-- 数字币充值面板主体内容 -->
     <div class="flex flex-col gap-6">
       <!-- 币种展示区域 -->
@@ -173,12 +173,12 @@
         </div>
 
         <!-- 预设金额区域 -->
-        <div class="rounded-2xl bg-bg-4 p-2">
+        <div class="mt-4 w-full relative">
           <!-- 预设金额按钮网格 -->
           <div
             ref="presetsRef"
-            class="grid grid-cols-6 gap-2 transition-all duration-300"
-            :class="expanded ? 'max-h-[136px] overflow-y-auto' : 'max-h-[88px] overflow-hidden'"
+            class="grid grid-cols-6 gap-2 p-2 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
+            :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'"
           >
             <!-- 单个预设金额按钮 -->
             <button
@@ -194,7 +194,7 @@
               <!-- 预设金额优惠角标 -->
               <span
                 v-if="presetDiscountRatioMap[preset] !== undefined"
-                class="pointer-events-none absolute -right-1 -top-1 min-w-8 rounded-lg bg-center bg-contain bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4"
+                class="pointer-events-none absolute -right-1 -top-1 min-w-8 bg-center bg-[length:100%_100%] bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4 whitespace-nowrap"
                 :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
               >
                 {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
@@ -243,6 +243,15 @@
     </div>
   </div>
 
+  <ThemedEmptyState
+    v-else
+    :dark-image="defaultImgDark"
+    :light-image="defaultImgLight"
+    :image-alt="$t('notifications.title')"
+    :message="$t('notifications.transactionsEmptyMessage')"
+    text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
+  />
+
   <!-- 充值订单弹窗组件 -->
   <depositCryptoOrderPop
     v-model:model-value="orderPopShow"
@@ -253,6 +262,7 @@
 </template>
 
 <script setup lang="ts">
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import BTCIcon from '@/static/img/crypto/BTC.png'
 import DOGEIcon from '@/static/img/crypto/DOGE.png'
@@ -262,6 +272,8 @@ import TRXIcon from '@/static/img/crypto/TRX.png'
 import USDCIcon from '@/static/img/crypto/USDC.png'
 import USDTIcon from '@/static/img/crypto/USDT.png'
 import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
@@ -310,6 +322,7 @@ const visibleCoins = [
 
 const {
   isInitialLoading,
+  payMethods,
   selectedSubColumn,
   selectedDiscountItem,
   amount,

@@ -76,10 +76,6 @@ const pageStyle = computed(() => {
 })
 
 function handleSportChange(index: number, key: string) {
-  const sport = sportItems[index]
-  if (!props.standalone && sport) {
-    sportsStore.selectedSportId = sport.sportId
-  }
   emit('change', index, key)
 }
 </script>

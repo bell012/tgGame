@@ -2,7 +2,7 @@
   <DepositMobileFiatSkeleton v-if="isInitialLoading" />
 
   <!-- 法币充值面板容器 -->
-  <div v-else class="w-full bg-bg-2 p-4 rounded-lg font-['Inter']">
+  <div v-else-if="payMethods.length > 0" class="w-full bg-bg-2 p-4 rounded-lg font-['Inter']">
     <!-- 充值方式标题 -->
     <p class="text-xs sm:text-sm font-bold leading-normal text-text-1">
       {{ t('deposit.methods') }}
@@ -182,6 +182,15 @@
       </button>
     </div>
   </div>
+  <!-- 空状态 -->
+  <ThemedEmptyState
+    v-else-if="payColumnLoaded"
+    :dark-image="defaultImgDark"
+    :light-image="defaultImgLight"
+    :image-alt="$t('notifications.title')"
+    :message="$t('notifications.transactionsEmptyMessage')"
+    text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
+  />
   <!-- 充值订单弹窗 -->
   <depositFiatOrderPop
     v-model:model-value="orderPopShow"
@@ -192,11 +201,14 @@
 </template>
 <script setup lang="ts">
 import type { QueryPayColumnItem } from '@/api/interface/wallet'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import { getCurrentCurrency, getCurrencySymbol } from '@/utils/locale'
+import { getCurrencySymbol, getCurrentCurrency } from '@/utils/locale'
 import { nextTick, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositFiatFlow } from '../shared'
@@ -225,6 +237,7 @@ const {
   amount,
   orderInfo,
   orderPopShow,
+  payColumnLoaded,
   isDepositDisabled,
   showChannelSection,
   isManualAmountAllowed,

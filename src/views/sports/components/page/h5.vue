@@ -320,7 +320,7 @@ import { useIntersectionObserver } from '@/composables/useIntersectionObserver'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
-import { stripLocalePrefix } from '@/utils/locale'
+import { isSportsHomepageRoute } from '../../shared/navigation'
 import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import leagueIcon from '@/static/svg/sports/liansai_tabs/icon1.svg?url'
 import emptyImage from '@/static/img/explore/default.png'
@@ -401,7 +401,7 @@ watch(
   { flush: 'sync' }
 )
 const { vMatchVisibility } = useMatchVisibility({
-  enabled: () => !props.page.betSlipOpen.value && stripLocalePrefix(route.path) === '/sports',
+  enabled: () => !props.page.betSlipOpen.value && isSportsHomepageRoute(route),
   topInset: () => navigationHeight.value,
   onChange: targets => props.page.setVisibleMatches('h5', targets)
 })

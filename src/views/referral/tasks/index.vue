@@ -220,7 +220,7 @@ const maxRewardLabel = computed(() =>
   createReferralTaskMaxRewardLabel(t, referralSettlementRule.value)
 )
 const taskRulesHtml = computed(() => {
-  const currentLocaleCode = String(locale.value).startsWith('zh') ? 'zh' : 'eng'
+  const currentLocaleCode = String(locale.value)
 
   return String(
     taskRuleContents.value.find(item => item.langCode === currentLocaleCode)?.agentIntroduction ??

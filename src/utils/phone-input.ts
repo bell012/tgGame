@@ -8,12 +8,14 @@ export type PhoneAreaCodeOption = {
 export const DEFAULT_PHONE_AREA_CODE = '63'
 const PHONE_AREA_CODE_MAX_LENGTH: Record<string, number> = {
   '63': 10,
-  '86': 11
+  '86': 11,
+  '84': 9
 }
 
 const PHONE_AREA_CODE_PATTERN: Record<string, RegExp> = {
   '63': /^9\d{9}$/,
-  '86': /^1\d{10}$/
+  '86': /^1\d{10}$/,
+  '84': /^[35789]\d{8}$/
 }
 
 export const PHONE_AREA_CODE_OPTIONS: PhoneAreaCodeOption[] = [
@@ -28,6 +30,12 @@ export const PHONE_AREA_CODE_OPTIONS: PhoneAreaCodeOption[] = [
     code: '86',
     display: '+86',
     searchText: 'china 86 +86'
+  },
+  {
+    country: 'Vietnam',
+    code: '84',
+    display: '+84',
+    searchText: 'vietnam 84 +84'
   }
 ]
 
@@ -103,10 +111,10 @@ export const isValidPhoneNumberByAreaCode = (
 }
 
 /**
- * 格式化宽松手机号：仅保留数字，最多 10 位。
+ * 格式化宽松手机号：仅保留数字，按区号限制最大长度。
  * 仅用于登录/注册/忘记密码场景，输入阶段不限制首位必须为 9。
  * @param value 输入的字符串
- * @returns 格式化后的纯数字字符串（最多10位）
+ * @returns 格式化后的纯数字字符串
  */
 export const formatLoosePhoneNumber = (
   value: string,

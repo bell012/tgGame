@@ -16,12 +16,18 @@
         />
       </div>
     </div>
-    <PcLayout v-else v-model="tabType" :initial-method-code="initialMethodCode" />
+    <PcLayout
+      v-else
+      :key="depositPageRefreshKey"
+      v-model="tabType"
+      :initial-method-code="initialMethodCode"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import H5Header from '@/components/common/H5Header.vue'
+import { useDepositPageRefresh } from '@/composables/useDepositPageRefresh'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import { navigateToName } from '@/utils/router'
@@ -35,6 +41,7 @@ import type { DepositTabType } from './shared'
 const { t } = useI18n()
 
 const isMobile = useIsMobile()
+const { depositPageRefreshKey } = useDepositPageRefresh()
 const route = useRoute()
 const tabType = ref<DepositTabType>('Fiat')
 

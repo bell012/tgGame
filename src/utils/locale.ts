@@ -412,6 +412,7 @@ export const getCurrencySymbol = (currency?: string): string => {
     GBP: '£',
     JPY: '¥',
     CNY: '¥',
+    VND: '₫',
     BTC: '₿'
   }
 

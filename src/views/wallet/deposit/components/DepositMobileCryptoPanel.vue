@@ -2,7 +2,7 @@
   <DepositMobileCryptoSkeleton v-if="isInitialLoading" />
 
   <!-- 最外层充值面板容器 -->
-  <div v-else class="w-full min-h-full font-['Inter']">
+  <div v-else-if="payMethods.length > 0" class="w-full min-h-full font-['Inter']">
     <!-- 充值主卡片区域 -->
     <div class="w-full shrink-0 bg-bg-2 p-3 rounded-lg relative">
       <!-- 币种选择与更多入口区域 -->
@@ -232,6 +232,15 @@
     </div>
   </div>
 
+  <ThemedEmptyState
+    v-else
+    :dark-image="defaultImgDark"
+    :light-image="defaultImgLight"
+    :image-alt="$t('notifications.title')"
+    :message="$t('notifications.transactionsEmptyMessage')"
+    text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
+  />
+
   <!-- 数字币充值订单弹窗 -->
   <depositCryptoOrderPop
     v-model:model-value="orderPopShow"
@@ -241,6 +250,7 @@
   />
 </template>
 <script setup lang="ts">
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import BTCIcon from '@/static/img/crypto/BTC.png'
@@ -250,6 +260,8 @@ import groupIcon from '@/static/img/crypto/groupIcons.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import USDCIcon from '@/static/img/crypto/USDC.png'
 import USDTIcon from '@/static/img/crypto/USDT.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import bonusBgIcon from '@/static/img/payment/amount_bonus_bg.png'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
@@ -299,6 +311,7 @@ const visibleCoins = computed(() => (isMobile.value ? coins.slice(0, 3) : coins)
 
 const {
   isInitialLoading,
+  payMethods,
   selectedSubColumn,
   selectedDiscountItem,
   amount,

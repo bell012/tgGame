@@ -102,8 +102,8 @@
             class="mr-2.5 flex shrink-0 items-center justify-center rounded-full bg-bg-2 text-center text-text-2 last:mr-0"
             :class="
               props.mode === 'pc'
-                ? 'h-[44px] min-w-[420px] px-5 text-sm leading-[20px]'
-                : 'h-[25px] min-w-[237px] px-3 text-xs leading-[15px]'
+                ? 'h-[44px] min-w-0 px-5 text-sm leading-[20px]'
+                : 'h-[25px] min-w-0 px-3 text-xs leading-[15px]'
             "
           >
             {{ message }}

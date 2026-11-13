@@ -1,6 +1,6 @@
 <template>
   <!-- PC 任务页：严格对应 Figma 的 1336px 双栏主体。 -->
-  <main class="min-h-screen bg-bg-1 pb-10 mt-[16px]">
+  <main class="min-h-screen bg-bg-1 p-[14px]">
     <div class="mx-auto flex w-full max-w-[1336px] flex-col gap-4">
       <!-- Figma 页面标题 -->
       <h1 class="h-6 text-xl font-[700] leading-6 text-text-1">{{ props.title }}</h1>
@@ -74,10 +74,13 @@
         </div>
       </div>
     </div>
+    <CommonFooter class="mt-[40px]" />
   </main>
 </template>
 
 <script setup lang="ts">
+import CommonFooter from '@/components/commonFooter.vue'
+
 import newSideIcons from '@/static/svg/side/newIcon'
 import { useI18n } from 'vue-i18n'
 import TaskPageContent from './components/TaskPageContent.vue'
