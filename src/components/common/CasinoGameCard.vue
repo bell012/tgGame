@@ -1,6 +1,11 @@
 <template>
   <!-- 外层固定命中区域，避免 hover 上移后底边 mouseleave 循环爆闪 -->
-  <a href="javascript:void(0);" class="group relative block h-full w-full" @click="doClick">
+  <a
+    ref="cardElement"
+    href="javascript:void(0);"
+    class="group relative block h-full w-full"
+    @click="doClick"
+  >
     <div
       class="game-item relative flex h-full w-full flex-col items-center overflow-hidden rounded-[12px] transition-transform duration-200 ease-out group-active:translate-y-0 inactive"
       :class="{ 'sm:group-hover:-translate-y-2': hoverLift }"
@@ -16,7 +21,10 @@
         class="absolute inset-x-0 bottom-2 flex w-full min-w-0 flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra"
         :class="{ 'transition-opacity sm:group-hover:opacity-0': fadeCaptionOnHover }"
       >
-        <GameCoverNameText :name="game.itemName ?? ''" />
+        <GameCoverNameText
+          :name="game.itemName ?? ''"
+          :pc-scale-element="responsivePc ? cardElement : null"
+        />
         <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
           <gameRemoteImg
             :img="platformLogoImg"
@@ -42,9 +50,15 @@
             />
           </svg>
         </div>
-        <span class="text-[10px] sm:text-xs font-medium sm:font-semibold text-white">{{
-          initNum
-        }}</span>
+        <span
+          class="text-white"
+          :class="
+            responsivePc && !isMobile
+              ? 'text-[10px] font-medium lg:text-[11px] lg:font-bold'
+              : 'text-[10px] sm:text-xs font-medium sm:font-semibold'
+          "
+          >{{ initNum }}</span
+        >
       </div>
       <div
         v-if="game.serviceStatus === 0"
@@ -54,7 +68,10 @@
           v-if="gameCovernameShow"
           class="absolute inset-x-0 top-0 flex w-full items-start justify-center px-2 pt-2 text-center font-impact-infoma-ultra"
         >
-          <GameCoverNameText :name="game.itemName ?? ''" />
+          <GameCoverNameText
+            :name="game.itemName ?? ''"
+            :pc-scale-element="responsivePc ? cardElement : null"
+          />
         </div>
         <div
           class="flex h-9 w-9 items-center justify-center rounded-full bg-mask-20 transition-all duration-300 sm:group-hover:scale-150"
@@ -78,7 +95,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { casinoIcons } from '@/static/svg/casino'
 import { StringExtension } from '@/utils/string-extension'
 import type { GameDataItem } from '@/api/interface/game'
@@ -97,11 +115,13 @@ const props = withDefaults(
     showFavoriteBadge?: boolean
     hoverLift?: boolean
     fadeCaptionOnHover?: boolean
+    responsivePc?: boolean
   }>(),
   {
     showFavoriteBadge: false,
     hoverLift: true,
-    fadeCaptionOnHover: false
+    fadeCaptionOnHover: false,
+    responsivePc: false
   }
 )
 
@@ -110,6 +130,8 @@ const emit = defineEmits<{
 }>()
 
 const siteConfigStore = useSiteConfigStore()
+const cardElement = ref<HTMLElement | null>(null)
+const isMobile = useIsMobile()
 const gameStore = useGameStore()
 const gameImage = computed(() => {
   const imagePath = props.game.icon2 || props.game.conUrl || props.game.icon1 || props.game.icon3

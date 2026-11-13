@@ -15,8 +15,10 @@
           mobileLobbyProviders
             ? providerRailClasses
             : [
-                'gap-2 auto-cols-[31.2%]',
-                isCasinoProviderModule ? 'sm:auto-cols-[11.82%]' : desktopGameColumns,
+                'gap-2',
+                isCasinoProviderModule
+                  ? 'auto-cols-[31.2%] sm:auto-cols-[11.82%]'
+                  : desktopGameColumns,
                 isCasinoProviderModule ? 'provider-rail' : ''
               ]
         "
@@ -40,12 +42,18 @@
 
     <template v-else-if="props.module">
       <div class="mt-2 flex h-8 items-center font-inter sm:mt-6">
-        <h2 class="flex h-8 items-center text-base font-bold leading-none text-text-1 sm:text-xl">
+        <h2
+          class="flex h-8 items-center font-bold leading-none text-text-1"
+          :class="
+            props.module.sysGameTypeCode === 'providers' ? 'text-base sm:text-xl' : titleClass
+          "
+        >
           {{ props.module.sysGameTypeName }}
         </h2>
         <button
           type="button"
-          class="button inactive ml-auto flex h-8 shrink-0 items-center justify-center gap-0.5 rounded-lg bg-bg-2 px-2 text-xs font-bold leading-none text-text-1 whitespace-nowrap sm:text-sm"
+          class="button inactive ml-auto flex h-8 shrink-0 items-center justify-center gap-0.5 rounded-lg bg-bg-2 px-2 font-bold leading-none text-text-1 whitespace-nowrap"
+          :class="props.module.sysGameTypeCode === 'providers' ? 'text-xs sm:text-sm' : allClass"
           @click="handleViewAll(props.module)"
         >
           {{ t('casino.all') }}
@@ -130,7 +138,7 @@
         <div
           v-else-if="props.module.items && props.module.items.length > 0"
           ref="scrollRef"
-          class="relative -mx-[14px] grid snap-x snap-mandatory grid-flow-col auto-cols-[31.2%] gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth px-[14px] pt-2.5 hide-scroll [scroll-padding-inline:14px] sm:mx-0 sm:px-0 sm:[scroll-padding-inline:0]"
+          class="relative -mx-[14px] grid snap-x snap-mandatory grid-flow-col gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth px-[14px] pt-2.5 hide-scroll [scroll-padding-inline:14px] sm:mx-0 sm:px-0 sm:[scroll-padding-inline:0]"
           :class="[
             desktopGameColumns,
             { 'sm:!-mr-4 sm:!pr-4': isMobile && props.viewAllMode === 'casino' }
@@ -142,6 +150,7 @@
             class="aspect-[330/438] snap-start"
           >
             <CasinoGameCard
+              responsive-pc
               :game="resolveModuleGame(game)"
               :show-favorite-badge="resolveFavoriteBadge(game)"
               @click="handleClick(resolveModuleGame(game).rowId)"
@@ -171,9 +180,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
+import { computed, inject, nextTick, onUnmounted, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
 import { navigateTo, navigateToName } from '@/utils/router'
 import { casinoIcons } from '@/static/svg/casino'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
@@ -202,8 +212,9 @@ const props = withDefaults(
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+const { railClass, columns, titleClass, allClass } = usePcGameCardLayout()
 const desktopGameColumns = computed(() =>
-  !isMobile.value ? 'sm:auto-cols-[calc((100%-7*theme(spacing.2))/8)]' : 'sm:auto-cols-[11.82%]'
+  !isMobile.value ? railClass.value : 'auto-cols-[31.2%] sm:auto-cols-[11.82%]'
 )
 const providerRailClasses = '-mr-3.5 auto-cols-[47.3333px] gap-[5px] pr-3.5 sm:-mr-4 sm:pr-4'
 const mobileLobbyProviders = computed(
@@ -336,6 +347,30 @@ const handleViewAll = (item: CasinoLobbyButtonItem) => {
 
 const onScroll = () => updateScrollState()
 let resizeObserver: ResizeObserver | undefined
+let resizeFrame = 0
+
+const updateRailLayout = () => {
+  cancelAnimationFrame(resizeFrame)
+  resizeFrame = requestAnimationFrame(() => {
+    const el = scrollRef.value
+    if (!el) return
+    if (!isMobile.value && props.module?.sysGameTypeCode !== 'providers') {
+      const first = el.firstElementChild
+      if (first instanceof HTMLElement) {
+        const gap = Number.parseFloat(getComputedStyle(el).columnGap) || 0
+        const step = first.getBoundingClientRect().width + gap
+        const max = Math.max(0, el.scrollWidth - el.clientWidth)
+        if (step > 0) {
+          el.scrollTo({
+            left: Math.min(max, Math.round(el.scrollLeft / step) * step),
+            behavior: 'instant'
+          })
+        }
+      }
+    }
+    updateScrollState()
+  })
+}
 
 watch(
   () =>
@@ -353,19 +388,27 @@ watch(
   }
 )
 
-onMounted(() => {
-  nextTick(() => {
-    updateScrollState()
-    if (!scrollRef.value) return
-    scrollRef.value.addEventListener('scroll', onScroll, { passive: true })
+watch(
+  scrollRef,
+  (element, previous) => {
+    previous?.removeEventListener('scroll', onScroll)
+    resizeObserver?.disconnect()
+    if (!element) return
+    element.addEventListener('scroll', onScroll, { passive: true })
     if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(() => updateScrollState())
-      resizeObserver.observe(scrollRef.value)
+      resizeObserver = new ResizeObserver(updateRailLayout)
+      resizeObserver.observe(element)
+      if (element.firstElementChild) resizeObserver.observe(element.firstElementChild)
     }
-  })
-})
+    updateRailLayout()
+  },
+  { flush: 'post' }
+)
+
+watch(columns, () => void nextTick(updateRailLayout))
 
 onUnmounted(() => {
+  cancelAnimationFrame(resizeFrame)
   scrollRef.value?.removeEventListener('scroll', onScroll)
   resizeObserver?.disconnect()
 })
