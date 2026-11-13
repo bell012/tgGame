@@ -19,7 +19,7 @@
                 t('preferencesSettings.displayCurrency')
               }}</span>
               <div class="flex items-center gap-2.5">
-                <span class="text-[15px] font-[400] text-text-2">{{ currentCurrency }}</span>
+                <span class="text-[15px] font-[400] text-text-2">{{ currentCurrencyCode }}</span>
                 <div class="flex h-5 w-5 items-center justify-center rounded-md bg-bg-1">
                   <ArrowRightIcon class="h-3 w-3 text-text-2" />
                 </div>
@@ -130,7 +130,7 @@
               t('preferencesSettings.displayCurrency')
             }}</span>
             <div ref="desktopCurrencyAnchorRef" class="flex items-center gap-2.5">
-              <span class="text-base text-text-2">{{ currentCurrency }}</span>
+              <span class="text-base text-text-2">{{ currentCurrencyCode }}</span>
               <div class="flex h-6 w-6 items-center justify-center rounded-md bg-bg-1">
                 <ArrowRightIcon class="h-3.5 w-3.5 text-text-2" />
               </div>
@@ -227,7 +227,7 @@
         v-model:visible="showCurrencyPopup"
         :desktop="!isMobile"
         :desktop-anchor="currencyPopupAnchor"
-        :selected-currency="currentCurrency"
+        :selected-currency="currentCurrencyCode"
         :options="currencyOptions"
         @select="handleCurrencySelect"
       />
@@ -247,22 +247,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
-import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
-import {
-  getCurrentCurrency,
-  getFormattedBalance,
-  getLocaleLabel,
-  getLocaleOptions,
-  type Locale,
-  type LocaleOption
-} from '@/utils/locale'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
-import { getBalanceByCurrency, type BalanceCarrier } from '@/utils/balance'
+import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
 import H5Header from '@/components/common/H5Header.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
@@ -271,12 +262,6 @@ import CurrencyPopup from './currency-popup.vue'
 import LanguagePopup from './language-popup.vue'
 import SettingsLayout from '../index.vue'
 
-type CurrencyOption = {
-  code: string
-  icon: string
-  balanceText: string
-}
-
 type PopupAnchorRect = {
   top: number
   left: number
@@ -284,16 +269,11 @@ type PopupAnchorRect = {
   height: number
 }
 
-type CachedSiteConfig = {
-  baseSiteConfig?: {
-    supportCurrency?: unknown
-  }
-}
-
 const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
 const { t } = useI18n()
+const { currentCurrencyCode, currencyOptions, setDisplayCurrency } = useDisplayCurrency()
 const hideGameData = ref(false)
 const hideUserName = ref(false)
 const showCurrencyPopup = ref(false)
@@ -302,89 +282,10 @@ const currencyPopupAnchor = ref<PopupAnchorRect | null>(null)
 const languagePopupAnchor = ref<PopupAnchorRect | null>(null)
 const desktopCurrencyAnchorRef = ref<HTMLElement | null>(null)
 const desktopLanguageAnchorRef = ref<HTMLElement | null>(null)
-const currentCurrency = ref('PHP')
-const currencyOptions = ref<CurrencyOption[]>([])
 const languageOptions = computed<LocaleOption[]>(() => getLocaleOptions())
 const currentLanguageLabel = computed(() => getLocaleLabel(localeStore.currentLanguage))
 
-const normalizeCurrencyCode = (value: unknown) => {
-  return String(value ?? '')
-    .trim()
-    .toUpperCase()
-}
-
-const parseCurrencyCodes = (rawCurrency: unknown) => {
-  if (Array.isArray(rawCurrency)) {
-    return Array.from(new Set(rawCurrency.map(normalizeCurrencyCode).filter(Boolean)))
-  }
-
-  if (typeof rawCurrency === 'string') {
-    return Array.from(
-      new Set(
-        rawCurrency
-          .split(',')
-          .map(item => normalizeCurrencyCode(item))
-          .filter(Boolean)
-      )
-    )
-  }
-
-  return []
-}
-
-const readCachedConfigCurrencyCodes = () => {
-  const rawConfig = localStorage.getItem(SITE_CONFIG_STORAGE_KEY)
-  if (!rawConfig) {
-    return []
-  }
-
-  try {
-    const parsed = JSON.parse(rawConfig) as CachedSiteConfig
-    return parseCurrencyCodes(parsed?.baseSiteConfig?.supportCurrency)
-  } catch (error) {
-    console.error(error)
-    return []
-  }
-}
-
-const readCachedAcctInfo = () => {
-  const rawAcctInfo = localStorage.getItem('acctInfo')
-  if (!rawAcctInfo) {
-    return null
-  }
-
-  try {
-    return JSON.parse(rawAcctInfo) as BalanceCarrier
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
-const syncCurrencyDataFromCache = () => {
-  const codesFromConfig = readCachedConfigCurrencyCodes()
-  const fallbackCode =
-    normalizeCurrencyCode(localStorage.getItem('currency')) || getCurrentCurrency()
-  const codes = codesFromConfig.length ? codesFromConfig : [fallbackCode]
-  const acctInfo = readCachedAcctInfo()
-
-  currencyOptions.value = codes.map(code => {
-    const balance = getBalanceByCurrency(acctInfo, code, { fallbackToCurrentBalance: false })
-    return {
-      code,
-      icon: getCurrencyIconByCode(code),
-      balanceText: getFormattedBalance(balance, code, 2)
-    }
-  })
-
-  const cachedCurrency = normalizeCurrencyCode(localStorage.getItem('currency'))
-  const selectedCode = codes.includes(cachedCurrency) ? cachedCurrency : codes[0]
-  currentCurrency.value = selectedCode || fallbackCode || 'PHP'
-}
-
 const openCurrencyPopup = () => {
-  syncCurrencyDataFromCache()
-
   if (!isMobile.value) {
     const anchorElement = desktopCurrencyAnchorRef.value
     if (anchorElement) {
@@ -423,24 +324,12 @@ const openLanguagePopup = () => {
 }
 
 const handleCurrencySelect = (code: string) => {
-  const selectedCode = normalizeCurrencyCode(code)
-  if (!selectedCode) {
-    return
-  }
-
-  localeStore.setCurrency(selectedCode)
-  localStorage.setItem('currency', selectedCode)
-  currentCurrency.value = selectedCode
-  syncCurrencyDataFromCache()
+  setDisplayCurrency(code)
 }
 
 const handleLanguageSelect = (code: Locale) => {
   localeStore.setLanguage(code)
 }
-
-onMounted(() => {
-  syncCurrencyDataFromCache()
-})
 </script>
 
 <style scoped lang="scss"></style>
