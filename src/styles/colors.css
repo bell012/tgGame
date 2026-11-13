@@ -13,6 +13,9 @@
   --color-background-level-7: #3b4142;
   --color-background-level-8: #323738;
   --color-background-level-9: #282c2d;
+  --color-background-level-10: #3b4142;
+  --color-background-level-11: #2d3131;
+  --color-background-level-12: #292d2e;
   --color-background-odds-hover-light: #d0d2d2;
 
   /* ========== 主色 (Theme) - 深色模式 ========== */
@@ -111,6 +114,9 @@
   --color-background-level-7: #ffffff;
   --color-background-level-8: #e4e6e6;
   --color-background-level-9: #f0f0f0;
+  --color-background-level-10: #ffffff;
+  --color-background-level-11: #f0f6f6;
+  --color-background-level-12: #f1f1f1;
 
   /* ========== 主色 (Theme) - 浅色模式 ========== */
   --color-theme-level-1: #1ed777;
