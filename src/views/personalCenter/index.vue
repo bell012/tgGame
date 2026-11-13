@@ -314,6 +314,9 @@
 
 <script setup lang="ts">
 import SignOutPopup from '@/components/common/SignOutPopup.vue'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
+import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import balanceIcon from '@/static/img/personalCenter/balance.png'
 import vipIcon from '@/static/img/personalCenter/vip.png'
 import vipLeft from '@/static/img/personalCenter/vip_left.png'
@@ -327,9 +330,6 @@ import SignOut from '@/static/svg/personalCenter/icon18.svg?component'
 import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
 import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
-import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
-import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
-import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import { useLocaleStore } from '@/stores/locale'
 import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useThemeStore } from '@/stores/theme'
@@ -567,7 +567,7 @@ const settingsMenus = computed(() => [
     id: 'refer-earn',
     name: t('personalCenter.referEarn'),
     icon: getIcon(10),
-    handler: () => console.log('Refer and Earn clicked')
+    handler: () => navigateTo('/referral')
   },
   {
     id: 'myVouchers',
