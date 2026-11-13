@@ -375,14 +375,18 @@
 
       <!-- 投注区 -->
       <footer class="shrink-0 rounded-t-[13px] bg-bg-2 px-[12px] pt-[11px] pb-[24px]">
-        <div class="flex items-center gap-[16px]">
+        <div class="flex items-center gap-[20px]">
           <button
             type="button"
-            class="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-bg-3"
+            class="relative flex size-[34px] shrink-0 items-center justify-center rounded-full bg-bg-3"
             :aria-label="t('hashGame.editChips')"
             @click="openChipEditor"
           >
-            <EditIcon class="w-[18px] h-[18px] text-text-2" />
+            <img :src="chipEditorImage" alt="" class="size-full object-contain" />
+            <span
+              class="absolute inset-0 grid place-items-center pt-[1px] text-[9px] font-bold text-text-1"
+              >{{ t('hashGame.edit') }}</span
+            >
           </button>
           <div
             class="flex h-[45px] min-w-0 flex-1 items-center gap-[13px] overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -415,40 +419,50 @@
                       ? 'text-[24px]'
                       : 'text-[16px]'
                 "
-                >{{ chip.value }}</span
+                >{{ formatChipAmount(chip.value) }}</span
               >
             </button>
           </div>
         </div>
-        <div class="mt-[7px] flex items-center">
+        <div class="mt-[7px] flex items-center justify-between">
           <button
             type="button"
-            class="flex size-[34px] shrink-0 items-center justify-center rounded-[8px] bg-bg-3 mr-[10px]"
+            class="flex h-[34px] shrink-0 items-center justify-center rounded-[8px] px-[9px] bg-bg-3 mr-[10px]"
             :aria-label="t('hashGame.chat')"
             :aria-pressed="chatVisible"
             @click="chatVisible = !chatVisible"
           >
             <ChatIcon class="w-[16px] h-[16px] text-icon-2" />
           </button>
-          <button
-            type="button"
-            class="h-[34px] px-[10px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
-            @click="cancelSelection"
-          >
-            {{ t('hashGame.cancel') }}
-          </button>
-          <button
-            type="button"
-            class="h-[34px] px-[10px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 mx-[7px]"
-            @click="repeatSelection"
-          >
-            {{ t('hashGame.repeat') }}
-          </button>
-          <div
-            class="btn-primary flex h-[34px] min-w-0 flex-1 items-center justify-center rounded-[8px] px-[10px] text-center text-xs font-bold text-text-4"
-          >
-            {{ t('hashGame.pickChips') }}
+          <div class="flex w-full items-center gap-[7px]">
+            <button
+              type="button"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
+              @click="cancelSelection"
+            >
+              <CancelIcon class="size-[14px] text-icon-2" />{{ t('hashGame.cancel') }}
+            </button>
+            <button
+              type="button"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
+              @click="repeatSelection"
+            >
+              <RepeatIcon class="size-[14px] text-icon-2" />{{ t('hashGame.repeat') }}
+            </button>
+            <div
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
+            >
+              <ConfirmIcon class="size-[14px] text-icon-2" />{{ t('hashGame.confirmBet') }}
+            </div>
           </div>
+          <button
+            type="button"
+            class="flex h-[34px] shrink-0 items-center justify-center rounded-[8px] px-[9px] bg-bg-3 ml-[10px]"
+            :aria-label="t('hashGame.chipSettings')"
+            @click="openChipEditor"
+          >
+            <SettingsIcon class="size-[16px] text-icon-2" />
+          </button>
         </div>
       </footer>
     </div>
@@ -475,6 +489,7 @@
     <!-- 历史投注 -->
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
 
+    <!-- 筹码设置 -->
     <Teleport to="body">
       <Transition name="bottom-sheet">
         <div
@@ -484,79 +499,155 @@
           @keydown.esc.stop.prevent="chipEditorOpen = false"
         >
           <form
-            class="bottom-sheet-panel w-full overflow-y-auto overscroll-contain rounded-t-[12px] bg-bg-1 px-[12px] pb-[38px] pt-[16px] text-text-1"
+            class="bottom-sheet-panel w-full overflow-y-auto overscroll-contain rounded-t-[12px] bg-bg-1 px-[12px] pb-[30px] pt-[16px] text-text-1"
             role="dialog"
             aria-modal="true"
             aria-labelledby="hash-chip-settings-title"
-            aria-describedby="hash-chip-settings-hint"
             @submit.prevent="saveChipEditor"
           >
-            <h2 id="hash-chip-settings-title" class="text-[18px] font-[700] text-text-1">
+            <h2 id="hash-chip-settings-title" class="text-[18px] font-[600] text-text-1">
               {{ t('hashGame.chipSettings') }}
             </h2>
-            <p id="hash-chip-settings-hint" class="mt-[7px] text-[14px] text-text-2">
-              {{ t('hashGame.chipSettingsHint') }}
-            </p>
             <div
-              class="mt-[15px] grid grid-cols-5 gap-[7px]"
+              class="mt-[20px] grid grid-cols-5 gap-x-[8px] gap-y-[7px]"
               role="group"
               :aria-label="t('hashGame.editChips')"
             >
-              <div
+              <button
                 v-for="chip in chipEditorItems"
-                :key="chip.id"
                 type="button"
-                class="relative min-w-0 overflow-hidden rounded-[8px] border bg-bg-2 px-[9px] py-[8px]"
-                :class="editingChipId === chip.id ? 'border-theme-primary' : 'border-transparent'"
-                :aria-pressed="editingChipId === chip.id"
-                @click="selectEditingChip(chip.id)"
+                :key="chip.id"
+                class="relative mx-auto min-w-0 p-[8px] transition-opacity"
+                :aria-label="formatChipAmount(Number(chip.value))"
+                :aria-pressed="chip.enabled"
+                @click="togglePresetChip(chip.id)"
               >
-                <span class="relative block aspect-square w-full">
-                  <img
-                    :src="chipImage"
-                    alt=""
-                    class="block size-full object-contain"
-                    :style="{ filter: 'hue-rotate(' + chip.hue + 'deg)' }"
-                  />
-                  <span
-                    class="absolute inset-x-0 bottom-[3px] top-0 grid place-items-center whitespace-nowrap font-[700] text-text-1"
-                    :class="chip.value.length >= 4 ? 'text-[16px]' : 'text-[24px]'"
-                    >{{ chip.value }}</span
-                  >
-                </span>
-                <span
-                  aria-hidden="true"
-                  class="pointer-events-none absolute inset-0 z-10 rounded-[inherit] bg-mask-40 transition-opacity duration-150 motion-reduce:transition-none"
-                  :class="editingChipId === chip.id ? 'opacity-0' : 'opacity-100'"
+                <img
+                  :src="chipImage"
+                  alt=""
+                  class="h-[45px] w-[45px] object-contain"
+                  :style="{ filter: 'hue-rotate(' + chip.hue + 'deg)' }"
                 />
-              </div>
+                <span
+                  class="absolute inset-0 grid place-items-center pb-[2px] text-[14px] font-bold text-white"
+                  >{{ formatChipAmount(Number(chip.value)) }}</span
+                >
+                <span
+                  v-if="chip.enabled"
+                  class="absolute -bottom-[0px] left-1/2 grid px-[5px] -translate-x-1/2 place-items-center rounded-[3px] bg-theme-primary"
+                  ><GouIcon class="size-[14px] text-icon-4"
+                /></span>
+              </button>
+              <button
+                v-for="chip in customChipItems"
+                :key="`custom-${chip.id}`"
+                type="button"
+                class="relative mx-auto min-w-0 p-[8px] transition-opacity"
+                :aria-label="
+                  chip.value ? formatChipAmount(Number(chip.value)) : t('hashGame.editChip')
+                "
+                @click="editCustomChip(chip)"
+              >
+                <img :src="chipEditorImage" alt="" class="h-[45px] w-[45px] object-contain" />
+                <span
+                  class="absolute inset-0 grid place-items-center pb-[2px] text-[11px] font-bold text-white"
+                  >{{
+                    chip.value ? formatChipAmount(Number(chip.value)) : t('hashGame.edit')
+                  }}</span
+                >
+                <div
+                  class="absolute -bottom-[0px] left-1/2 -translate-x-1/2 bg-bg-4 rounded-[3px] border border-opacity-10 px-[4px] py-[1px]"
+                >
+                  <editChipIcon class="size-[14px] text-icon-2" />
+                </div>
+              </button>
             </div>
-            <input
-              v-model="editingChipAmount"
-              type="text"
-              inputmode="decimal"
-              autocomplete="off"
-              enterkeyhint="done"
-              class="mt-[20px] h-[45px] w-full rounded-[10px] border border-transparent bg-bg-2 px-[12px] text-[16px] font-[600] text-text-1 outline-none focus:border-theme-primary"
-              :aria-label="t('hashGame.chipAmount')"
-              :aria-invalid="Boolean(chipEditorError)"
-              :aria-describedby="chipEditorError ? 'hash-chip-settings-error' : undefined"
-            />
-            <p
-              v-if="chipEditorError"
-              id="hash-chip-settings-error"
-              class="mt-[6px] text-xs text-assistRed"
-              role="alert"
-            >
-              {{ chipEditorError }}
-            </p>
             <button
               type="submit"
               class="mt-[30px] h-[46px] w-full rounded-[30px] bg-theme-primary text-[14px] font-[700] text-text-4"
             >
-              {{ t('hashGame.saveChips') }}
+              {{ t('hashGame.confirm') }}
             </button>
           </form>
+
+          <!-- 编辑筹码弹窗 -->
+          <div
+            v-if="keypadOpen"
+            class="fixed inset-0 z-[1001] grid place-items-center bg-mask-60-1 px-[25px]"
+            @click.self="keypadOpen = false"
+          >
+            <section
+              class="w-full"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="hash-chip-keypad-title"
+            >
+              <header
+                class="flex items-center justify-between bg-bg-2 rounded-t-[15px] px-[14px] py-[12px]"
+              >
+                <h3
+                  id="hash-chip-keypad-title"
+                  class="text-[16px] font-bold text-text-1 text-center w-full"
+                >
+                  {{ t('hashGame.editChipAmount') }}
+                </h3>
+                <button
+                  type="button"
+                  class="size-[28px] place-items-center rounded-[6px] bg-opacity-10"
+                  :aria-label="t('common.close')"
+                  @click="keypadOpen = false"
+                >
+                  <CloseIcon class="h-2.5 w-2.5 text-icon-1" />
+                </button>
+              </header>
+              <div class="bg-bg-1 rounded-b-[15px] px-[14px] py-[12px]">
+                <div
+                  class="mb-[10px] grid h-[42px] place-items-center rounded-[8px] border border-theme-primary bg-input-1 text-[15px] text-text-3"
+                >
+                  {{
+                    keypadValue
+                      ? formatChipAmount(Number(keypadValue))
+                      : t('hashGame.amountPlaceholder')
+                  }}
+                </div>
+                <div class="grid grid-cols-3 gap-[6px]">
+                  <button
+                    v-for="key in ['1', '2', '3', '4', '5', '6', '7', '8', '9']"
+                    :key="key"
+                    type="button"
+                    class="h-[36px] rounded-[8px] bg-bg-3 text-[18px] text-text-2"
+                    @click="appendKeypadValue(key)"
+                  >
+                    {{ key }}
+                  </button>
+                  <button
+                    type="button"
+                    class="h-[36px] rounded-[8px] bg-bg-3 text-[16px] text-text-2"
+                    @click="appendKeypadValue('delete')"
+                  >
+                    {{ t('hashGame.delete') }}
+                  </button>
+                  <button
+                    type="button"
+                    class="h-[36px] rounded-[8px] bg-bg-3 text-[18px] text-text-2"
+                    @click="appendKeypadValue('0')"
+                  >
+                    0
+                  </button>
+                  <button
+                    type="button"
+                    class="h-[36px] rounded-[8px] bg-theme-primary text-[16px] text-text-4"
+                    @click="confirmKeypadValue"
+                  >
+                    {{ t('hashGame.confirm') }}
+                  </button>
+                </div>
+                <p v-if="chipEditorError" class="mt-[5px] text-[10px] text-assistRed" role="alert">
+                  {{ chipEditorError }}
+                </p>
+              </div>
+            </section>
+          </div>
         </div>
       </Transition>
     </Teleport>
@@ -576,7 +667,14 @@ import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
 import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
 import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
 import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
-import EditIcon from '@/static/svg/hash_game/bianji.svg?component'
+import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
+import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
+import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
+import CloseIcon from '@/static/svg/close.svg?component'
+import GouIcon from '@/static/svg/hash_game/gou.svg?component'
+import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
+import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
+import editChipIcon from '@/static/svg/hash_game/bianji2.svg?component'
 import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
@@ -610,8 +708,9 @@ const {
   selectedChip,
   chipEditorOpen,
   chipEditorItems,
-  editingChipId,
-  editingChipAmount,
+  customChipItems,
+  keypadOpen,
+  keypadValue,
   chipEditorError,
   chatVisible,
   selectedBet,
@@ -636,11 +735,20 @@ const {
   repeatSelection,
   chooseChip,
   openChipEditor,
-  selectEditingChip,
+  editCustomChip,
+  togglePresetChip,
+  appendKeypadValue,
+  confirmKeypadValue,
   saveChipEditor,
   closeOverlays,
   handlePeriodOutsidePointerDown
 } = props.page
+
+const formatChipAmount = (amount: number) => {
+  if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
+  if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
+  return String(amount)
+}
 
 const handleOutsidePointerDown = (event: PointerEvent) => {
   handlePeriodOutsidePointerDown(event)
