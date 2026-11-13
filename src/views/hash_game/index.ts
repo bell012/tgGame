@@ -149,6 +149,8 @@ export const useHashGamePage = () => {
   const keypadValue = ref('')
   const chipEditorError = ref('')
   const chatVisible = ref(true)
+  const musicMuted = ref(true)
+  const soundMuted = ref(true)
   const selectedBet = ref<BetKey | null>(null)
   let lastSelection: { key: BetKey; chip: number } | null = null
 
@@ -412,6 +414,8 @@ export const useHashGamePage = () => {
     togglePresetChip,
     chipEditorError,
     chatVisible,
+    musicMuted,
+    soundMuted,
     selectedBet,
     mockRound,
     hashParts,

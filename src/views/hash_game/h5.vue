@@ -278,14 +278,12 @@
                   <span class="flex items-center gap-[3px] text-[12px] font-[500] text-text-2">
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#22A89A] text-[11px] not-italic text-text-1"
-                      >{{ resultLabels.positive }}</i
-                    >{{ mockRound.positiveCount }}
+                      >{{ resultLabels.positive }}</i>{{ mockRound.positiveCount }}
                   </span>
                   <span class="flex items-center gap-[3px] text-[12px] font-[500] text-text-2">
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#E63533] text-[11px] not-italic text-text-1"
-                      >{{ resultLabels.negative }}</i
-                    >{{ mockRound.negativeCount }}
+                      >{{ resultLabels.negative }}</i>{{ mockRound.negativeCount }}
                   </span>
                 </div>
                 <span class="ml-auto min-w-0 whitespace-nowrap text-[11px] text-secondary-8">{{
@@ -368,8 +366,38 @@
         </section>
 
         <!-- 聊天区域 -->
-        <div class="min-h-[150px] flex-1 pt-6">
-          <div v-if="chatVisible" class="text-sm text-text-3">聊天</div>
+        <div class="relative min-h-[150px] flex-1">
+          <HashGameChat v-if="chatVisible" />
+          <div class="absolute right-0 top-[40px] flex gap-[8px]">
+            <button
+              type="button"
+              class="grid size-[34px] place-items-center rounded-full bg-bg-4"
+              :aria-label="musicMuted ? 'Turn on game music' : 'Turn off game music'"
+              :aria-pressed="!musicMuted"
+              @click="musicMuted = !musicMuted"
+            >
+              <img
+                :src="musicOffIcon"
+                alt=""
+                class="size-[18px]"
+                :class="{ 'opacity-50': !musicMuted }"
+              />
+            </button>
+            <button
+              type="button"
+              class="grid size-[34px] place-items-center rounded-full bg-bg-4"
+              :aria-label="soundMuted ? 'Turn on game sound' : 'Turn off game sound'"
+              :aria-pressed="!soundMuted"
+              @click="soundMuted = !soundMuted"
+            >
+              <img
+                :src="soundOffIcon"
+                alt=""
+                class="size-[18px]"
+                :class="{ 'opacity-50': !soundMuted }"
+              />
+            </button>
+          </div>
         </div>
       </main>
 
@@ -656,32 +684,35 @@
 
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
-import RecordsIcon from '@/static/svg/sift.svg?component'
-import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
-import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
-import ArrowDownIcon from '@/static/svg/hash_game/jiantou_xia.svg?component'
-import CollapseIcon from '@/static/svg/hash_game/jiantou_shang2.svg?component'
-import RefreshIcon from '@/static/svg/hash_game/shauxin.svg?component'
-import ResultArrowIcon from '@/static/svg/hash_game/zhixiang.svg?component'
-import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
-import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
-import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
-import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
-import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
-import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
-import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
-import GouIcon from '@/static/svg/hash_game/gou.svg?component'
-import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
-import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
 import editChipIcon from '@/static/svg/hash_game/bianji2.svg?component'
-import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
+import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
+import musicOffIcon from '@/static/svg/hash_game/chat/music-off.svg?url'
+import soundOffIcon from '@/static/svg/hash_game/chat/sound-off.svg?url'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
-import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
-import RecentBetsPopup from './components/RecentBetsPopup.vue'
-import HistoryPopup from './components/HistoryPopup.vue'
-import { ref } from 'vue'
+import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
+import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
+import GouIcon from '@/static/svg/hash_game/gou.svg?component'
+import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
+import CollapseIcon from '@/static/svg/hash_game/jiantou_shang2.svg?component'
+import ArrowDownIcon from '@/static/svg/hash_game/jiantou_xia.svg?component'
+import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
+import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
+import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
+import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
+import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
+import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
+import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
+import RefreshIcon from '@/static/svg/hash_game/shauxin.svg?component'
+import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
+import ResultArrowIcon from '@/static/svg/hash_game/zhixiang.svg?component'
+import RecordsIcon from '@/static/svg/sift.svg?component'
 import { navigateTo } from '@/utils/router'
+import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
+import { ref } from 'vue'
+import HashGameChat from './components/HashGameChat.vue'
+import HistoryPopup from './components/HistoryPopup.vue'
+import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
@@ -713,6 +744,8 @@ const {
   keypadValue,
   chipEditorError,
   chatVisible,
+  musicMuted,
+  soundMuted,
   selectedBet,
   mockRound,
   hashParts,
