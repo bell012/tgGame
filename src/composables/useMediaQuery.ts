@@ -12,7 +12,7 @@ function isMediaQueryMatched(query: string) {
 // 获取项目统一的移动端媒体查询条件
 function getMobileMediaQuery() {
   const layoutStore = useLayoutStore()
-  return `(max-width: ${layoutStore.MOBILE_BREAKPOINT}px)`
+  return `(width < ${layoutStore.MOBILE_BREAKPOINT}px)`
 }
 
 // 检测是否是 PWA / 添加到桌面
