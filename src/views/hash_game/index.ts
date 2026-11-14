@@ -1,4 +1,4 @@
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -9,6 +9,9 @@ import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
+import { createMockPlaceBetResponse, createMockRoomEvents } from './chat/mock'
+import { useHashGameChat } from './chat/useHashGameChat'
+import type { HashBetOption, HashPlaceBetRequest } from './chat/types'
 
 type RoadmapMode = 'size' | 'parity'
 type BetKey = 'big' | 'small' | 'odd' | 'even'
@@ -52,6 +55,7 @@ const MOCK_RECENT_BET_SUMMARY: RecentBetSummary = {
   betAmount: 183.91,
   todayProfitLoss: -876.98
 }
+// 生成页面展示用的模拟历史开奖结果。
 const MOCK_HASH_GAME_HISTORY: HashGameHistoryRecord[] = Array.from({ length: 24 }, (_, index) => {
   const evenSmall = index % 2 === 0
   const digit = evenSmall ? '2' : '7'
@@ -110,6 +114,7 @@ const MOCK_RESULT_COLUMNS = [
   [false, 1]
 ] as const
 
+/** 组合哈希游戏页面的投注、走势和聊天室状态。 */
 export const useHashGamePage = () => {
   const { t } = useI18n()
   const router = useRouter()
@@ -125,6 +130,9 @@ export const useHashGamePage = () => {
   usePageScrollLock(() => true)
 
   const selectedPeriod = ref(15)
+  // 演示环境暂按周期组装房间编码，真实 gameCode 以后由游戏配置提供。
+  const gameCode = computed(() => `CL${selectedPeriod.value}`)
+  const chat = useHashGameChat(gameCode)
   const periodOptions = HASH_GAME_PERIOD_OPTIONS
   const periodsOpen = ref(false)
   const historyPopupOpen = ref(false)
@@ -164,6 +172,75 @@ export const useHashGamePage = () => {
     negativeCount: 22,
     streak: 5
   })
+  // 模拟每次进入房间后收到的 WS 数据；切换房间时重新从空列表开始。
+  watch(
+    gameCode,
+    code => {
+      for (const event of createMockRoomEvents(code)) chat.acceptWsEvent(event)
+    },
+    { immediate: true }
+  )
+
+  // 在线人数由 WS 的 CHAIN_LOTTERY_ONLINE 更新。
+  watch(
+    chat.onlineCount,
+    count => {
+      mockRound.online = count.toLocaleString('en-US')
+    },
+    { immediate: true }
+  )
+
+  /** 模拟投注成功回包，并在确认成功后插入本人的 BET 消息。 */
+  const confirmMockBet = () => {
+    if (!selectedBet.value) return
+    const request: HashPlaceBetRequest = {
+      requestId: `CL_mock_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      gameCode: gameCode.value,
+      currency: currency.currentCurrencyCode.value,
+      betOption: selectedBet.value.toUpperCase() as HashBetOption,
+      amount: selectedChip.value,
+      anchorBlockNum: Number(mockRound.currentBlock)
+    }
+    chat.acceptSuccessfulBet(request, createMockPlaceBetResponse(request))
+  }
+
+  /** 从当前展示币种的 WS 统计中读取每个投注项的参与人数和金额。 */
+  const getBetStats = (option: HashBetOption) => {
+    const stats = chat.betStats.value[currency.currentCurrencyCode.value]
+    const item = stats?.[option]
+    const total = Object.values(stats ?? {}).reduce((sum, entry) => sum + entry.totalAmount, 0)
+    return {
+      people: item?.participantCount ?? 0,
+      amount: (item?.totalAmount ?? 0).toLocaleString('en-US', { maximumFractionDigits: 2 }),
+      progress: total > 0 ? Math.round(((item?.totalAmount ?? 0) / total) * 100) : 0
+    }
+  }
+
+  /** 当前局的模拟投注统计，赔率仍沿用页面占位值。 */
+  const currentBetStats = computed(() => ({
+    big: getBetStats('BIG'),
+    small: getBetStats('SMALL'),
+    odd: getBetStats('ODD'),
+    even: getBetStats('EVEN')
+  }))
+
+  /** 对外接收 HTTP 开奖结果；请求时机与接口来源以后接入。 */
+  const acceptHttpDraw = chat.acceptHttpDraw
+
+  /** 对外接收 HTTP 结算结果；真实 HTTP 请求完成后还需刷新余额。 */
+  const acceptRecentBets = chat.acceptRecentBets
+
+  /** 关闭当前结算提示，依次展示下一币种及下一输赢状态。 */
+  const dismissSettlement = chat.dismissSettlement
+
+  /** 对外接收当前独占连接的 WS 事件；正式连接以后接入。 */
+  const acceptWsEvent = chat.acceptWsEvent
+
+  // 聊天列表和结算弹窗共用页面状态，H5 / PC 可使用同一数据入口。
+  const chatMessages = chat.messages
+  const currentSettlement = chat.currentSettlement
+
+  /** 从哈希字符串中取出末尾十进制数字供当前区块展示。 */
   const hashParts = computed(() => {
     const hash = mockRound.hash
     // 高亮最后一个十进制数字，后面可能仍有哈希字母。
@@ -198,6 +275,7 @@ export const useHashGamePage = () => {
     periodsOpen.value = false
   }
 
+  /** 根据走势模式选择大小或单双的展示标签。 */
   const resultLabels = computed(() => {
     const positive = roadmapMode.value === 'size' ? 'big' : 'odd'
     const negative = roadmapMode.value === 'size' ? 'small' : 'even'
@@ -216,6 +294,7 @@ export const useHashGamePage = () => {
     }))
   )
 
+  /** 构建当前投注选项的展示颜色和文案。 */
   const betOptions = computed(() => [
     { key: 'big' as const, label: t('hashGame.big'), color: '#FF5350' },
     { key: 'small' as const, label: t('hashGame.small'), color: '#407FFF' },
@@ -414,6 +493,14 @@ export const useHashGamePage = () => {
     togglePresetChip,
     chipEditorError,
     chatVisible,
+    chatMessages,
+    currentSettlement,
+    currentBetStats,
+    confirmMockBet,
+    acceptWsEvent,
+    acceptHttpDraw,
+    acceptRecentBets,
+    dismissSettlement,
     musicMuted,
     soundMuted,
     selectedBet,

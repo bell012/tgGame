@@ -349,16 +349,20 @@
               </span>
               <span class="mt-[4px] flex items-center justify-between gap-[5px]">
                 <span class="flex items-center gap-0.5 whitespace-nowrap text-[10px] text-text-3"
-                  ><PeopleIcon class="w-[10px] h-[10px] text-icon-3" />{{ mockBet.people }}</span
+                  ><PeopleIcon class="w-[10px] h-[10px] text-icon-3" />{{
+                    currentBetStats[option.key].people
+                  }}</span
                 >
                 <span class="flex items-center gap-0.5 whitespace-nowrap text-[10px] text-text-3"
-                  ><AmountIcon class="w-[10px] h-[10px] text-icon-3" />{{ mockBet.amount }}</span
+                  ><AmountIcon class="w-[10px] h-[10px] text-icon-3" />{{
+                    currentBetStats[option.key].amount
+                  }}</span
                 >
               </span>
               <span class="mt-[7px] block h-[3px] overflow-hidden rounded bg-bg-9">
                 <i
                   class="block h-full rounded-[inherit] bg-[var(--bet-color)]"
-                  :style="{ width: mockBet.progress + '%' }"
+                  :style="{ width: currentBetStats[option.key].progress + '%' }"
                 />
               </span>
             </div>
@@ -367,7 +371,9 @@
 
         <!-- 聊天区域 -->
         <div class="relative min-h-[150px] flex-1">
-          <HashGameChat v-if="chatVisible" />
+          <!-- 当前游戏的聊天消息列表。 -->
+          <HashGameChat v-if="chatVisible" :messages="chatMessages" />
+          <!-- 游戏页的音乐和音效开关，不属于聊天室数据组件。 -->
           <div class="absolute right-0 top-[40px] flex gap-[8px]">
             <button
               type="button"
@@ -477,11 +483,14 @@
             >
               <RepeatIcon class="size-[14px] text-icon-2" />{{ t('hashGame.repeat') }}
             </button>
-            <div
+            <!-- 模拟成功回包的投注确认按钮。 -->
+            <button
+              type="button"
               class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
+              @click="confirmMockBet"
             >
               <ConfirmIcon class="size-[14px] text-icon-2" />{{ t('hashGame.confirmBet') }}
-            </div>
+            </button>
           </div>
           <button
             type="button"
@@ -516,6 +525,9 @@
 
     <!-- 历史投注 -->
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
+
+    <!-- 按币种逐条展示结算提示。 -->
+    <HashSettlementPopup :notice="currentSettlement" @dismiss="dismissSettlement" />
 
     <!-- 筹码设置 -->
     <Teleport to="body">
@@ -711,6 +723,7 @@ import { navigateTo } from '@/utils/router'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import { ref } from 'vue'
 import HashGameChat from './components/HashGameChat.vue'
+import HashSettlementPopup from './components/HashSettlementPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import type { HashGamePageState } from './index'
@@ -744,6 +757,11 @@ const {
   keypadValue,
   chipEditorError,
   chatVisible,
+  chatMessages,
+  currentSettlement,
+  currentBetStats,
+  confirmMockBet,
+  dismissSettlement,
   musicMuted,
   soundMuted,
   selectedBet,
@@ -777,12 +795,14 @@ const {
   handlePeriodOutsidePointerDown
 } = props.page
 
+/** 将筹码面额缩写为适合按钮展示的文字。 */
 const formatChipAmount = (amount: number) => {
   if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
   if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
   return String(amount)
 }
 
+/** 点击记录菜单和周期菜单外部时关闭对应浮层。 */
 const handleOutsidePointerDown = (event: PointerEvent) => {
   handlePeriodOutsidePointerDown(event)
   if (!recordsMenuOpen.value || !(event.target instanceof Node)) return
@@ -794,17 +814,20 @@ const handleOutsidePointerDown = (event: PointerEvent) => {
   recordsMenuOpen.value = false
 }
 
+/** 按下 Esc 时关闭当前页面已打开的浮层。 */
 const handleEscape = () => {
   recentBetsOpen.value = false
   recordsMenuOpen.value = false
   closeOverlays()
 }
 
+/** 打开近期投注弹窗并收起记录菜单。 */
 const openRecentBets = () => {
   recordsMenuOpen.value = false
   recentBetsOpen.value = true
 }
 
+/** 跳转至游戏规则页并收起记录菜单。 */
 const openGameRules = () => {
   recordsMenuOpen.value = false
   void navigateTo('/hash-game/rules')

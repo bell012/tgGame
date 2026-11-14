@@ -1,241 +1,150 @@
 <template>
-  <section
-    class="relative h-full min-h-0 overflow-hidden text-[13px] leading-[1.35] text-text-1"
-    aria-label="Game chat"
-  >
-    <div
-      ref="messageList"
-      class="absolute inset-x-0 top-1 bottom-[21px] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      @scroll="updateScrollPosition"
-    >
-      <div class="flex min-h-full flex-col items-start justify-end gap-1.5 pt-6">
-        <template v-for="message in displayedMessages" :key="message.id">
-          <p v-if="message.type === 'notice'" class="m-0 max-w-[250px] text-text-2">
-            <span
-              class="mr-[5px] inline-block rounded-[3px] bg-theme-3 px-[3px] py-0.5 text-theme-primary"
-              >Notice</span
-            >
-            <span>{{ message.text }}</span>
-          </p>
+  <!-- 游戏聊天室容器：只负责展示和滚动，不建立连接或请求接口。 -->
+  <GameChatList :messages="messages" class="hash-game-chat">
+    <template #default="{ message }">
+      <!-- 房间公告。 -->
+      <p v-if="message.kind === 'NOTICE'" class="m-0 max-w-[250px] text-text-2">
+        <span
+          class="mr-[5px] inline-block rounded-[3px] bg-theme-3 px-[3px] py-0.5 text-theme-primary"
+          >Notice</span
+        >
+        <span>{{ message.content }}</span>
+      </p>
 
-          <p
-            v-else-if="message.type === 'bet'"
-            class="m-0 flex flex-wrap items-center gap-x-[5px] gap-y-0.5"
+      <!-- WS 用户文字消息。 -->
+      <p
+        v-else-if="message.kind === 'USER'"
+        class="m-0 flex flex-wrap items-center gap-x-[5px] gap-y-0.5"
+      >
+        <span class="text-text-3">{{ message.nickname }}：</span>
+        <span>{{ message.content }}</span>
+      </p>
+
+      <!-- WS 用户进入或离开提示。 -->
+      <p v-else-if="message.kind === 'JOIN' || message.kind === 'LEAVE'" class="m-0 text-text-3">
+        {{ message.nickname }} {{ message.kind === 'JOIN' ? 'is coming.' : 'has left.' }}
+      </p>
+
+      <!-- 成功投注后由本地追加的消息。 -->
+      <p
+        v-else-if="message.kind === 'BET'"
+        class="m-0 flex flex-wrap items-center gap-x-[5px] gap-y-0.5"
+      >
+        <span class="text-theme-primary">Me：</span>
+        <span
+          >Bet
+          <strong class="font-semibold">{{
+            formatAmount(message.bet.amount, message.bet.currency)
+          }}</strong>
+          on</span
+        >
+        <span
+          class="inline-grid min-w-4 h-4 shrink-0 place-items-center rounded px-0.5 leading-none text-white"
+          :class="optionColor(message.bet.betOption)"
+          >{{ optionShortLabel(message.bet.betOption) }}</span
+        >
+      </p>
+
+      <!-- HTTP 开奖结果，仅从传入的 draw 结构读取字段。 -->
+      <div
+        v-else-if="message.kind === 'DRAW'"
+        class="flex max-w-full flex-col gap-0.5 rounded-[5px] border border-secondary-10 bg-hash-chat-draw-frame p-2"
+      >
+        <!-- 开奖局号与开奖结果。 -->
+        <p class="m-0 flex flex-wrap items-center gap-[5px]">
+          Block
+          <em class="not-italic font-semibold text-secondary-7">{{
+            message.draw.anchorBlockNum
+          }}</em>
+          Result：
+          <strong class="text-base text-theme-primary">{{ message.draw.result.digit }}</strong>
+          <span
+            class="inline-grid min-w-4 h-4 place-items-center rounded bg-[var(--hash-chat-odd)] px-0.5 leading-none text-white"
+            >{{ optionShortLabel(message.draw.result.oddEven) }}</span
           >
-            <span :class="message.mine ? 'text-theme-primary' : 'text-text-3'"
-              >{{ message.name }}：</span
-            >
-            <span
-              >Bet <strong class="font-semibold">{{ message.amount }}</strong> on</span
-            >
-            <span
-              class="inline-grid size-4 shrink-0 place-items-center rounded text-[13px] leading-none text-white"
-              :class="
-                message.outcome === 'O' ? 'bg-[var(--hash-chat-odd)]' : 'bg-[var(--hash-chat-even)]'
-              "
-              >{{ message.outcome }}</span
-            >
-            <span
-              class="rounded-xl border border-secondary-7 px-1.5 text-[11px] leading-[15px] text-secondary-7"
-              >x{{ message.multiplier }}</span
-            >
-          </p>
-
-          <p
-            v-else-if="message.type === 'jackpot'"
-            class="m-0 flex max-w-full flex-wrap items-center gap-[5px] rounded-[5px] border border-[var(--hash-chat-award-border)] [background-image:var(--hash-chat-award)] px-[7px] py-1"
+          <span
+            class="inline-grid min-w-4 h-4 place-items-center rounded bg-[var(--hash-chat-even)] px-0.5 leading-none text-white"
+            >{{ optionShortLabel(message.draw.result.bigSmall) }}</span
           >
-            <strong
-              class="rounded [background-image:var(--hash-chat-award-label)] px-1 py-0.5 text-xs text-white"
-              >Jackpot</strong
-            >
-            <span>{{ message.name }} has bet</span>
-            <span
-              class="inline-grid size-4 shrink-0 place-items-center rounded bg-[var(--hash-chat-even)] leading-none text-white"
-              >E</span
-            >
-            <span
-              >win <strong class="font-semibold">{{ message.amount }}</strong></span
-            >
-          </p>
-
-          <p
-            v-else-if="message.type === 'streak'"
-            class="m-0 flex max-w-full flex-wrap items-center gap-[5px] rounded-[5px] border border-[var(--hash-chat-award-border)] [background-image:var(--hash-chat-award)] px-[7px] py-1"
-          >
-            <strong
-              class="rounded [background-image:var(--hash-chat-award-label)] px-1 py-0.5 text-xs text-white"
-              >{{ message.count }} in a Row</strong
-            >
-            <span
-              >{{ message.name }} has hit
-              <em class="not-italic text-[var(--hash-chat-streak)]">{{ message.count }}</em> draws
-              in a row 🔥</span
-            >
-          </p>
-
-          <div
-            v-else-if="message.type === 'result'"
-            class="flex max-w-full flex-col gap-0.5 rounded-[5px] border border-secondary-10 bg-hash-chat-draw-frame p-2"
-          >
-            <p class="m-0 flex flex-wrap items-center gap-[5px]">
-              Block
-              <em class="not-italic font-semibold text-secondary-7">{{ message.block }}</em>
-              Result：
-              <strong class="text-base text-theme-primary">{{ message.digit }}</strong>
-              <span
-                class="inline-grid size-4 shrink-0 place-items-center rounded bg-[var(--hash-chat-odd)] leading-none text-white"
-                >O</span
-              >
-              <span
-                class="inline-grid size-4 shrink-0 place-items-center rounded bg-[var(--hash-chat-even)] leading-none text-white"
-                >E</span
-              >
-            </p>
-            <p class="m-0 flex flex-wrap items-center gap-[5px]">
-              <em class="not-italic font-semibold text-secondary-7">{{ message.winners }}</em>
-              winners · Total payout:
-              <em class="not-italic font-semibold text-secondary-7">{{ message.payout }}</em>
-            </p>
-          </div>
-
-          <p
-            v-else-if="message.type === 'payout'"
-            class="m-0 flex flex-wrap items-center gap-[5px] rounded-[5px] bg-hash-chat-win-frame px-2 py-1"
-          >
-            <span>🎉</span><span class="text-theme-primary">Me</span>
-            <span
-              >Round payout:
-              <strong class="font-semibold text-theme-primary">{{ message.amount }}</strong></span
-            >
-          </p>
-
-          <p v-else-if="message.type === 'arrival'" class="m-0 text-text-3">
-            {{ message.name }} is coming.
-          </p>
-
-          <p v-else class="m-0 flex flex-wrap items-center gap-x-[5px] gap-y-0.5">
-            <span class="text-text-3">{{ message.name }}：</span>
-            <span>{{ message.text }}</span>
-          </p>
-        </template>
+        </p>
+        <!-- 后续 HTTP 若返回总中奖人数与派彩金额，则展示汇总行。 -->
+        <p
+          v-if="message.draw.winners !== undefined && message.draw.totalPayout !== undefined"
+          class="m-0 flex flex-wrap items-center gap-[5px]"
+        >
+          <em class="not-italic font-semibold text-secondary-7">{{ message.draw.winners }}</em>
+          winners · Total payout:
+          <em class="not-italic font-semibold text-secondary-7">{{
+            formatAmount(message.draw.totalPayout, message.draw.currency)
+          }}</em>
+        </p>
       </div>
-    </div>
 
-    <img
-      :src="topFadeIcon"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none absolute inset-x-0 top-0 h-[50px] w-full"
-    />
-
-    <button
-      type="button"
-      class="absolute bottom-[21px] right-0 grid size-[34px] place-items-center rounded-full bg-bg-4"
-      aria-label="Scroll to latest message"
-      @click="scrollToBottom"
-    >
-      <img :src="scrollBottomIcon" alt="" class="size-[18px]" />
-    </button>
-  </section>
+      <!-- 仅 WIN 会生成的本人派彩消息。 -->
+      <p
+        v-else-if="message.kind === 'SELF_WIN'"
+        class="m-0 flex flex-wrap items-center gap-[5px] rounded-[5px] bg-hash-chat-win-frame px-2 py-1"
+      >
+        <span>🎉</span><span class="text-theme-primary">Me</span>
+        <span
+          >Round payout:
+          <strong class="font-semibold text-theme-primary">{{
+            formatAmount(message.payoutAmount, message.currency)
+          }}</strong></span
+        >
+      </p>
+    </template>
+    <template #overlay="{ scrollToBottom }">
+      <!-- 顶部渐隐蒙层。 -->
+      <img
+        :src="topFadeIcon"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-x-0 top-0 h-[50px] w-full"
+      />
+      <!-- 返回最新消息的浮动按钮。 -->
+      <button
+        type="button"
+        class="absolute bottom-[21px] right-0 grid size-[34px] place-items-center rounded-full bg-bg-4"
+        aria-label="Scroll to latest message"
+        @click="scrollToBottom"
+      >
+        <img :src="scrollBottomIcon" alt="" class="size-[18px]" />
+      </button>
+    </template>
+  </GameChatList>
 </template>
 
 <script setup lang="ts">
 import scrollBottomIcon from '@/static/svg/hash_game/chat/scroll-bottom.svg?url'
 import topFadeIcon from '@/static/svg/hash_game/chat/top-fade.svg?url'
-import { nextTick, onMounted, ref, watch } from 'vue'
+import GameChatList from '@/components/game-chat/GameChatList.vue'
+import type { HashChatMessage } from '../chat/types'
 
-export type HashChatMessage =
-  | { id: string; type: 'notice'; text: string }
-  | {
-      id: string
-      type: 'bet'
-      name: string
-      amount: string
-      outcome: 'O' | 'E'
-      multiplier: number
-      mine?: boolean
-    }
-  | { id: string; type: 'jackpot'; name: string; amount: string }
-  | { id: string; type: 'streak'; name: string; count: number }
-  | { id: string; type: 'result'; block: string; digit: string; winners: string; payout: string }
-  | { id: string; type: 'payout'; amount: string }
-  | { id: string; type: 'arrival'; name: string }
-  | { id: string; type: 'text'; name: string; text: string }
+defineProps<{ messages: HashChatMessage[] }>()
 
-const demoMessages: HashChatMessage[] = [
-  {
-    id: 'notice',
-    type: 'notice',
-    text: 'Welcome to the game room! We promote a fair, safe, and respectful environment. Illegal content, misconduct, false advertising, and private transactions are prohibited. Please protect your personal information and funds, play responsibly, and report any violations.'
-  },
-  { id: 'bet-1', type: 'bet', name: 'K*7', amount: '₱ 8,000', outcome: 'O', multiplier: 3 },
-  { id: 'bet-2', type: 'bet', name: 'K*7', amount: '₱ 8,000', outcome: 'E', multiplier: 3 },
-  { id: 'jackpot', type: 'jackpot', name: 'k***7', amount: '₱ 8,000' },
-  { id: 'streak', type: 'streak', name: 'k***7', count: 4 },
-  {
-    id: 'result',
-    type: 'result',
-    block: '87878787',
-    digit: '8',
-    winners: '567',
-    payout: '₱ 103,194'
-  },
-  { id: 'payout', type: 'payout', amount: '₱ 580.88' },
-  { id: 'arrival-1', type: 'arrival', name: 'D*****h' },
-  { id: 'arrival-2', type: 'arrival', name: 'r****8' },
-  { id: 'text-1', type: 'text', name: 'W***0', text: 'Small this round.' },
-  { id: 'text-2', type: 'text', name: 'W***0', text: 'Stay cool, guys.' },
-  {
-    id: 'bet-me',
-    type: 'bet',
-    name: 'Me',
-    amount: '₱ 8,000',
-    outcome: 'O',
-    multiplier: 3,
-    mine: true
-  },
-  { id: 'text-3', type: 'text', name: 'W***0', text: 'Big this round.' },
-  { id: 'bet-3', type: 'bet', name: 'K*7', amount: '8,000 usdt', outcome: 'E', multiplier: 3 }
-]
-
-const props = defineProps<{ messages?: HashChatMessage[] }>()
-const displayedMessages = ref<HashChatMessage[]>(props.messages ?? demoMessages)
-const messageList = ref<HTMLElement | null>(null)
-const atBottom = ref(true)
-
-function scrollToBottom() {
-  if (messageList.value) messageList.value.scrollTop = messageList.value.scrollHeight
-  atBottom.value = true
+/** 将金额与币种组合为可读的聊天文案。 */
+function formatAmount(amount: number, currency?: string) {
+  const number = amount.toLocaleString('en-US', { maximumFractionDigits: 8 })
+  return currency ? `${number} ${currency}` : number
 }
 
-function updateScrollPosition() {
-  const list = messageList.value
-  if (list) atBottom.value = list.scrollHeight - list.scrollTop - list.clientHeight < 12
+/** 将哈希游戏投注选项缩写为聊天里的标记。 */
+function optionShortLabel(option: string) {
+  return ({ ODD: 'O', EVEN: 'E', BIG: 'B', SMALL: 'S' } as Record<string, string>)[option] ?? option
 }
 
-watch(
-  () => props.messages,
-  async messages => {
-    displayedMessages.value = messages ?? demoMessages
-    await nextTick()
-    if (atBottom.value) scrollToBottom()
-  }
-)
-
-onMounted(async () => {
-  await nextTick()
-  scrollToBottom()
-})
+/** 按当前投注选项选择大小或单双标记色。 */
+function optionColor(option: string) {
+  return option === 'ODD' || option === 'SMALL'
+    ? 'bg-[var(--hash-chat-odd)]'
+    : 'bg-[var(--hash-chat-even)]'
+}
 </script>
 
 <style scoped>
 .hash-game-chat {
   --hash-chat-odd: #22a89a;
   --hash-chat-even: #e63533;
-  --hash-chat-award-border: #ff3c00;
-  --hash-chat-streak: #ff6620;
-  --hash-chat-award: linear-gradient(to right, rgba(255, 168, 80, 0.3), rgba(255, 60, 0, 0.09));
-  --hash-chat-award-label: linear-gradient(to right, #ffa850, #ff3c00);
 }
 </style>
