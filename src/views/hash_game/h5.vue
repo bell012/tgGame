@@ -472,39 +472,45 @@
 
     <!-- 快捷投注弹窗 -->
     <Teleport to="body">
-      <section
-        v-if="quickBetPopupOpen"
-        id="hash-game-quick-bet-popup"
-        ref="quickBetPopupRef"
-        class="fixed inset-x-[11px] bottom-[64px] z-[80] rounded-[10px] border border-opacity-10 bg-bg-2 px-[12px] py-[12px]"
-        role="dialog"
-        aria-labelledby="hash-game-quick-bet-title"
-        :aria-label="t('hashGame.quickBet')"
-        @keydown.esc.stop.prevent="closeQuickBetPopup"
-      >
-        <div class="flex items-center justify-between">
-          <h2 id="hash-game-quick-bet-title" class="text-[14px] font-[400] text-text-1">
-            {{ t('hashGame.quickBet') }}
-          </h2>
-          <button
-            type="button"
-            role="switch"
-            class="relative h-[20px] w-[40px] shrink-0 rounded-full p-[3px] transition-colors"
-            :class="quickBetEnabled ? 'bg-theme-primary' : 'bg-opacity-6'"
-            :aria-checked="quickBetEnabled"
+      <Transition name="bottom-sheet">
+        <div
+          v-if="quickBetPopupOpen"
+          class="fixed inset-x-[11px] bottom-[64px] z-[80]"
+          @keydown.esc.stop.prevent="closeQuickBetPopup"
+        >
+          <section
+            id="hash-game-quick-bet-popup"
+            ref="quickBetPopupRef"
+            class="bottom-sheet-panel rounded-[10px] border border-opacity-10 bg-bg-2 px-[12px] py-[12px]"
+            role="dialog"
+            aria-labelledby="hash-game-quick-bet-title"
             :aria-label="t('hashGame.quickBet')"
-            @click="toggleQuickBet"
           >
-            <span
-              class="block size-[15px] rounded-full bg-common-100 transition-transform"
-              :class="quickBetEnabled ? 'translate-x-[18px]' : 'translate-x-[2px]'"
-            />
-          </button>
+            <div class="flex items-center justify-between">
+              <h2 id="hash-game-quick-bet-title" class="text-[14px] font-[400] text-text-1">
+                {{ t('hashGame.quickBet') }}
+              </h2>
+              <button
+                type="button"
+                role="switch"
+                class="relative h-[20px] w-[40px] shrink-0 rounded-full p-[3px] transition-colors"
+                :class="quickBetEnabled ? 'bg-theme-primary' : 'bg-opacity-6'"
+                :aria-checked="quickBetEnabled"
+                :aria-label="t('hashGame.quickBet')"
+                @click="toggleQuickBet"
+              >
+                <span
+                  class="block size-[15px] rounded-full bg-common-100 transition-transform"
+                  :class="quickBetEnabled ? 'translate-x-[18px]' : 'translate-x-[2px]'"
+                />
+              </button>
+            </div>
+            <p class="mt-[8px] text-[10px] text-text-2">
+              {{ t('hashGame.quickBetHint') }}
+            </p>
+          </section>
         </div>
-        <p class="mt-[8px] text-[10px] text-text-2">
-          {{ t('hashGame.quickBetHint') }}
-        </p>
-      </section>
+      </Transition>
     </Teleport>
 
     <!-- 选择货币 -->
