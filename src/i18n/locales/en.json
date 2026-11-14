@@ -38,6 +38,8 @@
     "cancel": "Cancel",
     "repeat": "Repeat",
     "confirmBet": "Confirm",
+    "quickBet": "Quick Bet",
+    "quickBetHint": "Placing chips immediately deducts your balance and creates a bet slip. Pending bets can be canceled manually",
     "pickChips": "Pick chips, tap to bet",
     "refreshBalance": "Refresh Balance",
     "selectCurrency": "Select Currency",
