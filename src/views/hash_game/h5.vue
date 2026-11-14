@@ -343,24 +343,38 @@
               :aria-pressed="selectedBet === option.key"
               @click="selectBet(option.key)"
             >
-              <span class="flex items-baseline gap-[5px] whitespace-nowrap">
+              <span class="flex items-baseline justify-center gap-[5px] whitespace-nowrap">
                 <strong class="text-[15px] font-bold text-[color:var(--bet-color)]">{{
                   option.label
                 }}</strong>
-                <span class="text-xs font-[500] text-text-2">{{ mockBet.odds }}</span>
-              </span>
-              <span class="mt-[4px] flex items-center justify-between gap-[5px]">
-                <span class="flex items-center gap-0.5 whitespace-nowrap text-[10px] text-text-3"
-                  ><PeopleIcon class="w-[10px] h-[10px] text-icon-3" />{{ mockBet.people }}</span
+                <span
+                  class="text-xs font-[500]"
+                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  >{{ mockBet.odds }}</span
                 >
-                <span class="flex items-center gap-0.5 whitespace-nowrap text-[10px] text-text-3"
-                  ><AmountIcon class="w-[10px] h-[10px] text-icon-3" />{{ mockBet.amount }}</span
+              </span>
+              <span class="mt-[4px] flex items-center justify-center gap-[3px]">
+                <span
+                  class="flex items-center gap-0.5 whitespace-nowrap text-[10px]"
+                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  ><PeopleIcon
+                    class="w-[10px] h-[10px]"
+                    :class="selectedBet === option.key ? 'text-icon-1' : 'text-icon-2'"
+                  />{{ mockBet.people }}</span
+                >
+                <span
+                  class="flex items-center gap-0.5 whitespace-nowrap text-[10px]"
+                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  ><AmountIcon
+                    class="w-[10px] h-[10px]"
+                    :class="selectedBet === option.key ? 'text-icon-1' : 'text-icon-2'"
+                  />{{ mockBet.amount }}</span
                 >
               </span>
               <span class="mt-[7px] block h-[3px] overflow-hidden rounded bg-bg-9">
                 <i
-                  class="block h-full rounded-[inherit] bg-[var(--bet-color)]"
-                  :style="{ width: mockBet.progress + '%' }"
+                  class="block h-full rounded-[inherit]"
+                  :style="{ width: mockBet.progress + '%', background: option.color }"
                 />
               </span>
             </div>
@@ -457,15 +471,38 @@
           </div>
           <button
             type="button"
+            ref="quickBetTriggerRef"
             class="flex h-[34px] shrink-0 items-center justify-center rounded-[8px] px-[9px] bg-bg-3 ml-[10px]"
-            :aria-label="t('hashGame.chipSettings')"
-            @click="openChipEditor"
+            :aria-label="t('hashGame.quickBet')"
+            :aria-expanded="quickBetPopupOpen"
+            aria-controls="hash-game-quick-bet-popup"
+            @click="toggleQuickBetPopup"
           >
             <SettingsIcon class="size-[16px] text-icon-2" />
           </button>
         </div>
       </footer>
     </div>
+
+    <!-- 快捷投注弹窗 -->
+    <Teleport to="body">
+      <Transition name="bottom-sheet">
+        <div
+          v-if="quickBetPopupOpen"
+          id="hash-game-quick-bet-popup"
+          ref="quickBetPopupRef"
+          class="fixed inset-x-[11px] bottom-[64px] z-[80]"
+          @keydown.esc.stop.prevent="closeQuickBetPopup"
+        >
+          <QuickBetPopupContent
+            variant="h5"
+            :enabled="quickBetEnabled"
+            class="bottom-sheet-panel"
+            @toggle="toggleQuickBet"
+          />
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- 选择货币 -->
     <CurrencyPopup
@@ -490,167 +527,7 @@
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
 
     <!-- 筹码设置 -->
-    <Teleport to="body">
-      <Transition name="bottom-sheet">
-        <div
-          v-if="chipEditorOpen"
-          class="fixed inset-0 z-[1000] flex items-end justify-center bg-mask-60-1"
-          @click.self="chipEditorOpen = false"
-          @keydown.esc.stop.prevent="chipEditorOpen = false"
-        >
-          <form
-            class="bottom-sheet-panel w-full overflow-y-auto overscroll-contain rounded-t-[12px] bg-bg-1 px-[12px] pb-[30px] pt-[16px] text-text-1"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="hash-chip-settings-title"
-            @submit.prevent="saveChipEditor"
-          >
-            <h2 id="hash-chip-settings-title" class="text-[18px] font-[600] text-text-1">
-              {{ t('hashGame.chipSettings') }}
-            </h2>
-            <div
-              class="mt-[20px] grid grid-cols-5 gap-x-[8px] gap-y-[7px]"
-              role="group"
-              :aria-label="t('hashGame.editChips')"
-            >
-              <button
-                v-for="chip in chipEditorItems"
-                type="button"
-                :key="chip.id"
-                class="relative mx-auto min-w-0 p-[8px] transition-opacity"
-                :aria-label="formatChipAmount(Number(chip.value))"
-                :aria-pressed="chip.enabled"
-                @click="togglePresetChip(chip.id)"
-              >
-                <img
-                  :src="chipImage"
-                  alt=""
-                  class="h-[45px] w-[45px] object-contain"
-                  :style="{ filter: 'hue-rotate(' + chip.hue + 'deg)' }"
-                />
-                <span
-                  class="absolute inset-0 grid place-items-center pb-[2px] text-[14px] font-bold text-white"
-                  >{{ formatChipAmount(Number(chip.value)) }}</span
-                >
-                <span
-                  v-if="chip.enabled"
-                  class="absolute -bottom-[0px] left-1/2 grid px-[5px] -translate-x-1/2 place-items-center rounded-[3px] bg-theme-primary"
-                  ><GouIcon class="size-[14px] text-icon-4"
-                /></span>
-              </button>
-              <button
-                v-for="chip in customChipItems"
-                :key="`custom-${chip.id}`"
-                type="button"
-                class="relative mx-auto min-w-0 p-[8px] transition-opacity"
-                :aria-label="
-                  chip.value ? formatChipAmount(Number(chip.value)) : t('hashGame.editChip')
-                "
-                @click="editCustomChip(chip)"
-              >
-                <img :src="chipEditorImage" alt="" class="h-[45px] w-[45px] object-contain" />
-                <span
-                  class="absolute inset-0 grid place-items-center pb-[2px] text-[11px] font-bold text-white"
-                  >{{
-                    chip.value ? formatChipAmount(Number(chip.value)) : t('hashGame.edit')
-                  }}</span
-                >
-                <div
-                  class="absolute -bottom-[0px] left-1/2 -translate-x-1/2 bg-bg-4 rounded-[3px] border border-opacity-10 px-[4px] py-[1px]"
-                >
-                  <editChipIcon class="size-[14px] text-icon-2" />
-                </div>
-              </button>
-            </div>
-            <button
-              type="submit"
-              class="mt-[30px] h-[46px] w-full rounded-[30px] bg-theme-primary text-[14px] font-[700] text-text-4"
-            >
-              {{ t('hashGame.confirm') }}
-            </button>
-          </form>
-
-          <!-- 编辑筹码弹窗 -->
-          <div
-            v-if="keypadOpen"
-            class="fixed inset-0 z-[1001] grid place-items-center bg-mask-60-1 px-[25px]"
-            @click.self="keypadOpen = false"
-          >
-            <section
-              class="w-full"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="hash-chip-keypad-title"
-            >
-              <header
-                class="flex items-center justify-between bg-bg-2 rounded-t-[15px] px-[14px] py-[12px]"
-              >
-                <h3
-                  id="hash-chip-keypad-title"
-                  class="text-[16px] font-bold text-text-1 text-center w-full"
-                >
-                  {{ t('hashGame.editChipAmount') }}
-                </h3>
-                <button
-                  type="button"
-                  class="size-[28px] place-items-center rounded-[6px] bg-opacity-10"
-                  :aria-label="t('common.close')"
-                  @click="keypadOpen = false"
-                >
-                  <CloseIcon class="h-2.5 w-2.5 text-icon-1" />
-                </button>
-              </header>
-              <div class="bg-bg-1 rounded-b-[15px] px-[14px] py-[12px]">
-                <div
-                  class="mb-[10px] grid h-[42px] place-items-center rounded-[8px] border border-theme-primary bg-input-1 text-[15px] text-text-3"
-                >
-                  {{
-                    keypadValue
-                      ? formatChipAmount(Number(keypadValue))
-                      : t('hashGame.amountPlaceholder')
-                  }}
-                </div>
-                <div class="grid grid-cols-3 gap-[6px]">
-                  <button
-                    v-for="key in ['1', '2', '3', '4', '5', '6', '7', '8', '9']"
-                    :key="key"
-                    type="button"
-                    class="h-[36px] rounded-[8px] bg-bg-3 text-[18px] text-text-2"
-                    @click="appendKeypadValue(key)"
-                  >
-                    {{ key }}
-                  </button>
-                  <button
-                    type="button"
-                    class="h-[36px] rounded-[8px] bg-bg-3 text-[16px] text-text-2"
-                    @click="appendKeypadValue('delete')"
-                  >
-                    {{ t('hashGame.delete') }}
-                  </button>
-                  <button
-                    type="button"
-                    class="h-[36px] rounded-[8px] bg-bg-3 text-[18px] text-text-2"
-                    @click="appendKeypadValue('0')"
-                  >
-                    0
-                  </button>
-                  <button
-                    type="button"
-                    class="h-[36px] rounded-[8px] bg-theme-primary text-[16px] text-text-4"
-                    @click="confirmKeypadValue"
-                  >
-                    {{ t('hashGame.confirm') }}
-                  </button>
-                </div>
-                <p v-if="chipEditorError" class="mt-[5px] text-[10px] text-assistRed" role="alert">
-                  {{ chipEditorError }}
-                </p>
-              </div>
-            </section>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <ChipEditorPopup :page="props.page" />
   </div>
 </template>
 
@@ -670,17 +547,16 @@ import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
 import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
 import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
 import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
-import CloseIcon from '@/static/svg/close.svg?component'
-import GouIcon from '@/static/svg/hash_game/gou.svg?component'
 import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
 import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
-import editChipIcon from '@/static/svg/hash_game/bianji2.svg?component'
 import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
-import { ref } from 'vue'
+import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
+import ChipEditorPopup from './components/ChipEditorPopup.vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { navigateTo } from '@/utils/router'
 import type { HashGamePageState } from './index'
 
@@ -689,6 +565,8 @@ const recordsMenuOpen = ref(false)
 const recentBetsOpen = ref(false)
 const recordsMenuRef = ref<HTMLElement | null>(null)
 const recordsTriggerRef = ref<HTMLElement | null>(null)
+const quickBetPopupRef = ref<HTMLElement | null>(null)
+const quickBetTriggerRef = ref<HTMLElement | null>(null)
 const {
   t,
   currentCurrencyCode,
@@ -706,12 +584,8 @@ const {
   roadmapMode,
   chipOptions,
   selectedChip,
-  chipEditorOpen,
-  chipEditorItems,
-  customChipItems,
-  keypadOpen,
-  keypadValue,
-  chipEditorError,
+  quickBetEnabled,
+  quickBetPopupOpen,
   chatVisible,
   selectedBet,
   mockRound,
@@ -734,16 +608,15 @@ const {
   cancelSelection,
   repeatSelection,
   chooseChip,
+  toggleQuickBet,
+  toggleQuickBetPopup,
   openChipEditor,
-  editCustomChip,
-  togglePresetChip,
-  appendKeypadValue,
-  confirmKeypadValue,
-  saveChipEditor,
   closeOverlays,
+  closeQuickBetPopup,
   handlePeriodOutsidePointerDown
 } = props.page
 
+// H5 筹码栏与编辑面板使用相同的金额简写规则。
 const formatChipAmount = (amount: number) => {
   if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
   if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
@@ -751,8 +624,10 @@ const formatChipAmount = (amount: number) => {
 }
 
 const handleOutsidePointerDown = (event: PointerEvent) => {
+  // 周期菜单和记录菜单只在点击各自触发区及菜单外部时关闭。
   handlePeriodOutsidePointerDown(event)
-  if (!recordsMenuOpen.value || !(event.target instanceof Node)) return
+  if (!(event.target instanceof Node)) return
+  if (!recordsMenuOpen.value) return
   if (
     recordsMenuRef.value?.contains(event.target) ||
     recordsTriggerRef.value?.contains(event.target)
@@ -761,7 +636,24 @@ const handleOutsidePointerDown = (event: PointerEvent) => {
   recordsMenuOpen.value = false
 }
 
+const handleQuickBetOutsidePointerDown = (event: PointerEvent) => {
+  // 快捷投注弹层使用 Teleport，因此在文档层判断弹层和设置按钮之外的点击。
+  if (!quickBetPopupOpen.value || !(event.target instanceof Node)) return
+  if (
+    quickBetPopupRef.value?.contains(event.target) ||
+    quickBetTriggerRef.value?.contains(event.target)
+  ) {
+    return
+  }
+  closeQuickBetPopup()
+}
+
+// H5 快捷投注弹层通过 Teleport 渲染，需在 document 捕获弹层外部点击。
+onMounted(() => document.addEventListener('pointerdown', handleQuickBetOutsidePointerDown))
+onBeforeUnmount(() => document.removeEventListener('pointerdown', handleQuickBetOutsidePointerDown))
+
 const handleEscape = () => {
+  // Escape 一次收起 H5 页面打开的所有浮层。
   recentBetsOpen.value = false
   recordsMenuOpen.value = false
   closeOverlays()

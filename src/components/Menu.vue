@@ -933,13 +933,13 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       handler: () => navigateTo('/sports'),
       groupKey: 'sports'
     },
-    // {
-    //   id: 'hashGame',
-    //   name: t('menu.hashGame'),
-    //   icon: newSideIcons.hashGame,
-    //   handler: () => navigateTo('/hash-game'),
-    //   groupKey: 'hashGame'
-    // },
+    {
+      id: 'hashGame',
+      name: t('menu.hashGame'),
+      icon: newSideIcons.hashGame,
+      handler: () => navigateTo('/hash-game'),
+      groupKey: 'hashGame'
+    },
     ...(isLoggedIn.value
       ? [
           {
