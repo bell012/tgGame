@@ -185,8 +185,6 @@ import {
   nextTick,
   onBeforeUnmount,
   onMounted,
-  provide,
-  readonly,
   ref,
   shallowRef,
   watch,
@@ -196,12 +194,12 @@ import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-rou
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
-import { gameCardSidebarCollapsedKey } from '@/composables/usePcGameCardLayout'
 import { CheckInPopup, useCheckInAutoPopup } from '@/views/activity/check-in'
 import { RedPacketPanel } from '@/views/activity/red-packet'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 
 const layoutStore = useLayoutStore()
+const { isSidebarCollapsed } = storeToRefs(layoutStore)
 const redPacketPanelStore = useRedPacketPanelStore()
 const { visible: redPacketPanelVisible } = storeToRefs(redPacketPanelStore)
 const redPacketPanelStyle = computed(() => ({
@@ -215,8 +213,6 @@ const { visible: checkInVisible } = storeToRefs(checkInModalStore)
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
 const mainContentRef = ref<HTMLElement | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
-const isSidebarCollapsed = ref(false)
-provide(gameCardSidebarCollapsedKey, readonly(isSidebarCollapsed))
 const showNotificationPanel = ref(false)
 const activeNotificationDetail = ref<NotificationPanelDetail | null>(null)
 const isMobile = useIsMobile()

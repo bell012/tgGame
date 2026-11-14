@@ -1,9 +1,7 @@
-import { computed, inject, ref, type InjectionKey, type Ref } from 'vue'
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useLayoutStore } from '@/stores/layout'
 import { useIsMobile } from './useMediaQuery'
-
-export const gameCardSidebarCollapsedKey: InjectionKey<Readonly<Ref<boolean>>> = Symbol(
-  'game-card-sidebar-collapsed'
-)
 
 export const PC_GAME_GRID_CLASS_WITHOUT_SIDEBAR =
   'sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-8'
@@ -23,7 +21,7 @@ const railClasses = {
 /** 仅输出展示规则，不参与查询条件或分页。 */
 export function usePcGameCardLayout() {
   const isMobile = useIsMobile()
-  const collapsed = inject(gameCardSidebarCollapsedKey, ref(false))
+  const { isSidebarCollapsed: collapsed } = storeToRefs(useLayoutStore())
   const menuState = computed(() => (collapsed.value ? 'collapsed' : 'expanded'))
 
   return {
