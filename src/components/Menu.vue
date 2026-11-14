@@ -1177,7 +1177,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   color: var(--color-theme-level-1);
 }
 
-@media (min-width: 641px) {
+@screen sm {
   .launch-card:hover {
     background: var(--color-hover-1);
   }
@@ -1347,7 +1347,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   background: var(--color-menu-mask);
 }
 
-@media (min-width: 641px) {
+@screen sm {
   .leave-feedback-modal-mask-login-unauthed {
     z-index: 9999;
   }
