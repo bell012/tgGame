@@ -38,6 +38,8 @@
     "cancel": "取消",
     "repeat": "重复",
     "confirmBet": "确认",
+    "quickBet": "快捷投注",
+    "quickBetHint": "放置筹码会立即扣除余额并创建投注单。待处理的投注可手动取消。",
     "pickChips": "选择筹码，点击投注",
     "refreshBalance": "刷新余额",
     "selectCurrency": "选择币种",

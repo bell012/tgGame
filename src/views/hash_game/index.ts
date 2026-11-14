@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import { useAuthModalStore } from '@/stores/authModal'
@@ -19,6 +20,7 @@ type BetKey = 'big' | 'small' | 'odd' | 'even'
 type ChipOption = { id: number; value: number; hue: number }
 type ChipDraft = { id: number; value: string; hue: number; enabled: boolean }
 type CustomChipDraft = { id: number; value: string; hue: number }
+/** H5 周期菜单与 PC 顶部周期标签共用此选项，接口接入后由这里统一维护。 */
 export const HASH_GAME_PERIOD_OPTIONS = [6, 15, 30, 45] as const
 export type RecentBetRecord = {
   id: string
@@ -116,8 +118,9 @@ const MOCK_RESULT_COLUMNS = [
 ] as const
 
 /** 组合哈希游戏页面的投注、走势和聊天室状态。 */
-export const useHashGamePage = () => {
+const createHashGamePageState = () => {
   const { t } = useI18n()
+  const isMobile = useIsMobile()
   const router = useRouter()
   const userStore = useUserStore()
   const authModalStore = useAuthModalStore()
@@ -127,8 +130,8 @@ export const useHashGamePage = () => {
 
   // 与首页共用余额请求及进行中的查询，进入路由时刷新，离开时停止监听。
   useUserBalancePolling()
-  // 本页为固定全屏布局，页面内容在自身容器内滚动。
-  usePageScrollLock(() => true)
+  // H5 使用全屏内滚动，需要锁定背景页面；PC 交由主布局滚动，保持 CommonFooter 可达。
+  usePageScrollLock(() => isMobile.value)
 
   const selectedPeriod = ref(15)
   // 演示环境暂按周期组装房间编码，真实 gameCode 以后由游戏配置提供。
@@ -157,6 +160,11 @@ export const useHashGamePage = () => {
   const chipOptions = ref<ChipOption[]>(CHIP_OPTIONS.map((chip, id) => ({ id, ...chip })))
   const selectedChip = ref(1)
   const chipEditorOpen = ref(false)
+  const quickBetEnabled = ref(false)
+  const quickBetPopupOpen = ref(false)
+  // 音效开关是页面共享状态，桌面端点击后可由后续音频逻辑读取。
+  const backgroundMusicEnabled = ref(false)
+  const musicEnabled = ref(false)
   const chipEditorItems = ref<ChipDraft[]>([])
   const customChipItems = ref<CustomChipDraft[]>(
     CUSTOM_CHIP_HUES.map((hue, index) => ({
@@ -272,6 +280,7 @@ export const useHashGamePage = () => {
     periodsOpen.value = false
     historyPopupOpen.value = false
     chipEditorOpen.value = false
+    quickBetPopupOpen.value = false
     keypadOpen.value = false
     currencyPopupOpen.value = false
   }
@@ -319,6 +328,31 @@ export const useHashGamePage = () => {
   const selectPeriod = (seconds: number) => {
     selectedPeriod.value = seconds
     periodsOpen.value = false
+  }
+
+  // 快捷投注开关
+  const toggleQuickBet = () => {
+    quickBetEnabled.value = !quickBetEnabled.value
+  }
+
+  /** 控制快捷投注弹层的开合，开关值与弹层显隐分别保存。 */
+  const toggleQuickBetPopup = () => {
+    quickBetPopupOpen.value = !quickBetPopupOpen.value
+  }
+
+  /** 点击弹层外部或按 Escape 时只关闭弹层，不重置快捷投注开关。 */
+  const closeQuickBetPopup = () => {
+    quickBetPopupOpen.value = false
+  }
+
+  /** 切换背景音乐开关状态。 */
+  const toggleBackgroundMusic = () => {
+    backgroundMusicEnabled.value = !backgroundMusicEnabled.value
+  }
+
+  /** 切换游戏音乐开关状态。 */
+  const toggleMusic = () => {
+    musicEnabled.value = !musicEnabled.value
   }
 
   /** 刷新余额；未登录时打开登录弹窗，失败时提示错误。 */
@@ -495,6 +529,10 @@ export const useHashGamePage = () => {
     chipOptions,
     selectedChip,
     chipEditorOpen,
+    quickBetEnabled,
+    quickBetPopupOpen,
+    backgroundMusicEnabled,
+    musicEnabled,
     chipEditorItems,
     customChipItems,
     editingChipId,
@@ -539,6 +577,11 @@ export const useHashGamePage = () => {
     cancelSelection,
     repeatSelection,
     chooseChip,
+    toggleQuickBet,
+    toggleQuickBetPopup,
+    closeQuickBetPopup,
+    toggleBackgroundMusic,
+    toggleMusic,
     openChipEditor,
     saveChipEditor,
     closeOverlays,
@@ -546,4 +589,6 @@ export const useHashGamePage = () => {
   }
 }
 
-export type HashGamePageState = ReturnType<typeof useHashGamePage>
+// 先从内部工厂推导共享状态类型，再导出 composable，避免组件类型引用形成循环推断。
+export type HashGamePageState = ReturnType<typeof createHashGamePageState>
+export const useHashGamePage: () => HashGamePageState = createHashGamePageState

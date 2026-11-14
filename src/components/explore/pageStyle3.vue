@@ -11,16 +11,26 @@
         @update:providers="handleProvider"
       />
     </div>
-    <div v-if="isLoading" class="grid w-full grid-cols-3 gap-[11px] sm:grid-cols-8">
+    <div v-if="isLoading" class="grid w-full gap-[11px]" :class="gameGridClass">
       <div
         v-for="index in resolvedPageSize"
         :key="index"
         class="aspect-[330/438] rounded-lg bg-bg-2 animate-pulse"
       />
     </div>
-    <div v-else-if="pageData.length > 0" class="grid w-full grid-cols-3 gap-[11px] sm:grid-cols-8">
-      <div v-for="(game, index) in pageData" :key="game.rowId ?? index" class="aspect-[330/438]">
-        <CasinoGameCard fade-caption-on-hover :game="game" @click="handleClick(game.rowId)" />
+    <div v-else-if="pageData.length > 0" class="grid w-full gap-[11px]" :class="gameGridClass">
+      <div
+        v-for="(game, index) in pageData"
+        :key="game.rowId ?? index"
+        class="aspect-[330/438]"
+        :class="{ 'min-w-0': !isMobile }"
+      >
+        <CasinoGameCard
+          :responsive-pc="!isMobile"
+          fade-caption-on-hover
+          :game="game"
+          @click="handleClick(game.rowId)"
+        />
       </div>
     </div>
 
@@ -60,6 +70,7 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import CasinoGameCard from '@/components/common/CasinoGameCard.vue'
 import filterSheet from './filterSheet.vue'
 import { resolveGameImageUrl } from '@/utils/image'
+import { PC_GAME_GRID_CLASS_WITHOUT_SIDEBAR } from '@/composables/usePcGameCardLayout'
 
 interface Props {
   queryOptions?: GameQueryOptions
@@ -81,6 +92,9 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const gameStore = useGameStore()
 const isMobile = useIsMobile()
+const gameGridClass = computed(() =>
+  isMobile.value ? 'grid-cols-3 sm:grid-cols-8' : PC_GAME_GRID_CLASS_WITHOUT_SIDEBAR
+)
 const pageRootRef = ref<HTMLElement | null>(null)
 const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
 

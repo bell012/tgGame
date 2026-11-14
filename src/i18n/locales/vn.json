@@ -38,6 +38,8 @@
     "cancel": "Hủy",
     "repeat": "Lặp lại",
     "confirmBet": "Xác nhận",
+    "quickBet": "Cược nhanh",
+    "quickBetHint": "Đặt chip sẽ trừ số dư ngay lập tức và tạo phiếu cược. Có thể hủy thủ công các cược đang chờ.",
     "pickChips": "Chọn chip và đặt cược",
     "refreshBalance": "Làm mới số dư",
     "selectCurrency": "Chọn tiền tệ",

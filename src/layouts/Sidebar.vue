@@ -77,10 +77,5 @@ defineExpose({
   &::-webkit-scrollbar {
     display: none;
   }
-
-  // H5 隐藏侧边栏
-  @media (max-width: v-bind('layoutStore.mobileBreakpointMedia')) {
-    display: none;
-  }
 }
 </style>
