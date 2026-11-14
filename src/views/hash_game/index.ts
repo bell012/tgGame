@@ -136,6 +136,8 @@ export const useHashGamePage = () => {
   const chipOptions = ref<ChipOption[]>(CHIP_OPTIONS.map((chip, id) => ({ id, ...chip })))
   const selectedChip = ref(1)
   const chipEditorOpen = ref(false)
+  const quickBetEnabled = ref(false)
+  const quickBetPopupOpen = ref(false)
   const chipEditorItems = ref<ChipDraft[]>([])
   const customChipItems = ref<CustomChipDraft[]>(
     CUSTOM_CHIP_HUES.map((hue, index) => ({
@@ -180,6 +182,7 @@ export const useHashGamePage = () => {
     periodsOpen.value = false
     historyPopupOpen.value = false
     chipEditorOpen.value = false
+    quickBetPopupOpen.value = false
     keypadOpen.value = false
     currencyPopupOpen.value = false
   }
@@ -225,6 +228,19 @@ export const useHashGamePage = () => {
   const selectPeriod = (seconds: number) => {
     selectedPeriod.value = seconds
     periodsOpen.value = false
+  }
+
+  // 快捷投注开关
+  const toggleQuickBet = () => {
+    quickBetEnabled.value = !quickBetEnabled.value
+  }
+
+  const toggleQuickBetPopup = () => {
+    quickBetPopupOpen.value = !quickBetPopupOpen.value
+  }
+
+  const closeQuickBetPopup = () => {
+    quickBetPopupOpen.value = false
   }
 
   /** 刷新余额；未登录时打开登录弹窗，失败时提示错误。 */
@@ -401,6 +417,8 @@ export const useHashGamePage = () => {
     chipOptions,
     selectedChip,
     chipEditorOpen,
+    quickBetEnabled,
+    quickBetPopupOpen,
     chipEditorItems,
     customChipItems,
     editingChipId,
@@ -432,6 +450,9 @@ export const useHashGamePage = () => {
     cancelSelection,
     repeatSelection,
     chooseChip,
+    toggleQuickBet,
+    toggleQuickBetPopup,
+    closeQuickBetPopup,
     openChipEditor,
     saveChipEditor,
     closeOverlays,

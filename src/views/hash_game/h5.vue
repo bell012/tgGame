@@ -457,15 +457,55 @@
           </div>
           <button
             type="button"
+            ref="quickBetTriggerRef"
             class="flex h-[34px] shrink-0 items-center justify-center rounded-[8px] px-[9px] bg-bg-3 ml-[10px]"
-            :aria-label="t('hashGame.chipSettings')"
-            @click="openChipEditor"
+            :aria-label="t('hashGame.quickBet')"
+            :aria-expanded="quickBetPopupOpen"
+            aria-controls="hash-game-quick-bet-popup"
+            @click="toggleQuickBetPopup"
           >
             <SettingsIcon class="size-[16px] text-icon-2" />
           </button>
         </div>
       </footer>
     </div>
+
+    <!-- 快捷投注弹窗 -->
+    <Teleport to="body">
+      <section
+        v-if="quickBetPopupOpen"
+        id="hash-game-quick-bet-popup"
+        ref="quickBetPopupRef"
+        class="fixed inset-x-[11px] bottom-[64px] z-[80] rounded-[10px] border border-opacity-10 bg-bg-2 px-[12px] py-[12px]"
+        role="dialog"
+        aria-labelledby="hash-game-quick-bet-title"
+        :aria-label="t('hashGame.quickBet')"
+        @keydown.esc.stop.prevent="closeQuickBetPopup"
+      >
+        <div class="flex items-center justify-between">
+          <h2 id="hash-game-quick-bet-title" class="text-[14px] font-[400] text-text-1">
+            {{ t('hashGame.quickBet') }}
+          </h2>
+          <button
+            type="button"
+            role="switch"
+            class="relative h-[20px] w-[40px] shrink-0 rounded-full p-[3px] transition-colors"
+            :class="quickBetEnabled ? 'bg-theme-primary' : 'bg-opacity-6'"
+            :aria-checked="quickBetEnabled"
+            :aria-label="t('hashGame.quickBet')"
+            @click="toggleQuickBet"
+          >
+            <span
+              class="block size-[15px] rounded-full bg-common-100 transition-transform"
+              :class="quickBetEnabled ? 'translate-x-[18px]' : 'translate-x-[2px]'"
+            />
+          </button>
+        </div>
+        <p class="mt-[8px] text-[10px] text-text-2">
+          {{ t('hashGame.quickBetHint') }}
+        </p>
+      </section>
+    </Teleport>
 
     <!-- 选择货币 -->
     <CurrencyPopup
@@ -680,7 +720,7 @@ import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { navigateTo } from '@/utils/router'
 import type { HashGamePageState } from './index'
 
@@ -689,6 +729,8 @@ const recordsMenuOpen = ref(false)
 const recentBetsOpen = ref(false)
 const recordsMenuRef = ref<HTMLElement | null>(null)
 const recordsTriggerRef = ref<HTMLElement | null>(null)
+const quickBetPopupRef = ref<HTMLElement | null>(null)
+const quickBetTriggerRef = ref<HTMLElement | null>(null)
 const {
   t,
   currentCurrencyCode,
@@ -707,6 +749,8 @@ const {
   chipOptions,
   selectedChip,
   chipEditorOpen,
+  quickBetEnabled,
+  quickBetPopupOpen,
   chipEditorItems,
   customChipItems,
   keypadOpen,
@@ -734,6 +778,8 @@ const {
   cancelSelection,
   repeatSelection,
   chooseChip,
+  toggleQuickBet,
+  toggleQuickBetPopup,
   openChipEditor,
   editCustomChip,
   togglePresetChip,
@@ -741,6 +787,7 @@ const {
   confirmKeypadValue,
   saveChipEditor,
   closeOverlays,
+  closeQuickBetPopup,
   handlePeriodOutsidePointerDown
 } = props.page
 
@@ -752,7 +799,8 @@ const formatChipAmount = (amount: number) => {
 
 const handleOutsidePointerDown = (event: PointerEvent) => {
   handlePeriodOutsidePointerDown(event)
-  if (!recordsMenuOpen.value || !(event.target instanceof Node)) return
+  if (!(event.target instanceof Node)) return
+  if (!recordsMenuOpen.value) return
   if (
     recordsMenuRef.value?.contains(event.target) ||
     recordsTriggerRef.value?.contains(event.target)
@@ -760,6 +808,20 @@ const handleOutsidePointerDown = (event: PointerEvent) => {
     return
   recordsMenuOpen.value = false
 }
+
+const handleQuickBetOutsidePointerDown = (event: PointerEvent) => {
+  if (!quickBetPopupOpen.value || !(event.target instanceof Node)) return
+  if (
+    quickBetPopupRef.value?.contains(event.target) ||
+    quickBetTriggerRef.value?.contains(event.target)
+  ) {
+    return
+  }
+  closeQuickBetPopup()
+}
+
+onMounted(() => document.addEventListener('pointerdown', handleQuickBetOutsidePointerDown))
+onBeforeUnmount(() => document.removeEventListener('pointerdown', handleQuickBetOutsidePointerDown))
 
 const handleEscape = () => {
   recentBetsOpen.value = false
