@@ -163,6 +163,32 @@ export function useHashGameChat(gameCode: Ref<string>) {
     })
   }
 
+  /** 模拟聊天发送成功后插入本人文字消息，正式发送接口接入时替换调用处。 */
+  function acceptMockChatMessage(content: string) {
+    if (!activeRoom.value || !content.trim()) return false
+    return feed.append({
+      id: `mock-chat:${Date.now()}:${Math.random().toString(36).slice(2)}`,
+      kind: 'USER',
+      source: 'local',
+      time: Date.now(),
+      nickname: 'Me',
+      content: content.trim(),
+      robot: false
+    })
+  }
+
+  /** 将聊天配置中的欢迎语作为本次房间公告展示一次。 */
+  function acceptWelcomeText(content: string) {
+    if (!activeRoom.value || !content.trim()) return false
+    return feed.append({
+      id: `notice:${gameCode.value}`,
+      kind: 'NOTICE',
+      source: 'local',
+      time: Date.now(),
+      content: content.trim()
+    })
+  }
+
   /** 将 HTTP 开奖结果插入一次；真正的 HTTP 请求与开奖触发后续接入。 */
   function acceptHttpDraw(draw: HashHttpDraw) {
     if (!activeRoom.value || draw.gameCode !== gameCode.value) return false
@@ -302,6 +328,8 @@ export function useHashGameChat(gameCode: Ref<string>) {
     currentSettlement,
     acceptWsEvent,
     acceptSuccessfulBet,
+    acceptMockChatMessage,
+    acceptWelcomeText,
     acceptHttpDraw,
     acceptRecentBets,
     dismissSettlement,

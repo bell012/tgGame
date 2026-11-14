@@ -11,6 +11,7 @@ import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
 import { createMockPlaceBetResponse, createMockRoomEvents } from './chat/mock'
 import { useHashGameChat } from './chat/useHashGameChat'
+import { createMockChatConfig, type HashChatConfig } from './chat/config'
 import type { HashBetOption, HashPlaceBetRequest } from './chat/types'
 
 type RoadmapMode = 'size' | 'parity'
@@ -133,6 +134,18 @@ export const useHashGamePage = () => {
   // 演示环境暂按周期组装房间编码，真实 gameCode 以后由游戏配置提供。
   const gameCode = computed(() => `CL${selectedPeriod.value}`)
   const chat = useHashGameChat(gameCode)
+  /** 当前阶段用本地模拟发送回包更新聊天室。 */
+  const sendMockChatMessage = chat.acceptMockChatMessage
+  const chatConfig = ref<HashChatConfig | null>(null)
+
+  /** 模拟按当前游戏标识请求聊天配置，后续替换为 chat/config 接口。 */
+  const refreshChatConfig = () => {
+    chatConfig.value = createMockChatConfig(gameCode.value)
+    chat.acceptWelcomeText(chatConfig.value.welcomeText)
+  }
+
+  /** 进入游戏或切换游戏时读取当前房间的聊天配置。 */
+  watch(gameCode, refreshChatConfig, { immediate: true })
   const periodOptions = HASH_GAME_PERIOD_OPTIONS
   const periodsOpen = ref(false)
   const historyPopupOpen = ref(false)
@@ -494,6 +507,9 @@ export const useHashGamePage = () => {
     chipEditorError,
     chatVisible,
     chatMessages,
+    chatConfig,
+    refreshChatConfig,
+    sendMockChatMessage,
     currentSettlement,
     currentBetStats,
     confirmMockBet,

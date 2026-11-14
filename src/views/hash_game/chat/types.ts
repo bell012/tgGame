@@ -119,7 +119,7 @@ export type HashChatMessage =
   | {
       id: string
       kind: 'USER'
-      source: 'ws' | 'http'
+      source: 'ws' | 'http' | 'local'
       time: number
       nickname: string
       content: string

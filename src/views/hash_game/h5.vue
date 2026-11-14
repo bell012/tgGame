@@ -464,7 +464,7 @@
             class="flex h-[34px] shrink-0 items-center justify-center rounded-[8px] px-[9px] bg-bg-3 mr-[10px]"
             :aria-label="t('hashGame.chat')"
             :aria-pressed="chatVisible"
-            @click="chatVisible = !chatVisible"
+            @click="openChatComposer"
           >
             <ChatIcon class="w-[16px] h-[16px] text-icon-2" />
           </button>
@@ -528,6 +528,15 @@
 
     <!-- 按币种逐条展示结算提示。 -->
     <HashSettlementPopup :notice="currentSettlement" @dismiss="dismissSettlement" />
+
+    <!-- H5 聊天输入弹窗由 ChatIcon 打开。 -->
+    <HashChatComposerPopup
+      :visible="chatComposerOpen"
+      :config="chatConfig"
+      @close="chatComposerOpen = false"
+      @send="sendMockChatMessage"
+      @bet="chatComposerOpen = false"
+    />
 
     <!-- 筹码设置 -->
     <Teleport to="body">
@@ -723,12 +732,20 @@ import { navigateTo } from '@/utils/router'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import { ref } from 'vue'
 import HashGameChat from './components/HashGameChat.vue'
+import HashChatComposerPopup from './components/HashChatComposerPopup.vue'
 import HashSettlementPopup from './components/HashSettlementPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
+const chatComposerOpen = ref(false)
+
+/** 点击聊天按钮时刷新当前游戏配置并打开 H5 输入弹窗。 */
+const openChatComposer = () => {
+  refreshChatConfig()
+  chatComposerOpen.value = true
+}
 const recordsMenuOpen = ref(false)
 const recentBetsOpen = ref(false)
 const recordsMenuRef = ref<HTMLElement | null>(null)
@@ -758,6 +775,9 @@ const {
   chipEditorError,
   chatVisible,
   chatMessages,
+  chatConfig,
+  refreshChatConfig,
+  sendMockChatMessage,
   currentSettlement,
   currentBetStats,
   confirmMockBet,
