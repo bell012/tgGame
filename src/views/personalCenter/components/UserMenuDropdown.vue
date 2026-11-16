@@ -139,7 +139,7 @@ const mainMenus = computed(() => [
     name: t('userMenu.wallet'),
     icon: getIcon(1),
     handler: () => {
-      console.log('wallet')
+      navigateTo('/deposit')
       emit('update:modelValue', false)
     }
   },
@@ -216,15 +216,6 @@ const mainMenus = computed(() => [
   //     emit('update:modelValue', false)
   //   }
   // },
-  {
-    id: 'referral',
-    name: t('userMenu.referral'),
-    icon: getIcon(11),
-    handler: () => {
-      console.log('Referral clicked')
-      emit('update:modelValue', false)
-    }
-  },
   {
     id: 'my-profile',
     name: t('userMenu.myProfile'),
