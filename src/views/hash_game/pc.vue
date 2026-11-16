@@ -384,7 +384,7 @@
     <!-- 历史投注 -->
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
     <!-- 筹码设置 -->
-    <ChipEditorPopup :page="props.page" />
+    <ChipEditorPopup :page="props.page" variant="pc" />
     <!-- 规则弹窗 -->
     <HashGameRules
       v-model:visible="rulesPopupOpen"
