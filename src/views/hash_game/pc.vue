@@ -120,12 +120,14 @@
               <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
                 <i
                   class="grid size-[20px] place-items-center rounded-full bg-[#22A89A] text-[14px] not-italic text-white"
-                  >{{ resultLabels.positive }}</i>{{ mockRound.positiveCount }}
+                  >{{ resultLabels.positive }}</i
+                >{{ mockRound.positiveCount }}
               </span>
               <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
                 <i
                   class="grid size-[20px] place-items-center rounded-full bg-[#E63533] text-[14px] not-italic text-white"
-                  >{{ resultLabels.negative }}</i>{{ mockRound.negativeCount }}
+                  >{{ resultLabels.negative }}</i
+                >{{ mockRound.negativeCount }}
               </span>
             </div>
             <div class="flex items-center">
