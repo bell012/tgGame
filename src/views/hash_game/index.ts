@@ -31,6 +31,11 @@ export type RecentBetRecord = {
   profitLoss: number
   betTime: string
 }
+export type HashGameBetDetail = RecentBetRecord & {
+  period: number
+  currencyCode: string
+  currencyIcon: string
+}
 export type RecentBetSummary = {
   betCount: number
   betAmount: number

@@ -278,12 +278,14 @@
                   <span class="flex items-center gap-[3px] text-[12px] font-[500] text-text-2">
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#22A89A] text-[11px] not-italic text-text-1"
-                      >{{ resultLabels.positive }}</i>{{ mockRound.positiveCount }}
+                      >{{ resultLabels.positive }}</i
+                    >{{ mockRound.positiveCount }}
                   </span>
                   <span class="flex items-center gap-[3px] text-[12px] font-[500] text-text-2">
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#E63533] text-[11px] not-italic text-text-1"
-                      >{{ resultLabels.negative }}</i>{{ mockRound.negativeCount }}
+                      >{{ resultLabels.negative }}</i
+                    >{{ mockRound.negativeCount }}
                   </span>
                 </div>
                 <span class="ml-auto min-w-0 whitespace-nowrap text-[11px] text-secondary-8">{{
@@ -509,7 +511,7 @@
             :aria-label="t('hashGame.quickBet')"
             :aria-expanded="quickBetPopupOpen"
             aria-controls="hash-game-quick-bet-popup"
-            @click="toggleQuickBetPopup"
+            @click.stop="toggleQuickBetPopup"
           >
             <SettingsIcon class="size-[16px] text-icon-2" />
           </button>
@@ -524,7 +526,7 @@
           v-if="quickBetPopupOpen"
           id="hash-game-quick-bet-popup"
           ref="quickBetPopupRef"
-          class="fixed inset-x-[11px] bottom-[64px] z-[80]"
+          class="fixed inset-x-[11px] bottom-[64px] z-[1100]"
           @keydown.esc.stop.prevent="closeQuickBetPopup"
         >
           <QuickBetPopupContent
