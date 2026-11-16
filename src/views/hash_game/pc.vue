@@ -40,6 +40,7 @@
             <button
               type="button"
               class="flex items-center gap-[10px] rounded-[6px] bg-bg-3 px-[10px] py-[6px] text-[14px] text-text-2"
+              @click="rulesPopupOpen = true"
             >
               <RulesIcon class="size-[20px] text-icon-2" />{{ t('hashGame.gameRules') }}
             </button>
@@ -376,6 +377,12 @@
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
     <!-- 筹码设置 -->
     <ChipEditorPopup :page="props.page" />
+    <!-- 规则弹窗 -->
+    <HashGameRules
+      v-model:visible="rulesPopupOpen"
+      v-model:selected-period="selectedPeriod"
+      variant="pc"
+    />
   </div>
   <CommonFooter class="mt-[55px]" />
 </template>
@@ -387,6 +394,7 @@ import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
+import HashGameRules from './rules.vue'
 import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
 import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
 import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
@@ -451,6 +459,7 @@ const {
 
 const chatDraft = ref('')
 const recentBetsOpen = ref(false)
+const rulesPopupOpen = ref(false)
 const quickBetPopupRef = ref<HTMLElement | null>(null)
 const quickBetTriggerRef = ref<HTMLElement | null>(null)
 const chipTrackRef = ref<HTMLElement | null>(null)
