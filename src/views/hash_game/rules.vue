@@ -15,7 +15,7 @@
         <section
           :class="
             variant === 'pc'
-              ? 'flex max-h-[85vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[8px] bg-bg-1 text-text-1'
+              ? 'flex max-h-[85vh] min-h-[50vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[8px] bg-bg-1 text-text-1'
               : 'flex min-h-0 flex-1 flex-col overflow-hidden bg-bg-1'
           "
           :role="variant === 'pc' ? 'dialog' : undefined"

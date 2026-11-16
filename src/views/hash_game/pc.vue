@@ -382,7 +382,7 @@
       :bet="selectedBetDetail"
     />
     <!-- 历史投注 -->
-    <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
+    <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" variant="pc" />
     <!-- 筹码设置 -->
     <ChipEditorPopup :page="props.page" variant="pc" />
     <!-- 规则弹窗 -->
