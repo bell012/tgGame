@@ -15,7 +15,7 @@
         :class="
           activePeriod === tab.key
             ? 'border-[3px] border-theme-primary bg-theme-primary font-[700] text-text-4'
-            : 'border-[3px] border-transparent bg-bg-3 font-[500] text-text-2 hover:text-text-1'
+            : 'border-[3px] border-transparent bg-bg-2 font-[500] text-text-2 hover:text-text-1'
         "
         @click="handleTabClick(tab.key)"
       >

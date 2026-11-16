@@ -1552,7 +1552,7 @@
     "withdraw": "Rút tiền",
     "buyCrypto": "Mua tiền mã hóa",
     "transactions": "Lịch sử giao dịch",
-    "betHistory": "Lịch sử đặt cược",
+    "betHistory": "Lịch sử cược",
     "rolloverOverview": "Tổng quan vòng cược",
     "vipClub": "CLB VIP",
     "vaultPro": "Két Pro",
@@ -2589,6 +2589,9 @@
     }
   },
   "checkIn": {
+    "rulesTitle": "Quy tắc điểm danh",
+    "rulesEmpty": "Chưa có quy tắc điểm danh.",
+    "rulesCloseAriaLabel": "Đóng quy tắc điểm danh",
     "title": "Thưởng điểm danh hằng ngày",
     "subtitle": "Điểm danh mỗi ngày để nhận thưởng",
     "promoStartsAt": "Sự kiện bắt đầu：{date}",

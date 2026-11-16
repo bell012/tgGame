@@ -137,7 +137,7 @@
       </div>
       <button
         class="mt-6 w-full h-10 flex items-center justify-center rounded-lg font-semibold text-text-4"
-        :class="[!isWithdrawDisabled ? 'btn-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed']"
+        :class="[!isWithdrawDisabled ? 'btn-primary' : 'bg-theme-2 cursor-not-allowed']"
         :disabled="isWithdrawDisabled"
         @click="doWithdrawDeposit"
       >

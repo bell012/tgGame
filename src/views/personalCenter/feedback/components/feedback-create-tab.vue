@@ -127,7 +127,7 @@
             : 'mt-6 h-[46px] w-full rounded-[10px] text-base',
           canSubmitFeedback && !isSubmittingFeedback
             ? 'bg-theme-primary'
-            : 'feedback-submit--disabled cursor-not-allowed'
+            : 'cursor-not-allowed bg-theme-2'
         ]"
         :disabled="!canSubmitFeedback || isSubmittingFeedback"
         @click="onSubmit"
@@ -198,10 +198,6 @@ const canSubmitFeedback = computed(() => {
 </script>
 
 <style scoped>
-.feedback-submit--disabled {
-  background-color: color-mix(in srgb, var(--color-theme-level-1) 70%, transparent);
-}
-
 .feedback-upload-photo-icon {
   width: 28px;
   height: 28px;

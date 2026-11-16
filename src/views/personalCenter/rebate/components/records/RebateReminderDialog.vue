@@ -14,7 +14,7 @@
         </h3>
         <button
           type="button"
-          class="absolute right-0 top-0 flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3 text-text-1"
+          class="absolute right-0 top-0 flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-opacity-10 text-text-1"
           @click="visible = false"
         >
           <CloseIcon class="h-3.5 w-3.5" />
@@ -35,7 +35,7 @@
         </button>
         <button
           type="button"
-          class="h-[40px] w-full rounded-[8px] bg-bg-3 text-[16px] font-[500] text-text-2"
+          class="h-[40px] w-full rounded-[8px] bg-opacity-10 text-[16px] font-[500] text-text-2"
           @click="visible = false"
         >
           {{ t('common.cancel') }}

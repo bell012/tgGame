@@ -58,16 +58,14 @@
 
         <button
           type="button"
-          class="relative mt-[24px] flex h-[49px] w-full items-center justify-center overflow-hidden rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
-          :class="canSave && !isSavingProfile ? '' : 'cursor-not-allowed'"
+          class="mt-[24px] flex h-[49px] w-full items-center justify-center rounded-lg text-sm font-[700] text-text-4"
+          :class="
+            canSave && !isSavingProfile ? 'bg-theme-primary' : 'cursor-not-allowed bg-theme-2'
+          "
           :disabled="!canSave || isSavingProfile"
           @click="handleSave"
         >
-          <span
-            v-if="!canSave || isSavingProfile"
-            class="absolute inset-0 z-10 rounded-lg bg-black/35"
-          ></span
-          ><span class="relative z-20">{{ t('personalCenter.editProfile.save') }}</span>
+          {{ t('personalCenter.editProfile.save') }}
         </button>
 
         <input

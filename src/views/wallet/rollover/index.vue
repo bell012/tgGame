@@ -47,13 +47,13 @@
             >
               <div class="flex items-center">
                 <div
-                  class="w-10 h-10 rounded-full bg-opacity-5 mr-1.5 flex items-center justify-center"
+                  class="mr-1.5 flex h-10 w-10 min-w-10 max-w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-opacity-5"
                 >
                   <Transaction_add
                     v-if="item.direction === 'add'"
-                    class="w-[22px] h-[22px] text-text-1"
+                    class="block h-[22px] w-[22px] shrink-0 text-text-1"
                   />
-                  <Transaction_dec v-else class="w-[22px] h-[22px] text-text-1" />
+                  <Transaction_dec v-else class="block h-[22px] w-[22px] shrink-0 text-text-1" />
                 </div>
 
                 <div class="flex items-center justify-between w-full gap-3">

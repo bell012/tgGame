@@ -100,6 +100,7 @@ export interface CheckInViewData {
   activityId?: number
   title: string
   subtitle: string
+  rulesContent: string
   promoEndsAt: string
   promoDateTextKey: 'checkIn.promoStartsAt' | 'checkIn.promoEndsAt'
   rewards: CheckInRewardItem[]
@@ -755,6 +756,7 @@ export const createDefaultCheckInViewData = (): CheckInViewData => {
   return {
     title: '',
     subtitle: '',
+    rulesContent: '',
     promoEndsAt: '',
     promoDateTextKey: 'checkIn.promoEndsAt',
     rewards: [],
@@ -807,6 +809,7 @@ export const createCheckInViewData = (
     activityId: activity.rowId,
     title: resolveCheckInActivityName(activity, options?.languageCode) || '',
     subtitle: activityDesc?.name || '',
+    rulesContent: String(resolvedConfig?.ruleDesc ?? '').trim(),
     promoEndsAt: promoDateMeta.date,
     promoDateTextKey: promoDateMeta.textKey,
     rewards:

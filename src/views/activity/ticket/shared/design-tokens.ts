@@ -73,7 +73,7 @@ export const TICKET_MODAL_THEMES: Record<
 
 /** @deprecated 兼容转盘 canvas，逐步迁移引用至 TICKET_MODAL_THEMES */
 export const LUCKY_SPIN_TOKENS = {
-  modalMaskClass: 'bg-mask-20',
+  modalMaskClass: 'bg-mask-60-1',
   modalBlur: '8px',
   titleGradient: TICKET_MODAL_THEMES.lucky_spin.titleGradient,
   countdownBox: {

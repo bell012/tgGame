@@ -221,7 +221,7 @@
       <!-- 立即充值按钮 -->
       <button
         class="flex h-12 w-full items-center justify-center rounded-lg text-sm font-extrabold text-text-4"
-        :class="[!isDepositDisabled ? 'btn-primary' : 'cursor-not-allowed bg-theme-2 opacity-40']"
+        :class="[!isDepositDisabled ? 'btn-primary' : 'cursor-not-allowed bg-theme-2']"
         :disabled="isDepositDisabled"
         @click="doDeposit"
       >
