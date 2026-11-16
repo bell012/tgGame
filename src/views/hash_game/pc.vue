@@ -373,6 +373,13 @@
       :period="selectedPeriod"
       :bets="recentBets"
       :summary="recentBetSummary"
+      @select-bet="openBetDetailPopup"
+    />
+    <!-- 投注记录详情弹窗 -->
+    <HashGameBetDetailPopup
+      v-model:visible="betDetailPopupOpen"
+      variant="pc"
+      :bet="selectedBetDetail"
     />
     <!-- 历史投注 -->
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
@@ -390,12 +397,13 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import type { HashGamePageState } from './index'
+import type { HashGameBetDetail, HashGamePageState } from './index'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
 import HashGameRules from './rules.vue'
+import HashGameBetDetailPopup from './bet-detail.vue'
 import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
 import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
 import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
@@ -460,6 +468,8 @@ const {
 
 const chatDraft = ref('')
 const recentBetsOpen = ref(false)
+const betDetailPopupOpen = ref(false)
+const selectedBetDetail = ref<HashGameBetDetail | null>(null)
 const rulesPopupOpen = ref(false)
 const quickBetPopupRef = ref<HTMLElement | null>(null)
 const quickBetTriggerRef = ref<HTMLElement | null>(null)
@@ -576,5 +586,10 @@ const formatChipAmount = (amount: number) => {
   if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
   if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
   return String(amount)
+}
+
+const openBetDetailPopup = (bet: HashGameBetDetail) => {
+  selectedBetDetail.value = bet
+  betDetailPopupOpen.value = true
 }
 </script>
