@@ -79,12 +79,29 @@
                 :key="item.value"
                 class="mb-2.5 flex h-[42px] cursor-pointer items-center rounded-lg px-2.5"
                 :class="{
-                  'bg-opacity-10': isSelected(item),
-                  'justify-between': !Multi
+                  'bg-bg-2': isSelected(item) && isMobile,
+                  'bg-opacity-10': isSelected(item) && !isMobile,
+                  'justify-between': !Multi || (Multi && isMobile)
                 }"
                 @click="selectItem(item)"
               >
                 <span v-if="!Multi">{{ item.label }}</span>
+                <div v-if="Multi && isMobile" class="flex min-w-0 flex-1 items-center">
+                  <div class="flex h-[22px] w-[22px] shrink-0 items-center justify-center">
+                    <gameRemoteImg
+                      class="!bg-transparent h-[22px] max-h-[22px]"
+                      :img="{
+                        maintain: false,
+                        src: item?.icon,
+                        fit: 'contain' as const
+                      }"
+                      :alt="item?.label"
+                    />
+                  </div>
+                  <span class="ml-2.5 truncate text-[13px] font-normal leading-none text-text-1">
+                    {{ item.label }}
+                  </span>
+                </div>
                 <component
                   :is="
                     isSelected(item)
@@ -106,7 +123,10 @@
                       : 'h-5 w-5 shrink-0'
                   "
                 />
-                <div v-if="Multi" class="ml-2.5 h-[22px] min-w-0 flex items-center justify-start">
+                <div
+                  v-if="Multi && !isMobile"
+                  class="ml-2.5 flex h-[22px] min-w-0 items-center justify-start"
+                >
                   <gameRemoteImg
                     class="!bg-transparent h-[22px] max-h-[22px]"
                     :img="{

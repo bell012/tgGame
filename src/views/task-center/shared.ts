@@ -21,7 +21,6 @@ export interface TaskTabItem {
   isEntrant?: boolean
   label: string
   iconKey: string
-  mobileWidth: number
 }
 
 /** Figma 静态统计数据。 */
@@ -306,19 +305,8 @@ export interface TaskCenterTabLabels {
 const createGeneralTaskTab = (label: string): TaskTabItem => ({
   key: 'general',
   label,
-  iconKey: 'gameCategoriesIcon',
-  mobileWidth: 103
+  iconKey: 'gameCategoriesIcon'
 })
-
-/** 按栏目文字的显示宽度计算 H5 胶囊按钮宽度。 */
-const getTaskTabMobileWidth = (label: string) => {
-  const displayLength = Array.from(label).reduce(
-    (total, character) => total + (character.charCodeAt(0) > 127 ? 2 : 1),
-    0
-  )
-
-  return Math.min(160, Math.max(86, displayLength * 7 + 52))
-}
 
 /** 规范本地或后台语言代码，统一连字符与下划线差异。 */
 const normalizeTaskLanguageCode = (languageCode: unknown) =>
@@ -361,8 +349,7 @@ const createEntrantTaskTab = (label: string): TaskTabItem => ({
   key: 'entrant',
   isEntrant: true,
   label,
-  iconKey: 'gameCategoriesIcon',
-  mobileWidth: getTaskTabMobileWidth(label)
+  iconKey: 'gameCategoriesIcon'
 })
 
 /** 将后台栏目配置转换为 H5 与 PC 共用的导航数据。 */
@@ -390,8 +377,7 @@ export const createTaskTabs = (
       columnCode,
       label,
       // 后台未提供栏目图标，暂统一复用通用任务图标。
-      iconKey: 'gameCategoriesIcon',
-      mobileWidth: getTaskTabMobileWidth(label)
+      iconKey: 'gameCategoriesIcon'
     }
   }
 

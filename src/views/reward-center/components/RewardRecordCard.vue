@@ -55,7 +55,7 @@
 
   <article
     v-else-if="props.variant === 'desktop-popup'"
-    class="flex items-center justify-between gap-3 rounded-lg border border-[color:var(--color-popup-2)] bg-popup-1 px-3 pb-3 pt-4 transition-colors hover:bg-opacity-6"
+    class="flex items-center justify-between gap-3 rounded-lg bg-opacity-6 px-3 pb-3 pt-4 transition-colors"
   >
     <div class="min-w-0 flex-1">
       <p class="truncate text-base font-[700] leading-tight text-text-1">

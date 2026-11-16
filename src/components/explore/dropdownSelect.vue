@@ -3,7 +3,7 @@
     <button
       ref="triggerRef"
       type="button"
-      class="flex w-full items-center justify-between rounded-lg border border-solid border-opacity-10 sm:border-opacity-6 max-sm:bg-opacity-5 sm:bg-bg-5 px-2.5 py-[11px]"
+      class="flex w-full items-center justify-between rounded-lg border border-solid border-opacity-10 sm:border-opacity-6 max-sm:bg-bg-2 sm:bg-bg-5 px-2.5 py-[11px]"
       @click.stop="togglePopup"
     >
       <div class="flex flex-1 items-center text-xs">
@@ -75,13 +75,27 @@
                 class="explore-select-item flex items-center"
                 :class="{
                   'explore-select-item--selected': isSelected(item),
-                  'justify-between': !Multi,
+                  'justify-between': !Multi || (Multi && isMobile),
                   'mb-2.5 h-[42px] px-2.5': isMobile
                 }"
                 @click="selectItem(item)"
               >
+                <div v-if="Multi && isMobile" class="flex min-w-0 flex-1 items-center">
+                  <div class="flex h-[22px] w-[22px] shrink-0 items-center justify-center">
+                    <gameRemoteImg
+                      class="!bg-transparent h-[22px] max-h-[22px]"
+                      :img="{
+                        maintain: false,
+                        src: item?.icon,
+                        fit: 'contain' as const
+                      }"
+                      :alt="item?.label"
+                    />
+                  </div>
+                  <span class="explore-select-item-label ml-2.5 truncate">{{ item.label }}</span>
+                </div>
                 <span
-                  v-if="!Multi"
+                  v-else-if="!Multi"
                   class="explore-select-item-label"
                   :class="{ 'explore-select-item-label--selected': isSelected(item) && !isMobile }"
                 >
@@ -113,7 +127,10 @@
                         ]
                   "
                 />
-                <div v-if="Multi" class="ml-2.5 h-[22px] min-w-0 flex items-center justify-start">
+                <div
+                  v-if="Multi && !isMobile"
+                  class="ml-2.5 flex h-[22px] min-w-0 items-center justify-start"
+                >
                   <gameRemoteImg
                     class="!bg-transparent h-[22px] max-h-[22px]"
                     :img="{

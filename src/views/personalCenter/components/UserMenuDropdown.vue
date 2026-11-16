@@ -4,9 +4,10 @@
     <transition name="dropdown-fade">
       <div
         v-if="modelValue"
-        class="absolute top-[52px] right-0 z-50 w-[240px] overflow-hidden rounded-lg border border-[color:var(--color-popup-2)] bg-popup-1"
+        class="tg-glass-tokens absolute top-[52px] right-0 z-50 w-[240px] overflow-hidden rounded-[15px] [box-shadow:var(--glass-shadow)]"
       >
-        <div class="p-2">
+        <LiquidGlass />
+        <div class="relative z-[1] p-2">
           <div
             v-for="item in mainMenus"
             :key="item.id"
@@ -37,14 +38,15 @@
 </template>
 
 <script setup lang="ts">
+import SignOutPopup from '@/components/common/SignOutPopup.vue'
+import LiquidGlass from '@/components/common/LiquidGlass.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import { useUserStore } from '@/stores/user'
+import { navigateTo } from '@/utils/router'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useIsMobile } from '@/composables/useMediaQuery'
-import SignOutPopup from '@/components/common/SignOutPopup.vue'
-import MyProfilePcLayout from '../myProfile/pc-layout.vue'
 import EditProfilePcLayout from '../editProfile/pc-layout.vue'
-import { navigateTo } from '@/utils/router'
-import { useUserStore } from '@/stores/user'
+import MyProfilePcLayout from '../myProfile/pc-layout.vue'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -159,15 +161,16 @@ const mainMenus = computed(() => [
       emit('update:modelValue', false)
     }
   },
-  {
-    id: 'buy-crypto',
-    name: t('userMenu.buyCrypto'),
-    icon: getIcon(5),
-    handler: () => {
-      navigateTo('/deposit')
-      emit('update:modelValue', false)
-    }
-  },
+  // 隐藏购买加密货币
+  // {
+  //   id: 'buy-crypto',
+  //   name: t('userMenu.buyCrypto'),
+  //   icon: getIcon(5),
+  //   handler: () => {
+  //     navigateTo('/deposit')
+  //     emit('update:modelValue', false)
+  //   }
+  // },
   {
     id: 'transactions',
     name: t('userMenu.transactions'),

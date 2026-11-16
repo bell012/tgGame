@@ -170,7 +170,7 @@
               v-for="(row, index) in props.referralRules"
               :key="row.level"
               class="grid h-[37px] grid-cols-3 items-center"
-              :class="index % 2 === 0 ? 'bg-opacity-6' : 'bg-bg-2'"
+              :class="index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2'"
             >
               <!-- 等级单元格 -->
               <div class="text-center text-[14px] font-[400] leading-[17px] text-text-1">

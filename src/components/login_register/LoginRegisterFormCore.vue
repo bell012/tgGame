@@ -1197,10 +1197,12 @@ const handleLogin = async () => {
         : '',
       areaCode: formData.value.signin.areaCode,
       channelId: '1',
-      requestMethod: activeLoginMethod.value === 'username' ? '0' : '1'
+      // 后端 requestMethod=1 会强制校验短信验证码，缺少时返回 C41；
+      // 手机号校验方式为“密码”时不需要验证码，必须按账号密码(0)提交。
+      requestMethod: showSigninSmsCode.value ? '1' : '0'
     }
 
-    if (activeLoginMethod.value === 'phone' && showSigninSmsCode.value) {
+    if (showSigninSmsCode.value) {
       loginData.smsCode = formData.value.signin.smsCode
     }
 

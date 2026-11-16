@@ -199,6 +199,7 @@ import { RedPacketPanel } from '@/views/activity/red-packet'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 
 const layoutStore = useLayoutStore()
+const { isSidebarCollapsed } = storeToRefs(layoutStore)
 const redPacketPanelStore = useRedPacketPanelStore()
 const { visible: redPacketPanelVisible } = storeToRefs(redPacketPanelStore)
 const redPacketPanelStyle = computed(() => ({
@@ -212,7 +213,6 @@ const { visible: checkInVisible } = storeToRefs(checkInModalStore)
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
 const mainContentRef = ref<HTMLElement | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
-const isSidebarCollapsed = ref(false)
 const showNotificationPanel = ref(false)
 const activeNotificationDetail = ref<NotificationPanelDetail | null>(null)
 const isMobile = useIsMobile()

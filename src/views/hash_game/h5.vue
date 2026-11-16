@@ -343,24 +343,38 @@
               :aria-pressed="selectedBet === option.key"
               @click="selectBet(option.key)"
             >
-              <span class="flex items-baseline gap-[5px] whitespace-nowrap">
+              <span class="flex items-baseline justify-center gap-[5px] whitespace-nowrap">
                 <strong class="text-[15px] font-bold text-[color:var(--bet-color)]">{{
                   option.label
                 }}</strong>
-                <span class="text-xs font-[500] text-text-2">{{ mockBet.odds }}</span>
-              </span>
-              <span class="mt-[4px] flex items-center justify-between gap-[5px]">
-                <span class="flex items-center gap-0.5 whitespace-nowrap text-[10px] text-text-3"
-                  ><PeopleIcon class="w-[10px] h-[10px] text-icon-3" />{{ mockBet.people }}</span
+                <span
+                  class="text-xs font-[500]"
+                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  >{{ mockBet.odds }}</span
                 >
-                <span class="flex items-center gap-0.5 whitespace-nowrap text-[10px] text-text-3"
-                  ><AmountIcon class="w-[10px] h-[10px] text-icon-3" />{{ mockBet.amount }}</span
+              </span>
+              <span class="mt-[4px] flex items-center justify-center gap-[3px]">
+                <span
+                  class="flex items-center gap-0.5 whitespace-nowrap text-[10px]"
+                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  ><PeopleIcon
+                    class="w-[10px] h-[10px]"
+                    :class="selectedBet === option.key ? 'text-icon-1' : 'text-icon-2'"
+                  />{{ currentBetStats[option.key].people }}</span
+                >
+                <span
+                  class="flex items-center gap-0.5 whitespace-nowrap text-[10px]"
+                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  ><AmountIcon
+                    class="w-[10px] h-[10px]"
+                    :class="selectedBet === option.key ? 'text-icon-1' : 'text-icon-2'"
+                  />{{ currentBetStats[option.key].amount }}</span
                 >
               </span>
               <span class="mt-[7px] block h-[3px] overflow-hidden rounded bg-bg-9">
                 <i
                   class="block h-full rounded-[inherit] bg-[var(--bet-color)]"
-                  :style="{ width: mockBet.progress + '%' }"
+                  :style="{ width: currentBetStats[option.key].progress + '%' }"
                 />
               </span>
             </div>
@@ -368,21 +382,57 @@
         </section>
 
         <!-- 聊天区域 -->
-        <div class="min-h-[150px] flex-1 pt-6">
-          <div v-if="chatVisible" class="text-sm text-text-3">聊天</div>
+        <div class="relative min-h-[150px] flex-1">
+          <!-- 当前游戏的聊天消息列表。 -->
+          <HashGameChat v-if="chatVisible" :messages="chatMessages" />
+          <!-- 游戏页的音乐和音效开关，不属于聊天室数据组件。 -->
+          <div class="absolute right-0 top-[40px] flex gap-[8px]">
+            <button
+              type="button"
+              class="grid size-[34px] place-items-center rounded-full bg-bg-4"
+              :aria-label="musicMuted ? 'Turn on game music' : 'Turn off game music'"
+              :aria-pressed="!musicMuted"
+              @click="musicMuted = !musicMuted"
+            >
+              <img
+                :src="musicOffIcon"
+                alt=""
+                class="size-[18px]"
+                :class="{ 'opacity-50': !musicMuted }"
+              />
+            </button>
+            <button
+              type="button"
+              class="grid size-[34px] place-items-center rounded-full bg-bg-4"
+              :aria-label="soundMuted ? 'Turn on game sound' : 'Turn off game sound'"
+              :aria-pressed="!soundMuted"
+              @click="soundMuted = !soundMuted"
+            >
+              <img
+                :src="soundOffIcon"
+                alt=""
+                class="size-[18px]"
+                :class="{ 'opacity-50': !soundMuted }"
+              />
+            </button>
+          </div>
         </div>
       </main>
 
       <!-- 投注区 -->
       <footer class="shrink-0 rounded-t-[13px] bg-bg-2 px-[12px] pt-[11px] pb-[24px]">
-        <div class="flex items-center gap-[16px]">
+        <div class="flex items-center gap-[20px]">
           <button
             type="button"
-            class="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-bg-3"
+            class="relative flex size-[34px] shrink-0 items-center justify-center rounded-full bg-bg-3"
             :aria-label="t('hashGame.editChips')"
             @click="openChipEditor"
           >
-            <EditIcon class="w-[18px] h-[18px] text-text-2" />
+            <img :src="chipEditorImage" alt="" class="size-full object-contain" />
+            <span
+              class="absolute inset-0 grid place-items-center pt-[1px] text-[9px] font-bold text-text-1"
+              >{{ t('hashGame.edit') }}</span
+            >
           </button>
           <div
             class="flex h-[45px] min-w-0 flex-1 items-center gap-[13px] overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -415,43 +465,79 @@
                       ? 'text-[24px]'
                       : 'text-[16px]'
                 "
-                >{{ chip.value }}</span
+                >{{ formatChipAmount(chip.value) }}</span
               >
             </button>
           </div>
         </div>
-        <div class="mt-[7px] flex items-center">
+        <div class="mt-[7px] flex items-center justify-between">
           <button
             type="button"
-            class="flex size-[34px] shrink-0 items-center justify-center rounded-[8px] bg-bg-3 mr-[10px]"
+            class="flex h-[34px] shrink-0 items-center justify-center rounded-[8px] px-[9px] bg-bg-3 mr-[10px]"
             :aria-label="t('hashGame.chat')"
             :aria-pressed="chatVisible"
-            @click="chatVisible = !chatVisible"
+            @click="openChatComposer"
           >
             <ChatIcon class="w-[16px] h-[16px] text-icon-2" />
           </button>
-          <button
-            type="button"
-            class="h-[34px] px-[10px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
-            @click="cancelSelection"
-          >
-            {{ t('hashGame.cancel') }}
-          </button>
-          <button
-            type="button"
-            class="h-[34px] px-[10px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 mx-[7px]"
-            @click="repeatSelection"
-          >
-            {{ t('hashGame.repeat') }}
-          </button>
-          <div
-            class="btn-primary flex h-[34px] min-w-0 flex-1 items-center justify-center rounded-[8px] px-[10px] text-center text-xs font-bold text-text-4"
-          >
-            {{ t('hashGame.pickChips') }}
+          <div class="flex w-full items-center gap-[7px]">
+            <button
+              type="button"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
+              @click="cancelSelection"
+            >
+              <CancelIcon class="size-[14px] text-icon-2" />{{ t('hashGame.cancel') }}
+            </button>
+            <button
+              type="button"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
+              @click="repeatSelection"
+            >
+              <RepeatIcon class="size-[14px] text-icon-2" />{{ t('hashGame.repeat') }}
+            </button>
+            <!-- 模拟成功回包的投注确认按钮。 -->
+            <button
+              type="button"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
+              @click="confirmMockBet"
+            >
+              <ConfirmIcon class="size-[14px] text-icon-2" />{{ t('hashGame.confirmBet') }}
+            </button>
           </div>
+          <button
+            type="button"
+            ref="quickBetTriggerRef"
+            class="flex h-[34px] shrink-0 items-center justify-center rounded-[8px] px-[9px] bg-bg-3 ml-[10px]"
+            :aria-label="t('hashGame.quickBet')"
+            :aria-expanded="quickBetPopupOpen"
+            aria-controls="hash-game-quick-bet-popup"
+            @click.stop="toggleQuickBetPopup"
+          >
+            <SettingsIcon class="size-[16px] text-icon-2" />
+          </button>
         </div>
       </footer>
     </div>
+
+    <!-- 快捷投注弹窗 -->
+    <Teleport to="body">
+      <Transition name="bottom-sheet">
+        <div
+          v-if="quickBetPopupOpen"
+          id="hash-game-quick-bet-popup"
+          ref="quickBetPopupRef"
+          class="fixed inset-x-[11px] bottom-[64px] z-[1100]"
+          @keydown.esc.stop.prevent="closeQuickBetPopup"
+        >
+          <QuickBetPopupContent
+            variant="h5"
+            :enabled="quickBetEnabled"
+            class="bottom-sheet-panel"
+            @toggle="toggleQuickBet"
+          />
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- 选择货币 -->
     <CurrencyPopup
@@ -475,96 +561,27 @@
     <!-- 历史投注 -->
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
 
-    <Teleport to="body">
-      <Transition name="bottom-sheet">
-        <div
-          v-if="chipEditorOpen"
-          class="fixed inset-0 z-[1000] flex items-end justify-center bg-mask-60-1"
-          @click.self="chipEditorOpen = false"
-          @keydown.esc.stop.prevent="chipEditorOpen = false"
-        >
-          <form
-            class="bottom-sheet-panel w-full overflow-y-auto overscroll-contain rounded-t-[12px] bg-bg-1 px-[12px] pb-[38px] pt-[16px] text-text-1"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="hash-chip-settings-title"
-            aria-describedby="hash-chip-settings-hint"
-            @submit.prevent="saveChipEditor"
-          >
-            <h2 id="hash-chip-settings-title" class="text-[18px] font-[700] text-text-1">
-              {{ t('hashGame.chipSettings') }}
-            </h2>
-            <p id="hash-chip-settings-hint" class="mt-[7px] text-[14px] text-text-2">
-              {{ t('hashGame.chipSettingsHint') }}
-            </p>
-            <div
-              class="mt-[15px] grid grid-cols-5 gap-[7px]"
-              role="group"
-              :aria-label="t('hashGame.editChips')"
-            >
-              <div
-                v-for="chip in chipEditorItems"
-                :key="chip.id"
-                type="button"
-                class="relative min-w-0 overflow-hidden rounded-[8px] border bg-bg-2 px-[9px] py-[8px]"
-                :class="editingChipId === chip.id ? 'border-theme-primary' : 'border-transparent'"
-                :aria-pressed="editingChipId === chip.id"
-                @click="selectEditingChip(chip.id)"
-              >
-                <span class="relative block aspect-square w-full">
-                  <img
-                    :src="chipImage"
-                    alt=""
-                    class="block size-full object-contain"
-                    :style="{ filter: 'hue-rotate(' + chip.hue + 'deg)' }"
-                  />
-                  <span
-                    class="absolute inset-x-0 bottom-[3px] top-0 grid place-items-center whitespace-nowrap font-[700] text-text-1"
-                    :class="chip.value.length >= 4 ? 'text-[16px]' : 'text-[24px]'"
-                    >{{ chip.value }}</span
-                  >
-                </span>
-                <span
-                  aria-hidden="true"
-                  class="pointer-events-none absolute inset-0 z-10 rounded-[inherit] bg-mask-40 transition-opacity duration-150 motion-reduce:transition-none"
-                  :class="editingChipId === chip.id ? 'opacity-0' : 'opacity-100'"
-                />
-              </div>
-            </div>
-            <input
-              v-model="editingChipAmount"
-              type="text"
-              inputmode="decimal"
-              autocomplete="off"
-              enterkeyhint="done"
-              class="mt-[20px] h-[45px] w-full rounded-[10px] border border-transparent bg-bg-2 px-[12px] text-[16px] font-[600] text-text-1 outline-none focus:border-theme-primary"
-              :aria-label="t('hashGame.chipAmount')"
-              :aria-invalid="Boolean(chipEditorError)"
-              :aria-describedby="chipEditorError ? 'hash-chip-settings-error' : undefined"
-            />
-            <p
-              v-if="chipEditorError"
-              id="hash-chip-settings-error"
-              class="mt-[6px] text-xs text-assistRed"
-              role="alert"
-            >
-              {{ chipEditorError }}
-            </p>
-            <button
-              type="submit"
-              class="mt-[30px] h-[46px] w-full rounded-[30px] bg-theme-primary text-[14px] font-[700] text-text-4"
-            >
-              {{ t('hashGame.saveChips') }}
-            </button>
-          </form>
-        </div>
-      </Transition>
-    </Teleport>
+    <!-- 按币种逐条展示结算提示。 -->
+    <HashSettlementPopup :notice="currentSettlement" @dismiss="dismissSettlement" />
+
+    <!-- H5 聊天输入弹窗由 ChatIcon 打开。 -->
+    <HashChatComposerPopup
+      :visible="chatComposerOpen"
+      :config="chatConfig"
+      @close="chatComposerOpen = false"
+      @send="sendMockChatMessage"
+      @bet="chatComposerOpen = false"
+    />
+
+    <!-- 筹码设置 -->
+    <ChipEditorPopup :page="props.page" />
   </div>
 </template>
 
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import musicOffIcon from '@/static/svg/hash_game/chat/music-off.svg?url'
+import soundOffIcon from '@/static/svg/hash_game/chat/sound-off.svg?url'
 import RecordsIcon from '@/static/svg/sift.svg?component'
 import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
 import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
@@ -576,21 +593,39 @@ import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
 import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
 import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
 import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
-import EditIcon from '@/static/svg/hash_game/bianji.svg?component'
+import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
+import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
+import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
+import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
+import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
 import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
-import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
-import RecentBetsPopup from './components/RecentBetsPopup.vue'
-import HistoryPopup from './components/HistoryPopup.vue'
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { navigateTo } from '@/utils/router'
+import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
+import HashGameChat from './components/HashGameChat.vue'
+import HashChatComposerPopup from './components/HashChatComposerPopup.vue'
+import HashSettlementPopup from './components/HashSettlementPopup.vue'
+import HistoryPopup from './components/HistoryPopup.vue'
+import RecentBetsPopup from './components/RecentBetsPopup.vue'
+import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
+import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
+const chatComposerOpen = ref(false)
+
+/** 点击聊天按钮时刷新当前游戏配置并打开 H5 输入弹窗。 */
+const openChatComposer = () => {
+  refreshChatConfig()
+  chatComposerOpen.value = true
+}
 const recordsMenuOpen = ref(false)
 const recentBetsOpen = ref(false)
 const recordsMenuRef = ref<HTMLElement | null>(null)
 const recordsTriggerRef = ref<HTMLElement | null>(null)
+const quickBetPopupRef = ref<HTMLElement | null>(null)
+const quickBetTriggerRef = ref<HTMLElement | null>(null)
 const {
   t,
   currentCurrencyCode,
@@ -608,12 +643,19 @@ const {
   roadmapMode,
   chipOptions,
   selectedChip,
-  chipEditorOpen,
-  chipEditorItems,
-  editingChipId,
-  editingChipAmount,
-  chipEditorError,
+  quickBetEnabled,
+  quickBetPopupOpen,
   chatVisible,
+  chatMessages,
+  chatConfig,
+  refreshChatConfig,
+  sendMockChatMessage,
+  currentSettlement,
+  currentBetStats,
+  confirmMockBet,
+  dismissSettlement,
+  musicMuted,
+  soundMuted,
   selectedBet,
   mockRound,
   hashParts,
@@ -635,16 +677,27 @@ const {
   cancelSelection,
   repeatSelection,
   chooseChip,
+  toggleQuickBet,
+  toggleQuickBetPopup,
   openChipEditor,
-  selectEditingChip,
-  saveChipEditor,
   closeOverlays,
+  closeQuickBetPopup,
   handlePeriodOutsidePointerDown
 } = props.page
 
+/** 将筹码面额缩写为适合按钮展示的文字。 */
+const formatChipAmount = (amount: number) => {
+  if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
+  if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
+  return String(amount)
+}
+
+/** 点击记录菜单和周期菜单外部时关闭对应浮层。 */
 const handleOutsidePointerDown = (event: PointerEvent) => {
+  // 周期菜单和记录菜单只在点击各自触发区及菜单外部时关闭。
   handlePeriodOutsidePointerDown(event)
-  if (!recordsMenuOpen.value || !(event.target instanceof Node)) return
+  if (!(event.target instanceof Node)) return
+  if (!recordsMenuOpen.value) return
   if (
     recordsMenuRef.value?.contains(event.target) ||
     recordsTriggerRef.value?.contains(event.target)
@@ -653,17 +706,38 @@ const handleOutsidePointerDown = (event: PointerEvent) => {
   recordsMenuOpen.value = false
 }
 
+/** 点击快捷投注弹层外部时关闭弹层。 */
+const handleQuickBetOutsidePointerDown = (event: PointerEvent) => {
+  // 快捷投注弹层使用 Teleport，因此在文档层判断弹层和设置按钮之外的点击。
+  if (!quickBetPopupOpen.value || !(event.target instanceof Node)) return
+  if (
+    quickBetPopupRef.value?.contains(event.target) ||
+    quickBetTriggerRef.value?.contains(event.target)
+  ) {
+    return
+  }
+  closeQuickBetPopup()
+}
+
+// H5 快捷投注弹层通过 Teleport 渲染，需在 document 捕获弹层外部点击。
+onMounted(() => document.addEventListener('pointerdown', handleQuickBetOutsidePointerDown))
+onBeforeUnmount(() => document.removeEventListener('pointerdown', handleQuickBetOutsidePointerDown))
+
+/** 按下 Esc 时关闭当前页面已打开的浮层。 */
 const handleEscape = () => {
+  // Escape 一次收起 H5 页面打开的所有浮层。
   recentBetsOpen.value = false
   recordsMenuOpen.value = false
   closeOverlays()
 }
 
+/** 打开近期投注弹窗并收起记录菜单。 */
 const openRecentBets = () => {
   recordsMenuOpen.value = false
   recentBetsOpen.value = true
 }
 
+/** 跳转至游戏规则页并收起记录菜单。 */
 const openGameRules = () => {
   recordsMenuOpen.value = false
   void navigateTo('/hash-game/rules')

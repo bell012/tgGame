@@ -1,9 +1,13 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
 /**
- * 布局常量 Store
+ * 布局状态与常量 Store
  */
 export const useLayoutStore = defineStore('layout', () => {
+  /** 侧边栏是否收起 */
+  const isSidebarCollapsed = ref(false)
+
   /** 侧边栏展开宽度 (px) */
   const SIDEBAR_WIDTH_EXPANDED = 240
 
@@ -50,6 +54,7 @@ export const useLayoutStore = defineStore('layout', () => {
   const mobileBreakpointMedia = `${MOBILE_BREAKPOINT}px`
 
   return {
+    isSidebarCollapsed,
     SIDEBAR_WIDTH_EXPANDED,
     SIDEBAR_WIDTH_COLLAPSED,
     TOPNAV_HEIGHT,

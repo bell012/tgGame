@@ -2,11 +2,8 @@
   <div ref="pageRootRef" class="w-full">
     <div
       v-if="isLoading && pageData.length === 0"
-      class="grid w-full gap-2.5 grid-cols-3"
-      :class="{
-        'sm:grid-cols-8': !isMobile,
-        'page-style2-grid sm:grid-cols-[repeat(8,160px)]': isMobile
-      }"
+      class="grid w-full gap-2.5"
+      :class="isMobile ? 'grid-cols-3 page-style2-grid sm:grid-cols-[repeat(8,160px)]' : gridClass"
     >
       <div
         v-for="index in resolvedPageSize"
@@ -18,11 +15,8 @@
 
     <div
       v-else-if="pageData.length > 0"
-      class="grid w-full gap-2.5 grid-cols-3"
-      :class="{
-        'sm:grid-cols-8': !isMobile,
-        'page-style2-grid sm:grid-cols-[repeat(8,160px)]': isMobile
-      }"
+      class="grid w-full gap-2.5"
+      :class="isMobile ? 'grid-cols-3 page-style2-grid sm:grid-cols-[repeat(8,160px)]' : gridClass"
     >
       <div
         v-for="(game, i) in pageData"
@@ -30,7 +24,7 @@
         class="aspect-[330/438]"
         :class="isMobile ? 'sm:aspect-auto sm:h-[213px] sm:w-[160px]' : 'min-w-0'"
       >
-        <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
+        <CasinoGameCard responsive-pc :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
     <div
@@ -99,6 +93,7 @@ import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
 import type { GameDataItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
@@ -118,6 +113,7 @@ const { t } = useI18n()
 
 const gameStore = useGameStore()
 const isMobile = useIsMobile()
+const { gridClass } = usePcGameCardLayout()
 const pageRootRef = ref<HTMLElement | null>(null)
 const page = ref(1)
 const totalPages = ref(1)

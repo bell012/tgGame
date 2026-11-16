@@ -123,7 +123,7 @@
             <!-- 复制链接按钮 -->
             <button
               type="button"
-              class="h-[40px] flex-1 rounded-[8px] border border-theme-primary bg-theme-3 text-[14px] font-[700] leading-[17px] text-theme-primary sm:h-[48px] sm:w-[234px] sm:p-[8px]"
+              class="h-[40px] flex-1 rounded-[8px] border border-theme-primary bg-theme-2 text-[14px] font-[700] leading-[17px] text-common-100 sm:h-[48px] sm:w-[234px] sm:p-[8px]"
               @click="handleCopyLink"
             >
               {{ props.copyLinkText }}
@@ -132,7 +132,7 @@
             <!-- 邀请按钮 -->
             <button
               type="button"
-              class="h-[40px] flex-1 rounded-[8px] border border-theme-primary bg-theme-3 text-[14px] font-[700] leading-[17px] text-theme-primary sm:h-[48px] sm:w-[234px] sm:p-[8px]"
+              class="h-[40px] flex-1 rounded-[8px] border border-theme-primary bg-theme-2 text-[14px] font-[700] leading-[17px] text-common-100 sm:h-[48px] sm:w-[234px] sm:p-[8px]"
               @click="handleInviteNow"
             >
               {{ props.inviteText }}

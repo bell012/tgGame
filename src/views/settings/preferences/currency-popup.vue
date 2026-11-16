@@ -20,10 +20,11 @@
           :style="props.desktop ? desktopPanelStyle : undefined"
           :class="
             props.desktop
-              ? 'desktop-currency-panel pointer-events-auto flex flex-col overflow-hidden rounded-[15px] border border-[var(--color-popup-2)] bg-bg-2 p-[12px]'
+              ? 'tg-glass-tokens desktop-currency-panel pointer-events-auto flex flex-col overflow-hidden rounded-[15px] p-[12px] [box-shadow:var(--glass-shadow)]'
               : 'currency-drawer flex flex-col overflow-hidden rounded-t-xl bg-bg-1 px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2.5'
           "
         >
+          <LiquidGlass v-if="props.desktop" />
           <div v-if="!props.desktop" class="flex items-center justify-between">
             <div></div>
             <div class="text-base font-bold text-text-1">
@@ -38,7 +39,7 @@
             </button>
           </div>
 
-          <div :class="[props.desktop ? 'min-h-0 flex-1' : 'mt-5 min-h-0 flex-1']">
+          <div :class="[props.desktop ? 'relative z-[1] min-h-0 flex-1' : 'mt-5 min-h-0 flex-1']">
             <CurrencySelectorList
               class="h-[100%]"
               :visible="props.visible"
@@ -71,6 +72,7 @@ import '@/components/common/popup-shadow.css'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
+import LiquidGlass from '@/components/common/LiquidGlass.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 
 type PopupAnchorRect = {
@@ -184,9 +186,6 @@ const desktopPanelStyle = computed(() => {
 .desktop-currency-panel {
   position: fixed;
   max-height: min(76vh, 620px);
-  -webkit-backdrop-filter: blur(40px);
-  backdrop-filter: blur(40px);
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.06);
 }
 
 .popup-scale-enter-active,

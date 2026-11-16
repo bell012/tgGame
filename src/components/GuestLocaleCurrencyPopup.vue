@@ -1,9 +1,10 @@
 <template>
   <div
     v-if="visible"
-    class="absolute right-0 top-[calc(100%+8px)] z-[60] flex w-[560px] max-w-[calc(100vw-32px)] overflow-hidden rounded-lg border border-[color:var(--color-popup-2)] bg-popup-1 p-3"
+    class="tg-glass-tokens absolute right-0 top-[calc(100%+8px)] z-[60] flex w-[560px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[15px] p-3 [box-shadow:var(--glass-shadow)]"
   >
-    <section class="flex min-w-0 flex-1 flex-col pr-3">
+    <LiquidGlass />
+    <section class="relative z-[1] flex min-w-0 flex-1 flex-col pr-3">
       <p class="mb-2 text-sm font-[700] text-text-1">{{ t('home.language') }}</p>
       <label class="relative mb-2 block">
         <SearchIcon
@@ -42,7 +43,9 @@
       </div>
     </section>
 
-    <section class="flex min-w-0 flex-1 flex-col border-l border-[color:var(--color-popup-2)] pl-3">
+    <section
+      class="relative z-[1] flex min-w-0 flex-1 flex-col border-l border-[color:var(--color-popup-2)] pl-3"
+    >
       <p class="mb-2 text-sm font-[700] text-text-1">{{ t('hashGame.selectCurrency') }}</p>
       <label class="relative mb-2 block">
         <SearchIcon
@@ -95,6 +98,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import LiquidGlass from '@/components/common/LiquidGlass.vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { useLocaleStore } from '@/stores/locale'
 import { getLocaleOptions, getLocaleSearchKeywords, type Locale } from '@/utils/locale'
