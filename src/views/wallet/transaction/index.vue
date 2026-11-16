@@ -35,16 +35,18 @@
             <div
               v-for="item in dataList"
               :key="item.id"
-              class="bg-bg-2 rounded-lg py-2.5 px-3.5 cursor-pointer"
+              class="cursor-pointer rounded-lg bg-bg-2"
               @click="handleTransactionClick(item)"
             >
-              <div class="flex items-center mb-5">
-                <div class="mr-1.5 flex h-10 w-10 items-center justify-center rounded-full bg-bg-4">
+              <div class="flex items-center border-b border-opacity-6 px-[14px] py-[10px]">
+                <div
+                  class="mr-1.5 flex h-10 w-10 min-w-10 max-w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-bg-4"
+                >
                   <TransactionAddIcon
                     v-if="item.direction === 'add'"
-                    class="h-[22px] w-[22px] text-text-1"
+                    class="block h-[22px] w-[22px] shrink-0 text-text-1"
                   />
-                  <TransactionDecIcon v-else class="h-[22px] w-[22px] text-text-1" />
+                  <TransactionDecIcon v-else class="block h-[22px] w-[22px] shrink-0 text-text-1" />
                 </div>
 
                 <div class="flex items-center justify-between w-full gap-3">
@@ -61,7 +63,7 @@
                 </div>
               </div>
 
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between px-[14px] py-[10px]">
                 <p class="text-text-2 text-xs">
                   {{ item.time }}
                 </p>

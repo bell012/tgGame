@@ -44,7 +44,7 @@
           <!-- 通知分类导航 -->
           <nav
             class="tab-bar flex min-h-[37px] w-full items-stretch"
-            :class="isMobile ? 'rounded-[12px] bg-bg-2' : PC_SEGMENTED_TABS_CLASS"
+            :class="isMobile ? 'rounded-[12px] bg-bg-8' : PC_SEGMENTED_TABS_CLASS"
             :aria-label="$t('notifications.tabsAria')"
           >
             <button
@@ -57,8 +57,8 @@
                   ? [
                       'rounded-[12px]',
                       activeTab === tab.key
-                        ? 'tab-button-active bg-bg-3 text-text-1'
-                        : 'text-text-2'
+                        ? 'tab-button-active bg-bg-7 text-text-1'
+                        : 'bg-bg-8 text-text-2'
                     ]
                   : [PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(activeTab === tab.key)]
               "

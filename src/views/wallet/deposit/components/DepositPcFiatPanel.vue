@@ -185,7 +185,7 @@
       <!-- 立即充值按钮 -->
       <button
         class="w-full py-4 lg:hover:btn-primary rounded-xl font-semibold text-text-4"
-        :class="[!isDepositDisabled ? 'btn-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed']"
+        :class="[!isDepositDisabled ? 'btn-primary' : 'bg-theme-2 cursor-not-allowed']"
         :disabled="isDepositDisabled"
         @click="doDeposit"
       >

@@ -143,7 +143,7 @@
       <button
         type="button"
         class="mt-6 flex h-10 sm:h-12 min-h-10 w-full shrink-0 items-center justify-center rounded-lg text-sm sm:text-base font-bold text-text-4"
-        :class="canConfirm ? 'bg-theme-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed'"
+        :class="canConfirm ? 'bg-theme-primary' : 'bg-theme-2 cursor-not-allowed'"
         :disabled="!canConfirm"
         @click="confirm"
       >

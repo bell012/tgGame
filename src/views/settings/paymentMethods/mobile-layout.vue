@@ -58,7 +58,7 @@
       <button
         type="button"
         class="flex h-10 w-full items-center justify-center rounded-lg bg-theme-primary text-sm font-bold text-text-4"
-        :class="canAddAccount ? 'bg-theme-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed'"
+        :class="canAddAccount ? 'bg-theme-primary' : 'bg-theme-2 cursor-not-allowed'"
         :disabled="!canAddAccount"
         @click="openAddAcountCard"
       >

@@ -20,15 +20,11 @@
     </div>
   </div>
 
-  <div v-else class="mx-3.5 my-3.5 grid grid-cols-2 rounded-[10px] bg-bg-2">
+  <div v-else class="mx-3.5 my-3.5 grid grid-cols-2 rounded-[10px] bg-bg-8">
     <button
       type="button"
       class="h-[40px] rounded-[8px] border border-transparent text-[14px] font-[700] transition-all"
-      :class="
-        activeTab === 'create'
-          ? 'border-opacity-10 bg-bg-3 text-text-1'
-          : 'bg-transparent text-text-2 hover:text-text-1'
-      "
+      :class="activeTab === 'create' ? 'bg-bg-7 text-text-1' : 'bg-bg-8 text-text-2'"
       @click="emit('change', 'create')"
     >
       {{ t('personalCenter.feedback.tabs.create') }}
@@ -36,11 +32,7 @@
     <button
       type="button"
       class="h-[40px] rounded-[8px] border border-transparent text-[14px] font-[700] transition-all"
-      :class="
-        activeTab === 'mine'
-          ? 'border-opacity-10 bg-bg-3 text-text-1'
-          : 'bg-transparent text-text-2 hover:text-text-1'
-      "
+      :class="activeTab === 'mine' ? 'bg-bg-7 text-text-1' : 'bg-bg-8 text-text-2'"
       @click="emit('change', 'mine')"
     >
       {{ t('personalCenter.feedback.tabs.mine') }}
@@ -82,6 +74,7 @@ const { t } = useI18n()
 
 .feedback-tab-pc-button-active {
   color: var(--color-text-level-1);
+  background: var(--color-background-level-7);
 }
 
 .feedback-tab-pc-button-active::after {
