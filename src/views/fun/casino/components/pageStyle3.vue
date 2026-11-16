@@ -13,7 +13,8 @@
     </div>
     <div
       v-if="isLoading && pageData.length === 0"
-      class="grid w-full grid-cols-3 gap-2.5 sm:grid-cols-8"
+      class="grid w-full gap-2.5"
+      :class="isMobile ? 'grid-cols-3 sm:grid-cols-8' : gridClass"
     >
       <div
         v-for="index in resolvedPageSize"
@@ -21,9 +22,18 @@
         class="aspect-[330/438] rounded-lg bg-bg-2 animate-pulse"
       />
     </div>
-    <div v-else-if="pageData.length > 0" class="grid w-full grid-cols-3 gap-2.5 sm:grid-cols-8">
-      <div v-for="(game, index) in pageData" :key="game.rowId ?? index" class="aspect-[330/438]">
-        <CasinoGameCard :game="game" @click="handleClick(game.rowId)" />
+    <div
+      v-else-if="pageData.length > 0"
+      class="grid w-full gap-2.5"
+      :class="isMobile ? 'grid-cols-3 sm:grid-cols-8' : gridClass"
+    >
+      <div
+        v-for="(game, index) in pageData"
+        :key="game.rowId ?? index"
+        class="aspect-[330/438]"
+        :class="{ 'min-w-0': !isMobile }"
+      >
+        <CasinoGameCard responsive-pc :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
     <div
@@ -92,6 +102,7 @@ import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
 import type { GameDataItem } from '@/api/interface/game'
 import type { GamePlatformOption } from '@/stores/game'
 import type { GameQueryOptions } from '@/stores/game'
@@ -123,6 +134,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const gameStore = useGameStore()
 const isMobile = useIsMobile()
+const { gridClass } = usePcGameCardLayout()
 const pageRootRef = ref<HTMLElement | null>(null)
 const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
 

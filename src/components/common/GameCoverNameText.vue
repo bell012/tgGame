@@ -23,6 +23,7 @@ interface Props {
   mode?: AdaptiveTypographyDisplayMode
   maxLines?: number
   typography?: Partial<AdaptiveTypographyPreset>
+  pcScaleElement?: HTMLElement | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -85,6 +86,7 @@ const { textStyle, isFontReady } = useAdaptiveTextTypography({
   presets: GAME_COVER_NAME_PRESETS,
   mode: () => props.mode,
   maxLines: () => props.maxLines,
-  overrides: () => props.typography
+  overrides: () => props.typography,
+  pcScaleElement: () => props.pcScaleElement
 })
 </script>

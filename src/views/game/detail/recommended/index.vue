@@ -54,14 +54,16 @@
         <ResponsiveGridPager
           v-if="!isPageLoading"
           class="recommended-page-pc__pager"
+          :grid-class="gridClass"
           :items="pagedGameList"
           v-model:page="page"
           :total-pages="totalPages"
           key-field="rowId"
         >
           <template #item="{ item }">
-            <div class="w-full aspect-[330/438] sm:aspect-auto sm:h-[213px] sm:w-[160px]">
+            <div class="min-w-0 w-full aspect-[330/438]">
               <CasinoGameCard
+                responsive-pc
                 fade-caption-on-hover
                 class="size-full text-left"
                 :game="toCasinoCardGame(item)"
@@ -70,11 +72,11 @@
             </div>
           </template>
         </ResponsiveGridPager>
-        <div v-else class="recommended-page-pc__skeleton-grid" aria-busy="true">
+        <div v-else class="grid w-full gap-2.5" :class="gridClass" aria-busy="true">
           <div
             v-for="index in pcSkeletonCount"
             :key="`pc-skeleton-${index}`"
-            class="recommended-page-pc__skeleton-card bg-bg-2 animate-pulse"
+            class="min-w-0 aspect-[330/438] rounded-lg bg-bg-2 animate-pulse"
           ></div>
         </div>
         <div
@@ -98,6 +100,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
 import { useGameStore } from '@/stores/game'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { navigateTo } from '@/utils/router'
@@ -144,6 +147,7 @@ const PAGE_SIZE = 40
 const MOBILE_SKELETON_COUNT = 12
 const PC_SKELETON_COUNT = 24
 const isMobile = useIsMobile()
+const { gridClass } = usePcGameCardLayout()
 const route = useRoute()
 const router = useRouter()
 const gameStore = useGameStore()
@@ -403,30 +407,8 @@ watch(
   width: 100%;
 }
 
-.recommended-page-pc__pager :deep(.sm\:grid-cols-8) {
-  grid-template-columns: repeat(8, 160px);
-}
-
 .recommended-page-pc__pager :deep(.grid) {
   gap: 10px;
-  width: fit-content;
-  max-width: 100%;
-  margin-inline: auto;
-}
-
-.recommended-page-pc__skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 160px);
-  gap: 10px;
-  width: fit-content;
-  max-width: 100%;
-  margin-inline: auto;
-}
-
-.recommended-page-pc__skeleton-card {
-  width: 160px;
-  height: 213px;
-  border-radius: 8px;
 }
 
 .recommended-page-mobile__body {

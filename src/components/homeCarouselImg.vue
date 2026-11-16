@@ -104,6 +104,7 @@ import ArrowLeft2Icon from '@/static/svg/arrow_left2.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { resolveGameImageUrl } from '@/utils/image'
 import { navigateTo, navigateToName } from '@/utils/router'
 import { openLuckySpin } from '@/utils/openLuckySpin'
@@ -115,6 +116,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 const authModalStore = useAuthModalStore()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
+const isMobile = useIsMobile()
 
 interface Props {
   list: QuerySlideshowItem[]
@@ -139,11 +141,10 @@ let isMouseDragging = false
 let shouldSuppressClick = false
 const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
 /** 未登录 H5：1033:612，PC：1340:280；已登录 H5：1041:450，PC：1340:280 */
-const bannerAspectClass = computed(() =>
-  isLoggedIn.value
-    ? 'aspect-[1041/450] lg:aspect-[1340/280]'
-    : 'aspect-[1033/612] lg:aspect-[1340/280]'
-)
+const bannerAspectClass = computed(() => {
+  if (!isMobile.value) return 'aspect-[1340/280]'
+  return isLoggedIn.value ? 'aspect-[1041/450]' : 'aspect-[1033/612]'
+})
 const slides = computed(() => {
   return [...props.list].sort((a, b) => (a.sortNum ?? 0) - (b.sortNum ?? 0))
 })

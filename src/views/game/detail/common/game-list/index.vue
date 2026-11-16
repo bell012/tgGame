@@ -53,7 +53,8 @@
       </div>
     </div>
     <div
-      class="game-list-grid grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-[14px] mx-0 grid-col-3 md:gap-[10px]"
+      class="game-list-grid grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-[14px] mx-0"
+      :class="isMobile ? 'grid-col-3 md:gap-[10px]' : railClass"
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
@@ -61,8 +62,10 @@
         v-for="(value, index) in normalizedList"
         :key="`${value.rowId ?? 'game'}-${index}`"
         class="game-list-card aspect-[330/438] snap-start rounded-lg transition-transform duration-200 ease-out transform-gpu sm:hover:-translate-y-2 active:translate-y-0 inactive"
+        :class="{ 'min-w-0': !isMobile }"
       >
         <CasinoGameCard
+          :responsive-pc="!isMobile"
           fade-caption-on-hover
           class="size-full sm:hover:after:absolute sm:hover:after:inset-x-0 sm:hover:after:top-full sm:hover:after:h-2"
           :game="value"
@@ -96,6 +99,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
 import { navigateToName } from '@/utils/router'
 import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
 import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
@@ -127,6 +131,8 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = useIsMobile()
+const { railClass } = usePcGameCardLayout()
+let resizeObserver: ResizeObserver | undefined
 
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)
@@ -158,6 +164,10 @@ onMounted(async () => {
   if (el) {
     el.addEventListener('scroll', updateButtons, { passive: true })
     window.addEventListener('resize', updateButtons)
+    resizeObserver = new ResizeObserver(() => {
+      if (!isMobile.value) updateButtons()
+    })
+    resizeObserver.observe(el)
   }
 })
 
@@ -170,6 +180,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
   const el = listWrap.value
   if (el) el.removeEventListener('scroll', updateButtons)
   window.removeEventListener('resize', updateButtons)
@@ -296,22 +307,6 @@ const handleGameClick = (item: GameDataItem) => {
   .grid-col-3 {
     scroll-behavior: auto !important;
     -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* PC：固定卡片 160px + 列间距（须写在 .grid-col-3 calc 规则之后，避免被覆盖） */
-@media (min-width: 768px) {
-  .game-list-grid.grid-col-3 {
-    --grid-gap: 10px;
-    grid-auto-columns: 160px;
-    gap: var(--grid-gap);
-  }
-
-  .game-list-card {
-    width: 160px;
-    max-width: 160px;
-    height: 213px;
-    aspect-ratio: auto;
   }
 }
 

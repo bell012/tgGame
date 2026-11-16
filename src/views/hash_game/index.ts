@@ -1,20 +1,26 @@
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
+import { createMockPlaceBetResponse, createMockRoomEvents } from './chat/mock'
+import { useHashGameChat } from './chat/useHashGameChat'
+import { createMockChatConfig, type HashChatConfig } from './chat/config'
+import type { HashBetOption, HashPlaceBetRequest } from './chat/types'
 
 type RoadmapMode = 'size' | 'parity'
 type BetKey = 'big' | 'small' | 'odd' | 'even'
 type ChipOption = { id: number; value: number; hue: number }
 type ChipDraft = { id: number; value: string; hue: number; enabled: boolean }
 type CustomChipDraft = { id: number; value: string; hue: number }
+/** H5 周期菜单与 PC 顶部周期标签共用此选项，接口接入后由这里统一维护。 */
 export const HASH_GAME_PERIOD_OPTIONS = [6, 15, 30, 45] as const
 export type RecentBetRecord = {
   id: string
@@ -52,6 +58,7 @@ const MOCK_RECENT_BET_SUMMARY: RecentBetSummary = {
   betAmount: 183.91,
   todayProfitLoss: -876.98
 }
+// 生成页面展示用的模拟历史开奖结果。
 const MOCK_HASH_GAME_HISTORY: HashGameHistoryRecord[] = Array.from({ length: 24 }, (_, index) => {
   const evenSmall = index % 2 === 0
   const digit = evenSmall ? '2' : '7'
@@ -110,8 +117,10 @@ const MOCK_RESULT_COLUMNS = [
   [false, 1]
 ] as const
 
-export const useHashGamePage = () => {
+/** 组合哈希游戏页面的投注、走势和聊天室状态。 */
+const createHashGamePageState = () => {
   const { t } = useI18n()
+  const isMobile = useIsMobile()
   const router = useRouter()
   const userStore = useUserStore()
   const authModalStore = useAuthModalStore()
@@ -121,10 +130,25 @@ export const useHashGamePage = () => {
 
   // 与首页共用余额请求及进行中的查询，进入路由时刷新，离开时停止监听。
   useUserBalancePolling()
-  // 本页为固定全屏布局，页面内容在自身容器内滚动。
-  usePageScrollLock(() => true)
+  // H5 使用全屏内滚动，需要锁定背景页面；PC 交由主布局滚动，保持 CommonFooter 可达。
+  usePageScrollLock(() => isMobile.value)
 
   const selectedPeriod = ref(15)
+  // 演示环境暂按周期组装房间编码，真实 gameCode 以后由游戏配置提供。
+  const gameCode = computed(() => `CL${selectedPeriod.value}`)
+  const chat = useHashGameChat(gameCode)
+  /** 当前阶段用本地模拟发送回包更新聊天室。 */
+  const sendMockChatMessage = chat.acceptMockChatMessage
+  const chatConfig = ref<HashChatConfig | null>(null)
+
+  /** 模拟按当前游戏标识请求聊天配置，后续替换为 chat/config 接口。 */
+  const refreshChatConfig = () => {
+    chatConfig.value = createMockChatConfig(gameCode.value)
+    chat.acceptWelcomeText(chatConfig.value.welcomeText)
+  }
+
+  /** 进入游戏或切换游戏时读取当前房间的聊天配置。 */
+  watch(gameCode, refreshChatConfig, { immediate: true })
   const periodOptions = HASH_GAME_PERIOD_OPTIONS
   const periodsOpen = ref(false)
   const historyPopupOpen = ref(false)
@@ -136,6 +160,11 @@ export const useHashGamePage = () => {
   const chipOptions = ref<ChipOption[]>(CHIP_OPTIONS.map((chip, id) => ({ id, ...chip })))
   const selectedChip = ref(1)
   const chipEditorOpen = ref(false)
+  const quickBetEnabled = ref(false)
+  const quickBetPopupOpen = ref(false)
+  // 音效开关是页面共享状态，桌面端点击后可由后续音频逻辑读取。
+  const backgroundMusicEnabled = ref(false)
+  const musicEnabled = ref(false)
   const chipEditorItems = ref<ChipDraft[]>([])
   const customChipItems = ref<CustomChipDraft[]>(
     CUSTOM_CHIP_HUES.map((hue, index) => ({
@@ -149,6 +178,8 @@ export const useHashGamePage = () => {
   const keypadValue = ref('')
   const chipEditorError = ref('')
   const chatVisible = ref(true)
+  const musicMuted = ref(true)
+  const soundMuted = ref(true)
   const selectedBet = ref<BetKey | null>(null)
   let lastSelection: { key: BetKey; chip: number } | null = null
 
@@ -162,6 +193,75 @@ export const useHashGamePage = () => {
     negativeCount: 22,
     streak: 5
   })
+  // 模拟每次进入房间后收到的 WS 数据；切换房间时重新从空列表开始。
+  watch(
+    gameCode,
+    code => {
+      for (const event of createMockRoomEvents(code)) chat.acceptWsEvent(event)
+    },
+    { immediate: true }
+  )
+
+  // 在线人数由 WS 的 CHAIN_LOTTERY_ONLINE 更新。
+  watch(
+    chat.onlineCount,
+    count => {
+      mockRound.online = count.toLocaleString('en-US')
+    },
+    { immediate: true }
+  )
+
+  /** 模拟投注成功回包，并在确认成功后插入本人的 BET 消息。 */
+  const confirmMockBet = () => {
+    if (!selectedBet.value) return
+    const request: HashPlaceBetRequest = {
+      requestId: `CL_mock_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      gameCode: gameCode.value,
+      currency: currency.currentCurrencyCode.value,
+      betOption: selectedBet.value.toUpperCase() as HashBetOption,
+      amount: selectedChip.value,
+      anchorBlockNum: Number(mockRound.currentBlock)
+    }
+    chat.acceptSuccessfulBet(request, createMockPlaceBetResponse(request))
+  }
+
+  /** 从当前展示币种的 WS 统计中读取每个投注项的参与人数和金额。 */
+  const getBetStats = (option: HashBetOption) => {
+    const stats = chat.betStats.value[currency.currentCurrencyCode.value]
+    const item = stats?.[option]
+    const total = Object.values(stats ?? {}).reduce((sum, entry) => sum + entry.totalAmount, 0)
+    return {
+      people: item?.participantCount ?? 0,
+      amount: (item?.totalAmount ?? 0).toLocaleString('en-US', { maximumFractionDigits: 2 }),
+      progress: total > 0 ? Math.round(((item?.totalAmount ?? 0) / total) * 100) : 0
+    }
+  }
+
+  /** 当前局的模拟投注统计，赔率仍沿用页面占位值。 */
+  const currentBetStats = computed(() => ({
+    big: getBetStats('BIG'),
+    small: getBetStats('SMALL'),
+    odd: getBetStats('ODD'),
+    even: getBetStats('EVEN')
+  }))
+
+  /** 对外接收 HTTP 开奖结果；请求时机与接口来源以后接入。 */
+  const acceptHttpDraw = chat.acceptHttpDraw
+
+  /** 对外接收 HTTP 结算结果；真实 HTTP 请求完成后还需刷新余额。 */
+  const acceptRecentBets = chat.acceptRecentBets
+
+  /** 关闭当前结算提示，依次展示下一币种及下一输赢状态。 */
+  const dismissSettlement = chat.dismissSettlement
+
+  /** 对外接收当前独占连接的 WS 事件；正式连接以后接入。 */
+  const acceptWsEvent = chat.acceptWsEvent
+
+  // 聊天列表和结算弹窗共用页面状态，H5 / PC 可使用同一数据入口。
+  const chatMessages = chat.messages
+  const currentSettlement = chat.currentSettlement
+
+  /** 从哈希字符串中取出末尾十进制数字供当前区块展示。 */
   const hashParts = computed(() => {
     const hash = mockRound.hash
     // 高亮最后一个十进制数字，后面可能仍有哈希字母。
@@ -180,6 +280,7 @@ export const useHashGamePage = () => {
     periodsOpen.value = false
     historyPopupOpen.value = false
     chipEditorOpen.value = false
+    quickBetPopupOpen.value = false
     keypadOpen.value = false
     currencyPopupOpen.value = false
   }
@@ -196,6 +297,7 @@ export const useHashGamePage = () => {
     periodsOpen.value = false
   }
 
+  /** 根据走势模式选择大小或单双的展示标签。 */
   const resultLabels = computed(() => {
     const positive = roadmapMode.value === 'size' ? 'big' : 'odd'
     const negative = roadmapMode.value === 'size' ? 'small' : 'even'
@@ -214,6 +316,7 @@ export const useHashGamePage = () => {
     }))
   )
 
+  /** 构建当前投注选项的展示颜色和文案。 */
   const betOptions = computed(() => [
     { key: 'big' as const, label: t('hashGame.big'), color: '#FF5350' },
     { key: 'small' as const, label: t('hashGame.small'), color: '#407FFF' },
@@ -225,6 +328,31 @@ export const useHashGamePage = () => {
   const selectPeriod = (seconds: number) => {
     selectedPeriod.value = seconds
     periodsOpen.value = false
+  }
+
+  // 快捷投注开关
+  const toggleQuickBet = () => {
+    quickBetEnabled.value = !quickBetEnabled.value
+  }
+
+  /** 控制快捷投注弹层的开合，开关值与弹层显隐分别保存。 */
+  const toggleQuickBetPopup = () => {
+    quickBetPopupOpen.value = !quickBetPopupOpen.value
+  }
+
+  /** 点击弹层外部或按 Escape 时只关闭弹层，不重置快捷投注开关。 */
+  const closeQuickBetPopup = () => {
+    quickBetPopupOpen.value = false
+  }
+
+  /** 切换背景音乐开关状态。 */
+  const toggleBackgroundMusic = () => {
+    backgroundMusicEnabled.value = !backgroundMusicEnabled.value
+  }
+
+  /** 切换游戏音乐开关状态。 */
+  const toggleMusic = () => {
+    musicEnabled.value = !musicEnabled.value
   }
 
   /** 刷新余额；未登录时打开登录弹窗，失败时提示错误。 */
@@ -401,6 +529,10 @@ export const useHashGamePage = () => {
     chipOptions,
     selectedChip,
     chipEditorOpen,
+    quickBetEnabled,
+    quickBetPopupOpen,
+    backgroundMusicEnabled,
+    musicEnabled,
     chipEditorItems,
     customChipItems,
     editingChipId,
@@ -412,6 +544,19 @@ export const useHashGamePage = () => {
     togglePresetChip,
     chipEditorError,
     chatVisible,
+    chatMessages,
+    chatConfig,
+    refreshChatConfig,
+    sendMockChatMessage,
+    currentSettlement,
+    currentBetStats,
+    confirmMockBet,
+    acceptWsEvent,
+    acceptHttpDraw,
+    acceptRecentBets,
+    dismissSettlement,
+    musicMuted,
+    soundMuted,
     selectedBet,
     mockRound,
     hashParts,
@@ -432,6 +577,11 @@ export const useHashGamePage = () => {
     cancelSelection,
     repeatSelection,
     chooseChip,
+    toggleQuickBet,
+    toggleQuickBetPopup,
+    closeQuickBetPopup,
+    toggleBackgroundMusic,
+    toggleMusic,
     openChipEditor,
     saveChipEditor,
     closeOverlays,
@@ -439,4 +589,6 @@ export const useHashGamePage = () => {
   }
 }
 
-export type HashGamePageState = ReturnType<typeof useHashGamePage>
+// 先从内部工厂推导共享状态类型，再导出 composable，避免组件类型引用形成循环推断。
+export type HashGamePageState = ReturnType<typeof createHashGamePageState>
+export const useHashGamePage: () => HashGamePageState = createHashGamePageState

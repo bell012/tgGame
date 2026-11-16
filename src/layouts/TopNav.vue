@@ -2,11 +2,15 @@
   <header class="top-nav">
     <div class="top-nav-inner h-full flex items-center justify-between px-4">
       <!-- h5菜单 -->
-      <div
-        class="sm:hidden cursor-pointer rounded-lg flex items-center justify-center"
-        @click="toggleH5Menu"
-      >
-        <span class="fold-icon-wrap" :class="{ 'fold-icon-wrap--open': isH5MenuActive }">
+      <div class="sm:hidden rounded-lg flex items-center justify-center">
+        <button
+          type="button"
+          class="fold-icon-wrap shrink-0 cursor-pointer"
+          :class="{ 'fold-icon-wrap--open': isH5MenuActive }"
+          :aria-label="t('bottom_tab_bar.menu')"
+          :aria-expanded="isH5MenuActive"
+          @click="toggleH5Menu"
+        >
           <FoldIconH5
             class="h-6 w-6 fold-icon-inner"
             :class="[
@@ -14,7 +18,7 @@
               { 'fold-icon-inner--pulse': h5FoldPulse }
             ]"
           />
-        </span>
+        </button>
         <!-- H5端 Logo-->
         <div
           v-if="isLoggedIn"

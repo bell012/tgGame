@@ -51,6 +51,7 @@ export interface UseAdaptiveTextTypographyOptions {
   mode?: MaybeRefOrGetter<AdaptiveTypographyDisplayMode>
   maxLines?: MaybeRefOrGetter<number>
   overrides?: MaybeRefOrGetter<Partial<AdaptiveTypographyPreset> | undefined>
+  pcScaleElement?: MaybeRefOrGetter<HTMLElement | null | undefined>
 }
 
 let sharedMeasurementElement: HTMLSpanElement | null = null
@@ -129,6 +130,24 @@ const scalePreset = (
     minFontSize: preset.minFontSize * scale,
     maxLineHeight: preset.maxLineHeight * scale,
     minLineHeight: preset.minLineHeight * scale
+  }
+}
+
+/** PC 游戏卡片按宽度缩放；字体族、字重、语言识别沿用原配置。 */
+export const scalePcGameCardTypography = (
+  preset: AdaptiveTypographyPreset,
+  cardWidth: number,
+  language: AdaptiveTypographyLanguage
+): AdaptiveTypographyPreset => {
+  const maxFontSize = Math.min(preset.maxFontSize, cardWidth * 0.2)
+  const minFontSize = maxFontSize * 0.75
+  const lineRatio = language === 'zh' ? preset.maxLineHeight / preset.maxFontSize : 1
+  return {
+    ...preset,
+    maxFontSize,
+    minFontSize,
+    maxLineHeight: maxFontSize * lineRatio,
+    minLineHeight: minFontSize * lineRatio
   }
 }
 
@@ -268,7 +287,11 @@ export const useAdaptiveTextTypography = (options: UseAdaptiveTextTypographyOpti
       return
     }
 
-    const preset = scalePreset(rawPreset, targetWidth)
+    const cardWidth = toValue(options.pcScaleElement)?.clientWidth ?? 0
+    const preset =
+      resolvedMode.value === 'pc' && cardWidth > 0
+        ? scalePcGameCardTypography(rawPreset, cardWidth, resolvedLanguage.value)
+        : scalePreset(rawPreset, targetWidth)
     const availableWidth = Math.max(targetWidth - Math.max(preset.horizontalPadding || 0, 0), 1)
     const maxLines = resolveMaxLines()
     // 每个名称只读取一次样式，避免逐级尝试字号时反复读取页面的计算样式。
@@ -346,6 +369,8 @@ export const useAdaptiveTextTypography = (options: UseAdaptiveTextTypographyOpti
 
     resizeObserver = new ResizeObserver(() => scheduleCalculation())
     resizeObserver.observe(options.targetRef.value)
+    const scaleElement = toValue(options.pcScaleElement)
+    if (scaleElement) resizeObserver.observe(scaleElement)
   }
 
   /** 等待当前语言对应的自定义字体加载完成后重新测量。 */
@@ -391,7 +416,7 @@ export const useAdaptiveTextTypography = (options: UseAdaptiveTextTypographyOpti
 
   /** 监听目标节点挂载或替换并重新绑定尺寸监听。 */
   watch(
-    () => options.targetRef.value,
+    [() => options.targetRef.value, () => toValue(options.pcScaleElement)],
     () => {
       observeTarget()
       scheduleCalculation()

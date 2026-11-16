@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="home mx-auto max-w-[1248px] py-2 sm:py-4" data-tab-transition="slide">
+  <div class="home mx-auto max-w-[1248px] bg-bg-1 py-2 sm:py-4" data-tab-transition="slide">
     <div style="height: 55px" class="mb-2.5 sm:hidden"></div>
 
     <HomeCarouselImg
@@ -20,28 +20,55 @@
       <RecentBigWins />
 
       <div class="overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
-        <div class="-mx-4 bg-layer2">
-          <div class="flex w-full flex-col items-stretch gap-2 sm:mt-4 lg:!gap-4">
-            <div class="flex gap-2 lg:!gap-4">
+        <div class="-mx-4 bg-layer2 sm:-mx-3">
+          <div class="flex w-full flex-col items-stretch gap-2 sm:mt-4 lg:!gap-4 xl:!gap-3">
+            <div class="flex gap-2 sm:grid sm:grid-cols-2 lg:!gap-4 xl:!gap-3">
               <button
                 v-for="card in featureCards"
                 :key="card.path"
-                class="home-category-card relative aspect-[507/333] flex-1 overflow-hidden rounded-xl bg-cover bg-center text-white sm:aspect-auto sm:h-[176px] sm:bg-right"
+                class="relative aspect-[507/333] flex-1 overflow-hidden rounded-xl bg-[image:var(--home-card-bg-h5)] bg-cover bg-center text-white sm:min-w-0 sm:aspect-[364/111] sm:bg-right sm:[container-type:inline-size] sm:bg-[image:var(--home-card-bg-md)] lg:aspect-[662/176] sm:max-lg:rounded-lg lg:bg-[image:var(--home-card-bg-pc)] xl:aspect-[662/176] xl:bg-[image:var(--home-card-bg-xl)] 2xl:aspect-[662/176]"
                 :style="getCardBgStyle(card)"
                 type="button"
                 @click="navigateTo(card.path)"
               >
+                <img
+                  :src="card.art"
+                  alt=""
+                  class="pointer-events-none absolute right-0 top-0 hidden h-full w-[39.652%] object-contain sm:max-lg:block"
+                />
+                <img
+                  :src="card.art"
+                  alt=""
+                  class="pointer-events-none absolute top-0 hidden h-full object-contain xl:right-[0.3021%] xl:block"
+                  :class="card.xlArtClass"
+                />
                 <div
-                  class="absolute left-3 top-3 flex flex-col sm:inset-y-0 sm:left-0 sm:top-0 sm:w-[61%] sm:items-center sm:justify-center sm:px-4 sm:text-center"
+                  class="absolute left-3 top-3 flex flex-col sm:inset-y-0 sm:left-0 sm:top-0 sm:w-[61%] sm:items-center sm:justify-center sm:px-[2.4169cqw] sm:text-center sm:max-lg:left-[10.989%] sm:max-lg:w-[49%] sm:max-lg:items-start sm:max-lg:px-0 sm:max-lg:text-left xl:left-[15.1057%] xl:w-[30.0604%] xl:px-0"
                 >
-                  <div class="flex items-center gap-1.5 sm:gap-2">
-                    <img :src="card.icon" alt="" class="home-card-icon w-[19px] sm:w-7" />
-                    <h2 class="text-sm font-extrabold uppercase sm:text-xl">
+                  <div
+                    class="flex items-center gap-1.5 sm:max-w-full sm:gap-[1.2085cqw] sm:max-lg:gap-1 xl:gap-2"
+                  >
+                    <img
+                      :src="card.icon"
+                      alt=""
+                      class="w-[19px] brightness-0 invert sm:shrink-0 sm:max-lg:w-5 lg:max-xl:w-[4.8338cqw] xl:hidden"
+                    />
+                    <img
+                      :src="card.xlIcon"
+                      alt=""
+                      class="hidden shrink-0 xl:block xl:w-[4.8338cqw] 2xl:w-[4.8338cqw]"
+                    />
+                    <h2
+                      class="text-sm font-extrabold uppercase sm:min-w-0 sm:break-words sm:max-lg:text-lg sm:max-lg:font-bold sm:max-lg:leading-[22px] xl:whitespace-nowrap xl:text-2xl xl:font-bold xl:leading-[29px] 2xl:text-2xl 2xl:leading-[29px]"
+                      :class="entryLgClasses.featureTitle"
+                    >
                       {{ card.name }}
                     </h2>
                   </div>
                   <p
-                    class="mt-2 hidden max-w-[200px] text-sm leading-[18px] text-white/90 sm:block"
+                    :title="card.desc"
+                    class="mt-2 hidden max-w-[200px] text-sm leading-[18px] text-white/90 sm:mt-[1.2085cqw] sm:w-full sm:max-w-[30.2115cqw] sm:break-words sm:text-sm sm:leading-[18px] xl:mt-1 xl:line-clamp-4 xl:max-w-none xl:text-sm xl:leading-5 xl:text-white 2xl:text-sm 2xl:leading-5"
+                    :class="{ 'lg:max-xl:block': sidebarCollapsed }"
                   >
                     {{ card.desc }}
                   </p>
@@ -50,21 +77,48 @@
             </div>
 
             <div
-              class="flex flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-4"
+              class="flex flex-nowrap gap-2 overflow-x-auto sm:grid sm:grid-cols-4 sm:overflow-visible lg:!gap-4 xl:!gap-3"
             >
               <button
                 v-for="value in listImg"
                 :key="value.path"
-                class="home-category-card relative aspect-[189/246] w-[calc((100%-2rem)/5)] shrink-0 overflow-hidden rounded-xl bg-cover bg-center text-white sm:aspect-auto sm:h-[120px] sm:w-[calc((100%-2.5rem)/5.1)] sm:bg-right lg:min-w-0 lg:w-auto lg:flex-1"
+                class="relative aspect-[189/246] w-[calc((100%-2rem)/5)] shrink-0 overflow-hidden rounded-xl bg-[image:var(--home-card-bg-h5)] bg-cover bg-center text-white sm:min-w-0 sm:w-full sm:aspect-[140.8/82] sm:bg-right sm:[container-type:inline-size] sm:bg-[image:var(--home-card-bg-md)] lg:aspect-[257/120] sm:max-lg:rounded-lg lg:bg-[image:var(--home-card-bg-pc)] xl:aspect-[257/120] xl:bg-[image:var(--home-card-bg-xl)] 2xl:aspect-[257/120]"
                 :style="getCardBgStyle(value)"
                 type="button"
                 @click="navigateTo(value.path)"
               >
+                <img
+                  :src="value.art"
+                  alt=""
+                  class="pointer-events-none absolute left-1/2 top-[9.7561%] hidden aspect-square w-[33.3807%] -translate-x-1/2 object-contain sm:max-lg:block"
+                />
+                <img
+                  :src="value.art"
+                  alt=""
+                  class="pointer-events-none absolute hidden h-auto xl:block"
+                  :class="value.xlArtClass"
+                />
                 <div
-                  class="absolute inset-y-0 left-0 hidden w-[58%] flex-col items-center justify-center gap-1.5 sm:flex"
+                  class="absolute inset-y-0 left-0 hidden w-[58%] flex-col items-center justify-center gap-1.5 sm:flex sm:gap-[2.3346cqw] sm:max-lg:bottom-[10.9756%] sm:max-lg:top-auto sm:max-lg:w-full sm:max-lg:px-1"
+                  :class="value.xlContentClass"
                 >
-                  <img :src="value.icon" alt="" class="home-card-icon w-7" />
-                  <h2 class="text-base font-extrabold uppercase">{{ value.name }}</h2>
+                  <img
+                    :src="value.icon"
+                    alt=""
+                    class="w-7 brightness-0 invert sm:shrink-0 sm:max-lg:hidden lg:max-xl:w-[16.3424cqw] xl:hidden"
+                  />
+                  <img
+                    :src="value.xlIcon"
+                    alt=""
+                    class="hidden shrink-0 xl:block xl:w-[16.3424cqw] 2xl:w-[16.3424cqw]"
+                  />
+                  <h2
+                    :title="value.name"
+                    :class="[value.lgTitleClass, value.xlTitleClass]"
+                    class="text-base font-extrabold uppercase sm:w-full sm:break-words sm:max-lg:truncate sm:max-lg:text-sm sm:max-lg:font-bold sm:max-lg:leading-[17px] xl:font-bold"
+                  >
+                    {{ value.name }}
+                  </h2>
                 </div>
                 <div class="absolute bottom-2 left-0 w-full px-0.5 text-center sm:hidden">
                   <span class="block truncate text-[0.625rem] font-extrabold uppercase">
@@ -277,6 +331,7 @@ import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useLayoutStore } from '@/stores/layout'
 import { useCasinoTabsStore } from '@/stores/casinoTabs'
 import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
@@ -326,6 +381,30 @@ import slotsCardImg from '@/static/img/home/slots.png'
 import contractCardImg from '@/static/img/home/contract.png'
 import fishingCardImg from '@/static/img/home/fishing.png'
 import liveCardImg from '@/static/img/home/live-casino.png'
+import casinoCardMdImg from '@/static/img/home/md/casino.png'
+import sportsCardMdImg from '@/static/img/home/md/sports.png'
+import slotsCardMdImg from '@/static/img/home/md/slots.png'
+import contractCardMdImg from '@/static/img/home/md/contract.png'
+import fishingCardMdImg from '@/static/img/home/md/fishing.png'
+import liveCardMdImg from '@/static/img/home/md/live.png'
+import casinoCardXlImg from '@/static/img/home/xl/casino.png'
+import sportsCardXlImg from '@/static/img/home/xl/sports.png'
+import slotsCardXlImg from '@/static/img/home/xl/slots.png'
+import contractCardXlImg from '@/static/img/home/xl/contract.png'
+import fishingCardXlImg from '@/static/img/home/xl/fishing.png'
+import liveCardXlImg from '@/static/img/home/xl/live.png'
+import casinoCardArt from '@/static/img/home/casino-art.png'
+import sportsCardArt from '@/static/img/home/sports-art.png'
+import slotsCardArt from '@/static/img/home/slots-art.png'
+import contractCardArt from '@/static/img/home/contract-art.png'
+import fishingCardArt from '@/static/img/home/fishing-art.png'
+import liveCardArt from '@/static/img/home/live-art.png'
+import casinoCardXlIcon from '@/static/img/home/xl/casino-icon.svg?url'
+import sportsCardXlIcon from '@/static/img/home/xl/sports-icon.svg?url'
+import slotsCardXlIcon from '@/static/img/home/xl/slots-icon.svg?url'
+import contractCardXlIcon from '@/static/img/home/xl/contract-icon.svg?url'
+import fishingCardXlIcon from '@/static/img/home/xl/fishing-icon.svg?url'
+import liveCardXlIcon from '@/static/img/home/xl/live-icon.svg?url'
 // import lotteryCardImg from '@/static/img/home/lottery.png'
 import casinoCardH5Img from '@/static/img/home/h5/casino.png'
 import sportsCardH5Img from '@/static/img/home/h5/sports.png'
@@ -358,6 +437,20 @@ const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 const { homeCollectionsData, isHomeCollectionsLoading } = storeToRefs(gameStore)
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
+const { isSidebarCollapsed: sidebarCollapsed } = storeToRefs(useLayoutStore())
+const entryLgClasses = computed(() =>
+  sidebarCollapsed.value
+    ? {
+        featureTitle: 'lg:max-xl:text-[18.75449px] lg:max-xl:leading-[23px]',
+        categoryTitle: 'lg:max-xl:text-[15.62874px] lg:max-xl:leading-[19px]',
+        compactCategoryTitle: 'lg:max-xl:text-[14.06587px] lg:max-xl:leading-[17px]'
+      }
+    : {
+        featureTitle: 'lg:max-xl:text-[16.52695px] lg:max-xl:leading-[20px]',
+        categoryTitle: 'lg:max-xl:text-[13.77245px] lg:max-xl:leading-[17px]',
+        compactCategoryTitle: 'lg:max-xl:text-[12.39521px] lg:max-xl:leading-[15px]'
+      }
+)
 
 const showH5HomePop = ref(true)
 const homePopupScope = computed(() => JSON.stringify(getPopupContext()))
@@ -379,6 +472,11 @@ const featureCards = computed(() => [
     name: t('home.Casino'),
     desc: t('home.labelLabel'),
     img: casinoCardImg,
+    mdImg: casinoCardMdImg,
+    art: casinoCardArt,
+    xlImg: casinoCardXlImg,
+    xlIcon: casinoCardXlIcon,
+    xlArtClass: 'xl:w-[34.2900%]',
     h5Img: casinoCardH5Img,
     icon: casinoIcon,
     path: '/casino'
@@ -387,6 +485,11 @@ const featureCards = computed(() => [
     name: t('home.Sports'),
     desc: t('home.SportsLabel'),
     img: sportsCardImg,
+    mdImg: sportsCardMdImg,
+    art: sportsCardArt,
+    xlImg: sportsCardXlImg,
+    xlIcon: sportsCardXlIcon,
+    xlArtClass: 'xl:w-[34.7432%]',
     h5Img: sportsCardH5Img,
     icon: sportsIcon,
     path: '/sports'
@@ -396,32 +499,64 @@ const featureCards = computed(() => [
 const listImg = computed(() => [
   {
     name: t('home.slots'),
+    lgTitleClass: entryLgClasses.value.categoryTitle,
     h5Name: t('home.slots'),
+    xlTitleClass: 'xl:text-xl xl:leading-6 2xl:text-xl 2xl:leading-6',
+    xlContentClass: 'xl:left-[15.5642%] xl:w-[25.6809%] xl:min-w-[66px] xl:gap-0',
+    xlArtClass: 'xl:left-[53.1524%] xl:top-[10.8333%] xl:w-[37.3541%]',
     img: slotsCardImg,
+    mdImg: slotsCardMdImg,
+    art: slotsCardArt,
+    xlImg: slotsCardXlImg,
+    xlIcon: slotsCardXlIcon,
     h5Img: slotsCardH5Img,
     icon: slotsIcon,
     path: '/casino/DZ'
   },
   {
     name: t('home.contract'),
+    lgTitleClass: entryLgClasses.value.compactCategoryTitle,
     h5Name: t('home.contract'),
+    xlTitleClass: 'xl:text-lg xl:leading-[22px] 2xl:text-lg 2xl:leading-[22px]',
+    xlContentClass: 'xl:left-[7.9371%] xl:w-[40.4669%] xl:min-w-[104px] xl:gap-[1.5564cqw]',
+    xlArtClass: 'xl:left-[54.4747%] xl:top-[9.7518%] xl:w-[36.1868%]',
     img: contractCardImg,
+    mdImg: contractCardMdImg,
+    art: contractCardArt,
+    xlImg: contractCardXlImg,
+    xlIcon: contractCardXlIcon,
     h5Img: contractCardH5Img,
     icon: contractIcon,
     path: '/casino/QP'
   },
   {
     name: t('home.fishing'),
+    lgTitleClass: entryLgClasses.value.categoryTitle,
     h5Name: t('home.fishing'),
+    xlTitleClass: 'xl:text-xl xl:leading-6 2xl:text-xl 2xl:leading-6',
+    xlContentClass: 'xl:left-[13.6187%] xl:w-[31.5175%] xl:min-w-[81px] xl:gap-[1.5564cqw]',
+    xlArtClass: 'xl:left-[56.3412%] xl:top-[10.8333%] xl:w-[35.4086%]',
     img: fishingCardImg,
+    mdImg: fishingCardMdImg,
+    art: fishingCardArt,
+    xlImg: fishingCardXlImg,
+    xlIcon: fishingCardXlIcon,
     h5Img: fishingCardH5Img,
     icon: fishingIcon,
     path: '/casino/BY'
   },
   {
     name: t('home.LiveCasino'),
+    lgTitleClass: entryLgClasses.value.compactCategoryTitle,
     h5Name: t('home.live'),
+    xlTitleClass: 'xl:text-lg xl:leading-[22px] 2xl:text-lg 2xl:leading-[22px]',
+    xlContentClass: 'xl:left-[7.7821%] xl:w-[44.7471%] xl:min-w-[115px] xl:gap-[1.5564cqw]',
+    xlArtClass: 'xl:left-[54.5537%] xl:top-[12.5%] xl:w-[36.5759%]',
     img: liveCardImg,
+    mdImg: liveCardMdImg,
+    art: liveCardArt,
+    xlImg: liveCardXlImg,
+    xlIcon: liveCardXlIcon,
     h5Img: liveCardH5Img,
     icon: liveIcon,
     path: '/casino/live'
@@ -436,8 +571,10 @@ const listImg = computed(() => [
   // }
 ])
 
-const getCardBgStyle = (card: { img: string; h5Img: string }) => ({
+const getCardBgStyle = (card: { img: string; h5Img: string; mdImg: string; xlImg: string }) => ({
   '--home-card-bg-h5': `url('${card.h5Img}')`,
+  '--home-card-bg-md': `url('${card.mdImg}')`,
+  '--home-card-bg-xl': `url('${card.xlImg}')`,
   '--home-card-bg-pc': `url('${card.img}')`
 })
 
@@ -573,23 +710,3 @@ watch(
   { immediate: true, flush: 'pre' }
 )
 </script>
-
-<style scoped lang="scss">
-.home {
-  background-color: var(--color-background-level-1);
-}
-
-/* 断点与模板中的 sm: 保持一致，H5 与 PC 使用不同比例的卡片图 */
-.home-category-card {
-  background-image: var(--home-card-bg-h5);
-
-  @media (min-width: 640px) {
-    background-image: var(--home-card-bg-pc);
-  }
-}
-
-/* 图标源文件为灰/绿配色，卡片上统一显示为白色 */
-.home-card-icon {
-  filter: brightness(0) invert(1);
-}
-</style>
