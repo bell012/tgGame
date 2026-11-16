@@ -1,17 +1,33 @@
 ﻿<template>
   <!-- 顶部搜索 -->
   <div class="relative top-search" @mousedown="onWrapDown">
-    <div
-      class="top-search-leading h-[24px] flex items-center absolute left-[11px] top-1/2 -translate-y-1/2"
-      @click="typeVisible = true"
+    <DropdownSelect
+      class="top-search-leading !absolute left-[11px] top-0"
+      :options="typeOptions"
+      :selected="currentType"
+      :popup-width="280"
+      :z-index="10001"
+      desktop-backdrop
+      @update:selected="handleTypeConfirm"
     >
-      <div class="top-search-type text-[12px] font-[700] mr-[6px] cursor-pointer">
-        {{ currentTypeName }}
-      </div>
-      <pull_down class="top-search-pull w-[8px] h-[8px]" />
-      <div class="top-search-divider w-[1px] h-[24px] mx-[12px] bg-[var(--color-opacity-10)]"></div>
-      <SearchIcon class="w-[14px] h-[14px] fill-none stroke-icon-2" />
-    </div>
+      <template #trigger="{ toggle, open }">
+        <button
+          type="button"
+          class="flex h-[42px] items-center"
+          :aria-expanded="open"
+          @click.stop="toggle"
+        >
+          <div class="top-search-type text-[12px] font-[700] mr-[6px] cursor-pointer">
+            {{ currentTypeName }}
+          </div>
+          <pull_down class="top-search-pull w-[8px] h-[8px]" />
+          <div
+            class="top-search-divider w-[1px] h-[24px] mx-[12px] bg-[var(--color-opacity-10)]"
+          ></div>
+          <SearchIcon class="w-[14px] h-[14px] fill-none stroke-icon-2" />
+        </button>
+      </template>
+    </DropdownSelect>
     <input
       v-model="keyword"
       type="text"
@@ -99,35 +115,16 @@
         </div>
       </div>
     </div>
-    <!-- 搜索类型弹窗 -->
-    <Teleport to="body" v-if="isMobile">
-      <TypePopup
-        v-model:visible="typeVisible"
-        :typeList="dataList"
-        :selectedId="currentType"
-        @confirm="handleTypeConfirm"
-      />
-    </Teleport>
-    <TypePopup
-      v-else
-      class="desktop-type-popup"
-      v-model:visible="typeVisible"
-      :typeList="dataList"
-      :selectedId="currentType"
-      @confirm="handleTypeConfirm"
-      desktop
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onBeforeUnmount, computed, inject, Ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import TypePopup from './popup.vue'
+import DropdownSelect from '@/components/common/DropdownSelect.vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import pull_down from '@/static/svg/explore/pull-down.svg?component'
-import { useIsMobile } from '@/composables/useMediaQuery'
 
 type TypeItem = { id: string; name: string }
 const SEARCH_HISTORY_STORAGE_KEY = 'explore_search_history'
@@ -143,13 +140,14 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const isMobile = useIsMobile()
 
 const keyword = inject('explore-keywords') as Ref<string>
 const currentType = inject('explore-current-type') as Ref<string>
 const suggestedSource = inject<Ref<string[]>>('explore-suggested-list', ref([]))
 
-const typeVisible = ref(false)
+const typeOptions = computed(() =>
+  props.dataList.map(item => ({ label: item.name, value: item.id }))
+)
 
 const history = ref<string[]>([]) // 本地搜索历史
 const isOpen = ref(false)
@@ -204,10 +202,9 @@ const suggestedList = computed(() => {
 })
 
 // 类型选择确认
-const handleTypeConfirm = (_val: TypeItem) => {
-  currentType.value = _val.id
-  typeVisible.value = false
-  emit('change-type', _val.id)
+const handleTypeConfirm = (id: string) => {
+  currentType.value = id
+  emit('change-type', id)
 }
 
 const persistHistory = () => {
@@ -281,14 +278,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
-.desktop-type-popup {
-  top: calc(100% + 10px);
-  position: absolute;
-  left: 0;
-  width: 280px;
-  max-width: calc(100vw - 24px);
-}
-
 .top-search-input {
   background: var(--color-input-level-1);
   border-color: var(--color-input-level-2);
