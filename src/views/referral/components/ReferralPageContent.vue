@@ -1,12 +1,16 @@
 <template>
   <!-- 推荐页内容区域 -->
-  <section class="relative overflow-hidden" style="font-family: Inter, avertastd, sans-serif">
+  <section
+    class="relative"
+    :class="props.mode === 'pc' ? 'overflow-hidden' : 'overflow-visible'"
+    style="font-family: Inter, avertastd, sans-serif"
+  >
     <!-- 页面主体容器 -->
     <div
       :class="
         props.mode === 'pc'
           ? 'relative mx-auto flex max-w-[1041px] flex-col gap-5 px-0 pb-8'
-          : 'relative flex flex-col gap-3.5 px-3.5 pb-6 pt-3.5'
+          : 'relative flex flex-col gap-3.5 overflow-visible px-3.5 pb-6 pt-3.5'
       "
     >
       <!-- 快捷入口区域 -->
@@ -538,17 +542,29 @@
       <!-- 邀请任务卡片 -->
       <section
         v-else-if="!props.showCommissionBoost"
-        class="relative overflow-hidden rounded-[10px] bg-[linear-gradient(90deg,#0D934D_0%,#084524_100%)]"
-        :class="props.mode === 'pc' ? 'min-h-[150px] rounded-[16px] p-5' : 'min-h-[82px] p-3.5'"
+        class="relative rounded-[10px] bg-[linear-gradient(90deg,#0D934D_0%,#084524_100%)]"
+        :class="
+          props.mode === 'pc'
+            ? 'min-h-[150px] overflow-hidden rounded-[16px] p-5'
+            : 'h-[88px] overflow-visible'
+        "
       >
         <!-- 邀请任务卡片主体 -->
-        <div class="relative z-[1] flex h-full items-center justify-between gap-3">
+        <div
+          class="relative z-[1] flex h-full items-center"
+          :class="props.mode === 'pc' ? 'justify-between gap-3' : 'pr-[112px]'"
+        >
           <!-- 邀请任务左侧文案 -->
-          <div class="flex min-w-0 flex-col" :class="props.mode === 'pc' ? 'gap-3' : 'gap-2.5'">
-            <!-- 邀请任务标题 -->
+          <div
+            class="flex min-w-0 flex-col"
+            :class="props.mode === 'pc' ? 'gap-3' : 'justify-center gap-[10px] py-3 pl-3.5'"
+          >
+            <!-- 邀请任务标题（H5：标题与奖励同一行） -->
             <div
-              class="flex min-w-0 flex-wrap items-center"
-              :class="props.mode === 'pc' ? 'gap-2.5' : 'gap-1.5'"
+              class="flex min-w-0 items-center"
+              :class="
+                props.mode === 'pc' ? 'flex-wrap gap-2.5' : 'flex-nowrap gap-1 whitespace-nowrap'
+              "
             >
               <!-- 邀请任务前缀 -->
               <span
@@ -579,28 +595,33 @@
               >
                 {{ props.inviteRewardSuffix }}
               </span>
+
+              <template v-if="props.mode !== 'pc'">
+                <!-- 邀请任务奖励图标 -->
+                <img
+                  :src="props.commissionCoinImage"
+                  :alt="props.inviteRewardAmount"
+                  class="ml-0.5 h-[15px] w-[15px] object-contain"
+                />
+
+                <!-- 邀请任务奖励文本 -->
+                <span class="text-lg font-[700] leading-[22px] text-secondary-6">
+                  {{ props.inviteRewardAmount }}
+                </span>
+              </template>
             </div>
 
-            <!-- 邀请任务奖励区域 -->
-            <div class="flex items-center" :class="props.mode === 'pc' ? 'gap-2.5' : 'gap-1'">
+            <!-- 邀请任务奖励区域（仅 PC） -->
+            <div v-if="props.mode === 'pc'" class="flex items-center gap-2.5">
               <!-- 邀请任务奖励图标 -->
               <img
                 :src="props.commissionCoinImage"
                 :alt="props.inviteRewardAmount"
-                :class="
-                  props.mode === 'pc'
-                    ? 'h-7 w-7 object-contain'
-                    : 'h-[15px] w-[15px] object-contain'
-                "
+                class="h-7 w-7 object-contain"
               />
 
               <!-- 邀请任务奖励文本 -->
-              <span
-                class="font-[700] text-secondary-6"
-                :class="
-                  props.mode === 'pc' ? 'text-[28px] leading-[34px]' : 'text-lg leading-[22px]'
-                "
-              >
+              <span class="text-[28px] font-[700] leading-[34px] text-secondary-6">
                 {{ props.inviteRewardAmount }}
               </span>
             </div>
@@ -623,26 +644,29 @@
           </div>
 
           <!-- 邀请任务右侧装饰 -->
-          <div class="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2">
+          <div
+            class="pointer-events-none absolute"
+            :class="
+              props.mode === 'pc'
+                ? 'right-0 top-1/2 -translate-y-1/2'
+                : 'bottom-0 right-0 top-0 flex items-center'
+            "
+          >
             <!-- 邀请任务装饰圆形 -->
             <div
-              class="absolute rounded-full bg-opacity-10 blur-[2px]"
-              :class="
-                props.mode === 'pc'
-                  ? 'right-[26px] top-[-48px] h-[110px] w-[110px]'
-                  : 'right-[10px] top-[-22px] h-[52px] w-[52px]'
-              "
+              v-if="props.mode === 'pc'"
+              class="absolute right-[26px] top-[-48px] h-[110px] w-[110px] rounded-full bg-opacity-10 blur-[2px]"
             ></div>
 
             <!-- 邀请任务装饰图 -->
             <img
               :src="inviteTaskDecorationImage"
               alt="reward decoration"
-              class="relative object-contain opacity-95"
+              class="object-contain"
               :class="
                 props.mode === 'pc'
-                  ? 'h-[128px] w-[128px] translate-x-[-8px]'
-                  : 'h-[68px] w-[68px] translate-x-[-8px]'
+                  ? 'relative h-[128px] w-[128px] translate-x-[-8px] opacity-95'
+                  : 'h-full w-auto max-w-none'
               "
             />
           </div>

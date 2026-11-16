@@ -152,7 +152,7 @@
               :class="
                 props.activeTab === item.key
                   ? 'border-[3px] border-theme-primary bg-theme-primary text-text-4'
-                  : 'border-transparent text-text-1 lg:hover:bg-theme-3 bg-bg-3'
+                  : 'border-transparent text-text-2 lg:hover:bg-theme-3 bg-bg-3'
               "
               @click="$emit('tab-click', item.key)"
             >
