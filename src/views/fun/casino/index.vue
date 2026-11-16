@@ -14,8 +14,8 @@
     />
 
     <div class="px-3.5 sm:px-4">
-      <div class="flex flex-col sm:my-3.5 sm:flex-row sm:items-center sm:gap-3">
-        <div class="relative order-2 min-w-0 w-full sm:order-1 sm:flex-1">
+      <div class="flex flex-col sm:my-3.5 sm:gap-3 lg:flex-row lg:items-center">
+        <div class="relative order-2 min-w-0 w-full lg:order-1 lg:flex-1">
           <!-- 左箭头 -->
           <div
             class="casino-tab-arrow absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
@@ -116,13 +116,17 @@
 
         <div
           ref="searchRef"
-          class="relative order-1 flex items-center self-stretch rounded-lg border border-input-2 bg-input-1 px-[10px] py-[10px] transition focus-within:border-theme-primary focus-within:ring-2 sm:order-2 sm:h-10 sm:w-[240px] sm:shrink-0 sm:py-0"
+          class="relative order-1 flex items-center self-stretch rounded-lg border border-input-2 bg-input-1 px-[10px] py-[10px] transition focus-within:border-theme-primary focus-within:ring-2 sm:h-10 sm:min-w-0 sm:shrink-0 sm:py-0 lg:order-2 lg:w-[200px] xl:w-[240px] 2xl:w-[240px]"
           @mousedown="handleSearchWrapMouseDown"
         >
-          <img class="h-[18px] w-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
+          <img
+            class="h-[18px] w-[18px] sm:shrink-0"
+            src="/src/static/img/casino/search.webp"
+            alt="search"
+          />
           <input
             v-model="searchText"
-            class="ml-[10px] h-[18px] flex-1 bg-transparent text-xs text-text-1 outline-none placeholder:text-text-2 focus:outline-none focus:ring-0 sm:text-sm sm:placeholder:text-icon-3"
+            class="ml-[10px] h-[18px] flex-1 bg-transparent text-xs text-text-1 outline-none placeholder:text-text-2 focus:outline-none focus:ring-0 sm:min-w-0 sm:pr-4 sm:text-sm sm:placeholder:text-icon-3"
             type="text"
             :placeholder="t('casino.placeholder')"
             @keydown.enter.prevent="onSearch"
@@ -611,6 +615,16 @@ const { tabButtons, lobbyButtons, hasLoaded, isLobbyButtonsLoading, loadCasinoLo
   })
 const isInitialLobbyLoading = computed(() => isLobbyButtonsLoading.value && !hasLoaded.value)
 const tabSkeletonCount = computed(() => (isMobile.value ? 4 : 6))
+
+// 内容更新不一定改变容器宽度；待分类和骨架渲染完成后同步 PC 两侧箭头。
+watch(
+  [tabButtons, isInitialLobbyLoading, isMobile],
+  async () => {
+    await nextTick()
+    if (!isMobile.value && tabScrollRef.value?.isConnected) updateScrollState()
+  },
+  { flush: 'post' }
+)
 
 const getGameData = async (forceRefresh = false) => {
   try {

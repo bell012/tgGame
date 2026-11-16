@@ -8,14 +8,14 @@
           class="flex w-full items-center justify-between rounded-lg border border-solid border-opacity-10 sm:border-opacity-6 max-sm:bg-opacity-5 sm:bg-bg-5 px-2.5 py-[11px]"
           @click.stop="togglePopup"
         >
-          <div class="flex flex-1 items-center text-xs">
-            <span class="mr-2.5 text-text-2">{{ label }}:</span>
-            <span class="text-text-1">
+          <div class="flex flex-1 items-center text-xs sm:mr-2 sm:min-w-0">
+            <span class="mr-2.5 text-text-2 sm:truncate">{{ label }}:</span>
+            <span class="text-text-1 sm:truncate">
               {{ selectedLabel }}
             </span>
           </div>
           <span
-            class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-opacity-10 text-text-1"
+            class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-opacity-10 text-text-1 sm:shrink-0"
           >
             <component
               :is="casinoIcons.dropdown_chevron"
@@ -33,7 +33,7 @@
           v-if="isMobile || desktopBackdrop"
           v-show="popupShow"
           class="fixed inset-0"
-          :style="{ zIndex: zIndex - 1 }"
+          :style="{ zIndex: popupZIndex - 1 }"
           :class="{ 'bg-mask-60-1': isMobile }"
           @click.self="closePopup"
         />
@@ -44,7 +44,7 @@
         <div
           v-show="popupShow"
           :class="popupShellClass"
-          :style="[isMobile ? undefined : desktopStyle, { zIndex }]"
+          :style="[isMobile ? undefined : desktopStyle, { zIndex: popupZIndex }]"
         >
           <LiquidGlass v-if="!isMobile" />
           <div
@@ -210,7 +210,7 @@ const props = defineProps({
   clearLabel: { type: String, default: 'Clear' },
   popupWidth: { type: Number, default: undefined },
   desktopBackdrop: { type: Boolean, default: false },
-  zIndex: { type: Number, default: 9999 }
+  zIndex: { type: Number, default: undefined }
 })
 
 const emit = defineEmits<{
@@ -219,6 +219,8 @@ const emit = defineEmits<{
 }>()
 
 const isMobile = useIsMobile()
+// 页面级 PC 下拉框低于顶部栏（50）；H5 和显式指定的弹层层级保持原样。
+const popupZIndex = computed(() => props.zIndex ?? (isMobile.value ? 9999 : 40))
 const popupShow = ref(false)
 const keyword = ref('')
 
