@@ -43,7 +43,7 @@
         <template v-else>
           <!-- 通知分类导航 -->
           <nav
-            class="tab-bar flex min-h-[37px] w-full items-stretch rounded-[12px] bg-bg-2"
+            class="tab-bar flex min-h-[37px] w-full items-stretch rounded-[12px] bg-bg-8"
             :aria-label="$t('notifications.tabsAria')"
           >
             <button
@@ -52,7 +52,9 @@
               type="button"
               class="tab-button flex min-w-0 flex-1 items-center justify-center gap-[4px] rounded-[12px] px-[8px] py-[11px]"
               :class="
-                activeTab === tab.key ? 'tab-button-active bg-bg-3 text-text-1' : 'text-text-2'
+                activeTab === tab.key
+                  ? 'tab-button-active bg-bg-7 text-text-1'
+                  : 'bg-bg-8 text-text-2'
               "
               @click="switchTab(tab.key)"
             >

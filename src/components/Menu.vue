@@ -1162,13 +1162,17 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 }
 
 .launch-card:hover {
-  background: var(--color-hover-1);
+  background: var(--color-background-level-2);
   border-radius: 8px;
 }
 
 .launch-card-active {
-  background: var(--color-hover-1);
+  background: var(--color-background-level-2);
   border-radius: 8px;
+}
+
+.launch-card-active .pc-menu-label {
+  color: var(--color-theme-level-1);
 }
 
 .launch-card-active.launch-card-dropdown-active {
