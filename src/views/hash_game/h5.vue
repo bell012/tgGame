@@ -213,7 +213,7 @@
 
           <!-- 指向箭头 -->
           <div class="flex mt-[6px] mb-[8px] min-w-0 items-center">
-            <ResultArrowIcon class="ml-[20px] h-[20px] w-[16px] text-theme-primary" />
+            <ResultArrowIcon class="ml-[40px] h-[20px] w-[16px] text-theme-primary" />
             <span class="whitespace-nowrap text-[13px] text-text-2"
               >{{ hashParts.before }}<span class="text-theme-primary">{{ hashParts.digit }}</span
               >{{ hashParts.after }}</span
