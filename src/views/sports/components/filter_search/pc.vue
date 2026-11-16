@@ -6,7 +6,7 @@
         v-for="item in filterTabs"
         :key="item.key"
         type="button"
-        class="relative inline-flex h-[40px] px-[24px] py-[12px] items-center justify-center rounded-[32px] border-0 text-[14px] font-[400] text-text-4 transition-colors"
+        class="relative inline-flex h-[40px] px-[24px] py-[12px] items-center justify-center rounded-[32px] border-0 text-[14px] font-[400] transition-colors"
         :class="getFilterTabClass(item.key)"
         @click="onFilterTabClick(item.key)"
       >
@@ -103,7 +103,7 @@ const searchKeyword = computed({
 
 // 根据当前选中的筛选项返回按钮样式。
 const getFilterTabClass = (key: FilterTabKey) =>
-  activeFilterKey.value === key ? 'bg-theme-primary' : 'bg-bg-8'
+  activeFilterKey.value === key ? 'bg-theme-primary text-text-4' : 'bg-bg-8 text-text-1'
 
 // 点击筛选按钮切换选中项。
 const onFilterTabClick = (key: FilterTabKey) => {
