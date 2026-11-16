@@ -280,7 +280,7 @@
               v-for="index in 4"
               :key="`reward-table-skeleton-${index}`"
               class="grid grid-cols-3"
-              :class="index % 2 === 1 ? 'bg-opacity-6' : 'bg-bg-2'"
+              :class="index % 2 === 1 ? 'bg-bg-3' : 'bg-bg-2'"
             >
               <!-- 奖励表格骨架单元格 -->
               <div
@@ -305,7 +305,7 @@
               v-for="(item, index) in props.rewardRows"
               :key="`${item.condition}-${item.reward}-${index}`"
               class="grid grid-cols-3"
-              :class="index % 2 === 0 ? 'bg-opacity-6' : 'bg-bg-2'"
+              :class="index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2'"
             >
               <!-- 奖励表格行第一列 -->
               <div

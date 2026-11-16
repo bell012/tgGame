@@ -13,7 +13,7 @@
       </div>
 
       <div
-        class="rounded-[8px] bg-bg-4"
+        class="rounded-[8px] bg-bg-3"
         :class="isPcMode ? 'mt-4 h-[144px] w-[424px] p-3' : 'mt-3 rounded-[10px] p-2.5'"
       >
         <button
@@ -49,7 +49,7 @@
         v-model.trim="feedbackContentModel"
         maxlength="500"
         :placeholder="placeholderText"
-        class="resize-none rounded-[8px] bg-bg-4 px-3 py-2.5 text-text-1 outline-none placeholder:text-text-3"
+        class="resize-none rounded-[8px] bg-bg-3 px-3 py-2.5 text-text-1 outline-none placeholder:text-text-3"
         :class="
           isPcMode
             ? 'mt-4 h-[104px] w-[424px] text-[14px] leading-[20px]'
@@ -127,7 +127,7 @@
             : 'mt-6 h-[46px] w-full rounded-[10px] text-base',
           canSubmitFeedback && !isSubmittingFeedback
             ? 'bg-theme-primary'
-            : 'cursor-not-allowed bg-theme-2'
+            : 'feedback-submit--disabled cursor-not-allowed'
         ]"
         :disabled="!canSubmitFeedback || isSubmittingFeedback"
         @click="onSubmit"
@@ -198,6 +198,10 @@ const canSubmitFeedback = computed(() => {
 </script>
 
 <style scoped>
+.feedback-submit--disabled {
+  background-color: color-mix(in srgb, var(--color-theme-level-1) 70%, transparent);
+}
+
 .feedback-upload-photo-icon {
   width: 28px;
   height: 28px;
