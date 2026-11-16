@@ -42,7 +42,7 @@
           </div>
 
           <!-- 底部倒计时区 -->
-          <div class="flex items-center bg-opacity-6 px-[32px] py-[8px]">
+          <div class="flex items-center px-[32px] py-[8px] border-t border-opacity-6">
             <Countdown class="w-5 h-5 text-text-2 mr-[8px]" />
             <span class="text-base text-text-2 mr-[8px]">{{ $t('vouchers.expiresIn') }} :</span>
             <div class="flex items-center gap-1">

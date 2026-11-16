@@ -13,11 +13,15 @@
       :data-logged-in="isLoggedIn"
     >
       <div class="flex items-center gap-2">
-        <div class="flex h-8 w-[264px] rounded-lg bg-bg-2">
+        <div class="flex h-8 w-[264px] rounded-lg bg-bg-8">
           <button
             type="button"
             class="flex h-8 w-[132px] items-center justify-center gap-2 rounded-lg text-xs"
-            :class="mode === 'video' ? 'bg-bg-3 font-bold text-text-1' : 'font-normal text-text-2'"
+            :class="
+              mode === 'video'
+                ? 'bg-bg-10 font-bold text-text-1'
+                : 'bg-bg-8 font-normal text-text-2'
+            "
             @click="mode = 'video'"
           >
             <img
@@ -33,7 +37,9 @@
             type="button"
             class="flex h-8 w-[132px] items-center justify-center gap-2 rounded-lg text-xs"
             :class="
-              mode === 'animation' ? 'bg-bg-3 font-bold text-text-1' : 'font-normal text-text-2'
+              mode === 'animation'
+                ? 'bg-bg-10 font-bold text-text-1'
+                : 'bg-bg-8 font-normal text-text-2'
             "
             @click="mode = 'animation'"
           >
