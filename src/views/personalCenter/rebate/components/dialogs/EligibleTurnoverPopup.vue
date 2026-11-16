@@ -17,7 +17,7 @@
         </h3>
         <button
           type="button"
-          class="absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center bg-bg-3 text-text-1"
+          class="absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center bg-opacity-10 text-text-1"
           :class="isMobile ? 'h-[28px] w-[28px] rounded-[6px]' : 'h-[28px] w-[28px] rounded-[10px]'"
           @click="visible = false"
         >

@@ -109,7 +109,7 @@
     <button
       v-if="variant !== 'grid'"
       type="button"
-      class="flex w-full items-center justify-center gap-1 font-[700] text-common-80"
+      class="flex w-full items-center justify-center gap-1 font-[700] text-common-100"
       :style="voucherFooterTextStyle"
       @click="emit('openVoucherList')"
     >

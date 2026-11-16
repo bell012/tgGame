@@ -2,7 +2,7 @@
   <div v-if="showIntro" class="mt-4 space-y-1 text-[14px] leading-[20px] text-text-1">
     <p>
       {{ t('luckySpinPage.reminder.introUnlockPrefix') }}
-      <span class="font-[700] text-theme-primary">{{ introVoucherName }}</span>
+      <span class="font-bold text-theme-primary">{{ introVoucherName }}</span>
     </p>
     <p>
       {{ t('luckySpinPage.reminder.introRewardPrefix') }}
@@ -15,7 +15,8 @@
     <li
       v-for="task in dialogState.reminder.tasks"
       :key="task.id"
-      class="rounded-[10px] bg-bg-1 px-3 py-3"
+      class="rounded-[10px] px-3 py-3"
+      :class="isMobile ? 'bg-bg-4' : 'bg-bg-1'"
     >
       <div class="flex items-center justify-between gap-2">
         <span class="text-[14px] font-[500] text-text-1">{{ task.title }}</span>
@@ -50,12 +51,14 @@
 </template>
 
 <script setup lang="ts">
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { globalTicketDialogState } from '../../../shell/ticketDialog'
 import { goTicketDeposit } from '../shared/goTicketDeposit'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 const dialogState = globalTicketDialogState
 
 const showIntro = computed(
