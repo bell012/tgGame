@@ -2574,6 +2574,9 @@
     }
   },
   "checkIn": {
+    "rulesTitle": "签到说明",
+    "rulesEmpty": "暂无签到说明",
+    "rulesCloseAriaLabel": "关闭签到说明",
     "title": "每日签到奖励",
     "subtitle": "每天签到即可领取奖励",
     "promoStartsAt": "活动开始时间：{date}",

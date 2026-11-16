@@ -14,7 +14,7 @@
         :loading="isContentLoading"
         :action-loading="isClaiming"
         @close="handleClose"
-        @rules="$emit('rules')"
+        @rules="handleRules"
         @action="handleAction"
         @reward-click="handleRewardClick"
         @hero-use-now="handleHeroUseNow"
@@ -26,11 +26,13 @@
         :loading="isContentLoading"
         :action-loading="isClaiming"
         @close="handleClose"
-        @rules="$emit('rules')"
+        @rules="handleRules"
         @action="handleAction"
         @reward-click="handleRewardClick"
         @hero-use-now="handleHeroUseNow"
       />
+
+      <CheckInRulesPopup v-if="rulesVisible" :content="viewData.rulesContent" @close="closeRules" />
 
       <!-- 绑定手机号提示弹窗 -->
       <CheckInBindPhonePromptPopup
@@ -86,6 +88,7 @@ import {
   type CheckInRewardItem,
   type CheckInViewData
 } from '../shared'
+import CheckInRulesPopup from './CheckInRulesPopup.vue'
 import CheckInBindPhonePromptPopup from './CheckInBindPhonePromptPopup.vue'
 import CheckInRequirementReminderPopup from './CheckInRequirementReminderPopup.vue'
 
@@ -120,6 +123,7 @@ const requirementReminderVisible = ref(false)
 const requirementReminderMode = ref<CheckInRequirementReminderMode>('all')
 const requirementReminderItems = ref<CheckInRequirementReminderItem[]>([])
 const bindPhonePromptVisible = ref(false)
+const rulesVisible = ref(false)
 
 usePageScrollLock(() => props.modelValue)
 
@@ -157,6 +161,7 @@ const showCheckInDataAt = (index: number) => {
     return false
   }
 
+  closeRules()
   activeQueueIndex.value = index
   viewData.value = targetData.viewData
   closeRequirementReminder()
@@ -170,6 +175,7 @@ const loadCheckInData = async () => {
     return
   }
 
+  closeRules()
   isLoading.value = true
 
   try {
@@ -329,8 +335,21 @@ const handleAction = async () => {
   }
 }
 
+const closeRules = () => {
+  rulesVisible.value = false
+}
+
+// 在签到弹窗内展示规则，父组件无需接管展示逻辑。
+const handleRules = () => {
+  if (isContentLoading.value || isLoading.value) return
+
+  rulesVisible.value = true
+  emit('rules')
+}
+
 // 关闭当前签到活动；队列中还有活动时切换下一项，最后一项关闭后才关闭全局弹窗。
 const handleClose = () => {
+  closeRules()
   closeRequirementReminder()
   closeBindPhonePrompt()
 
@@ -404,6 +423,8 @@ const handleRewardClick = (reward: CheckInRewardItem) => {
 watch(
   [() => props.modelValue, isLoggedIn, () => locale.value, currentChannelId],
   ([visible, loggedIn]) => {
+    closeRules()
+
     if (!visible) {
       hasLoaded.value = false
       activeQueueIndex.value = 0
