@@ -1,12 +1,13 @@
 <template>
   <div class="flex-1 min-h-0">
-    <div class="w-full shrink-0 flex bg-bg-2 dark:bg-bg-8 rounded-lg">
+    <div class="w-full shrink-0 flex" :class="PC_SEGMENTED_TABS_CLASS">
       <button
         v-for="tab in withdrawTabs"
         :key="tab.value"
         class="relative flex-1 text-sm py-3 font-bold transition-all duration-200 tab-button-new rounded-lg"
         :class="[
-          selectWithdrawTab?.value === tab.value ? 'text-text-1 bg-bg-7' : 'text-text-2 bg-bg-8'
+          PC_SEGMENTED_TAB_CLASS,
+          getPcSegmentedTabStateClass(selectWithdrawTab?.value === tab.value)
         ]"
         :disabled="isWithdrawPanelLoading"
         @click.stop="handleDesktopClickWithdrawTab(tab)"
@@ -125,6 +126,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import { useWithdrawFlow } from '@/components/withdraw/shared/useWithdrawFlow'
 import DesktopCryptoPanel from '@/components/withdraw/desktopCryptoPanel.vue'
 import DesktopFiatPanel from '@/components/withdraw/desktopFiatPanel.vue'

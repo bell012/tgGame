@@ -1,13 +1,13 @@
 <!-- pc联赛tabs -->
 <template>
   <section ref="leagueTabsRef" class="relative flex h-[40px] w-full items-center overflow-visible">
-    <div class="flex h-10 flex-none items-center gap-1.5 rounded-full bg-bg-9 p-0.5">
+    <div class="flex h-10 flex-none items-center gap-1.5 p-0.5" :class="PC_SEGMENTED_TABS_CLASS">
       <button
         v-for="item in filterTabs"
         :key="item.key"
         type="button"
-        class="inline-flex h-9 flex-none items-center justify-center rounded-full border-0 px-5 text-base font-bold transition-colors"
-        :class="getFilterButtonClass(item.key)"
+        class="inline-flex h-9 flex-none items-center justify-center border-0 px-5 text-base font-bold transition-colors"
+        :class="[PC_SEGMENTED_TAB_CLASS, getFilterButtonClass(item.key)]"
         @click="onFilterTabClick(item.key)"
       >
         <span class="block max-w-[150px] overflow-hidden text-ellipsis">
@@ -94,6 +94,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
@@ -142,9 +148,7 @@ const leaguePopupList = computed(() => {
 
 // 根据当前选中项返回“联赛/时间”分段按钮样式。
 const getFilterButtonClass = (key: LiansaiFilterKey) =>
-  activeFilterKey.value === key
-    ? 'bg-bg-3 text-text-1'
-    : 'bg-transparent text-text-2 hover:bg-opacity-6'
+  getPcSegmentedTabStateClass(activeFilterKey.value === key)
 
 // 根据当前选中项返回联赛按钮样式，所有联赛项共用同一套选中态。
 const getLeagueButtonClass = (item: LeagueTabItem) => {

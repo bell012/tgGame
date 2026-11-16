@@ -172,15 +172,15 @@
 
       <!-- tab栏 -->
       <section class="mt-[24px]">
-        <div class="flex w-full rounded-[8px] bg-bg-8">
+        <div class="flex w-full" :class="PC_SEGMENTED_TABS_CLASS">
           <button
             type="button"
             class="h-[48px] w-full rounded-[8px] p-[14px] font-[700]"
-            :class="
-              activeContentTab === 'comparison'
-                ? 'bg-bg-7 text-base text-text-1'
-                : 'text-base text-text-2'
-            "
+            :class="[
+              PC_SEGMENTED_TAB_CLASS,
+              'text-base',
+              getPcSegmentedTabStateClass(activeContentTab === 'comparison')
+            ]"
             @click="activeContentTab = 'comparison'"
           >
             {{ $t('vipPage.tabs.benefitsComparison') }}
@@ -188,11 +188,11 @@
           <button
             type="button"
             class="h-[48px] w-full rounded-[8px] p-[14px] font-[700]"
-            :class="
-              activeContentTab === 'rules'
-                ? 'bg-bg-7 text-base text-text-1'
-                : 'text-base text-text-2'
-            "
+            :class="[
+              PC_SEGMENTED_TAB_CLASS,
+              'text-base',
+              getPcSegmentedTabStateClass(activeContentTab === 'rules')
+            ]"
             @click="activeContentTab = 'rules'"
           >
             {{ $t('vipPage.tabs.vipRules') }}
@@ -230,6 +230,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CommonFooter from '@/components/commonFooter.vue'

@@ -511,7 +511,7 @@ const selectDesktopTime = (value: string) => {
 // 根据当前选中状态生成 PC 筛选按钮样式。
 const getDesktopFilterButtonClass = (active: boolean) => [
   'h-[40px] px-[30px] rounded-[32px] text-[14px] font-[400] transition-colors',
-  active ? 'bg-bg-3 text-text-1 font-[700]' : 'bg-bg-9 text-text-2'
+  active ? 'bg-theme-primary text-text-1 font-[700]' : 'bg-bg-9 text-text-2'
 ]
 
 // 账号或币种变化时丢弃旧订单与确认状态，避免跨钱包展示和提交。
