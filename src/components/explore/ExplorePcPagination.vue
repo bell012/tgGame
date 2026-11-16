@@ -2,7 +2,7 @@
   <div class="explore-pc-pagination mt-4 flex items-center justify-center gap-2">
     <button
       type="button"
-      class="explore-pc-pagination-btn"
+      class="explore-pc-pagination-btn bg-bg-2"
       :class="{ 'is-disabled': isFirstPage }"
       :disabled="isFirstPage"
       @click="setPage(page - 1)"
@@ -14,7 +14,7 @@
       v-for="pageNum in visiblePages"
       :key="pageNum"
       type="button"
-      class="explore-pc-pagination-btn explore-pc-pagination-page"
+      class="explore-pc-pagination-btn explore-pc-pagination-page bg-bg-3"
       :class="{ 'is-active': pageNum === page }"
       @click="setPage(pageNum)"
     >
@@ -23,7 +23,7 @@
 
     <button
       type="button"
-      class="explore-pc-pagination-btn"
+      class="explore-pc-pagination-btn bg-bg-2"
       :class="{ 'is-disabled': isLastPage }"
       :disabled="isLastPage"
       @click="setPage(page + 1)"
@@ -92,7 +92,6 @@ const setPage = (nextPage: number) => {
   justify-content: center;
   border: none;
   border-radius: 8px;
-  background: var(--color-background-level-3);
   color: var(--color-text-level-1);
   cursor: pointer;
 }
@@ -109,7 +108,6 @@ const setPage = (nextPage: number) => {
 }
 
 .explore-pc-pagination-btn.is-disabled {
-  background: var(--color-background-level-4);
   color: var(--color-text-level-3);
   cursor: not-allowed;
 }

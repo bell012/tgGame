@@ -53,6 +53,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
@@ -88,12 +94,12 @@ const panelMaxHeightClass = computed(() =>
 
 const tabHeaderWrapperClass = computed(() =>
   props.mode === 'pc'
-    ? 'w-full shrink-0 flex bg-bg-2 dark:bg-bg-8 rounded-lg'
+    ? ['w-full shrink-0 flex', PC_SEGMENTED_TABS_CLASS]
     : 'w-full shrink-0 flex flex-col bg-bg-2'
 )
 
 const tabHeaderClass = computed(() =>
-  props.mode === 'pc' ? 'flex w-full bg-bg-2 dark:bg-bg-8 rounded-lg' : 'flex bg-bg-2 dark:bg-bg-8'
+  props.mode === 'pc' ? ['flex w-full', PC_SEGMENTED_TABS_CLASS] : 'flex bg-bg-2 dark:bg-bg-8'
 )
 
 const contentClass = computed(() =>
@@ -106,10 +112,7 @@ const getTabClass = (tab: DepositTabType) => {
   const isActive = props.modelValue === tab
 
   if (props.mode === 'pc') {
-    return [
-      'text-sm py-3 font-bold rounded-lg',
-      isActive ? 'text-text-1 bg-bg-7' : 'text-text-2 bg-bg-8'
-    ]
+    return ['text-sm py-3 font-bold', PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(isActive)]
   }
 
   return ['text-sm sm:text-base font-[800]', isActive ? 'text-text-1 pb-1.5' : 'text-text-2 pb-1.5']

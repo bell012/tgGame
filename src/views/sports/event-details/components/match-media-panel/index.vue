@@ -13,11 +13,15 @@
       :data-logged-in="isLoggedIn"
     >
       <div class="flex items-center gap-2">
-        <div class="flex h-8 w-[264px] rounded-lg bg-bg-2">
+        <div class="flex h-8 w-[264px]" :class="PC_SEGMENTED_TABS_CLASS">
           <button
             type="button"
             class="flex h-8 w-[132px] items-center justify-center gap-2 rounded-lg text-xs"
-            :class="mode === 'video' ? 'bg-bg-3 font-bold text-text-1' : 'font-normal text-text-2'"
+            :class="[
+              PC_SEGMENTED_TAB_CLASS,
+              getPcSegmentedTabStateClass(mode === 'video'),
+              mode === 'video' ? 'font-bold' : 'font-normal'
+            ]"
             @click="mode = 'video'"
           >
             <img
@@ -32,9 +36,11 @@
           <button
             type="button"
             class="flex h-8 w-[132px] items-center justify-center gap-2 rounded-lg text-xs"
-            :class="
-              mode === 'animation' ? 'bg-bg-3 font-bold text-text-1' : 'font-normal text-text-2'
-            "
+            :class="[
+              PC_SEGMENTED_TAB_CLASS,
+              getPcSegmentedTabStateClass(mode === 'animation'),
+              mode === 'animation' ? 'font-bold' : 'font-normal'
+            ]"
             @click="mode = 'animation'"
           >
             <img
@@ -95,6 +101,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'

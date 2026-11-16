@@ -12,11 +12,21 @@
         {{ t('casino.latest_bet') }}
       </h2>
       <div class="flex w-full lg:w-auto lg:justify-end items-center sm:justify-start justify-start">
-        <div class="bet-tabs flex w-full lg:w-auto items-center">
+        <div
+          class="bet-tabs flex w-full lg:w-auto items-center"
+          :class="isMobile ? 'rounded-[10px]' : PC_SEGMENTED_TABS_CLASS"
+        >
           <button
             v-for="(tab, index) in tabs"
             :key="tab.value"
-            :class="['bet-tab', 'flex-1 lg:flex-none', { active: activeTab === index }]"
+            :class="[
+              'bet-tab',
+              'flex-1 lg:flex-none',
+              { active: activeTab === index },
+              !isMobile
+                ? [PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(activeTab === index)]
+                : ''
+            ]"
             @click="switchTab(index)"
           >
             {{ tab.label }}
@@ -146,6 +156,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import Api from '@/api'
 import type { GameBetRecordItem } from '@/api/interface/game'
 import LatestBetTable from '@/components/common/latestBetTable.vue'
@@ -393,8 +409,6 @@ onBeforeUnmount(() => {
 }
 
 .bet-tabs {
-  background: var(--color-background-level-7);
-  border-radius: 10px;
   height: 39px;
   padding: 0;
   gap: 0;
@@ -405,8 +419,6 @@ onBeforeUnmount(() => {
   height: 100%;
   min-height: 0;
   padding: 6px 28px;
-  background: transparent;
-  color: var(--color-text-level-2);
   border: none;
   border-radius: 8px;
   box-sizing: border-box;
@@ -424,8 +436,6 @@ onBeforeUnmount(() => {
 }
 
 .bet-tab.active {
-  background: var(--color-background-level-8);
-  color: var(--color-text-level-1);
   box-shadow: none;
 }
 
@@ -715,6 +725,7 @@ onBeforeUnmount(() => {
 }
 
 .bets-list--h5-light .bet-tab {
+  color: var(--color-text-level-2);
   background: var(--color-background-level-8);
 }
 
@@ -763,6 +774,7 @@ onBeforeUnmount(() => {
 }
 
 .bets-list--h5-dark .bet-tab {
+  color: var(--color-text-level-2);
   background: var(--color-background-level-2);
 }
 

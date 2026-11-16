@@ -36,7 +36,7 @@
 
       <div
         ref="listRef"
-        class="red-packet-scrollbar flex min-h-0 flex-1 flex-col gap-[20px] overflow-y-auto p-[20px_10px]"
+        class="red-packet-scrollbar flex min-h-0 flex-1 flex-col gap-[20px] overflow-y-auto p-[20px_10px] bg-bg-1"
       >
         <RedPacketCard
           v-for="item in list"

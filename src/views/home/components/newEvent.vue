@@ -3,14 +3,17 @@
     <div class="header">
       <h2 class="text-base font-bold text-text-1 sm:text-xl">{{ $t('home.LatestRound&Race') }}</h2>
 
-      <div class="tabs bg-bg-7">
+      <div class="tabs" :class="isMobile ? 'rounded-[8px] bg-bg-8' : PC_SEGMENTED_TABS_CLASS">
         <button
           v-for="tab in tabItems"
           :key="tab.type"
           type="button"
           :class="[
             'tab rounded-lg h-[39px] flex-1 shrink-0 items-center justify-center font-bold',
-            { active: activeType === tab.type }
+            { active: activeType === tab.type, 'home-tab-mobile': isMobile },
+            !isMobile
+              ? [PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(activeType === tab.type)]
+              : ''
           ]"
           @click="switchType(tab.type)"
         >
@@ -30,7 +33,15 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import { computed, ref } from 'vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
+const isMobile = useIsMobile()
 import { useI18n } from 'vue-i18n'
 import LatestBetTable from '@/components/common/latestBetTable.vue'
 
@@ -71,22 +82,26 @@ const switchType = (type: 1 | 2) => {
 
 .tabs {
   display: flex;
-  background: var(--color-background-level-8);
-  border-radius: 8px;
   overflow: hidden;
 }
 
 .tab {
   padding: 6px 12px;
-  background: transparent;
-  color: #9ca3af;
   border: none;
   width: 132px;
 }
 
+.home-tab-mobile {
+  background: transparent;
+  color: #9ca3af;
+}
+
 .tab.active {
-  background: var(--color-background-level-7);
   color: var(--color-text-level-1);
+}
+
+.home-tab-mobile.active {
+  background: var(--color-background-level-7);
 }
 
 .table-viewport {

@@ -5,7 +5,7 @@
       <button
         v-if="showPcVoucherFooter"
         type="button"
-        class="flex w-full items-center justify-center gap-1 text-common-80"
+        class="flex w-full items-center justify-center gap-1 text-text-1"
         :style="pcVoucherFooterTextStyle"
         @click="emit('openVoucherList')"
       >
