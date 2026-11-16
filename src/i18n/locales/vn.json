@@ -2589,6 +2589,9 @@
     }
   },
   "checkIn": {
+    "rulesTitle": "Quy tắc điểm danh",
+    "rulesEmpty": "Chưa có quy tắc điểm danh.",
+    "rulesCloseAriaLabel": "Đóng quy tắc điểm danh",
     "title": "Thưởng điểm danh hằng ngày",
     "subtitle": "Điểm danh mỗi ngày để nhận thưởng",
     "promoStartsAt": "Sự kiện bắt đầu：{date}",

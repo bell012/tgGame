@@ -1,5 +1,5 @@
 import { recordGameSelectionPath } from '@/composables/useGameSelectionReturn'
-import { collapseSidebarMenus } from '@/composables/useSidebarMenuState'
+import { syncSidebarMenuForRoute } from '@/composables/useSidebarMenuState'
 import i18n from '@/i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useAuthModalStore } from '@/stores/authModal'
@@ -1099,12 +1099,11 @@ router.beforeEach((to, _from, next) => {
   next()
 })
 
-router.afterEach(to => {
+router.afterEach((to, _from, failure) => {
+  if (failure) return
+
   const fullPath = stripLocalePrefix(to.fullPath)
-  const pathname = fullPath.split('?')[0]?.split('#')[0] ?? fullPath
-  if (pathname === '/') {
-    collapseSidebarMenus()
-  }
+  syncSidebarMenuForRoute(fullPath)
   recordGameSelectionPath(fullPath)
 })
 

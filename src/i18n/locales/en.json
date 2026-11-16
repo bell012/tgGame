@@ -2603,6 +2603,9 @@
     }
   },
   "checkIn": {
+    "rulesTitle": "Check-in rules",
+    "rulesEmpty": "No check-in rules available.",
+    "rulesCloseAriaLabel": "Close check-in rules",
     "title": "Daily Check-in Rewards",
     "subtitle": "Check in daily to claim rewards",
     "promoStartsAt": "Promo start date: {date}",

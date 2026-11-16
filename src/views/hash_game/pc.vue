@@ -40,6 +40,7 @@
             <button
               type="button"
               class="flex items-center gap-[10px] rounded-[6px] bg-bg-3 px-[10px] py-[6px] text-[14px] text-text-2"
+              @click="rulesPopupOpen = true"
             >
               <RulesIcon class="size-[20px] text-icon-2" />{{ t('hashGame.gameRules') }}
             </button>
@@ -120,12 +121,14 @@
               <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
                 <i
                   class="grid size-[20px] place-items-center rounded-full bg-[#22A89A] text-[14px] not-italic text-white"
-                  >{{ resultLabels.positive }}</i>{{ mockRound.positiveCount }}
+                  >{{ resultLabels.positive }}</i
+                >{{ mockRound.positiveCount }}
               </span>
               <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
                 <i
                   class="grid size-[20px] place-items-center rounded-full bg-[#E63533] text-[14px] not-italic text-white"
-                  >{{ resultLabels.negative }}</i>{{ mockRound.negativeCount }}
+                  >{{ resultLabels.negative }}</i
+                >{{ mockRound.negativeCount }}
               </span>
             </div>
             <div class="flex items-center">
@@ -363,28 +366,44 @@
     <!-- 投注记录弹窗 -->
     <RecentBetsPopup
       v-model:visible="recentBetsOpen"
+      variant="pc"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :balance-text="currentBalanceText"
       :period="selectedPeriod"
       :bets="recentBets"
       :summary="recentBetSummary"
+      @select-bet="openBetDetailPopup"
+    />
+    <!-- 投注记录详情弹窗 -->
+    <HashGameBetDetailPopup
+      v-model:visible="betDetailPopupOpen"
+      variant="pc"
+      :bet="selectedBetDetail"
     />
     <!-- 历史投注 -->
-    <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
+    <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" variant="pc" />
     <!-- 筹码设置 -->
-    <ChipEditorPopup :page="props.page" />
+    <ChipEditorPopup :page="props.page" variant="pc" />
+    <!-- 规则弹窗 -->
+    <HashGameRules
+      v-model:visible="rulesPopupOpen"
+      v-model:selected-period="selectedPeriod"
+      variant="pc"
+    />
   </div>
   <CommonFooter class="mt-[55px]" />
 </template>
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import type { HashGamePageState } from './index'
+import type { HashGameBetDetail, HashGamePageState } from './index'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
+import HashGameRules from './rules.vue'
+import HashGameBetDetailPopup from './bet-detail.vue'
 import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
 import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
 import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
@@ -449,6 +468,9 @@ const {
 
 const chatDraft = ref('')
 const recentBetsOpen = ref(false)
+const betDetailPopupOpen = ref(false)
+const selectedBetDetail = ref<HashGameBetDetail | null>(null)
+const rulesPopupOpen = ref(false)
 const quickBetPopupRef = ref<HTMLElement | null>(null)
 const quickBetTriggerRef = ref<HTMLElement | null>(null)
 const chipTrackRef = ref<HTMLElement | null>(null)
@@ -564,5 +586,10 @@ const formatChipAmount = (amount: number) => {
   if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
   if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
   return String(amount)
+}
+
+const openBetDetailPopup = (bet: HashGameBetDetail) => {
+  selectedBetDetail.value = bet
+  betDetailPopupOpen.value = true
 }
 </script>

@@ -1,19 +1,52 @@
 <template>
+  <!-- 投注记录 -->
   <Teleport to="body">
     <Transition name="bottom-sheet">
       <div
         v-if="visible"
-        class="fixed inset-0 z-[1000] flex items-end bg-mask-60-1"
+        :class="
+          variant === 'pc'
+            ? 'fixed inset-0 z-[1000] grid place-items-center bg-mask-60-1 p-[12px]'
+            : 'fixed inset-0 z-[1000] flex items-end bg-mask-60-1'
+        "
         @click.self="emit('update:visible', false)"
         @keydown.esc.stop.prevent="emit('update:visible', false)"
       >
         <section
-          class="bottom-sheet-panel flex h-[65vh] w-full flex-col overflow-hidden rounded-t-[12px] bg-bg-1 px-[12px] py-[16px] text-text-1"
+          class="bottom-sheet-panel flex flex-col overflow-hidden bg-bg-1 text-text-1"
+          :class="
+            variant === 'pc'
+              ? 'max-h-[90vh] w-full max-w-[480px] rounded-[8px]'
+              : 'h-[65vh] w-full rounded-t-[12px] px-[12px] py-[16px]'
+          "
           role="dialog"
           aria-modal="true"
           aria-labelledby="hash-recent-bets-title"
         >
-          <div class="mb-[20px] flex shrink-0 items-center justify-between">
+          <header
+            v-if="variant === 'pc'"
+            class="grid h-[56px] shrink-0 grid-cols-[1fr_auto_1fr] items-center bg-bg-2 px-[16px]"
+          >
+            <button
+              type="button"
+              class="flex items-center gap-[4px] justify-self-start text-[16px] text-text-3"
+              @click="openBetHistory"
+            >
+              {{ t('hashGame.more') }} <RightArrowIcon class="size-[16px] text-icon-3" />
+            </button>
+            <h2 id="hash-recent-bets-title" class="text-[18px] font-[700] text-text-1">
+              {{ t('hashGame.recentBets') }}
+            </h2>
+            <button
+              type="button"
+              class="ml-auto grid size-[24px] place-items-center rounded-[4px] bg-opacity-10"
+              :aria-label="t('common.close')"
+              @click="emit('update:visible', false)"
+            >
+              <CloseIcon class="size-[12px] text-icon-1" />
+            </button>
+          </header>
+          <div v-else class="mb-[20px] flex shrink-0 items-center justify-between">
             <h2 id="hash-recent-bets-title" class="text-[19px] font-[600] text-text-1">
               {{ t('hashGame.recentBets') }}
             </h2>
@@ -26,10 +59,19 @@
             </button>
           </div>
 
-          <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[10px]">
-            <div class="mb-[10px] overflow-hidden">
+          <div
+            class="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[16px]"
+            :class="variant === 'pc' ? 'px-[16px] py-[16px]' : ''"
+          >
+            <div
+              :class="variant === 'pc' ? 'mb-[16px] overflow-hidden' : 'mb-[10px] overflow-hidden'"
+            >
               <div
-                class="grid grid-cols-4 px-[12px] py-[6px] text-center text-[11px] text-text-2 rounded-t-[8px] bg-bg-3"
+                :class="
+                  variant === 'pc'
+                    ? 'grid grid-cols-4 px-[12px] py-[8px] text-center text-[14px] text-text-2 rounded-t-[12px] bg-bg-3'
+                    : 'grid grid-cols-4 px-[12px] py-[6px] text-center text-[11px] text-text-2 rounded-t-[8px] bg-bg-3'
+                "
               >
                 <span>{{ t('hashGame.currency') }}</span>
                 <span>{{ t('hashGame.bets') }}</span>
@@ -37,9 +79,19 @@
                 <span>{{ t('hashGame.todayProfitLoss') }}</span>
               </div>
               <div
-                class="grid grid-cols-4 items-center px-[12px] py-[7px] text-center text-[13px] font-[600] text-text-1 rounded-b-[8px] bg-bg-2"
+                :class="
+                  variant === 'pc'
+                    ? 'grid grid-cols-4 items-center px-[12px] py-[12px] text-center text-[16px] font-[700] text-text-1 rounded-b-[12px] bg-bg-2'
+                    : 'grid grid-cols-4 items-center px-[12px] py-[7px] text-center text-[13px] font-[600] text-text-1 rounded-b-[8px] bg-bg-2'
+                "
               >
-                <span class="flex items-center justify-center gap-[3px]">
+                <span
+                  :class="
+                    variant === 'pc'
+                      ? 'flex items-center justify-center gap-[4px]'
+                      : 'flex items-center justify-center gap-[3px]'
+                  "
+                >
                   <img :src="currencyIcon" :alt="currencyCode" class="size-[18px] object-contain" />
                   {{ currencyCode }}
                 </span>
@@ -51,18 +103,28 @@
 
             <div class="overflow-hidden">
               <div
-                class="grid grid-cols-4 px-[12px] py-[6px] text-center text-[11px] text-text-2 rounded-t-[8px] bg-bg-3"
+                :class="
+                  variant === 'pc'
+                    ? 'grid grid-cols-4 px-[12px] py-[8px] text-center text-[14px] text-text-2 rounded-t-[12px] bg-bg-3'
+                    : 'grid grid-cols-4 px-[12px] py-[6px] text-center text-[11px] text-text-2 rounded-t-[8px] bg-bg-3'
+                "
               >
-                <span>{{ t('hashGame.betBlock') }}</span>
+                <span class="text-left">{{ t('hashGame.betBlock') }}</span>
                 <span>{{ t('hashGame.betSelection') }}</span>
                 <span>{{ t('hashGame.betAmount') }}</span>
-                <span>{{ t('hashGame.profitLoss') }}</span>
+                <span class="text-right">{{ t('hashGame.profitLoss') }}</span>
               </div>
-              <div class="rounded-b-[8px] bg-bg-2">
+              <div
+                :class="variant === 'pc' ? 'rounded-b-[12px] bg-bg-2' : 'rounded-b-[8px] bg-bg-2'"
+              >
                 <div
                   v-for="(bet, index) in bets"
                   :key="bet.id"
-                  class="grid grid-cols-4 px-[12px] py-[7px] items-center text-center text-[12px] text-text-2 cursor-pointer"
+                  :class="
+                    variant === 'pc'
+                      ? 'grid grid-cols-4 px-[12px] py-[12px] items-center text-center text-[16px] text-text-2 cursor-pointer'
+                      : 'grid grid-cols-4 px-[12px] py-[7px] items-center text-center text-[12px] text-text-2 cursor-pointer'
+                  "
                   role="button"
                   tabindex="0"
                   @click="openBetDetail(bet)"
@@ -94,9 +156,10 @@
 
 <script setup lang="ts">
 import RightArrowIcon from '@/static/svg/hash_game/jiantou_you2.svg?component'
+import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { RecentBetRecord, RecentBetSummary } from '../index'
+import type { HashGameBetDetail, RecentBetRecord, RecentBetSummary } from '../index'
 import { navigateTo } from '@/utils/router'
 
 const props = withDefaults(
@@ -108,12 +171,16 @@ const props = withDefaults(
     period: number
     bets: RecentBetRecord[]
     summary: RecentBetSummary
+    variant?: 'h5' | 'pc'
     topOffset?: number
   }>(),
-  { topOffset: 0 }
+  { variant: 'h5', topOffset: 0 }
 )
 
-const emit = defineEmits<{ 'update:visible': [visible: boolean] }>()
+const emit = defineEmits<{
+  'update:visible': [visible: boolean]
+  'select-bet': [bet: HashGameBetDetail]
+}>()
 const { t } = useI18n()
 
 const currencySymbol = computed(() => {
@@ -130,15 +197,21 @@ const openBetHistory = () => {
 }
 
 const openBetDetail = (bet: RecentBetRecord) => {
+  const detail: HashGameBetDetail = {
+    ...bet,
+    period: props.period,
+    currencyCode: props.currencyCode,
+    currencyIcon: props.currencyIcon
+  }
   emit('update:visible', false)
+  if (props.variant === 'pc') {
+    emit('select-bet', detail)
+    return
+  }
+
   void navigateTo(`/hash-game/bet-details/${bet.id}`, {
     state: {
-      hashGameBet: JSON.stringify({
-        ...bet,
-        period: props.period,
-        currencyCode: props.currencyCode,
-        currencyIcon: props.currencyIcon
-      })
+      hashGameBet: JSON.stringify(detail)
     }
   })
 }

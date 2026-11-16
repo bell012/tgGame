@@ -1,8 +1,6 @@
-import { useSidebarMenuState } from '@/composables/useSidebarMenuState'
 import { ref } from 'vue'
 
 const DEFAULT_GAME_SELECTION_PATH = '/casino'
-const GAME_CATEGORIES_MENU_ID = 'game-categories'
 const EXPLORE_CASINO_TAB_QUERY_KEY = 'casinoTab'
 
 /** 最近一次选游列表路径（无语言前缀），供关闭游戏后返回 */
@@ -41,47 +39,6 @@ const isGameReturnPath = (path: string): boolean => {
   return Boolean(firstSegmentAfter(path, '/casino/') || firstSegmentAfter(path, '/gamelist/'))
 }
 
-const ensureExpanded = (menuId: string) => {
-  const { expandedMenus } = useSidebarMenuState()
-  if (!expandedMenus.value.includes(menuId)) {
-    expandedMenus.value.push(menuId)
-  }
-}
-
-const syncSidebarForSelectionPath = (path: string) => {
-  if (path === '/' || path === '/explore') {
-    return
-  }
-
-  const { activeMenuId } = useSidebarMenuState()
-
-  if (path === '/casino') {
-    activeMenuId.value = GAME_CATEGORIES_MENU_ID
-    ensureExpanded(GAME_CATEGORIES_MENU_ID)
-    return
-  }
-
-  if (path === '/favorites-games') {
-    activeMenuId.value = 'favorites'
-    return
-  }
-
-  if (path === '/recently-played-games') {
-    activeMenuId.value = 'recently-played'
-    return
-  }
-
-  const casinoTab = firstSegmentAfter(path, '/casino/')
-  const gameListTab = firstSegmentAfter(path, '/gamelist/')
-  const tabKey = casinoTab || gameListTab
-  if (!tabKey) {
-    return
-  }
-
-  activeMenuId.value = `casino_${tabKey}`
-  ensureExpanded(GAME_CATEGORIES_MENU_ID)
-}
-
 const splitPathAndQuery = (path: string) => {
   const [rawPathname, rawSearch = ''] = path.split('?')
   const pathname = normalizePathname(rawPathname ?? '')
@@ -105,7 +62,6 @@ export const recordGameSelectionPath = (path: string) => {
   }
 
   lastGameSelectionPath.value = pathname === '/explore' ? buildExploreReturnPath(params) : pathname
-  syncSidebarForSelectionPath(pathname)
 }
 
 export const resolveGameSelectionPath = () => {

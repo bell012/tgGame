@@ -3,7 +3,6 @@
   <CheckInPopup
     :model-value="true"
     @update:model-value="handlePopupVisibleChange"
-    @rules="handleRules"
     @action="handleAction"
   />
 </template>
@@ -31,9 +30,6 @@ const handlePopupVisibleChange = (visible: boolean) => {
     handleClose()
   }
 }
-
-// 开发阶段规则按钮仅保留占位交互，后续接入真实规则弹窗。
-const handleRules = () => {}
 
 // 开发阶段签到按钮仅保留占位交互，后续接入真实签到逻辑。
 const handleAction = () => {}
