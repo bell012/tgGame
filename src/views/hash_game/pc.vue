@@ -366,6 +366,7 @@
     <!-- 投注记录弹窗 -->
     <RecentBetsPopup
       v-model:visible="recentBetsOpen"
+      variant="pc"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :balance-text="currentBalanceText"
