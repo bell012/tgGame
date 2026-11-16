@@ -496,7 +496,7 @@ import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService
 
 import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { useSidebarMenuState } from '@/composables/useSidebarMenuState'
+import { isSidebarRouteMenu, useSidebarMenuState } from '@/composables/useSidebarMenuState'
 import Arrow_down from '@/static/svg/arrow_down.svg?component'
 import Arrow_right from '@/static/svg/arrow_right.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
@@ -573,7 +573,7 @@ type SidebarSubmenuItem = {
   name: string
   icon: string | Component
   iconSelect?: string | Component
-  handler?: () => void
+  handler?: () => unknown
   children?: SidebarSubmenuItem[]
   external?: boolean
   name2?: string
@@ -585,7 +585,7 @@ type SidebarMenuGroup = {
   name: string
   icon: string | Component
   iconSelect?: string | Component
-  handler?: () => void
+  handler?: () => unknown
   children?: SidebarSubmenuItem[]
   renderAsGroup?: boolean
   external?: boolean
@@ -704,9 +704,11 @@ const toggleMenu = (menuId: string) => {
 const handleMenuClick = (menu: SidebarMenuGroup) => {
   if (hasChildren(menu)) {
     const willExpand = !expandedMenus.value.includes(menu.id)
-    activeMenuId.value = menu.id
-    if (activeThirdLevelMenuId.value && !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)) {
-      activeThirdLevelMenuId.value = ''
+    if (!menu.handler) {
+      activeMenuId.value = menu.id
+      if (activeThirdLevelMenuId.value && !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)) {
+        activeThirdLevelMenuId.value = ''
+      }
     }
     if (willExpand && menu.handler) {
       menu.handler()
@@ -724,11 +726,12 @@ const handleMenuCollapse = (menu: any) => {
 
 // 菜单项点击
 const handleMenuItemClick = (item: any) => {
+  const result = item.handler?.()
+  // 路由菜单由 afterEach 在成功导航后更新，取消或失败时保留原选中项。
+  if (isSidebarRouteMenu(item.id) && result && typeof result.then === 'function') return
+
   activeMenuId.value = item.id
   activeThirdLevelMenuId.value = ''
-  if (item.handler) {
-    item.handler()
-  }
 }
 
 // 提示框位置
@@ -750,7 +753,7 @@ const handleLeaveFeedbackClick = () => {
     activeMenuId.value = 'leave-feedback'
     showLeaveFeedbackModal.value = true
   } else {
-    navigateTo('/personal-center/feedback')
+    return navigateTo('/personal-center/feedback')
   }
 }
 
@@ -804,9 +807,9 @@ const clearSubmenuHover = () => {
 
 // 三级菜单项点击
 const handleThirdLevelClick = (item: any) => {
-  activeThirdLevelMenuId.value = item.id
-  if (item.handler) {
-    item.handler()
+  const result = item.handler?.()
+  if (!isSidebarRouteMenu(item.id) || !result || typeof result.then !== 'function') {
+    activeThirdLevelMenuId.value = item.id
   }
   hoveredSubmenu.value = null
 }
