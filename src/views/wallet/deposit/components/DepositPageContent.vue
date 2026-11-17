@@ -10,11 +10,6 @@
           @click.stop="setActiveTab(tab)"
         >
           <span>{{ getTabLabel(tab) }}</span>
-
-          <div
-            v-if="props.mode === 'mobile' && props.modelValue === tab"
-            class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
-          ></div>
         </button>
       </div>
     </div>
@@ -95,11 +90,13 @@ const panelMaxHeightClass = computed(() =>
 const tabHeaderWrapperClass = computed(() =>
   props.mode === 'pc'
     ? ['w-full shrink-0 flex', PC_SEGMENTED_TABS_CLASS]
-    : 'w-full shrink-0 flex flex-col bg-bg-2'
+    : 'w-full shrink-0 flex flex-col bg-bg-1 px-4 pt-4'
 )
 
 const tabHeaderClass = computed(() =>
-  props.mode === 'pc' ? ['flex w-full', PC_SEGMENTED_TABS_CLASS] : 'flex bg-bg-2 dark:bg-bg-8'
+  props.mode === 'pc'
+    ? ['flex w-full', PC_SEGMENTED_TABS_CLASS]
+    : 'flex h-[39px] rounded-[8px] bg-bg-2'
 )
 
 const contentClass = computed(() =>
@@ -115,7 +112,10 @@ const getTabClass = (tab: DepositTabType) => {
     return ['text-sm py-3 font-bold', PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(isActive)]
   }
 
-  return ['text-sm sm:text-base font-[800]', isActive ? 'text-text-1 pb-1.5' : 'text-text-2 pb-1.5']
+  return [
+    'flex items-center justify-center rounded-[8px] font-bold',
+    isActive ? 'bg-bg-3 text-sm text-text-1' : 'text-xs text-text-2'
+  ]
 }
 
 const getTabLabel = (tab: DepositTabType) => t(getDepositTabI18nKey(tab))

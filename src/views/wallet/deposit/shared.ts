@@ -1,5 +1,6 @@
 import Api from '@/api'
 import type {
+  QueryPayCategoryItem,
   QueryPayColumnItem,
   QueryPayOrderByOrderIdResult,
   QueryPayQuickAmountConfig,
@@ -7,6 +8,7 @@ import type {
   QueryPaySubColumnPageForm,
   SubmitPayOrderPageForm
 } from '@/api/interface/wallet'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { isOrderTerminalStatus } from '@/constants/orderStatus'
 import { useUserStore } from '@/stores/user'
 import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
@@ -15,14 +17,14 @@ import { formatTimestamp } from '@/utils/date'
 import { resolveGameImageUrl } from '@/utils/image'
 import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
-import { computed, onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { defaultFiatOrder, type FiatOrderType } from './components/order/orderType'
 
 export type DepositTabType = 'Fiat' | 'Crypto'
 export type DepositPageMode = 'mobile' | 'pc'
 
-export const DEPOSIT_TABS: DepositTabType[] = ['Fiat', 'Crypto']
+export const DEPOSIT_TABS: DepositTabType[] = ['Crypto', 'Fiat']
 export const DEPOSIT_CRYPTO_COLUMN_NAME = 'USDT泰达币'
 
 export const getDepositTabI18nKey = (tab: DepositTabType) =>
@@ -464,36 +466,64 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
   }
 }
 
+export interface DepositCategoryOption {
+  id: number
+  label: string
+}
+
+export const resolveDepositMethodIcon = (item: QueryPaySubColumnItem) =>
+  toDepositPayImageUrl(item.platformLogo || '')
+
 export const useDepositFiatFlow = (options: DepositFlowOptions) => {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const userStore = useUserStore()
+  const { currentCurrencyCode } = useDisplayCurrency()
   const defaultPresetAmounts: number[] = []
 
   const isInitialLoading = ref(true)
-  const presetAmounts = ref<number[]>([...defaultPresetAmounts])
-  const paySubColumns = ref<QueryPaySubColumnItem[]>([])
-  const payMethods = ref<QueryPayColumnItem[]>([])
-  const selectedMethod = ref<QueryPayColumnItem | null>(null)
-  const selectedSubColumn = ref<QueryPaySubColumnItem | null>(null)
-  const discountList = computed(() => selectedSubColumn.value?.quickAmountConfigs ?? [])
+  const payColumnLoaded = ref(false)
+  const methodsLoading = ref(false)
+  const categories = ref<QueryPayCategoryItem[]>([])
+  const selectedCategoryId = ref<number | null>(null)
+  const methods = ref<QueryPaySubColumnItem[]>([])
+  const selectedMethod = ref<QueryPaySubColumnItem | null>(null)
+  const discountList = computed(() => selectedMethod.value?.quickAmountConfigs ?? [])
   const selectedDiscountItem = ref<QueryPayQuickAmountConfig | null>(null)
+  const presetAmounts = ref<number[]>([...defaultPresetAmounts])
   const amount = ref<number>()
   const orderInfo = ref<FiatOrderType>({ ...defaultFiatOrder })
   const orderPopShow = ref(false)
-  const payColumnLoaded = ref(false)
   const currentOrderId = ref('')
   const pollTimer = ref<number | null>(null)
+  let methodsRequestId = 0
+  let initialMethodApplied = false
 
-  const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
-  const showChannelSection = computed(() => paySubColumns.value.length > 1)
-  const isManualAmountAllowed = computed(() => selectedSubColumn.value?.manualAmountIn !== 0)
-  const selectedPayChannelCode = computed(() =>
-    resolvePayChannelTabKey(selectedMethod.value?.columnName)
+  const localeCode = computed(() => getLanguageCode(String(locale.value)))
+
+  const categoryOptions = computed<DepositCategoryOption[]>(() =>
+    categories.value
+      .map((item, index) => ({ item, index }))
+      .sort((a, b) => {
+        const sortDiff = (a.item.sortNo ?? 0) - (b.item.sortNo ?? 0)
+        return sortDiff !== 0 ? sortDiff : a.index - b.index
+      })
+      .map(({ item }) => ({
+        id: item.rowId,
+        label: parseDepositLocalizedName(item.categoryName, localeCode.value)
+      }))
   )
+
+  const hasPanelContent = computed(() => categories.value.length > 0 || methods.value.length > 0)
+  const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
+  const isManualAmountAllowed = computed(() => selectedMethod.value?.manualAmountIn !== 0)
+  const selectedPayChannelCode = computed(() => {
+    const method = selectedMethod.value
+    if (!method) return ''
+    return String(method.payChannelCode || resolvePayChannelTabKey(method.platformName) || '')
+  })
   const presetDiscountRatioMap = computed(() =>
     createDepositPresetDiscountRatioMap(selectedDiscountItem.value)
   )
-  const channelOptions = computed(() => createDepositChannelOptions(paySubColumns.value))
   const wageringOptions = computed(() => createDepositWageringOptions(discountList.value))
   const amountPlaceholder = computed(() =>
     isManualAmountAllowed.value
@@ -506,16 +536,15 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
     options.emitHidden?.(value)
   }
 
+  const resolveMethodName = (item: QueryPaySubColumnItem) =>
+    parseDepositSubColumnName(item, localeCode.value)
+
   const clearAmount = () => {
     amount.value = undefined
   }
 
   const selectPresetAmount = (preset: number) => {
     amount.value = preset
-  }
-
-  const resolveMethodIcon = (item: QueryPayColumnItem) => {
-    return toDepositPayImageUrl(item.defaultOrderIcon)
   }
 
   const syncPresetAmounts = () => {
@@ -525,25 +554,99 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
     )
   }
 
+  const applySelectedMethod = (method: QueryPaySubColumnItem | null) => {
+    selectedMethod.value = method
+    selectedDiscountItem.value = discountList.value[0] ?? null
+    syncPresetAmounts()
+    clearAmount()
+  }
+
   const selectWagering = (rowId: number) => {
     selectedDiscountItem.value = discountList.value.find(item => item.rowId === rowId) ?? null
     syncPresetAmounts()
     clearAmount()
   }
 
-  const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
-    orderInfo.value = {
-      order_no: String(detail.orderId ?? currentOrderId.value),
-      created_at: formatTimestamp(detail.createTime),
-      amount: Number(detail.busiAmount ?? amount.value ?? 0),
-      method: selectedMethod.value?.columnName ?? '',
-      method_icon: selectedMethod.value ? resolveMethodIcon(selectedMethod.value) : '',
-      currency: detail.currency || getCurrentCurrency(),
-      bonus: String(detail.otherAmount ?? 0),
-      type: 'Fiat',
-      status: String(detail.status ?? 0)
+  const pickDefaultMethod = (list: QueryPaySubColumnItem[]) => {
+    // 任务中心传入方式编码时首次加载优先精确选中，之后切换分类默认选第一个。
+    const initialMethodCode = String(options.initialMethodCode ?? '').trim()
+    if (!initialMethodApplied && initialMethodCode) {
+      initialMethodApplied = true
+      const matched = list.find(item => String(item.columnCode) === initialMethodCode)
+      if (matched) return matched
     }
-    orderPopShow.value = true
+
+    return list[0] ?? null
+  }
+
+  const loadMethods = async (categoryId: number) => {
+    const requestId = ++methodsRequestId
+    methodsLoading.value = true
+
+    try {
+      const param: QueryPaySubColumnPageForm = {
+        page: {
+          current: 1,
+          size: 9999
+        },
+        param: { categoryId }
+      }
+      const response = await Api.wallet.queryPaySubColumnPage(param)
+      ensureApiBusinessSuccess(response)
+      if (requestId !== methodsRequestId) return
+
+      const result: QueryPaySubColumnItem[] = Array.isArray(response.result) ? response.result : []
+      methods.value = result
+      applySelectedMethod(pickDefaultMethod(result))
+    } catch (error) {
+      console.error('queryPaySubColumnPage failed', error)
+      if (requestId !== methodsRequestId) return
+
+      methods.value = []
+      applySelectedMethod(null)
+    } finally {
+      if (requestId === methodsRequestId) {
+        methodsLoading.value = false
+      }
+    }
+  }
+
+  const loadCategories = async () => {
+    try {
+      const response = await Api.wallet.queryPayCategoryList({
+        languageCode: getLanguageCode(),
+        currency: currentCurrencyCode.value || getCurrentCurrency()
+      })
+      ensureApiBusinessSuccess(response)
+      categories.value = Array.isArray(response.result) ? response.result : []
+    } catch (error) {
+      console.error('queryPayCategoryList failed', error)
+      categories.value = []
+    }
+
+    const firstCategoryId = categoryOptions.value[0]?.id ?? null
+    selectedCategoryId.value = firstCategoryId
+    if (firstCategoryId === null) {
+      methodsRequestId++
+      methods.value = []
+      applySelectedMethod(null)
+    } else {
+      await loadMethods(firstCategoryId)
+    }
+    payColumnLoaded.value = true
+    isInitialLoading.value = false
+  }
+
+  const selectCategory = async (categoryId: number) => {
+    if (selectedCategoryId.value === categoryId) return
+
+    selectedCategoryId.value = categoryId
+    await loadMethods(categoryId)
+  }
+
+  const selectMethod = (method: QueryPaySubColumnItem) => {
+    if (selectedMethod.value?.rowId === method.rowId) return
+    applySelectedMethod(method)
   }
 
   const stopOrderPolling = () => {
@@ -551,6 +654,21 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
       window.clearInterval(pollTimer.value)
       pollTimer.value = null
     }
+  }
+
+  const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
+    orderInfo.value = {
+      order_no: String(detail.orderId ?? currentOrderId.value),
+      created_at: formatTimestamp(detail.createTime),
+      amount: Number(detail.busiAmount ?? amount.value ?? 0),
+      method: selectedMethod.value ? resolveMethodName(selectedMethod.value) : '',
+      method_icon: selectedMethod.value ? resolveDepositMethodIcon(selectedMethod.value) : '',
+      currency: detail.currency || getCurrentCurrency(),
+      bonus: String(detail.otherAmount ?? 0),
+      type: 'Fiat',
+      status: String(detail.status ?? 0)
+    }
+    orderPopShow.value = true
   }
 
   const queryOrderDetail = async () => {
@@ -591,120 +709,17 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
     }
   }
 
-  const loadPaySubColumnPage = async (columnCode: number) => {
-    try {
-      const param: QueryPaySubColumnPageForm = {
-        page: {
-          current: 1,
-          size: 9999
-        },
-        param: {
-          columnCode
-        }
-      }
-      const response = await Api.wallet.queryPaySubColumnPage(param)
-      ensureApiBusinessSuccess(response)
-      const result: QueryPaySubColumnItem[] = Array.isArray(response.result) ? response.result : []
-      paySubColumns.value = result
-      selectedSubColumn.value = result[0] ?? null
-      selectedDiscountItem.value = discountList.value[0] ?? null
-      syncPresetAmounts()
-    } catch (error) {
-      console.error('queryPaySubColumnPage failed', error)
-      paySubColumns.value = []
-      selectedSubColumn.value = null
-      selectedDiscountItem.value = null
-      presetAmounts.value = [...defaultPresetAmounts]
-    }
-  }
-
-  const selectChannel = (rowId: number) => {
-    const target = paySubColumns.value.find(item => item.rowId === rowId)
-    if (!target) return
-
-    selectedSubColumn.value = target
-    selectedDiscountItem.value = discountList.value[0] ?? null
-    syncPresetAmounts()
-    clearAmount()
-  }
-
-  const loadPayColumnPage = async () => {
-    try {
-      const response = await Api.wallet.queryPayColumnPage({
-        page: {
-          current: 1,
-          size: 9999
-        },
-        languageCode: getLanguageCode(),
-        currency: getCurrentCurrency()
-      })
-      ensureApiBusinessSuccess(response)
-      const result: QueryPayColumnItem[] = Array.isArray(response.result) ? response.result : []
-
-      payMethods.value = result
-        .map((item, index) => ({ item, index }))
-        .filter(
-          ({ item }) =>
-            item.columnName !== DEPOSIT_CRYPTO_COLUMN_NAME &&
-            Boolean(resolvePayChannelTabKey(item.columnName))
-        )
-        .sort((a, b) => {
-          const sortDiff = a.item.sortNo - b.item.sortNo
-          return sortDiff !== 0 ? sortDiff : a.index - b.index
-        })
-        .map(({ item }) => item)
-
-      // 任务中心传入方式编码时优先精确选中，未匹配则保留充值页原有默认方式。
-      const initialMethodCode = String(options.initialMethodCode ?? '').trim()
-      const defaultMethod =
-        payMethods.value.find(item => String(item.columnCode) === initialMethodCode) ??
-        payMethods.value[0]
-      if (!defaultMethod) {
-        selectedMethod.value = null
-        paySubColumns.value = []
-        selectedSubColumn.value = null
-        selectedDiscountItem.value = null
-        presetAmounts.value = [...defaultPresetAmounts]
-        return
-      }
-
-      selectedMethod.value = defaultMethod
-      await loadPaySubColumnPage(defaultMethod.columnCode)
-    } catch (error) {
-      console.error('queryPayColumnPage failed', error)
-      payMethods.value = []
-      selectedMethod.value = null
-      paySubColumns.value = []
-      selectedSubColumn.value = null
-      selectedDiscountItem.value = null
-      presetAmounts.value = [...defaultPresetAmounts]
-    } finally {
-      payColumnLoaded.value = true
-      isInitialLoading.value = false
-    }
-  }
-
-  const selectMethod = async (method: QueryPayColumnItem) => {
-    if (selectedMethod.value?.columnCode === method.columnCode) {
-      return
-    }
-
-    selectedMethod.value = method
-    clearAmount()
-    await loadPaySubColumnPage(method.columnCode)
-  }
-
   const doDeposit = async () => {
     if (isDepositDisabled.value) return
-    if (!selectedMethod.value) return
-    if (!selectedSubColumn.value) return
+    const method = selectedMethod.value
+    if (!method) return
 
     const param: SubmitPayOrderPageForm = {
-      columnCode: String(selectedMethod.value.columnCode),
+      columnCode: String(method.columnCode),
       busiAmount: String(amount.value ?? 0),
       payChannelCode: selectedPayChannelCode.value,
       channelId: getDepositChannelId(resolveFlowBoolean(options.isMobile)),
-      subColumnCode: selectedSubColumn.value.rowId,
+      subColumnCode: method.rowId,
       flows: selectedDiscountItem.value?.multiple ?? 0
     }
 
@@ -722,8 +737,8 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
         order_no: currentOrderId.value,
         created_at: formatTimestamp(submitResult?.createTime),
         amount: amount.value ?? 0,
-        method: selectedMethod.value.columnName,
-        method_icon: resolveMethodIcon(selectedMethod.value),
+        method: resolveMethodName(method),
+        method_icon: resolveDepositMethodIcon(method),
         currency: getCurrentCurrency(),
         bonus: '0',
         type: 'Fiat',
@@ -762,8 +777,13 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
     }
   }
 
+  watch(currentCurrencyCode, (value, oldValue) => {
+    if (!value || value === oldValue) return
+    void loadCategories()
+  })
+
   onMounted(() => {
-    void loadPayColumnPage()
+    void loadCategories()
     document.addEventListener('visibilitychange', handleVisibilityChange)
   })
 
@@ -774,30 +794,31 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
 
   return {
     isInitialLoading,
-    presetAmounts,
-    paySubColumns,
-    payMethods,
+    payColumnLoaded,
+    methodsLoading,
+    hasPanelContent,
+    categoryOptions,
+    selectedCategoryId,
+    methods,
     selectedMethod,
-    selectedSubColumn,
     discountList,
     selectedDiscountItem,
+    presetAmounts,
     amount,
     orderInfo,
     orderPopShow,
-    payColumnLoaded,
     isDepositDisabled,
-    showChannelSection,
     isManualAmountAllowed,
     presetDiscountRatioMap,
-    channelOptions,
     wageringOptions,
     amountPlaceholder,
     isAmountInputHighlighted,
     clearAmount,
     selectPresetAmount,
-    resolveMethodIcon,
+    resolveMethodIcon: resolveDepositMethodIcon,
+    resolveMethodName,
     selectWagering,
-    selectChannel,
+    selectCategory,
     selectMethod,
     doDeposit,
     handleClose,

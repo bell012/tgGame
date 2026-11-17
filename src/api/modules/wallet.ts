@@ -11,6 +11,8 @@ import type {
   QueryMemberPayOrderPageResponse,
   QueryMemberPayOrderSyncReq,
   QueryMemberPayOrderSyncResponse,
+  QueryPayCategoryListForm,
+  QueryPayCategoryListResponse,
   QueryPayColumnPageForm,
   QueryPayColumnPageResponse,
   QueryPayColumnWithSubListForm,
@@ -56,6 +58,19 @@ export function queryPayColumnWithSubList(
 ): Promise<QueryPayColumnWithSubListResponse> {
   return request({
     url: '/pc/queryPayColumnWithSubList',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
+  })
+}
+
+// 查询充值分类（Deposit Type）
+export function queryPayCategoryList(
+  data: QueryPayCategoryListForm
+): Promise<QueryPayCategoryListResponse> {
+  return request({
+    url: '/pc/queryPayCategoryList',
     method: 'post',
     data,
     showSuccessToast: false,

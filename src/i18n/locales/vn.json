@@ -1570,6 +1570,8 @@
     },
     "deposit_more": "Thêm",
     "deposit_channel": "Kênh nạp tiền",
+    "current_currency": "Tiền tệ hiện tại",
+    "deposit_type": "Loại nạp tiền",
     "deposit_amount": "Số tiền nạp",
     "how_to_deposit": "Cách nạp tiền",
     "deposit_amount_input_placeholder": "Chọn số tiền nạp",

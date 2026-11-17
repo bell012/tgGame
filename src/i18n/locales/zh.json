@@ -1568,6 +1568,8 @@
     },
     "deposit_more": "更多",
     "deposit_channel": "充值渠道",
+    "current_currency": "当前货币",
+    "deposit_type": "充值类型",
     "deposit_amount": "充值金额",
     "how_to_deposit": "如何充值",
     "deposit_amount_input_placeholder": "请选择充值金额",

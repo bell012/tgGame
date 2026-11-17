@@ -112,8 +112,29 @@ export interface QueryPaySubColumnPageForm {
     size: number
   }
   param: {
-    columnCode: number
+    columnCode?: number
+    categoryId?: number
   }
+}
+
+export interface QueryPayCategoryListForm {
+  languageCode: string
+  currency: string
+}
+
+export interface QueryPayCategoryItem {
+  /** 子栏目查询参数 categoryId 取此值。 */
+  rowId: number
+  /** 可能是纯文本，也可能是多语言 JSON 字符串。 */
+  categoryName: string
+  sortNo?: number
+}
+
+export interface QueryPayCategoryListResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryPayCategoryItem[]
 }
 
 export interface SubmitPayOrderPageForm {

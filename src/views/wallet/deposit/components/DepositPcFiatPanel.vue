@@ -2,115 +2,137 @@
   <DepositPcFiatSkeleton v-if="isInitialLoading" />
 
   <!-- 法币充值面板容器 -->
-  <div v-else-if="payMethods.length > 0" class="w-full bg-bg-2 p-6 rounded-lg font-['Inter']">
-    <!-- 支付方式标题 -->
-    <p class="text-sm font-bold leading-normal text-text-1">{{ t('deposit.methods') }}</p>
-    <!-- 支付方式列表外层容器 -->
-    <div class="mt-2.5 overflow-hidden">
-      <!-- 支付方式横向滚动容器 -->
-      <div
-        ref="methodListRef"
-        class="flex flex-nowrap gap-4 overflow-x-auto scrollbar-hide touch-pan-x scroll-smooth"
-        @wheel.prevent="handleMethodListWheel"
-      >
-        <!-- 单个支付方式卡片 -->
-        <div
-          class="shrink-0 basis-[calc((100%-3rem)/4)] flex items-center justify-center overflow-hidden p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
-          :class="{
-            'border border-theme-primary bg-theme-3':
-              selectedMethod?.columnCode === item.columnCode,
-            'border border-transparent bg-bg-4': selectedMethod?.columnCode !== item.columnCode
-          }"
-          v-for="(item, index) in payMethods"
-          :key="item.columnCode"
-          :ref="el => setMethodItemRef(el, index)"
-          @click.stop="selectMethod(item, index)"
+  <div
+    v-else-if="hasPanelContent"
+    class="flex w-full flex-col gap-4 rounded-[12px] bg-bg-2 p-6 font-['Inter']"
+  >
+    <!-- 充值类型 + 当前货币 -->
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex min-w-0 flex-wrap gap-2">
+        <button
+          v-for="category in categoryOptions"
+          :key="category.id"
+          type="button"
+          class="flex items-center justify-center rounded-[8px] px-6 py-2 text-sm font-bold leading-5 transition-colors"
+          :class="
+            selectedCategoryId === category.id
+              ? 'bg-theme-primary text-text-4'
+              : 'bg-opacity-6 text-text-2 lg:hover:text-text-1'
+          "
+          @click="selectCategory(category.id)"
         >
-          <!-- 支付方式图标 -->
-          <img class="mr-4 h-6 shrink-0" :src="resolveMethodIcon(item)" />
-          <!-- 支付方式名称 -->
-          <p class="min-w-0 truncate text-base font-bold leading-normal text-text-1">
-            {{ item.columnName }}
-          </p>
-        </div>
+          {{ category.label }}
+        </button>
+      </div>
+
+      <div class="relative shrink-0">
+        <button
+          type="button"
+          class="flex items-center gap-1 rounded-full bg-opacity-6 py-2 pl-3 pr-2"
+          @click="currencyDropdownShow = !currencyDropdownShow"
+        >
+          <img :src="currentCurrencyIcon" alt="" class="size-5 object-contain" />
+          <span class="text-sm font-bold leading-5 text-text-2">{{ currentCurrencyCode }}</span>
+          <DropdownChevron
+            class="size-2.5 text-text-2 transition-transform"
+            :class="{ 'rotate-180': currencyDropdownShow }"
+          />
+        </button>
+        <template v-if="currencyDropdownShow">
+          <div class="fixed inset-0 z-10" @click="currencyDropdownShow = false" />
+          <div
+            class="absolute right-0 top-[calc(100%+4px)] z-20 w-[240px] rounded-lg border border-opacity-10 bg-bg-1 p-2.5"
+          >
+            <CurrencySelectorList
+              :visible="currencyDropdownShow"
+              :options="currencySelectorOptions"
+              :selected-value="currentCurrencyCode"
+              mode="radio"
+              list-class="max-h-[280px] overflow-y-auto"
+              item-class="flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left lg:hover:bg-opacity-6"
+              selected-item-class="bg-opacity-10"
+              @select="handleCurrencySelect"
+            />
+          </div>
+        </template>
       </div>
     </div>
-    <!-- 充值渠道区域 -->
-    <div v-if="showChannelSection" class="mt-4 flex flex-col gap-2">
-      <!-- 充值渠道标题 -->
-      <p class="text-sm font-bold leading-normal text-text-1">
-        {{ t('deposit.deposit_channel') }}
-      </p>
-      <!-- 充值渠道按钮列表 -->
-      <div class="grid grid-cols-6 gap-4">
-        <!-- 单个充值渠道按钮 -->
+
+    <!-- 充值方式 -->
+    <div class="flex flex-col gap-2">
+      <p class="text-sm font-bold leading-5 text-text-1">{{ t('deposit.methods') }}</p>
+      <div
+        v-if="methods.length > 0"
+        class="flex flex-wrap gap-2"
+        :class="{ 'opacity-60': methodsLoading }"
+      >
         <button
-          v-for="channel in channelOptions"
-          :key="channel.rowId"
+          v-for="item in methods"
+          :key="item.rowId"
           type="button"
-          class="flex h-9 items-center justify-center rounded-lg border px-3 text-center text-sm leading-5 transition-colors"
-          :class="[
-            'text-text-1 lg:hover:bg-theme-3',
-            selectedSubColumn?.rowId === channel.rowId
-              ? 'border border-theme-primary bg-theme-3'
-              : ''
-          ]"
-          :style="{
-            border: `1px solid ${selectedSubColumn?.rowId === channel.rowId ? 'var(--color-theme-level-1)' : 'var(--color-opacity-10)'}`
-          }"
-          @click="selectChannel(channel.rowId)"
+          class="flex items-center justify-center gap-2 rounded-[8px] px-5 py-3 transition-colors"
+          :class="
+            selectedMethod?.rowId === item.rowId
+              ? 'bg-theme-primary text-text-4'
+              : 'bg-opacity-6 text-text-2 lg:hover:text-text-1'
+          "
+          @click="selectMethod(item)"
         >
-          {{ channel.label }}
+          <span v-if="resolveMethodIcon(item)" class="flex h-4 w-14 items-center justify-center">
+            <img
+              :src="resolveMethodIcon(item)"
+              alt=""
+              class="max-h-full max-w-full object-contain"
+            />
+          </span>
+          <span class="whitespace-nowrap text-sm font-bold leading-5">
+            {{ resolveMethodName(item) }}
+          </span>
+        </button>
+      </div>
+      <p v-else-if="!methodsLoading" class="py-3 text-center text-sm text-text-3">
+        {{ t('deposit.unavailable') }}
+      </p>
+    </div>
+
+    <!-- 充值金额 -->
+    <div class="flex flex-col gap-2">
+      <p class="text-sm font-bold leading-5 text-text-1">{{ t('deposit.deposit_amount') }}</p>
+      <div
+        class="flex h-12 w-full items-center gap-2 rounded-[8px] border bg-mask-20 px-3"
+        :class="isAmountInputHighlighted ? 'border-theme-primary' : 'border-opacity-10'"
+      >
+        <span class="inline-flex size-6 shrink-0 items-center text-xl leading-6 text-theme-primary">
+          {{ getCurrencySymbol(currentCurrencyCode) }}
+        </span>
+        <input
+          v-model.number="amount"
+          type="number"
+          :readonly="!isManualAmountAllowed"
+          :inputmode="isManualAmountAllowed ? 'decimal' : 'none'"
+          :placeholder="amountPlaceholder"
+          class="min-w-0 flex-1 bg-transparent text-sm text-text-1 outline-none placeholder:text-sm placeholder:text-text-3 focus:outline-none focus:ring-0"
+          :class="{ 'cursor-not-allowed': !isManualAmountAllowed }"
+        />
+        <button
+          v-show="!isDepositDisabled"
+          type="button"
+          class="flex size-6 shrink-0 items-center justify-center rounded-md bg-opacity-10"
+          @click="clearAmount"
+        >
+          <CloseIcon class="size-2.5" />
         </button>
       </div>
     </div>
 
-    <!-- 充值金额标题 -->
-    <p class="mt-4 text-sm font-bold leading-normal text-text-1">
-      {{ t('deposit.deposit_amount') }}
-    </p>
-    <!-- 充值金额输入容器 -->
-    <div
-      class="flex items-center w-full mt-2 p-3 rounded-lg bg-input-3 border focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
-      :class="
-        isAmountInputHighlighted
-          ? 'border-[color:var(--color-theme-level-1)]'
-          : 'border-[color:var(--color-opacity-10)]'
-      "
-    >
-      <span class="mr-3 inline-flex min-w-6 shrink-0 text-xl leading-6 text-theme-primary">
-        {{ getCurrencySymbol(getCurrentCurrency()) }}
-      </span>
-      <!-- 充值金额输入框 -->
-      <input
-        type="number"
-        v-model.number="amount"
-        :readonly="!isManualAmountAllowed"
-        :inputmode="isManualAmountAllowed ? 'decimal' : 'none'"
-        :placeholder="amountPlaceholder"
-        class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-sm"
-        :class="{ 'cursor-not-allowed': !isManualAmountAllowed }"
-      />
-      <!-- 清空输入按钮 -->
-      <button
-        v-show="!isDepositDisabled"
-        class="w-6 h-6 bg-opacity-10 rounded-md sm:flex items-center justify-center z-10"
-        @click="clearAmount"
-      >
-        <CloseIcon class="h-2.5 w-2.5" />
-      </button>
-    </div>
-    <!-- 流水选项与提示区域 -->
-    <div class="mt-4 flex flex-col gap-2">
-      <!-- 流水选项切换容器 -->
-      <div class="border-b border-opacity-10 pb-2">
-        <!-- 流水选项列表 -->
+    <!-- 流水选项与提示 -->
+    <div class="flex flex-col gap-2">
+      <div class="border-b border-opacity-10 pb-3">
         <div class="flex items-center gap-6 overflow-x-auto scrollbar-hide">
           <template v-for="(item, index) in wageringOptions" :key="item.rowId">
-            <!-- 单个流水选项按钮 -->
             <button
               type="button"
-              class="relative shrink-0 pb-1 text-sm leading-5 transition-colors"
+              class="relative shrink-0 whitespace-nowrap text-sm leading-5 transition-colors"
               :class="
                 selectedDiscountItem?.rowId === item.rowId
                   ? 'font-bold text-text-1'
@@ -121,71 +143,66 @@
               {{ item.label }}
               <span
                 v-if="selectedDiscountItem?.rowId === item.rowId"
-                class="absolute inset-x-0 -bottom-[9px] h-px bg-theme-primary"
+                class="absolute inset-x-0 -bottom-3 h-px bg-theme-primary"
               ></span>
             </button>
-
-            <!-- 流水选项分隔线 -->
-            <div
+            <span
               v-if="index !== wageringOptions.length - 1"
               class="h-[14px] w-px shrink-0 bg-opacity-10"
-            ></div>
+            ></span>
           </template>
         </div>
       </div>
-
-      <!-- 提款流水提示文案 -->
       <p class="text-xs leading-[15px] text-secondary-7">
         {{ t('deposit.withdrawal_no_wagering_tip') }}
       </p>
     </div>
-    <!-- 预设金额区域 -->
-    <div class="mt-4 w-full relative">
-      <!-- 预设金额按钮网格 -->
-      <div
-        ref="presetsRef"
-        class="grid grid-cols-6 gap-2 p-2 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
-        :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'"
-      >
-        <!-- 单个预设金额按钮 -->
-        <button
-          v-for="preset in presetAmounts"
-          :key="preset"
-          @click="selectPresetAmount(preset)"
-          class="relative flex h-10 items-center justify-center rounded-lg text-base font-bold leading-[19px] transition-colors lg:hover:bg-theme-primary"
-          :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
+
+    <!-- 快捷金额 + 立即充值 -->
+    <div class="flex flex-col gap-8">
+      <div class="flex flex-col items-center gap-2 rounded-[16px] bg-bg-4 p-2">
+        <div
+          ref="presetsRef"
+          class="grid w-full grid-cols-6 gap-2 pt-1 transition-all duration-300"
+          :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[92px] overflow-hidden'"
         >
-          <!-- 预设金额文本 -->
-          <span>{{ preset }}</span>
-          <!-- 预设金额优惠角标 -->
-          <span
-            v-if="presetDiscountRatioMap[preset] !== undefined"
-            class="pointer-events-none absolute -right-1 -top-1 min-w-8 bg-center bg-[length:100%_100%] bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4 text-white whitespace-nowrap"
-            :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
+          <button
+            v-for="preset in presetAmounts"
+            :key="preset"
+            type="button"
+            class="relative flex h-10 items-center justify-center rounded-[8px] text-base font-bold leading-[19px] transition-colors"
+            :class="
+              preset === amount
+                ? 'bg-theme-primary text-text-4'
+                : 'bg-bg-3 text-text-1 lg:hover:bg-hover-1'
+            "
+            @click="selectPresetAmount(preset)"
           >
-            {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
-          </span>
-        </button>
-      </div>
-      <!-- 展开收起操作区 -->
-      <div class="w-full bg-bg-4 rounded-bl-lg rounded-br-lg py-2">
-        <!-- 展开收起按钮 -->
+            <span>{{ preset }}</span>
+            <span
+              v-if="presetDiscountRatioMap[preset] !== undefined"
+              class="pointer-events-none absolute -right-1 -top-1 min-w-8 whitespace-nowrap bg-[length:100%_100%] bg-center bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4 text-white"
+              :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
+            >
+              {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
+            </span>
+          </button>
+        </div>
         <button
-          class="mx-auto flex items-center gap-1 text-xs text-text-3 lg:hover:text-text-1 transition"
+          type="button"
+          class="flex h-5 items-center gap-2 text-[13px] leading-4 text-text-3 transition lg:hover:text-text-1"
           @click="expanded = !expanded"
         >
           {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
-          <ExpandUpDoubleIcon v-if="expanded" class="w-[9px] h-2" />
-          <ExpandDownDoubleIcon v-else class="w-[9px] h-2" />
+          <ExpandUpDoubleIcon v-if="expanded" class="size-2" />
+          <ExpandDownDoubleIcon v-else class="size-2" />
         </button>
       </div>
-    </div>
-    <!-- 立即充值按钮区域 -->
-    <div class="w-full mt-4">
-      <!-- 立即充值按钮 -->
+
       <button
-        class="w-full py-4 lg:hover:btn-primary rounded-xl font-semibold text-text-4"
-        :class="[!isDepositDisabled ? 'btn-primary' : 'bg-theme-2 cursor-not-allowed']"
+        type="button"
+        class="flex h-12 w-full items-center justify-center rounded-[8px] text-sm font-bold leading-5 text-text-4"
+        :class="!isDepositDisabled ? 'btn-primary' : 'cursor-not-allowed bg-theme-2'"
         :disabled="isDepositDisabled"
         @click="doDeposit"
       >
@@ -211,16 +228,18 @@
   />
 </template>
 <script setup lang="ts">
-import type { QueryPayColumnItem } from '@/api/interface/wallet'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import DropdownChevron from '@/static/svg/casino/dropdown_chevron.svg?component'
 import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import { getCurrencySymbol, getCurrentCurrency } from '@/utils/locale'
-import { nextTick, ref, type ComponentPublicInstance } from 'vue'
+import { getCurrencySymbol } from '@/utils/locale'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositFiatFlow } from '../shared'
 import DepositPcFiatSkeleton from './DepositPcFiatSkeleton.vue'
@@ -237,31 +256,36 @@ const emit = defineEmits<{
   hidden: [value: boolean]
 }>()
 
+const { currentCurrencyCode, currentCurrencyIcon, currencyOptions, setDisplayCurrency } =
+  useDisplayCurrency()
+
 const {
   isInitialLoading,
-  presetAmounts,
-  payMethods,
+  payColumnLoaded,
+  methodsLoading,
+  hasPanelContent,
+  categoryOptions,
+  selectedCategoryId,
+  methods,
   selectedMethod,
-  selectedSubColumn,
   selectedDiscountItem,
+  presetAmounts,
   amount,
   orderInfo,
   orderPopShow,
-  payColumnLoaded,
   isDepositDisabled,
-  showChannelSection,
   isManualAmountAllowed,
   presetDiscountRatioMap,
-  channelOptions,
   wageringOptions,
   amountPlaceholder,
   isAmountInputHighlighted,
   clearAmount,
   selectPresetAmount,
   resolveMethodIcon,
+  resolveMethodName,
   selectWagering,
-  selectChannel,
-  selectMethod: selectDepositMethod,
+  selectCategory,
+  selectMethod,
   doDeposit,
   handleClose,
   handleHidden
@@ -273,57 +297,22 @@ const {
   emitHiddenOnOrderHidden: false
 })
 
-const methodListRef = ref<HTMLDivElement | null>(null)
-const methodItemRefs = ref<Array<HTMLElement | null>>([])
+const currencyDropdownShow = ref(false)
+const currencySelectorOptions = computed(() =>
+  currencyOptions.value.map(item => ({
+    value: item.code,
+    label: item.code,
+    icon: item.icon
+  }))
+)
+
+const handleCurrencySelect = (code: string) => {
+  setDisplayCurrency(code)
+  currencyDropdownShow.value = false
+}
+
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded } = usePresetGrid(presetsRef)
-
-// 记录支付方式项的 DOM 引用
-const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
-  const target =
-    el instanceof HTMLElement
-      ? el
-      : el && '$el' in el && el.$el instanceof HTMLElement
-        ? el.$el
-        : null
-
-  methodItemRefs.value[index] = target
-}
-
-// 滚动到指定支付方式项
-const scrollMethodIntoView = async (index: number) => {
-  await nextTick()
-
-  const target = methodItemRefs.value[index]
-  if (!target || !methodListRef.value) return
-
-  target.scrollIntoView({
-    behavior: 'smooth',
-    block: 'nearest',
-    inline: 'center'
-  })
-}
-
-// 处理支付方式列表的滚轮横向滚动
-const handleMethodListWheel = (event: WheelEvent) => {
-  if (!methodListRef.value) return
-
-  methodListRef.value.scrollBy({
-    left: event.deltaY !== 0 ? event.deltaY : event.deltaX,
-    behavior: 'auto'
-  })
-}
-
-// 选择支付方式并切换对应子栏目数据
-const selectMethod = async (method: QueryPayColumnItem, index: number) => {
-  if (selectedMethod.value?.columnCode === method.columnCode) {
-    void scrollMethodIntoView(index)
-    return
-  }
-
-  void scrollMethodIntoView(index)
-  await selectDepositMethod(method)
-}
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,
