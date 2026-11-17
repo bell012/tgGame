@@ -1,4 +1,4 @@
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -14,6 +14,7 @@ import { createMockPlaceBetResponse, createMockRoomEvents } from './chat/mock'
 import { useHashGameChat } from './chat/useHashGameChat'
 import { createMockChatConfig, type HashChatConfig } from './chat/config'
 import type { HashBetOption, HashPlaceBetRequest } from './chat/types'
+import backgroundMusicUrl from '@/static/mp3/hash/beijing.mp3?url'
 
 type RoadmapMode = 'size' | 'parity'
 type BetKey = 'big' | 'small' | 'odd' | 'even'
@@ -167,9 +168,10 @@ const createHashGamePageState = () => {
   const chipEditorOpen = ref(false)
   const quickBetEnabled = ref(false)
   const quickBetPopupOpen = ref(false)
-  // 音效开关是页面共享状态，桌面端点击后可由后续音频逻辑读取。
+  // 背景音乐和游戏音效默认关闭，由 H5 与 PC 共用开关状态。
   const backgroundMusicEnabled = ref(false)
   const musicEnabled = ref(false)
+  let backgroundAudio: HTMLAudioElement | undefined
   const chipEditorItems = ref<ChipDraft[]>([])
   const customChipItems = ref<CustomChipDraft[]>(
     CUSTOM_CHIP_HUES.map((hue, index) => ({
@@ -183,8 +185,6 @@ const createHashGamePageState = () => {
   const keypadValue = ref('')
   const chipEditorError = ref('')
   const chatVisible = ref(true)
-  const musicMuted = ref(true)
-  const soundMuted = ref(true)
   const selectedBet = ref<BetKey | null>(null)
   let lastSelection: { key: BetKey; chip: number } | null = null
 
@@ -352,13 +352,31 @@ const createHashGamePageState = () => {
 
   /** 切换背景音乐开关状态。 */
   const toggleBackgroundMusic = () => {
-    backgroundMusicEnabled.value = !backgroundMusicEnabled.value
+    const enabled = !backgroundMusicEnabled.value
+    backgroundMusicEnabled.value = enabled
+    if (typeof Audio === 'undefined') return
+    if (!backgroundAudio) {
+      backgroundAudio = new Audio(backgroundMusicUrl)
+      backgroundAudio.loop = true
+      backgroundAudio.volume = 0.35
+    }
+    if (enabled) {
+      void backgroundAudio.play().catch(() => {})
+    } else {
+      backgroundAudio.pause()
+      backgroundAudio.currentTime = 0
+    }
   }
 
   /** 切换游戏音乐开关状态。 */
   const toggleMusic = () => {
     musicEnabled.value = !musicEnabled.value
   }
+
+  onBeforeUnmount(() => {
+    backgroundAudio?.pause()
+    if (backgroundAudio) backgroundAudio.currentTime = 0
+  })
 
   /** 刷新余额；未登录时打开登录弹窗，失败时提示错误。 */
   const refreshBalance = async () => {
@@ -560,8 +578,6 @@ const createHashGamePageState = () => {
     acceptHttpDraw,
     acceptRecentBets,
     dismissSettlement,
-    musicMuted,
-    soundMuted,
     selectedBet,
     mockRound,
     hashParts,

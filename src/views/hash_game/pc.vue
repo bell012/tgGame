@@ -220,14 +220,49 @@
             <div
               v-for="option in betOptions"
               :key="option.key"
+              :data-bet-option="option.key"
               type="button"
               class="relative rounded-[8px] border border-input-1 bg-bg-3 px-[12px] pt-[16px] pb-[12px] text-left cursor-pointer"
-              :class="{ 'border-theme-primary': selectedBet === option.key }"
-              @click="selectBet(option.key)"
+              :class="{ 'border-theme-primary': hasBetAmount(option.key) }"
+              :aria-pressed="hasBetAmount(option.key)"
+              @click="handleBetOptionClick($event, option.key)"
             >
               <span
+                v-if="hasBetAmount(option.key)"
+                class="absolute right-[12px] z-[2] flex min-h-[24px] items-center justify-center rounded-[20px] bg-theme-primary px-[6px] text-[12px] font-[500] leading-[24px] text-text-4 transition-[top] duration-200"
+                :style="{ top: `calc(48% - 14px - ${getChipStackOffset(option.key)}px)` }"
+              >
+                {{ betTotals[option.key] }}
+              </span>
+              <span
+                class="pointer-events-none absolute right-[12px] top-[48%] z-[1] size-[36px] [perspective:420px] [transform-style:preserve-3d]"
+                aria-hidden="true"
+              >
+                <span
+                  v-for="(chip, layer) in landedChips[option.key] || []"
+                  :key="chip.id"
+                  class="absolute inset-0 grid place-items-center [transform-style:preserve-3d] drop-shadow-[0_2px_1px_rgb(0_0_0_/_45%)] after:absolute after:inset-[1px_1px_-2px] after:z-0 after:rounded-full after:bg-[repeating-linear-gradient(180deg,#cbd2cf_0px,#cbd2cf_1px,#59615f_1px,#59615f_2px,#252b2a_2px,#252b2a_3px)] after:shadow-[0_2px_0_rgb(0_0_0_/_30%)] after:[transform:translateZ(-2px)]"
+                  :style="{
+                    '--chip-stack-offset': `${-layer * chipStackStep}px`,
+                    transform: `translateY(var(--chip-stack-offset, 0px)) rotateZ(-12deg) rotateX(24deg)`,
+                    transformStyle: 'preserve-3d',
+                    zIndex: maxVisibleChips - layer
+                  }"
+                >
+                  <img
+                    :src="chipImage"
+                    alt=""
+                    class="absolute inset-0 z-[1] size-full rounded-full"
+                    :style="{ filter: chip.filter }"
+                  />
+                  <b class="relative z-[2] text-[10px] font-bold leading-none text-white">{{
+                    formatChipAmount(chip.amount)
+                  }}</b>
+                </span>
+              </span>
+              <span
                 class="absolute top-[3px] left-[7px] text-[12px]"
-                :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
                 >{{ mockBet.odds }}</span
               >
               <strong
@@ -238,18 +273,18 @@
               <span class="flex items-center justify-center gap-[10px] text-[12px]">
                 <span
                   class="flex items-center gap-[6px] rounded-[4px] bg-opacity-6 px-[6px] py-[4px]"
-                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
                   ><PeopleIcon
                     class="size-[14px]"
-                    :class="selectedBet === option.key ? 'text-icon-1' : 'text-icon-2'"
+                    :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
                   />{{ mockBet.people }}</span
                 >
                 <span
                   class="flex items-center gap-[6px] rounded-[4px] bg-opacity-6 px-[6px] py-[4px]"
-                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
                   ><AmountIcon
                     class="size-[14px]"
-                    :class="selectedBet === option.key ? 'text-icon-1' : 'text-icon-2'"
+                    :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
                   />{{ mockBet.amount }}</span
                 >
               </span>
@@ -293,6 +328,7 @@
           <button
             v-for="chip in chipOptions"
             :key="chip.id"
+            :data-chip-value="chip.value"
             type="button"
             class="relative size-[50px] shrink-0 rounded-full transition-transform"
             :class="selectedChip === chip.value ? 'scale-105' : ''"
@@ -316,7 +352,7 @@
           <button
             type="button"
             class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1"
-            @click="cancelSelection"
+            @click="handleCancelSelection"
           >
             <CancelIcon class="size-[16px] text-icon-2" />{{ t('hashGame.cancel') }}
           </button>
@@ -391,6 +427,18 @@
       v-model:selected-period="selectedPeriod"
       variant="pc"
     />
+    <!-- 飞筹码动画 -->
+    <Teleport to="body">
+      <FlyingChip
+        v-for="flight in chipFlights"
+        :key="flight.id"
+        :origin="flight.origin"
+        :x="flight.x"
+        :y="flight.y"
+        :size="flight.size"
+        @finish="finishChipFlight(flight.id)"
+      />
+    </Teleport>
   </div>
   <CommonFooter class="mt-[55px]" />
 </template>
@@ -402,6 +450,8 @@ import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
+import FlyingChip from './components/FlyingChip.vue'
+import { useBetChipAnimation } from './components/useBetChipAnimation'
 import HashGameRules from './rules.vue'
 import HashGameBetDetailPopup from './bet-detail.vue'
 import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
@@ -433,7 +483,6 @@ const {
   roadmapMode,
   chipOptions,
   selectedChip,
-  selectedBet,
   mockRound,
   hashParts,
   mockBet,
@@ -465,6 +514,26 @@ const {
   toggleBackgroundMusic,
   toggleMusic
 } = props.page
+
+const {
+  maxVisibleChips,
+  chipStackStep,
+  betTotals,
+  landedChips,
+  chipFlights,
+  hasBetAmount,
+  getChipStackOffset,
+  handleBetOptionClick,
+  finishChipFlight,
+  clearBetChips
+} = useBetChipAnimation({
+  selectedChip,
+  chipOptions,
+  soundEnabled: musicEnabled,
+  slotSize: 36,
+  rightInset: 12,
+  selectBet
+})
 
 const chatDraft = ref('')
 const recentBetsOpen = ref(false)
@@ -586,6 +655,11 @@ const formatChipAmount = (amount: number) => {
   if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
   if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
   return String(amount)
+}
+
+const handleCancelSelection = () => {
+  clearBetChips()
+  cancelSelection()
 }
 
 const openBetDetailPopup = (bet: HashGameBetDetail) => {
