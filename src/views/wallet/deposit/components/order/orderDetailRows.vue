@@ -12,8 +12,8 @@
       <img v-if="item.icon" :class="iconClass" :src="item.icon" />
       {{ item.value }}
       <!-- 复制按钮容器 -->
-      <div v-if="item.copyValue" class="ml-3 w-[18px]" @click.stop="emit('copy', item.copyValue)">
-        <CopyIcon class="w-6 h-6" />
+      <div v-if="item.copyValue" :class="copyClass" @click.stop="emit('copy', item.copyValue)">
+        <CopyIcon :class="copyIconClass" />
       </div>
     </div>
   </div>
@@ -39,11 +39,15 @@ withDefaults(
     valueClass?: string
     valueStyle?: CSSProperties
     iconClass?: string
+    copyClass?: string
+    copyIconClass?: string
   }>(),
   {
     rowClass: 'flex items-center justify-between',
     valueClass: 'text-text-1 text-sm sm:text-base flex items-center',
-    iconClass: 'w-5 aspect-square mr-1'
+    iconClass: 'w-5 aspect-square mr-1',
+    copyClass: 'ml-3 w-[18px]',
+    copyIconClass: 'w-6 h-6'
   }
 )
 

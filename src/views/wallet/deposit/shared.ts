@@ -67,7 +67,8 @@ export const createDepositWageringOptions = (discountList: QueryPayQuickAmountCo
   discountList.map(item => ({
     rowId: item.rowId,
     multiple: item.multiple,
-    label: item.payQuickName
+    label: item.payQuickName,
+    ratio: Number(item.ratio) || 0
   }))
 
 export const parseDepositLocalizedName = (value: string, localeCode: string) => {
@@ -474,6 +475,12 @@ export interface DepositCategoryOption {
 export const resolveDepositMethodIcon = (item: QueryPaySubColumnItem) =>
   toDepositPayImageUrl(item.platformLogo || '')
 
+// 只有一个流水档时流水 Tab 被隐藏，加赠比例改挂到充值方式上；多个流水档时由流水 Tab 展示。
+export const resolveDepositMethodBonusRatio = (item: QueryPaySubColumnItem) => {
+  const configs = item.quickAmountConfigs ?? []
+  return configs.length === 1 ? Number(configs[0].ratio) || 0 : 0
+}
+
 export const useDepositFiatFlow = (options: DepositFlowOptions) => {
   const { t, locale } = useI18n()
   const userStore = useUserStore()
@@ -521,10 +528,10 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
     if (!method) return ''
     return String(method.payChannelCode || resolvePayChannelTabKey(method.platformName) || '')
   })
-  const presetDiscountRatioMap = computed(() =>
-    createDepositPresetDiscountRatioMap(selectedDiscountItem.value)
-  )
   const wageringOptions = computed(() => createDepositWageringOptions(discountList.value))
+  // 只有一个选项时不展示选择区，仍默认选中该项；没有充值方式时保留不可用提示。
+  const showMethodSection = computed(() => methods.value.length !== 1)
+  const showWageringSection = computed(() => wageringOptions.value.length > 1)
   const amountPlaceholder = computed(() =>
     isManualAmountAllowed.value
       ? t('deposit.deposit_amount_input_or_select_placeholder')
@@ -809,13 +816,15 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
     orderPopShow,
     isDepositDisabled,
     isManualAmountAllowed,
-    presetDiscountRatioMap,
     wageringOptions,
+    showMethodSection,
+    showWageringSection,
     amountPlaceholder,
     isAmountInputHighlighted,
     clearAmount,
     selectPresetAmount,
     resolveMethodIcon: resolveDepositMethodIcon,
+    resolveMethodBonusRatio: resolveDepositMethodBonusRatio,
     resolveMethodName,
     selectWagering,
     selectCategory,

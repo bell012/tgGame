@@ -1,26 +1,28 @@
 <template>
   <!-- 法币订单弹窗主容器 -->
   <div
-    class="relative w-full max-w-[480px] h-full sm:h-auto sm:max-h-[491px] flex flex-col sm:rounded-xl modal-container bg-bg-1 font-['Inter']"
+    class="relative w-full max-w-[480px] h-full sm:h-auto sm:max-h-[491px] flex flex-col sm:rounded-lg modal-container bg-bg-1 font-['Inter']"
     :style="panelInlineStyle"
   >
     <!-- 弹窗头部 -->
-    <div class="relative shrink-0 flex items-center justify-between h-14 rounded-t-lg bg-bg-2">
-      <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-semibold text-text-1">
+    <div
+      class="relative shrink-0 flex items-center justify-between h-[49px] sm:h-14 sm:rounded-t-lg bg-bg-2"
+    >
+      <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-bold text-text-1">
         {{ t('deposit.deposit_order') }}
       </h2>
       <!-- 区块：template -->
       <template v-if="isMobile">
         <!-- 移动端返回按钮 -->
         <button
-          class="absolute left-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
+          class="absolute left-3.5 top-1/2 -translate-y-1/2 w-[33px] h-[33px] bg-opacity-6 rounded-lg flex items-center justify-center z-10"
           @click="handleClose"
         >
           <LeftArrowIcon class="w-4 h-4" />
         </button>
         <!-- 移动端详情按钮 -->
         <button
-          class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
+          class="absolute right-3.5 top-1/2 -translate-y-1/2 w-[33px] h-[33px] bg-opacity-6 rounded-lg flex items-center justify-center z-10"
           @click="openDepositOrder"
         >
           <DetailsIcon class="w-4 h-4" />
@@ -29,7 +31,7 @@
       <template v-else>
         <!-- 桌面端关闭按钮 -->
         <button
-          class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md sm:flex items-center justify-center z-10"
+          class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded flex items-center justify-center z-10"
           @click="handleClose"
         >
           <CloseIcon class="h-2.5 w-2.5 text-text-1" />
@@ -39,30 +41,40 @@
 
     <!-- 法币订单内容区域 -->
     <div
-      class="w-full flex-1 min-h-0 p-3 rounded-bl-xl rounded-br-xl bg-bg-1 overflow-y-auto sm:max-h-[435px]"
+      class="w-full flex-1 min-h-0 p-[14px] sm:p-4 sm:rounded-b-lg bg-bg-1 overflow-y-auto sm:max-h-[435px]"
     >
       <!-- 法币订单信息卡片 -->
-      <div class="w-full px-4 pt-8 pb-4 rounded-xl bg-bg-2">
+      <div
+        class="w-full flex flex-col gap-[30px] sm:gap-8 px-[14px] sm:px-4 pt-[30px] pb-[14px] sm:pt-8 sm:pb-4 rounded-lg bg-bg-2"
+      >
         <!-- 金额展示区域 -->
-        <div class="w-full flex items-center justify-center">
-          <!-- 金额图标 -->
-          <span class="mr-1 shrink-0 text-[21px] leading-[21px] text-text-1">
-            {{ fiatCurrencySymbol }}
-          </span>
-          <p class="text-2xl font-bold leading-normal capitalize text-text-1">
-            {{ fiatDisplayAmount }}
+        <div class="flex flex-col items-center gap-[10px] sm:gap-2">
+          <div class="flex items-center justify-center">
+            <!-- 金额图标 -->
+            <span
+              class="mr-0.5 shrink-0 text-[20px] leading-[20px] sm:text-[24px] sm:leading-[24px] text-text-1"
+            >
+              {{ fiatCurrencySymbol }}
+            </span>
+            <p class="text-[25px] sm:text-2xl font-bold leading-normal capitalize text-text-1">
+              {{ fiatDisplayAmount }}
+            </p>
+          </div>
+          <p class="text-text-1 text-sm sm:text-base leading-normal text-center">
+            {{ t('deposit.deposit_amount') }}
           </p>
         </div>
-        <p class="mt-2 text-text-1 text-sm sm:text-base leading-normal text-center">
-          {{ t('deposit.deposit_amount') }}
-        </p>
         <!-- 订单明细区域 -->
-        <div class="mt-8 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid gap-4">
+        <div
+          class="w-full p-[14px] sm:px-5 sm:py-4 bg-bg-4 rounded-lg relative grid gap-5 sm:gap-4"
+        >
           <orderDetailRows
             :rows="fiatSummaryRows"
-            row-class="h-5 flex items-center justify-between"
-            value-class="text-base flex items-center text-text-1"
-            icon-class="h-5 mr-1"
+            row-class="min-h-5 flex items-center justify-between gap-4"
+            value-class="text-sm sm:text-base flex items-center text-text-1"
+            icon-class="h-5 w-5 rounded-full mr-[5px] sm:w-auto sm:rounded-none sm:mr-1"
+            copy-class="ml-[5px] sm:ml-2 shrink-0"
+            copy-icon-class="w-4 h-4 sm:w-6 sm:h-6"
             @copy="copyWord"
           />
         </div>
