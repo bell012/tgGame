@@ -21,6 +21,12 @@ export const SHOW_STATE = {
   soldOut: 6
 } as const satisfies Record<string, RedEnvelopeShowState>
 
+/** 红包名称/描述的多语言条目。 */
+export interface RedEnvelopeI18nText {
+  name?: string
+  languageCode?: string
+}
+
 /** 会员红包列表项。 */
 export interface RedEnvelopeItem {
   redEnvelopeId: number
@@ -33,8 +39,10 @@ export interface RedEnvelopeItem {
   /** 0 未领取，1 已领取 */
   receiveState: 0 | 1
   amount?: number
-  redEnvelopeName?: string
-  redEnvelopeDesc?: string
+  /** 多语言数组；兼容旧版纯文本字符串。 */
+  redEnvelopeName?: RedEnvelopeI18nText[] | string
+  /** 多语言数组；兼容旧版纯文本字符串。 */
+  redEnvelopeDesc?: RedEnvelopeI18nText[] | string
   expiredTime?: number
   createTime?: number
   updateTime?: number

@@ -61,12 +61,14 @@ import BubbleEar from '@/static/svg/red-packet/bubble-ear.svg?component'
 import clockIcon from '@/static/svg/red-packet/clock.svg?url'
 import tgAvatar from '@/static/svg/red-packet/tg-avatar.svg?url'
 import { resolveGameImageUrl } from '@/utils/image'
+import { getStorageLanguageCode } from '@/utils/locale'
 import {
   formatCountdown,
   formatDateTime,
   formatMoney,
   isDailyRedEnvelope,
-  localizedRedPacketType
+  resolveRedPacketDesc,
+  resolveRedPacketName
 } from '../format'
 import { useNow } from '../useNow'
 
@@ -74,19 +76,15 @@ const props = defineProps<{ item: RedEnvelopeItem }>()
 
 const emit = defineEmits<{ click: [item: RedEnvelopeItem] }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const now = useNow()
 const avatarFailed = ref(false)
 
-const packetName = computed(() => {
-  const type = localizedRedPacketType(props.item.redEnvelopeType)
-  return type ? t(`redPacketPanel.type.${type}`) : (props.item.redEnvelopeName ?? '')
-})
+const languageCode = computed(() => getStorageLanguageCode(String(locale.value)))
 
-const packetDesc = computed(() => {
-  const type = localizedRedPacketType(props.item.redEnvelopeType)
-  return type ? t(`redPacketPanel.desc.${type}`) : (props.item.redEnvelopeDesc ?? '')
-})
+const packetName = computed(() => resolveRedPacketName(props.item, languageCode.value, t))
+
+const packetDesc = computed(() => resolveRedPacketDesc(props.item, languageCode.value, t))
 
 const avatarSrc = computed(() => {
   if (avatarFailed.value) return tgAvatar

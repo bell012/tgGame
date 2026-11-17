@@ -92,7 +92,8 @@ import type { RedEnvelopeItem, RedEnvelopeType } from '@/api/interface/red-envel
 import CheckOffIcon from '@/static/svg/red-packet/check-off.svg?component'
 import CheckOnIcon from '@/static/svg/red-packet/check-on.svg?component'
 import DropdownArrow from '@/static/svg/red-packet/dropdown-arrow.svg?component'
-import { formatFullDateTime } from '../format'
+import { getStorageLanguageCode } from '@/utils/locale'
+import { formatFullDateTime, resolveRedPacketName } from '../format'
 import {
   MEMBER_RECORD_PERIODS,
   RED_ENVELOPE_TYPES,
@@ -106,7 +107,7 @@ type DropdownKey = 'type' | 'period'
 
 const emit = defineEmits<{ back: [] }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const listRef = ref<HTMLElement | null>(null)
 const sentinelRef = ref<HTMLElement | null>(null)
@@ -124,13 +125,13 @@ const { list, totalMoney, loading, error, retry } = useMemberRecords({
   root: listRef
 })
 
+const languageCode = computed(() => getStorageLanguageCode(String(locale.value)))
+
 const typeLabel = (type: RedEnvelopeType | null) =>
   type === null ? t('redPacketPanel.allType') : t(`redPacketPanel.type.${type}`)
 
 const getTypeLabel = (record: RedEnvelopeItem) =>
-  RED_ENVELOPE_TYPES.includes(record.redEnvelopeType)
-    ? typeLabel(record.redEnvelopeType)
-    : (record.redEnvelopeName ?? '')
+  resolveRedPacketName(record, languageCode.value, t)
 
 interface DropdownOption {
   value: string

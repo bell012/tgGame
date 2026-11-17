@@ -205,13 +205,14 @@ import popupBgOpened from '@/static/svg/red-packet/popup-bg-opened.webp'
 import popupBgProgress from '@/static/svg/red-packet/popup-bg-progress.svg?url'
 import popupBg from '@/static/svg/red-packet/popup-bg.svg?url'
 import popupCloseIcon from '@/static/svg/red-packet/popup-close.svg?url'
+import { getStorageLanguageCode } from '@/utils/locale'
 import {
   formatAmount,
   formatCountdown,
   formatDateTime,
   formatMoney,
   isDailyRedEnvelope,
-  localizedRedPacketType
+  resolveRedPacketName
 } from '../format'
 import { useNow } from '../useNow'
 
@@ -322,17 +323,16 @@ const emit = defineEmits<{
   history: []
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const now = useNow()
 
 const claiming = ref(false)
 const claimedInThisPopup = ref(false)
 const currentSchedule = ref<RedEnvelopeSchedule>(props.schedule)
 
-const packetName = computed(() => {
-  const type = localizedRedPacketType(props.item.redEnvelopeType)
-  return type ? t(`redPacketPanel.type.${type}`) : (props.item.redEnvelopeName ?? '')
-})
+const languageCode = computed(() => getStorageLanguageCode(String(locale.value)))
+
+const packetName = computed(() => resolveRedPacketName(props.item, languageCode.value, t))
 
 const showState = computed(() => currentSchedule.value.showState)
 const hasProgress = computed(

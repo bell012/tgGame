@@ -101,8 +101,9 @@ import type { RedEnvelopeItem } from '@/api/interface/red-envelope'
 import MyRecordsIcon from '@/static/svg/red-packet/my-records.svg?component'
 import recordAvatar from '@/static/svg/red-packet/record-avatar.png'
 import { useUserStore } from '@/stores/user'
+import { getStorageLanguageCode } from '@/utils/locale'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
-import { formatAmount, formatFullDateTime, localizedRedPacketType } from '../format'
+import { formatAmount, formatFullDateTime, resolveRedPacketDesc } from '../format'
 import { useMemberRecords } from '../useMemberRecords'
 import RedPacketListStatus from './RedPacketListStatus.vue'
 import RedPacketSubHeader from './RedPacketSubHeader.vue'
@@ -111,7 +112,7 @@ const props = defineProps<{ item: RedEnvelopeItem }>()
 
 const emit = defineEmits<{ back: []; openMine: [] }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const userStore = useUserStore()
 
 const listRef = ref<HTMLElement | null>(null)
@@ -123,6 +124,8 @@ const { list, total, totalMoney, memberId, loading, error, retry } = useMemberRe
   root: listRef
 })
 
+const languageCode = computed(() => getStorageLanguageCode(String(locale.value)))
+
 const userName = computed(() => userStore.userInfo?.nickName || memberId.value)
 const userAvatar = computed(() => resolveProfileAvatarUrl(userStore.userInfo?.headPortrait))
 
@@ -132,10 +135,7 @@ const claimedRecord = computed(() =>
 
 const currencyText = computed(() => list.value[0]?.currency ?? props.item.currency ?? '')
 
-const packetDesc = computed(() => {
-  const type = localizedRedPacketType(props.item.redEnvelopeType)
-  return type ? t(`redPacketPanel.desc.${type}`) : (props.item.redEnvelopeDesc ?? '')
-})
+const packetDesc = computed(() => resolveRedPacketDesc(props.item, languageCode.value, t))
 
 const wonAmountText = computed(() => {
   const record = claimedRecord.value
