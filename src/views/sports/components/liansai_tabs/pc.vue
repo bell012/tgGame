@@ -53,10 +53,11 @@
     <!-- pc全部联赛弹窗 -->
     <div
       v-if="isLeaguePopupOpen"
-      class="absolute right-0 top-[48px] z-30 flex max-h-[360px] w-[368px] flex-col overflow-hidden rounded-[12px] bg-bg-5 px-[24px] py-[16px] shadow-[0_6px_30px_rgba(0,0,0,0.4)]"
+      class="tg-glass-tokens absolute right-0 top-[48px] z-30 flex max-h-[360px] w-[368px] flex-col overflow-hidden rounded-[12px] px-[24px] py-[16px] [box-shadow:var(--glass-shadow)]"
     >
+      <LiquidGlass />
       <label
-        class="mb-[12px] flex h-[40px] flex-none items-center rounded-[32px] bg-bg-2 px-[16px] transition-colors"
+        class="relative z-[1] mb-[12px] flex h-[40px] flex-none items-center rounded-[32px] bg-bg-2 px-[16px] transition-colors"
       >
         <SearchIcon class="h-5 w-5 text-icon-3" />
         <input
@@ -68,7 +69,7 @@
       </label>
 
       <div
-        class="min-h-0 flex-1 overflow-y-auto [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
+        class="relative z-[1] min-h-0 flex-1 overflow-y-auto [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
       >
         <button
           v-for="item in leaguePopupList"
@@ -102,6 +103,7 @@ import {
 
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import LiquidGlass from '@/components/common/LiquidGlass.vue'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?component'
 import { useLiansaiTabs } from './index'
