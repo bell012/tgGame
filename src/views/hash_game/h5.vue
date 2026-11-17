@@ -334,40 +334,74 @@
             <div
               v-for="option in betOptions"
               :key="option.key"
+              :data-bet-option="option.key"
               type="button"
               class="relative min-w-0 rounded-[8px] bg-bg-2 px-[6px] py-[10px]"
               :class="
-                selectedBet == option.key ? 'border border-theme-primary' : 'border border-input-1'
+                hasBetAmount(option.key) ? 'border border-theme-primary' : 'border border-input-1'
               "
               :style="{ '--bet-color': option.color }"
-              :aria-pressed="selectedBet === option.key"
-              @click="selectBet(option.key)"
+              :aria-pressed="hasBetAmount(option.key)"
+              @click="handleBetOptionClick($event, option.key)"
             >
+              <span
+                v-if="hasBetAmount(option.key)"
+                class="absolute right-[5px] z-[2] flex items-center justify-center rounded-[12px] bg-theme-primary px-[8px] text-[12px] font-[500] text-text-4"
+                :style="{ top: `calc(48% - 10px - ${getChipStackOffset(option.key)}px)` }"
+              >
+                {{ betTotals[option.key] }}
+              </span>
+              <span
+                class="pointer-events-none absolute right-[5px] top-[48%] z-[1] size-[25px] [perspective:420px] [transform-style:preserve-3d]"
+                aria-hidden="true"
+              >
+                <span
+                  v-for="(chip, layer) in landedChips[option.key] || []"
+                  :key="chip.id"
+                  class="absolute inset-0 grid place-items-center [transform-style:preserve-3d] drop-shadow-[0_2px_1px_rgb(0_0_0_/_45%)] after:absolute after:inset-[1px_1px_-2px] after:z-0 after:rounded-full after:bg-[repeating-linear-gradient(180deg,#cbd2cf_0px,#cbd2cf_1px,#59615f_1px,#59615f_2px,#252b2a_2px,#252b2a_3px)] after:shadow-[0_2px_0_rgb(0_0_0_/_30%)] after:[transform:translateZ(-2px)]"
+                  :style="{
+                    '--chip-stack-offset': `${-layer * chipStackStep}px`,
+                    transform: `translateY(var(--chip-stack-offset, 0px)) rotateZ(-12deg) rotateX(24deg)`,
+                    transformStyle: 'preserve-3d',
+                    zIndex: maxVisibleChips - layer
+                  }"
+                >
+                  <img
+                    :src="chipImage"
+                    alt=""
+                    class="absolute inset-0 z-[1] size-full rounded-full"
+                    :style="{ filter: chip.filter }"
+                  />
+                  <b class="relative z-[2] text-[8px] font-bold leading-none text-white">{{
+                    formatChipAmount(chip.amount)
+                  }}</b>
+                </span>
+              </span>
               <span class="flex items-baseline justify-center gap-[5px] whitespace-nowrap">
                 <strong class="text-[15px] font-bold text-[color:var(--bet-color)]">{{
                   option.label
                 }}</strong>
                 <span
                   class="text-xs font-[500]"
-                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
                   >{{ mockBet.odds }}</span
                 >
               </span>
               <span class="mt-[4px] flex items-center justify-center gap-[3px]">
                 <span
                   class="flex items-center gap-0.5 whitespace-nowrap text-[10px]"
-                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
                   ><PeopleIcon
                     class="w-[10px] h-[10px]"
-                    :class="selectedBet === option.key ? 'text-icon-1' : 'text-icon-2'"
+                    :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
                   />{{ currentBetStats[option.key].people }}</span
                 >
                 <span
                   class="flex items-center gap-0.5 whitespace-nowrap text-[10px]"
-                  :class="selectedBet === option.key ? 'text-text-1' : 'text-text-2'"
+                  :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
                   ><AmountIcon
                     class="w-[10px] h-[10px]"
-                    :class="selectedBet === option.key ? 'text-icon-1' : 'text-icon-2'"
+                    :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
                   />{{ currentBetStats[option.key].amount }}</span
                 >
               </span>
@@ -388,31 +422,26 @@
           <!-- 游戏页的音乐和音效开关，不属于聊天室数据组件。 -->
           <div class="absolute right-0 top-[40px] flex gap-[8px]">
             <button
+              v-for="sound in soundButtons"
+              :key="sound.type"
               type="button"
               class="grid size-[34px] place-items-center rounded-full bg-bg-4"
-              :aria-label="musicMuted ? 'Turn on game music' : 'Turn off game music'"
-              :aria-pressed="!musicMuted"
-              @click="musicMuted = !musicMuted"
+              :aria-label="sound.type === 'background' ? 'Background music' : 'Music'"
+              :aria-pressed="sound.type === 'background' ? backgroundMusicEnabled : musicEnabled"
+              @click="sound.type === 'background' ? toggleBackgroundMusic() : toggleMusic()"
             >
               <img
-                :src="musicOffIcon"
+                :src="
+                  sound.type === 'background'
+                    ? backgroundMusicEnabled
+                      ? backgroundMusicOnIcon
+                      : backgroundMusicOffIcon
+                    : musicEnabled
+                      ? musicOnIcon
+                      : musicOffIcon
+                "
                 alt=""
                 class="size-[18px]"
-                :class="{ 'opacity-50': !musicMuted }"
-              />
-            </button>
-            <button
-              type="button"
-              class="grid size-[34px] place-items-center rounded-full bg-bg-4"
-              :aria-label="soundMuted ? 'Turn on game sound' : 'Turn off game sound'"
-              :aria-pressed="!soundMuted"
-              @click="soundMuted = !soundMuted"
-            >
-              <img
-                :src="soundOffIcon"
-                alt=""
-                class="size-[18px]"
-                :class="{ 'opacity-50': !soundMuted }"
               />
             </button>
           </div>
@@ -442,6 +471,7 @@
             <button
               v-for="chip in chipOptions"
               :key="chip.id"
+              :data-chip-value="chip.value"
               type="button"
               class="relative shrink-0 transition-[width,height] duration-[180ms] motion-reduce:transition-none"
               :class="selectedChip === chip.value ? 'h-[45px] w-[45px]' : 'h-[35px] w-[35px]'"
@@ -484,7 +514,7 @@
             <button
               type="button"
               class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
-              @click="cancelSelection"
+              @click="handleCancelSelection"
             >
               <CancelIcon class="size-[14px] text-icon-2" />{{ t('hashGame.cancel') }}
             </button>
@@ -575,13 +605,28 @@
 
     <!-- 筹码设置 -->
     <ChipEditorPopup :page="props.page" />
+
+    <!-- 飞筹码动画 -->
+    <Teleport to="body">
+      <FlyingChip
+        v-for="flight in chipFlights"
+        :key="flight.id"
+        :origin="flight.origin"
+        :x="flight.x"
+        :y="flight.y"
+        :size="flight.size"
+        @finish="finishChipFlight(flight.id)"
+      />
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
-import musicOffIcon from '@/static/svg/hash_game/chat/music-off.svg?url'
-import soundOffIcon from '@/static/svg/hash_game/chat/sound-off.svg?url'
+import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
+import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
+import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
+import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
 import RecordsIcon from '@/static/svg/sift.svg?component'
 import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
 import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
@@ -600,6 +645,7 @@ import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
 import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
 import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
+import chipSoundUrl from '@/static/mp3/hash/chouma.mp3?url'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { navigateTo } from '@/utils/router'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
@@ -610,10 +656,29 @@ import HistoryPopup from './components/HistoryPopup.vue'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
+import FlyingChip from './components/FlyingChip.vue'
+import type { ChipOrigin } from './components/chipMotion'
 import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
 const chatComposerOpen = ref(false)
+type H5LandedChip = { id: number; amount: number; filter: string }
+type H5ChipFlight = {
+  id: number
+  option: string
+  landedChip: H5LandedChip
+  origin: ChipOrigin
+  x: number
+  y: number
+  size: number
+}
+const chipFlights = ref<H5ChipFlight[]>([])
+const betTotals = ref<Record<string, number>>({})
+const landedChips = ref<Record<string, H5LandedChip[]>>({})
+const maxVisibleChips = 6
+const chipStackStep = (8 / 60) * 25
+let chipFlightSequence = 0
+const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
 
 /** 点击聊天按钮时刷新当前游戏配置并打开 H5 输入弹窗。 */
 const openChatComposer = () => {
@@ -638,6 +703,8 @@ const {
   periodsOpen,
   periodTriggerRef,
   periodMenuRef,
+  backgroundMusicEnabled,
+  musicEnabled,
   currencyPopupOpen,
   roadmapVisible,
   roadmapMode,
@@ -654,9 +721,6 @@ const {
   currentBetStats,
   confirmMockBet,
   dismissSettlement,
-  musicMuted,
-  soundMuted,
-  selectedBet,
   mockRound,
   hashParts,
   mockBet,
@@ -674,6 +738,8 @@ const {
   handleBack,
   openRecords,
   selectBet,
+  toggleBackgroundMusic,
+  toggleMusic,
   cancelSelection,
   repeatSelection,
   chooseChip,
@@ -690,6 +756,90 @@ const formatChipAmount = (amount: number) => {
   if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
   if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
   return String(amount)
+}
+
+const hasBetAmount = (key: string) => (betTotals.value[key] || 0) > 0
+const getChipStackOffset = (key: string) =>
+  Math.min(maxVisibleChips - 1, Math.max(0, (landedChips.value[key]?.length || 0) - 1)) *
+  chipStackStep
+
+const playChipSound = () => {
+  if (!musicEnabled.value || typeof Audio === 'undefined') return
+  const sound = new Audio(chipSoundUrl)
+  void sound.play().catch(() => {})
+}
+
+/** 点击投注项时，让当前选中的筹码从底部筹码栏飞向投注项。 */
+const handleBetOptionClick = (event: MouseEvent, key: Parameters<typeof selectBet>[0]) => {
+  playChipSound()
+  const target = event.currentTarget
+  const source = document.querySelector<HTMLElement>(`[data-chip-value="${selectedChip.value}"]`)
+  const id = ++chipFlightSequence
+  const amount = selectedChip.value
+  const hue = chipOptions.value.find(chip => chip.value === amount)?.hue ?? 0
+  const chipElement = source?.querySelector('img')
+  const landedChip = {
+    id,
+    amount,
+    filter: chipElement?.style.filter || `hue-rotate(${hue}deg)`
+  }
+
+  betTotals.value[key] = (betTotals.value[key] || 0) + amount
+  selectBet(key)
+  const visibleAndFlying =
+    (landedChips.value[key]?.length || 0) +
+    chipFlights.value.filter(flight => flight.option === key).length
+  if (visibleAndFlying >= maxVisibleChips) return
+
+  if (target instanceof HTMLElement && source) {
+    const targetRect = target.getBoundingClientRect()
+    const sourceRect = source.getBoundingClientRect()
+    if (
+      targetRect.width > 0 &&
+      targetRect.height > 0 &&
+      sourceRect.width > 0 &&
+      sourceRect.height > 0
+    ) {
+      const layer = visibleAndFlying
+      chipFlights.value.push({
+        id,
+        option: key,
+        landedChip,
+        origin: {
+          image: chipImage,
+          amount,
+          x: sourceRect.left + sourceRect.width / 2,
+          y: sourceRect.top + sourceRect.height / 2,
+          size: Math.min(sourceRect.width, sourceRect.height),
+          filter: landedChip.filter
+        },
+        x: targetRect.right - 17,
+        y: targetRect.top + targetRect.height * 0.48 + 12.5 - layer * chipStackStep,
+        size: Math.min(25, targetRect.width * 0.34)
+      })
+      return
+    }
+  }
+
+  landedChips.value[key] = [...(landedChips.value[key] || []), landedChip]
+}
+
+const finishChipFlight = (id: number) => {
+  const finishedFlight = chipFlights.value.find(flight => flight.id === id)
+  if (finishedFlight && (landedChips.value[finishedFlight.option]?.length || 0) < maxVisibleChips) {
+    landedChips.value[finishedFlight.option] = [
+      ...(landedChips.value[finishedFlight.option] || []),
+      finishedFlight.landedChip
+    ]
+  }
+  chipFlights.value = chipFlights.value.filter(flight => flight.id !== id)
+}
+
+const handleCancelSelection = () => {
+  betTotals.value = {}
+  landedChips.value = {}
+  chipFlights.value = []
+  cancelSelection()
 }
 
 /** 点击记录菜单和周期菜单外部时关闭对应浮层。 */
