@@ -10,17 +10,22 @@
     <transition :name="desktop ? 'desktop-up-down' : 'up-down'">
       <div
         v-show="visible"
-        class="fixed z-[9999] left-0 bottom-0 w-full lg:relative"
-        :class="desktop ? 'tp-desktop-wrap' : ''"
+        class="z-[9999] left-0 bottom-0 w-full"
+        :class="
+          desktop
+            ? 'relative tp-desktop-wrap motion-reduce:!transition-none motion-reduce:!transform-none'
+            : 'fixed'
+        "
       >
         <div
           ref="panelRef"
-          class="tp-panel bg-[var(--color-background-level-2)] rounded-t-xl pt-2.5 px-3.5"
-          :class="desktop ? 'tp-panel-desktop' : ''"
+          class="tp-panel rounded-t-xl pt-2.5 px-3.5"
+          :class="desktop ? 'tp-panel-desktop tg-glass-tokens relative' : 'bg-bg-2'"
         >
+          <LiquidGlass v-if="desktop" />
           <div class="tp-header flex items-center justify-between mb-[20px]" v-if="!desktop">
             <div></div>
-            <div class="text-base font-bold text-[var(--color-text-level-1)]">
+            <div class="text-base font-bold text-text-1">
               {{ t('customSelect.placeholder') }}
             </div>
             <div
@@ -31,14 +36,22 @@
             </div>
           </div>
           <CurrencySelectorList
+            :class="desktop ? 'relative z-[1]' : ''"
             :visible="props.visible"
             :options="listOptions"
             :selected-value="selectedId"
             mode="balance"
             :list-class="desktopListClass"
-            item-class="tp-item mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left cursor-pointer"
-            selected-item-class="bg-[var(--color-opacity-10)] tp-item-selected"
-            label-class="text-[14px] text-[var(--color-text-level-1)] font-[700]"
+            :item-class="
+              'tp-item mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left cursor-pointer' +
+              (desktop ? ' hover:bg-opacity-6' : '')
+            "
+            :selected-item-class="
+              desktop
+                ? 'bg-opacity-10 tp-item-selected'
+                : 'bg-[var(--color-opacity-10)] tp-item-selected'
+            "
+            label-class="text-[14px] text-text-1 font-[700]"
             trailing-class="text-xs font-[700] text-text-1"
             @select="confirmByValue"
           />
@@ -52,6 +65,7 @@
 import { computed, inject, onBeforeUnmount, onMounted, ref, Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
+import LiquidGlass from '@/components/common/LiquidGlass.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 
 type OptionItem = { value: string; label: string; icon: string }
@@ -157,9 +171,7 @@ onBeforeUnmount(() => {
 .tp-panel-desktop {
   padding: 10px;
   border-radius: 12px;
-  --shadow-currency-panel: 0 14px 32px rgba(0, 0, 0, 0.36);
-  border-color: var(--color-opacity-10);
-  box-shadow: var(--shadow-currency-panel);
+  box-shadow: var(--glass-shadow);
 }
 
 .tp-desktop-list {
