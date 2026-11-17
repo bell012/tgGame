@@ -48,7 +48,7 @@ onMounted(() => {
   const dy = props.origin.y - props.y
   const start = `translate(${dx}px, ${dy}px) scale(${props.origin.size / props.size}) perspective(600px) rotateZ(-12deg) rotateX(24deg) rotateY(-10deg)`
   const end =
-    'translate(0, 0) scale(1) perspective(420px) rotateZ(0deg) rotateX(0deg) rotateY(0deg)'
+    'translate(0, 0) scale(1) perspective(420px) rotateZ(-12deg) rotateX(24deg) rotateY(0deg)'
   const reducedMotion =
     typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
