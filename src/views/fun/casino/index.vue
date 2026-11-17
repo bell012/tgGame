@@ -14,91 +14,197 @@
     />
 
     <div class="px-3.5 sm:px-4">
-      <div
-        ref="searchRef"
-        class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border border-input-2 bg-input-1 focus-within:border-theme-primary focus-within:ring-2 transition"
-        @mousedown="handleSearchWrapMouseDown"
-      >
-        <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
-        <input
-          v-model="searchText"
-          @keydown.enter.prevent="onSearch"
-          @focus="showHistoryPanel = true"
-          @blur="handleSearchBlur"
-          class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0 text-xs sm:text-sm text-text-1 placeholder:text-text-2 sm:placeholder:text-icon-3"
-          type="text"
-          :placeholder="t('casino.placeholder')"
-        />
-        <button
-          v-show="searchText"
-          class="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 bg-opacity-10 rounded-[6px] flex items-center justify-center z-10"
-          @click="clearSearch"
-        >
-          <CloseIcon class="h-2.5 w-2.5 text-icon-1" />
-        </button>
-        <div
-          v-show="showHistoryPanel && !searchText"
-          @click.stop="showHistoryPanel = false"
-          class="search-history-panel absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-bg-2 border border-opacity-10"
-        >
-          <button
-            class="absolute -right-2 -top-2 w-5 h-5 bg-bg-3 flex items-center justify-center z-10 rounded-full"
-            @click.stop="showHistoryPanel = false"
+      <div class="flex flex-col sm:my-3.5 sm:gap-3 lg:flex-row lg:items-center">
+        <div class="relative order-2 min-w-0 w-full lg:order-1 lg:flex-1">
+          <!-- 左箭头 -->
+          <div
+            class="casino-tab-arrow absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
+            :class="[
+              canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0',
+              { 'shadow-[-1px_0_0_var(--color-background-level-1)]': !isMobile }
+            ]"
           >
-            <CloseIcon class="h-2.5 w-2.5 text-icon-2" />
-          </button>
-          <div class="text-xs text-text-2">
-            {{ t('casino.search_tips') }}
-          </div>
-          <!-- 历史记录 -->
-          <div v-if="searchHistory?.length > 0" class="flex justify-between w-full text-xs my-2.5">
-            <div class="font-bold">{{ t('casino.history') }}</div>
-            <div class="text-text-2" @click.stop="deleteAll()">
-              {{ t('casino.clear') }}（{{ searchHistory?.length }}）
-            </div>
-          </div>
-          <div class="w-full">
-            <div
-              v-if="searchHistory?.length > 0"
-              class="flex max-h-14 flex-wrap gap-2 overflow-hidden"
+            <button
+              class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+              @click="scrollLeft"
             >
-              <div
-                v-for="(item, inx) in searchHistory"
+              <component
+                :is="casinoIcons.chevron_left"
+                class="icon size-4 text-text-1 fill-current [&_path]:fill-current"
+              />
+            </button>
+          </div>
+          <!-- 顶部横行滚动tab选择 -->
+          <div :class="{ '-mr-3.5 sm:-mr-4': isMobile }">
+            <div
+              ref="tabScrollRef"
+              :class="{ 'pr-3.5 sm:pr-4': isMobile }"
+              class="casino-tab-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x sm:my-0"
+              @scroll="updateScrollState"
+            >
+              <button
+                v-for="(item, inx) in tabButtons"
                 :key="inx"
-                class="inline-flex h-6 max-w-full items-center rounded bg-opacity-10 px-1.5 py-1"
+                :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
+                :class="{
+                  'casino-tab-button--active': item.sysGameTypeCode === currentTabCode
+                }"
+                class="casino-tab-button flex shrink-0 items-center rounded-lg px-[7px] py-[9px] text-xs"
+                @click.stop="onTabButton(item)"
               >
-                <div
-                  class="mr-1 max-w-full overflow-hidden whitespace-nowrap text-xs text-text-2"
-                  @click.stop="goSearch(item)"
-                >
-                  {{ item }}
+                <div class="casino-tab-icon mr-[7px] h-5 w-5">
+                  <img
+                    v-if="item.sysGameTypeCode !== currentTabCode && typeof item?.icon === 'string'"
+                    :src="item.icon"
+                    class="w-full h-full object-contain"
+                  />
+                  <img
+                    v-else-if="
+                      item.sysGameTypeCode === currentTabCode &&
+                      typeof item?.iconSelect === 'string'
+                    "
+                    :src="item.iconSelect"
+                    class="w-full h-full object-contain"
+                  />
+                  <component
+                    v-else-if="item?.icon"
+                    :is="item.icon"
+                    :class="
+                      item.sysGameTypeCode === currentTabCode ? 'text-theme-primary' : 'text-text-2'
+                    "
+                    class="h-full w-full fill-current [&_path]:fill-current"
+                  />
                 </div>
-                <CloseIcon
-                  class="h-2.5 w-2.5 shrink-0 text-text-2"
-                  @click.stop="deleteItme(item)"
-                />
+                <div
+                  :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
+                  class="casino-tab-label font-[700]"
+                >
+                  {{ item.sysGameTypeName }}
+                </div>
+              </button>
+              <div
+                v-for="index in tabSkeletonCount"
+                v-show="isInitialLobbyLoading"
+                :key="`tab-skeleton-${index}`"
+                class="flex h-[38px] w-24 shrink-0 items-center rounded-lg bg-bg-2 px-[7px] py-[9px] animate-pulse sm:w-28"
+              >
+                <div class="mr-[7px] h-5 w-5 shrink-0 rounded bg-bg-3" />
+                <div class="h-3 w-12 rounded bg-bg-3 sm:w-16" />
               </div>
             </div>
           </div>
-          <!-- 接口返回搜索建议 -->
-          <div class="text-xs my-2.5 w-full">
-            <div class="font-bold">{{ t('casino.suggested') }}</div>
-          </div>
-          <div class="w-full">
-            <div
-              v-if="suggestedArr?.length > 0"
-              class="flex max-h-14 flex-wrap gap-2 overflow-hidden"
+
+          <!-- 右箭头 -->
+          <div
+            class="casino-tab-arrow absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
+            :class="[
+              canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0',
+              { 'shadow-[1px_0_0_var(--color-background-level-1)]': !isMobile }
+            ]"
+          >
+            <button
+              class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+              @click="scrollRight"
             >
+              <component
+                :is="casinoIcons.chevron_left"
+                class="icon size-4 rotate-180 text-text-1 fill-current [&_path]:fill-current"
+              />
+            </button>
+          </div>
+        </div>
+
+        <div
+          ref="searchRef"
+          class="relative order-1 flex items-center self-stretch rounded-lg border border-input-2 bg-input-1 px-[10px] py-[10px] transition focus-within:border-theme-primary focus-within:ring-2 sm:h-10 sm:min-w-0 sm:shrink-0 sm:py-0 lg:order-2 lg:w-[200px] xl:w-[240px] 2xl:w-[240px]"
+          @mousedown="handleSearchWrapMouseDown"
+        >
+          <img
+            class="h-[18px] w-[18px] sm:shrink-0"
+            src="/src/static/img/casino/search.webp"
+            alt="search"
+          />
+          <input
+            v-model="searchText"
+            class="ml-[10px] h-[18px] flex-1 bg-transparent text-xs text-text-1 outline-none placeholder:text-text-2 focus:outline-none focus:ring-0 sm:min-w-0 sm:pr-4 sm:text-sm sm:placeholder:text-icon-3"
+            type="text"
+            :placeholder="t('casino.placeholder')"
+            @keydown.enter.prevent="onSearch"
+            @focus="showHistoryPanel = true"
+            @blur="handleSearchBlur"
+          />
+          <button
+            v-show="searchText"
+            class="absolute right-1 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-[6px] bg-opacity-10"
+            @click="clearSearch"
+          >
+            <CloseIcon class="h-2.5 w-2.5 text-icon-1" />
+          </button>
+          <div
+            v-show="showHistoryPanel && !searchText"
+            class="search-history-panel absolute left-0 right-0 top-full z-20 mt-3 flex w-full flex-col items-center rounded-lg border border-opacity-10 bg-bg-2 p-4"
+            @click.stop="showHistoryPanel = false"
+          >
+            <button
+              class="absolute -right-2 -top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-bg-3"
+              @click.stop="showHistoryPanel = false"
+            >
+              <CloseIcon class="h-2.5 w-2.5 text-icon-2" />
+            </button>
+            <div class="text-xs text-text-2">
+              {{ t('casino.search_tips') }}
+            </div>
+            <div
+              v-if="searchHistory?.length > 0"
+              class="my-2.5 flex w-full justify-between text-xs"
+            >
+              <div class="font-bold">{{ t('casino.history') }}</div>
+              <div class="text-text-2" @click.stop="deleteAll()">
+                {{ t('casino.clear') }}（{{ searchHistory?.length }}）
+              </div>
+            </div>
+            <div class="w-full">
               <div
-                v-for="(item, inx) in suggestedArr"
-                :key="inx"
-                class="px-1.5 py-1 rounded bg-opacity-10 flex items-center"
+                v-if="searchHistory?.length > 0"
+                class="flex max-h-14 flex-wrap gap-2 overflow-hidden"
               >
                 <div
-                  class="text-xs text-text-2 break-words max-w-full"
-                  @click.stop="goSearch(item)"
+                  v-for="(item, inx) in searchHistory"
+                  :key="inx"
+                  class="inline-flex h-6 max-w-full items-center rounded bg-opacity-10 px-1.5 py-1"
                 >
-                  {{ item }}
+                  <div
+                    class="mr-1 max-w-full overflow-hidden whitespace-nowrap text-xs text-text-2"
+                    @click.stop="goSearch(item)"
+                  >
+                    {{ item }}
+                  </div>
+                  <CloseIcon
+                    class="h-2.5 w-2.5 shrink-0 text-text-2"
+                    @click.stop="deleteItme(item)"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="my-2.5 w-full text-xs">
+              <div class="font-bold">{{ t('casino.suggested') }}</div>
+            </div>
+            <div class="w-full">
+              <div
+                v-if="suggestedArr?.length > 0"
+                class="flex max-h-14 flex-wrap gap-2 overflow-hidden"
+              >
+                <div
+                  v-for="(item, inx) in suggestedArr"
+                  :key="inx"
+                  class="flex items-center rounded bg-opacity-10 px-1.5 py-1"
+                >
+                  <div
+                    class="max-w-full break-words text-xs text-text-2"
+                    @click.stop="goSearch(item)"
+                  >
+                    {{ item }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -106,118 +212,19 @@
         </div>
       </div>
 
-      <div class="w-full relative">
-        <!-- 左箭头 -->
-        <div
-          class="casino-tab-arrow absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
-          :class="[
-            canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0',
-            { 'shadow-[-1px_0_0_var(--color-background-level-1)]': !isMobile }
-          ]"
-        >
-          <button
-            class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
-            @click="scrollLeft"
-          >
-            <component
-              :is="casinoIcons.chevron_left"
-              class="icon size-4 text-text-1 fill-current [&_path]:fill-current"
-            />
-          </button>
-        </div>
-        <!-- 顶部横行滚动tab选择 -->
-        <div :class="{ '-mr-3.5 sm:-mr-4': isMobile }">
+      <div
+        class="tabs-content filter-slide-stage min-h-48"
+        :class="{ '-mr-3.5 sm:-mr-4': isMobile }"
+      >
+        <Transition :name="slideName">
           <div
-            ref="tabScrollRef"
+            :key="tabSlideKey"
+            class="filter-slide-pane w-full"
             :class="{ 'pr-3.5 sm:pr-4': isMobile }"
-            class="casino-tab-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
-            @scroll="updateScrollState"
           >
-            <button
-              v-for="(item, inx) in tabButtons"
-              :key="inx"
-              :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
-              :class="{
-                'casino-tab-button--active': item.sysGameTypeCode === currentTabCode
-              }"
-              class="casino-tab-button flex shrink-0 items-center rounded-lg px-[7px] py-[9px] text-xs"
-              @click.stop="onTabButton(item)"
-            >
-              <div class="casino-tab-icon mr-[7px] h-5 w-5">
-                <img
-                  v-if="item.sysGameTypeCode !== currentTabCode && typeof item?.icon === 'string'"
-                  :src="item.icon"
-                  class="w-full h-full object-contain"
-                />
-                <img
-                  v-else-if="
-                    item.sysGameTypeCode === currentTabCode && typeof item?.iconSelect === 'string'
-                  "
-                  :src="item.iconSelect"
-                  class="w-full h-full object-contain"
-                />
-                <component
-                  v-else-if="item?.icon"
-                  :is="item.icon"
-                  :class="
-                    item.sysGameTypeCode === currentTabCode ? 'text-theme-primary' : 'text-text-2'
-                  "
-                  class="h-full w-full fill-current [&_path]:fill-current"
-                />
-              </div>
-              <div
-                :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
-                class="casino-tab-label font-[700]"
-              >
-                {{ item.sysGameTypeName }}
-              </div>
-            </button>
-            <div
-              v-for="index in tabSkeletonCount"
-              v-show="isInitialLobbyLoading"
-              :key="`tab-skeleton-${index}`"
-              class="flex h-[38px] w-24 shrink-0 items-center rounded-lg bg-bg-2 px-[7px] py-[9px] animate-pulse sm:w-28"
-            >
-              <div class="mr-[7px] h-5 w-5 shrink-0 rounded bg-bg-3" />
-              <div class="h-3 w-12 rounded bg-bg-3 sm:w-16" />
-            </div>
+            <component :is="getPageStyle" v-bind="currentPageProps" />
           </div>
-        </div>
-
-        <!-- 右箭头 -->
-        <div
-          class="casino-tab-arrow absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
-          :class="[
-            canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0',
-            { 'shadow-[1px_0_0_var(--color-background-level-1)]': !isMobile }
-          ]"
-        >
-          <button
-            class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
-            @click="scrollRight"
-          >
-            <component
-              :is="casinoIcons.chevron_left"
-              class="icon size-4 rotate-180 text-text-1 fill-current [&_path]:fill-current"
-            />
-          </button>
-        </div>
-
-        <!-- 6种样式 -->
-        <div
-          class="tabs-content filter-slide-stage min-h-48"
-          :class="{ '-mr-3.5 sm:-mr-4': isMobile }"
-        >
-          <Transition :name="slideName">
-            <div
-              :key="tabSlideKey"
-              class="filter-slide-pane w-full"
-              :class="{ 'pr-3.5 sm:pr-4': isMobile }"
-            >
-              <component :is="getPageStyle" v-bind="currentPageProps" />
-            </div>
-          </Transition>
-        </div>
+        </Transition>
       </div>
     </div>
   </div>
@@ -608,6 +615,16 @@ const { tabButtons, lobbyButtons, hasLoaded, isLobbyButtonsLoading, loadCasinoLo
   })
 const isInitialLobbyLoading = computed(() => isLobbyButtonsLoading.value && !hasLoaded.value)
 const tabSkeletonCount = computed(() => (isMobile.value ? 4 : 6))
+
+// 内容更新不一定改变容器宽度；待分类和骨架渲染完成后同步 PC 两侧箭头。
+watch(
+  [tabButtons, isInitialLobbyLoading, isMobile],
+  async () => {
+    await nextTick()
+    if (!isMobile.value && tabScrollRef.value?.isConnected) updateScrollState()
+  },
+  { flush: 'post' }
+)
 
 const getGameData = async (forceRefresh = false) => {
   try {

@@ -119,14 +119,17 @@
       <section class="overflow-x-auto">
         <template v-if="props.mode === 'pc'">
           <!-- PC 任务标签列表 -->
-          <div class="flex h-[40px] w-full items-center rounded-[8px] bg-bg-2 p-0">
+          <div class="flex h-[40px] w-full items-center p-0" :class="PC_SEGMENTED_TABS_CLASS">
             <!-- PC 任务标签项 -->
             <button
               v-for="item in props.tabs"
               :key="item.key"
               type="button"
               class="relative h-[40px] w-[258px] flex-1 rounded-[8px]"
-              :class="props.activeTab === item.key ? 'bg-bg-3' : ''"
+              :class="[
+                PC_SEGMENTED_TAB_CLASS,
+                getPcSegmentedTabStateClass(props.activeTab === item.key)
+              ]"
               @click="$emit('tab-click', item.key)"
             >
               <!-- PC 任务标签文字 -->
@@ -428,6 +431,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import taskCurrentProgressImage from '@/static/img/referral/task-current-progress.png'
 import CommissionOverviewPcIcon from '@/static/svg/referral/yongjin 1.svg?component'
 import { computed } from 'vue'

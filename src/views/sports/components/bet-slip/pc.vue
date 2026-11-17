@@ -573,7 +573,7 @@ const panelState = computed(() =>
 )
 const quickAmountClass =
   'h-9 w-[66px] shrink-0 rounded-xl px-2 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary'
-const quickEditClass = `${quickAmountClass} bg-bg-3 text-text-1 hover:bg-bg-2`
+const quickEditClass = `${quickAmountClass} bg-bg-10 text-text-1 hover:bg-bg-2`
 watch([panelState, quickAmountsStorageKey, editingAmounts, oddsSettingsOpen], endQuickAmountsDrag, {
   flush: 'sync'
 })
@@ -618,7 +618,7 @@ watch(
 function amountClass(stake: string, amount: number) {
   return Number(stake) === amount
     ? 'bg-theme-primary text-text-4'
-    : 'bg-bg-3 text-text-1 hover:bg-bg-2'
+    : 'bg-bg-10 text-text-1 hover:bg-bg-2'
 }
 
 function setQuickAmount(amount: number) {

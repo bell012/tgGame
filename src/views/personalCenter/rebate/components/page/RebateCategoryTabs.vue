@@ -55,7 +55,7 @@ const buttonClass = (isActive: boolean) => {
     ? 'group flex h-[60px] min-w-[60px] shrink-0 flex-col items-center justify-center rounded-[10px] px-2 outline-none focus:outline-none focus-visible:outline-none'
     : 'inline-flex h-[48px] min-w-[96px] shrink-0 items-center justify-center gap-2 rounded-full px-6 text-sm font-[700] outline-none focus:outline-none focus-visible:outline-none'
 
-  const inactiveBg = props.isMobile ? 'bg-bg-2' : 'bg-bg-3'
+  const inactiveBg = props.isMobile ? 'bg-bg-2' : 'bg-bg-2'
   const stateClass = isActive
     ? 'bg-theme-primary text-text-4'
     : `border border-transparent ${inactiveBg} text-text-2`

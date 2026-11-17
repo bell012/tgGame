@@ -1,13 +1,13 @@
 <!-- pc联赛tabs -->
 <template>
   <section ref="leagueTabsRef" class="relative flex h-[40px] w-full items-center overflow-visible">
-    <div class="flex h-10 flex-none items-center gap-1.5 rounded-full bg-bg-9 p-0.5">
+    <div class="flex h-10 flex-none items-center gap-1.5 p-0.5" :class="PC_SEGMENTED_TABS_CLASS">
       <button
         v-for="item in filterTabs"
         :key="item.key"
         type="button"
-        class="inline-flex h-9 flex-none items-center justify-center rounded-full border-0 px-5 text-base font-bold transition-colors"
-        :class="getFilterButtonClass(item.key)"
+        class="inline-flex h-9 flex-none items-center justify-center border-0 px-5 text-base font-bold transition-colors"
+        :class="[PC_SEGMENTED_TAB_CLASS, getFilterButtonClass(item.key)]"
         @click="onFilterTabClick(item.key)"
       >
         <span class="block max-w-[150px] overflow-hidden text-ellipsis">
@@ -53,10 +53,11 @@
     <!-- pc全部联赛弹窗 -->
     <div
       v-if="isLeaguePopupOpen"
-      class="absolute right-0 top-[48px] z-30 flex max-h-[360px] w-[368px] flex-col overflow-hidden rounded-[12px] bg-bg-5 px-[24px] py-[16px] shadow-[0_6px_30px_rgba(0,0,0,0.4)]"
+      class="tg-glass-tokens absolute right-0 top-[48px] z-30 flex max-h-[360px] w-[368px] flex-col overflow-hidden rounded-[12px] px-[24px] py-[16px] [box-shadow:var(--glass-shadow)]"
     >
+      <LiquidGlass />
       <label
-        class="mb-[12px] flex h-[40px] flex-none items-center rounded-[32px] bg-bg-2 px-[16px] transition-colors"
+        class="relative z-[1] mb-[12px] flex h-[40px] flex-none items-center rounded-[32px] bg-bg-2 px-[16px] transition-colors"
       >
         <SearchIcon class="h-5 w-5 text-icon-3" />
         <input
@@ -68,7 +69,7 @@
       </label>
 
       <div
-        class="min-h-0 flex-1 overflow-y-auto [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
+        class="relative z-[1] min-h-0 flex-1 overflow-y-auto [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
       >
         <button
           v-for="item in leaguePopupList"
@@ -94,8 +95,15 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import LiquidGlass from '@/components/common/LiquidGlass.vue'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?component'
 import { useLiansaiTabs } from './index'
@@ -142,9 +150,7 @@ const leaguePopupList = computed(() => {
 
 // 根据当前选中项返回“联赛/时间”分段按钮样式。
 const getFilterButtonClass = (key: LiansaiFilterKey) =>
-  activeFilterKey.value === key
-    ? 'bg-bg-3 text-text-1'
-    : 'bg-transparent text-text-2 hover:bg-opacity-6'
+  getPcSegmentedTabStateClass(activeFilterKey.value === key)
 
 // 根据当前选中项返回联赛按钮样式，所有联赛项共用同一套选中态。
 const getLeagueButtonClass = (item: LeagueTabItem) => {

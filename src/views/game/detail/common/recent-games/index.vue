@@ -19,14 +19,22 @@
         <Rginfo />
         <!-- Tab -->
         <div
-          class="recent-games-tabs flex h-[42px] justify-between items-center rounded-[7px] mb-[10px] mt-[20px] p-[4px] max-w-[500px]"
-          :class="{ 'recent-games-tabs-light': isLightTheme }"
+          class="recent-games-tabs flex h-[42px] justify-between items-center mb-[10px] mt-[20px] p-[4px] max-w-[500px]"
+          :class="[
+            { 'recent-games-tabs-light': isLightTheme, 'recent-games-tabs-mobile': isMobile },
+            isMobile ? 'rounded-[7px]' : PC_SEGMENTED_TABS_CLASS
+          ]"
         >
           <div
             v-for="tab in tabList"
             :key="tab.value"
             class="recent-games-tab flex-1 flex items-center justify-center cursor-pointer"
-            :class="{ active: tabValue === tab.value }"
+            :class="[
+              { active: tabValue === tab.value },
+              isMobile
+                ? ''
+                : [PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(tabValue === tab.value)]
+            ]"
             @click="tabIndexClick(tab.value)"
           >
             {{ tab.label }}
@@ -60,6 +68,13 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+import { useIsMobile } from '@/composables/useMediaQuery'
+
 import '@/views/game/detail/styles/colors.css'
 import Api from '@/api'
 import type { GameRanListItem, GameTypeItem } from '@/api/interface/game'
@@ -74,6 +89,8 @@ import TopToggle from './top-toggle.vue'
 import Winlist from './winlist.vue'
 import Rginfo from './rginfo.vue'
 import Review from './review/index.vue'
+
+const isMobile = useIsMobile()
 
 type CurrentGameDetail = {
   itemCode?: string | number
@@ -245,8 +262,6 @@ const tabIndexClick = (next: TabValue) => {
 
 .recent-games-tab {
   height: 100%;
-  border-radius: 6px;
-  color: var(--color-text-level-2);
   font-size: 13px;
   font-weight: 700;
   line-height: 18px;
@@ -259,32 +274,38 @@ const tabIndexClick = (next: TabValue) => {
 }
 
 .recent-games-tab.active {
-  background-color: var(--color-recent-games-tab-active);
-  color: var(--color-text-level-1);
   font-size: 14px;
   font-weight: 800;
 }
 
-.recent-games-tabs {
+.recent-games-tabs-mobile {
   background: var(--color-recent-games-panel);
 }
 
-.recent-games-tabs-light {
+.recent-games-tabs-mobile.recent-games-tabs-light {
   background: var(--color-recent-games-panel) !important;
   border: none;
 }
 
 .recent-games-tabs-light .recent-games-tab.active {
-  background: var(--color-recent-games-tab-active);
   border: none;
   box-shadow: none;
-  color: var(--color-text-level-1);
   font-size: 14px;
   font-weight: 800;
 }
 
-.recent-games-tabs-light .recent-games-tab:not(.active) {
+.recent-games-tabs-mobile.recent-games-tabs-light .recent-games-tab:not(.active) {
   color: var(--color-recent-games-tab-idle);
+}
+
+.recent-games-tabs-mobile .recent-games-tab {
+  border-radius: 6px;
+  color: var(--color-text-level-2);
+}
+
+.recent-games-tabs-mobile .recent-games-tab.active {
+  background: var(--color-recent-games-tab-active);
+  color: var(--color-text-level-1);
 }
 
 .recent-games-tab-content {

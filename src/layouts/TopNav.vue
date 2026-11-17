@@ -2,7 +2,7 @@
   <header class="top-nav">
     <div class="top-nav-inner h-full flex items-center justify-between px-4">
       <!-- h5菜单 -->
-      <div class="sm:hidden rounded-lg flex items-center justify-center">
+      <div class="flex min-w-0 items-center rounded-lg sm:hidden">
         <button
           type="button"
           class="fold-icon-wrap shrink-0 cursor-pointer"
@@ -22,7 +22,7 @@
         <!-- H5端 Logo-->
         <div
           v-if="isLoggedIn"
-          class="flex sm:hidden w-[49px] h-[49px] ml-0 items-center cursor-pointer mobileLogo"
+          class="mobileLogo ml-0 flex h-[49px] w-[49px] shrink-0 cursor-pointer items-center sm:hidden"
           @click="handleHomeClick"
         >
           <SmartImage
@@ -35,7 +35,7 @@
         </div>
         <div
           v-else
-          class="flex sm:hidden w-[150px] h-[48px] ml-[7px] items-center justify-start cursor-pointer"
+          class="ml-[7px] flex h-[48px] w-[150px] min-w-0 shrink cursor-pointer items-center justify-start sm:hidden"
           @click="handleHomeClick"
         >
           <SmartImage
@@ -48,7 +48,7 @@
         </div>
       </div>
       <!-- pc左侧 -->
-      <div class="flex items-center">
+      <div class="hidden items-center sm:flex">
         <div
           class="hidden sm:flex cursor-pointer search w-[40px] h-[40px] rounded-lg items-center justify-center"
           @click="handleToggleSidebar"
@@ -80,7 +80,7 @@
       </div>
 
       <!-- 右侧 -->
-      <div class="flex items-center justify-end">
+      <div class="flex min-w-0 items-center justify-end">
         <div
           class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3 sm:mr-4"
           @click="openExploreModal"
@@ -92,14 +92,14 @@
         <template v-if="!isLoggedIn">
           <!-- 登入 -->
           <div
-            class="cursor-pointer min-w-[84px] h-[35px] sm:min-w-[100px] sm:h-[40px] text-[16px] font-bold sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-opacity-10 mr-1 sm:mr-2"
+            class="mr-1 flex h-[35px] min-w-[84px] shrink-0 cursor-pointer items-center justify-center rounded-lg bg-opacity-10 px-3 text-[16px] font-bold sm:mr-2 sm:h-[40px] sm:min-w-[100px] sm:px-4 sm:text-[16px]"
             @click="openLoginModal"
           >
             {{ t('home.sign_In') }}
           </div>
           <!-- 注册 -->
           <div
-            class="cursor-pointer font-bold w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-4"
+            class="btn-primary flex h-[35px] w-[84px] shrink-0 cursor-pointer items-center justify-center rounded-lg px-3 text-[14px] font-bold sm:mr-4 sm:h-[40px] sm:w-[100px] sm:px-4 sm:text-[16px]"
             @click="openRegisterModal"
           >
             {{ t('home.sign_Up') }}
@@ -151,19 +151,19 @@
           <!-- H5 余额和充值容器 -->
           <div
             ref="mobileCurrencyAnchorRef"
-            class="flex sm:hidden items-center justify-between search w-[184px] h-[33px] p-1 rounded-lg mr-2 cursor-pointer"
+            class="search mr-2 flex h-[33px] min-w-0 max-w-[184px] flex-1 cursor-pointer items-center justify-between rounded-lg p-1 sm:hidden"
             @click="openLoggedInCurrencyPopup"
           >
-            <div class="flex items-center justify-center ml-1">
-              <div class="w-5 h-5 mr-1">
+            <div class="ml-1 flex min-w-0 items-center justify-center">
+              <div class="mr-1 h-5 w-5 shrink-0">
                 <img
                   :src="currentCurrencyIcon"
                   :alt="currentCurrencyCode"
-                  class="w-full h-full object-cover"
+                  class="h-full w-full object-cover"
                 />
               </div>
               <!-- 金额 -->
-              <span class="text-[14px] font-[600] text-text-1">
+              <span class="min-w-0 truncate text-[14px] font-[600] text-text-1">
                 {{ currentBalanceText }}
               </span>
             </div>
@@ -190,7 +190,7 @@
           </div>
 
           <!-- H5 礼物、通知、头像 -->
-          <div class="flex sm:hidden items-center">
+          <div class="flex shrink-0 items-center sm:hidden">
             <!-- 礼物图标 -->
             <div
               ref="mobileGiftMenuRef"
@@ -988,18 +988,5 @@ defineExpose({
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text-level-2);
-}
-
-@media (max-width: 390px) {
-  .top-nav-inner {
-    width: 111%;
-    --top-nav-scale: 0.9;
-  }
-}
-@media (max-width: 360px) {
-  .top-nav-inner {
-    width: 117%;
-    --top-nav-scale: 0.85;
-  }
 }
 </style>

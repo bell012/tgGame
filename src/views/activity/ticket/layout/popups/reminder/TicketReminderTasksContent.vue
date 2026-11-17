@@ -16,7 +16,7 @@
       v-for="task in dialogState.reminder.tasks"
       :key="task.id"
       class="rounded-[10px] px-3 py-3"
-      :class="isMobile ? 'bg-bg-4' : 'bg-bg-1'"
+      :class="isMobile ? 'bg-bg-4' : 'bg-bg-2'"
     >
       <div class="flex items-center justify-between gap-2">
         <span class="text-[14px] font-[500] text-text-1">{{ task.title }}</span>

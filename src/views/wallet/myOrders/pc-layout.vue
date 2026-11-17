@@ -3,13 +3,14 @@
   <div class="space-y-4">
     <!-- PC 顶部切换栏 -->
     <div
-      class="grid h-[48px] grid-cols-2 rounded-[10px] bg-bg-2 p-1 text-center text-[14px] font-[700]"
+      class="grid h-[48px] grid-cols-2 p-1 text-center text-[14px] font-[700]"
+      :class="PC_SEGMENTED_TABS_CLASS"
     >
       <!-- PC 充值订单切换按钮 -->
       <button
         type="button"
         class="flex items-center justify-center rounded-[8px] transition-colors"
-        :class="[activeTopTab === 'deposits' ? 'bg-bg-4 text-text-1' : 'text-text-2']"
+        :class="[PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(activeTopTab === 'deposits')]"
         @click="handleTopTabChange('deposits')"
       >
         {{ t('wallet.deposit') }}
@@ -19,7 +20,10 @@
       <button
         type="button"
         class="flex items-center justify-center rounded-[8px] transition-colors"
-        :class="[activeTopTab === 'withdrawals' ? 'bg-bg-4 text-text-1' : 'text-text-2']"
+        :class="[
+          PC_SEGMENTED_TAB_CLASS,
+          getPcSegmentedTabStateClass(activeTopTab === 'withdrawals')
+        ]"
         @click="handleTopTabChange('withdrawals')"
       >
         {{ t('wallet.withdraw') }}
@@ -113,6 +117,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import Api from '@/api'
 import type {
   QueryMemberPayOrderPageRecord,

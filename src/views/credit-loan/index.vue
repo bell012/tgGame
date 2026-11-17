@@ -220,17 +220,17 @@
             </div>
 
             <div class="flex items-center justify-between gap-3">
-              <div class="flex shrink-0 rounded-full bg-bg-2 p-1">
+              <div class="flex shrink-0 p-1" :class="PC_SEGMENTED_TABS_CLASS">
                 <button
                   v-for="tab in contentTabs"
                   :key="tab.key"
                   type="button"
-                  class="h-8 rounded-full px-5 text-sm"
-                  :class="
-                    tab.key === activeContentKey
-                      ? 'bg-bg-3 font-[700] text-text-1'
-                      : 'font-[400] text-text-2'
-                  "
+                  class="h-8 px-5 text-sm"
+                  :class="[
+                    PC_SEGMENTED_TAB_CLASS,
+                    getPcSegmentedTabStateClass(tab.key === activeContentKey),
+                    tab.key === activeContentKey ? 'font-[700]' : 'font-[400]'
+                  ]"
                   @click="activeContentKey = tab.key"
                 >
                   {{ tab.label }}
@@ -295,6 +295,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import { computed, onMounted, ref, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'

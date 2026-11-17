@@ -43,18 +43,24 @@
         <template v-else>
           <!-- 通知分类导航 -->
           <nav
-            class="tab-bar flex min-h-[37px] w-full items-stretch rounded-[12px] bg-bg-8"
+            class="tab-bar flex min-h-[37px] w-full items-stretch"
+            :class="isMobile ? 'rounded-[12px] bg-bg-8' : PC_SEGMENTED_TABS_CLASS"
             :aria-label="$t('notifications.tabsAria')"
           >
             <button
               v-for="tab in tabs"
               :key="tab.key"
               type="button"
-              class="tab-button flex min-w-0 flex-1 items-center justify-center gap-[4px] rounded-[12px] px-[8px] py-[11px]"
+              class="tab-button flex min-w-0 flex-1 items-center justify-center gap-[4px] px-[8px] py-[11px]"
               :class="
-                activeTab === tab.key
-                  ? 'tab-button-active bg-bg-7 text-text-1'
-                  : 'bg-bg-8 text-text-2'
+                isMobile
+                  ? [
+                      'rounded-[12px]',
+                      activeTab === tab.key
+                        ? 'tab-button-active bg-bg-7 text-text-1'
+                        : 'bg-bg-8 text-text-2'
+                    ]
+                  : [PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(activeTab === tab.key)]
               "
               @click="switchTab(tab.key)"
             >
@@ -530,6 +536,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import Api from '@/api'
 import type {
   NoticeRecord,

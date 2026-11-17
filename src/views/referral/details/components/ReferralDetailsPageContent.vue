@@ -6,7 +6,9 @@
       <!-- 顶部标签区域 -->
       <nav
         class="mb-[14px] overflow-x-auto"
-        :class="props.isMobile ? '' : 'w-full max-w-[1032px] overflow-hidden rounded-[8px] bg-bg-2'"
+        :class="
+          props.isMobile ? '' : ['w-full max-w-[1032px] overflow-hidden', PC_SEGMENTED_TABS_CLASS]
+        "
       >
         <!-- 标签列表 -->
         <div
@@ -25,8 +27,16 @@
                   ? 'h-[31px] shrink-0 rounded-full border border-theme-primary bg-theme-primary px-[20px] text-[12px] font-[700] leading-[15px] text-text-4'
                   : 'h-[31px] shrink-0 rounded-full bg-bg-2 px-[20px] text-[12px] font-[500] leading-[15px] text-text-2'
                 : props.activeTab === item.value
-                  ? 'h-[40px] flex-1 rounded-[8px] bg-bg-3 text-[14px] font-[700] leading-[17px] text-text-1'
-                  : 'h-[40px] flex-1 rounded-[8px] text-[14px] font-[700] leading-[17px] text-text-2'
+                  ? [
+                      'h-[40px] flex-1 text-[14px] font-[700] leading-[17px]',
+                      PC_SEGMENTED_TAB_CLASS,
+                      getPcSegmentedTabStateClass(true)
+                    ]
+                  : [
+                      'h-[40px] flex-1 text-[14px] font-[700] leading-[17px]',
+                      PC_SEGMENTED_TAB_CLASS,
+                      getPcSegmentedTabStateClass(false)
+                    ]
             "
             @click="$emit('change-tab', item.value)"
           >
@@ -454,6 +464,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  PC_SEGMENTED_TABS_CLASS,
+  PC_SEGMENTED_TAB_CLASS,
+  getPcSegmentedTabStateClass
+} from '@/components/common/pcSegmentedTabs'
+
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'

@@ -14,7 +14,7 @@
           {{ item.label }}
         </span>
         <span
-          class="absolute right-0 top-[-7px] inline-flex items-center justify-center rounded-[4px] bg-secondary-2 px-[2px] text-[11px] font-bold text-text-1"
+          class="absolute right-0 top-[-7px] inline-flex items-center justify-center rounded-[4px] bg-secondary-2 px-[4px] text-[11px] font-bold text-white"
         >
           {{ item.count }}
         </span>
@@ -103,7 +103,7 @@ const searchKeyword = computed({
 
 // 根据当前选中的筛选项返回按钮样式。
 const getFilterTabClass = (key: FilterTabKey) =>
-  activeFilterKey.value === key ? 'bg-bg-3 text-text-1' : 'bg-bg-9 text-text-3 hover:bg-opacity-6'
+  activeFilterKey.value === key ? 'bg-theme-primary text-text-4' : 'bg-bg-8 text-text-1'
 
 // 点击筛选按钮切换选中项。
 const onFilterTabClick = (key: FilterTabKey) => {
