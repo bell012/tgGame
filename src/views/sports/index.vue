@@ -7,22 +7,6 @@
   <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1">
     <SportsNavigation class="!px-5" @change="handleSportChange" />
 
-    <div
-      v-if="page.hotEventsError.value && !liveMatches.length"
-      class="mx-5 mt-4 flex items-center gap-3 text-sm text-text-2"
-      role="status"
-    >
-      <span>{{ t('sports.homepage.popularMatches') }}：{{ page.sportsLoadFailedText.value }}</span>
-      <button
-        type="button"
-        class="shrink-0 text-theme-primary disabled:opacity-50"
-        :disabled="page.hotEventsLoading.value"
-        @click="page.retryHotEvents"
-      >
-        {{ page.sportsRetryText.value }}
-      </button>
-    </div>
-
     <section
       v-if="liveMatches.length"
       class="mt-4"
@@ -92,21 +76,6 @@
     </section>
 
     <section class="mx-5 mt-4 space-y-4">
-      <div
-        v-if="page.homepageError.value || page.matchesError.value"
-        class="flex items-center gap-3 text-sm text-text-2"
-        role="status"
-      >
-        <span>{{ page.sportsLoadFailedText.value }}</span>
-        <button
-          type="button"
-          class="shrink-0 text-theme-primary disabled:opacity-50"
-          :disabled="page.homepageLoading.value || page.matchesLoading.value"
-          @click="page.retrySports"
-        >
-          {{ page.sportsRetryText.value }}
-        </button>
-      </div>
       <LeagueTabs_PC
         v-if="!isMobile"
         @filter-change="handleLeagueSortChange"
