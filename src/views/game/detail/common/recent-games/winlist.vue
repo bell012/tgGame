@@ -157,7 +157,7 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import type { GameRanListItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { getCurrencyImageByCode } from '@/utils/locale'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -182,7 +182,7 @@ const { actualCurrency } = storeToRefs(localeStore)
 const currentRequestCurrency = computed(
   () => toPlainText(actualCurrency.value).toUpperCase() || 'USD'
 )
-const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
+const currentCurrencyIcon = computed(() => getCurrencyImageByCode(currentRequestCurrency.value))
 const rankIcons = [RackIcon, RankIcon2, RankIcon3] as const
 const mobileSkeletonCount = 2
 const pcSkeletonCount = 5
