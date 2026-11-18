@@ -1,11 +1,15 @@
 <template>
   <div class="mx-auto w-full max-w-[1296px] px-[14px] pt-[16px]">
     <nav
-      class="mb-[16px] flex gap-[10px] overflow-x-auto rounded-[12px] bg-bg-2 px-[20px] py-[14px]"
+      ref="gameTabsRef"
+      class="scrollbar-none mb-[16px] flex select-none gap-[10px] overflow-x-auto overscroll-x-contain rounded-[12px] bg-bg-2 px-[20px] py-[14px]"
+      :class="isDraggingGameTabs ? 'cursor-grabbing' : 'cursor-grab'"
+      :aria-label="t('hashGame.games')"
     >
       <button
         v-for="game in hashGames"
         :key="game.gameCode"
+        data-scroll-center
         type="button"
         class="shrink-0 rounded-[6px] px-[12px] py-[10px] text-[14px]"
         :class="
@@ -189,7 +193,14 @@
               </div>
             </div>
           </div>
-          <div v-if="roadmap.columns.length" ref="roadmapViewport" class="overflow-x-auto">
+          <div
+            v-if="roadmap.columns.length"
+            ref="roadmapViewport"
+            class="select-none overflow-x-auto overscroll-x-contain"
+            :class="isDraggingRoadmap ? 'cursor-grabbing' : 'cursor-grab'"
+            :aria-label="t('hashGame.history')"
+            tabindex="0"
+          >
             <div class="flex w-max gap-[4px]">
               <div
                 v-for="(column, columnIndex) in roadmap.columns"
@@ -303,18 +314,10 @@
           ref="chipTrackRef"
           class="scrollbar-none mt-[20px] flex touch-pan-x select-none items-center gap-[12px] overflow-x-auto overflow-y-hidden py-[4px] pb-[20px]"
           :class="isDraggingChips ? 'cursor-grabbing' : 'cursor-grab'"
-          @pointerdown="onChipTrackPointerDown"
-          @pointermove="onChipTrackPointerMove"
-          @pointerup="onChipTrackPointerUp"
-          @pointercancel="onChipTrackPointerCancel"
-          @lostpointercapture="onChipTrackPointerCancel"
-          @click.capture="suppressDraggedChipClick"
-          @selectstart.prevent
-          @dragstart.prevent
         >
           <button
             type="button"
-            class="relative size-[50px] shrink-0"
+            class="relative size-[50px] shrink-0 brightness-[0.7]"
             :aria-label="t('hashGame.editChips')"
             @click="openChipEditor"
           >
@@ -329,9 +332,9 @@
             v-for="chip in chipOptions"
             :key="chip.id"
             :data-chip-value="chip.value"
+            data-scroll-center
             type="button"
-            class="relative size-[50px] shrink-0 rounded-full transition-transform"
-            :class="selectedChip === chip.value ? 'scale-105' : ''"
+            class="relative size-[50px] shrink-0 rounded-full brightness-[0.7] transition-[filter] duration-[180ms] aria-pressed:brightness-100 motion-reduce:transition-none"
             :aria-pressed="selectedChip === chip.value"
             @click="chooseChip(chip.value)"
           >
@@ -442,6 +445,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
 import type { HashGameBetDetail, HashGamePageState } from './index'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
@@ -543,103 +547,21 @@ const openRecentBets = () => {
   recentBetsOpen.value = true
   void loadRecentBets()
 }
-const roadmapViewport = ref<HTMLElement | null>(null)
-watch(
-  roadmap,
-  () => {
-    const viewport = roadmapViewport.value
-    if (viewport) viewport.scrollLeft = viewport.scrollWidth
-  },
-  { flush: 'post' }
-)
+const { viewport: gameTabsRef, dragging: isDraggingGameTabs } = useHorizontalScroll({
+  centerOnClick: true
+})
+const { viewport: chipTrackRef, dragging: isDraggingChips } = useHorizontalScroll({
+  centerOnClick: true
+})
+const { viewport: roadmapViewport, dragging: isDraggingRoadmap } = useHorizontalScroll({
+  endOnChange: () => roadmap.value.columns
+})
 watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
 const betDetailPopupOpen = ref(false)
 const selectedBetDetail = ref<HashGameBetDetail | null>(null)
 const rulesPopupOpen = ref(false)
 const quickBetPopupRef = ref<HTMLElement | null>(null)
 const quickBetTriggerRef = ref<HTMLElement | null>(null)
-const chipTrackRef = ref<HTMLElement | null>(null)
-const isDraggingChips = ref(false)
-let chipPointerId: number | null = null
-let chipDragStartX = 0
-let chipDragStartScrollLeft = 0
-let suppressChipClick = false
-let clearChipClickTimer: ReturnType<typeof setTimeout> | undefined
-const chipDragThreshold = 6
-
-// 鼠标按住筹码栏并横向移动时记录起点；只有实际溢出时才启用拖动。
-const onChipTrackPointerDown = (event: PointerEvent) => {
-  if (event.pointerType !== 'mouse' || event.button !== 0) return
-  const element = chipTrackRef.value
-  if (!element || element.scrollWidth <= element.clientWidth) return
-
-  if (clearChipClickTimer) clearTimeout(clearChipClickTimer)
-  suppressChipClick = false
-  chipPointerId = event.pointerId
-  chipDragStartX = event.clientX
-  chipDragStartScrollLeft = element.scrollLeft
-}
-
-// 超过拖动阈值后滚动筹码栏，并记录需要拦截浏览器合成点击。
-const onChipTrackPointerMove = (event: PointerEvent) => {
-  const element = chipTrackRef.value
-  if (!element || event.pointerId !== chipPointerId) return
-  if (!(event.buttons & 1)) {
-    onChipTrackPointerCancel(event)
-    return
-  }
-
-  const distance = event.clientX - chipDragStartX
-  if (!isDraggingChips.value && Math.abs(distance) <= chipDragThreshold) return
-  if (!isDraggingChips.value) {
-    isDraggingChips.value = true
-    suppressChipClick = true
-    element.setPointerCapture(event.pointerId)
-  }
-
-  event.preventDefault()
-  element.scrollLeft = Math.max(
-    0,
-    Math.min(element.scrollWidth - element.clientWidth, chipDragStartScrollLeft - distance)
-  )
-}
-
-// 结束鼠标拖动并释放捕获；轻点仍由按钮自身的 click 事件处理。
-const onChipTrackPointerUp = (event: PointerEvent) => {
-  if (event.pointerId !== chipPointerId) return
-  const element = chipTrackRef.value
-  const wasDragging = isDraggingChips.value
-  chipPointerId = null
-  isDraggingChips.value = false
-  if (element?.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId)
-
-  if (wasDragging) {
-    clearChipClickTimer = setTimeout(() => {
-      suppressChipClick = false
-      clearChipClickTimer = undefined
-    }, 0)
-  }
-}
-
-// 指针被系统取消或组件卸载时清理拖动状态。
-const onChipTrackPointerCancel = (event: PointerEvent) => {
-  if (event.pointerId !== chipPointerId) return
-  const element = chipTrackRef.value
-  chipPointerId = null
-  isDraggingChips.value = false
-  suppressChipClick = false
-  if (clearChipClickTimer) clearTimeout(clearChipClickTimer)
-  clearChipClickTimer = undefined
-  if (element?.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId)
-}
-
-// 拖动结束后拦截合成 click，避免松开鼠标时误选筹码；键盘触发的 click 正常通过。
-const suppressDraggedChipClick = (event: MouseEvent) => {
-  if (!suppressChipClick || event.detail === 0) return
-  suppressChipClick = false
-  event.preventDefault()
-  event.stopPropagation()
-}
 
 // 点击弹层与设置齿轮以外的区域时关闭弹层，不改动快捷投注开关值。
 const handleQuickBetOutsidePointerDown = (event: PointerEvent) => {
@@ -655,14 +577,7 @@ const handleQuickBetOutsidePointerDown = (event: PointerEvent) => {
 
 // 页面挂载期间监听外部点击，卸载时移除监听，避免重复绑定。
 onMounted(() => document.addEventListener('pointerdown', handleQuickBetOutsidePointerDown))
-onBeforeUnmount(() => {
-  document.removeEventListener('pointerdown', handleQuickBetOutsidePointerDown)
-  if (clearChipClickTimer) clearTimeout(clearChipClickTimer)
-  if (chipPointerId !== null) {
-    const element = chipTrackRef.value
-    if (element?.hasPointerCapture(chipPointerId)) element.releasePointerCapture(chipPointerId)
-  }
-})
+onBeforeUnmount(() => document.removeEventListener('pointerdown', handleQuickBetOutsidePointerDown))
 
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
 

@@ -449,7 +449,7 @@
         <div class="flex items-center gap-[20px]">
           <button
             type="button"
-            class="relative flex size-[34px] shrink-0 items-center justify-center rounded-full bg-bg-3"
+            class="relative flex size-[35px] shrink-0 items-center justify-center rounded-full bg-bg-3 brightness-[0.7]"
             :aria-label="t('hashGame.editChips')"
             @click="openChipEditor"
           >
@@ -460,7 +460,8 @@
             >
           </button>
           <div
-            class="flex h-[45px] min-w-0 flex-1 items-center gap-[13px] overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            ref="chipTrackRef"
+            class="scrollbar-none flex h-[45px] min-w-0 flex-1 select-none items-center gap-[13px] overflow-x-auto overscroll-x-contain"
             role="group"
             :aria-label="t('hashGame.editChips')"
           >
@@ -468,9 +469,9 @@
               v-for="chip in chipOptions"
               :key="chip.id"
               :data-chip-value="chip.value"
+              data-scroll-center
               type="button"
-              class="relative shrink-0 transition-[width,height] duration-[180ms] motion-reduce:transition-none"
-              :class="selectedChip === chip.value ? 'h-[45px] w-[45px]' : 'h-[35px] w-[35px]'"
+              class="relative size-[35px] shrink-0 brightness-[0.7] transition-[filter] duration-[180ms] aria-pressed:brightness-100 motion-reduce:transition-none"
               :aria-pressed="selectedChip === chip.value"
               @click="chooseChip(chip.value)"
             >
@@ -482,15 +483,7 @@
               />
               <span
                 class="absolute inset-x-0 bottom-[3px] top-0 grid place-items-center text-text-1 font-[700]"
-                :class="
-                  chip.value >= 1000
-                    ? selectedChip === chip.value
-                      ? 'text-[13px]'
-                      : 'text-[10px]'
-                    : selectedChip === chip.value
-                      ? 'text-[24px]'
-                      : 'text-[16px]'
-                "
+                :class="chip.value >= 1000 ? 'text-[10px]' : 'text-[16px]'"
                 >{{ formatChipAmount(chip.value) }}</span
               >
             </button>
@@ -641,6 +634,7 @@ import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
 import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
 import { navigateTo } from '@/utils/router'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import HashGameChat from './components/HashGameChat.vue'
@@ -750,15 +744,10 @@ const {
   selectBet
 })
 
-const roadmapViewport = ref<HTMLElement | null>(null)
-watch(
-  [roadmap, roadmapViewport],
-  () => {
-    const viewport = roadmapViewport.value
-    if (viewport) viewport.scrollLeft = viewport.scrollWidth
-  },
-  { flush: 'post' }
-)
+const { viewport: chipTrackRef } = useHorizontalScroll({ centerOnClick: true })
+const { viewport: roadmapViewport } = useHorizontalScroll({
+  endOnChange: () => roadmap.value.columns
+})
 watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
 
 const handleCancelSelection = () => {
