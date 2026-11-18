@@ -61,6 +61,8 @@ export type HashGameHistoryRecord = {
   block: string
   digit: string
   outcomes: BetKey[]
+  colorOutcome?: BetKey
+  hashHighlight: 'digit' | 'sum' | 'lucky'
   blockHash: string
   explorerUrl: string
 }
@@ -455,16 +457,26 @@ const createHashGamePageState = () => {
           .join('、')
       : ''
   )
-  const historyRecords = computed<HashGameHistoryRecord[]>(() =>
-    issues.value.map(issue => ({
+  const historyRecords = computed<HashGameHistoryRecord[]>(() => {
+    const hashHighlight =
+      algorithm.value === 'SUM' ? 'sum' : algorithm.value === 'LUCKY' ? 'lucky' : 'digit'
+    const colorMode =
+      hashHighlight === 'lucky'
+        ? 'winner'
+        : selectedHashGameCode.value === 'CL_TAIL_BS'
+          ? 'size'
+          : 'parity'
+    return issues.value.map(issue => ({
       id: issue.anchorBlockNum,
       block: String(issue.anchorBlockNum),
       digit: String(issue.result.sum ?? issue.result.digit ?? issue.result.lastTwo ?? '—'),
       outcomes: getIssueOutcomes(issue),
+      colorOutcome: issueOutcome(issue.result, colorMode),
+      hashHighlight,
       blockHash: issue.blockHash,
       explorerUrl: issueExplorerUrl(issue.explorerUrl, issue.anchorBlockNum)
     }))
-  )
+  })
 
   /** 关闭页面中打开的所有浮层。 */
   const closeOverlays = () => {

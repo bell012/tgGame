@@ -352,34 +352,25 @@
               <span
                 v-if="hasBetAmount(option.key)"
                 class="absolute right-[5px] z-[2] flex items-center justify-center rounded-[12px] bg-theme-primary px-[8px] text-[12px] font-[500] text-text-4"
-                :style="{ top: `calc(48% - 10px - ${getChipStackOffset(option.key)}px)` }"
+                :style="{ top: `calc(48% - 14px - ${getChipStackOffset(option.key)}px)` }"
               >
                 {{ betTotals[option.key] }}
               </span>
               <span
-                class="pointer-events-none absolute right-[5px] top-[48%] z-[1] size-[25px] [perspective:420px] [transform-style:preserve-3d]"
+                class="pointer-events-none absolute right-[5px] top-[48%] z-[1] size-[25px] text-[9px]"
+                data-chip-stack
                 aria-hidden="true"
               >
                 <span
                   v-for="(chip, layer) in landedChips[option.key] || []"
                   :key="chip.id"
-                  class="absolute inset-0 grid place-items-center [transform-style:preserve-3d] drop-shadow-[0_2px_1px_rgb(0_0_0_/_45%)] after:absolute after:inset-[1px_1px_-2px] after:z-0 after:rounded-full after:bg-[repeating-linear-gradient(180deg,#cbd2cf_0px,#cbd2cf_1px,#59615f_1px,#59615f_2px,#252b2a_2px,#252b2a_3px)] after:shadow-[0_2px_0_rgb(0_0_0_/_30%)] after:[transform:translateZ(-2px)]"
+                  class="absolute inset-0"
                   :style="{
-                    '--chip-stack-offset': `${-layer * chipStackStep}px`,
-                    transform: `translateY(var(--chip-stack-offset, 0px)) rotateZ(-12deg) rotateX(24deg)`,
-                    transformStyle: 'preserve-3d',
-                    zIndex: maxVisibleChips - layer
+                    transform: `translateY(${-layer * chipStackStep}px)`,
+                    zIndex: layer + 1
                   }"
                 >
-                  <img
-                    :src="chipImage"
-                    alt=""
-                    class="absolute inset-0 z-[1] size-full rounded-full"
-                    :style="{ filter: chip.filter }"
-                  />
-                  <b class="relative z-[2] text-[8px] font-bold leading-none text-white">{{
-                    formatChipAmount(chip.amount)
-                  }}</b>
+                  <BetChip :amount="chip.amount" :filter="chip.filter" />
                 </span>
               </span>
               <span class="flex items-baseline justify-center gap-[5px] whitespace-nowrap">
@@ -660,6 +651,8 @@ import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import FlyingChip from './components/FlyingChip.vue'
+import BetChip from './components/BetChip.vue'
+import { formatChipAmount } from './components/chipMotion'
 import { useBetChipAnimation } from './components/useBetChipAnimation'
 import type { HashGamePageState } from './index'
 
@@ -740,7 +733,6 @@ const {
 } = props.page
 
 const {
-  maxVisibleChips,
   chipStackStep,
   betTotals,
   landedChips,
@@ -755,7 +747,6 @@ const {
   chipOptions,
   soundEnabled: musicEnabled,
   slotSize: 25,
-  rightInset: 5,
   selectBet
 })
 
@@ -769,13 +760,6 @@ watch(
   { flush: 'post' }
 )
 watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
-
-/** 将筹码面额缩写为适合按钮展示的文字。 */
-const formatChipAmount = (amount: number) => {
-  if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
-  if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
-  return String(amount)
-}
 
 const handleCancelSelection = () => {
   clearBetChips()
