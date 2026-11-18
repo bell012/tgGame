@@ -2,6 +2,7 @@ import { computed, onScopeDispose, ref, shallowRef, watch, type Ref } from 'vue'
 import { useGameChatFeed } from '@/composables/useGameChatFeed'
 import { queryHashChatHistory } from '@/api/modules/hash-game-chat'
 import type {
+  HashBetStatsSnapshot,
   HashChatHistoryItem,
   HashChatMessage,
   HashHttpDraw,
@@ -31,9 +32,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
   const feed = useGameChatFeed<HashChatMessage>()
   const activeRoom = ref('')
   const onlineCount = ref(0)
-  const betStats = shallowRef<
-    Record<string, Record<string, { participantCount: number; totalAmount: number }>>
-  >({})
+  const betStats = shallowRef<HashBetStatsSnapshot>()
   const settlementQueue = shallowRef<HashSettlementNotice[]>([])
   const currentSettlement = computed(() => settlementQueue.value[0] ?? null)
   const placedOrders = new Map<string, { gameCode: string; anchorBlockNum: number }>()
@@ -108,7 +107,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
       return
     }
     if (event.type === 'CHAIN_LOTTERY_BET_STATS') {
-      betStats.value = event.data.stats
+      betStats.value = event.data
       return
     }
 
@@ -302,9 +301,9 @@ export function useHashGameChat(gameCode: Ref<string>) {
     settledRounds.clear()
     settlementQueue.value = []
     onlineCount.value = 0
-    betStats.value = {}
-    activeRoom.value = `CHAT:${code}`
-    void loadHistory(code, generation)
+    betStats.value = undefined
+    activeRoom.value = code ? `CHAT:${code}` : ''
+    if (code) void loadHistory(code, generation)
   }
 
   /** 离开游戏时结束当前模拟会话，真实连接接入后在此关闭 WS。 */

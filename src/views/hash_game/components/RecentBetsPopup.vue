@@ -138,10 +138,15 @@
                   >
                   <span
                     class="flex items-center justify-end whitespace-nowrap"
-                    :class="bet.profitLoss >= 0 ? 'text-theme-primary' : 'text-secondary-2'"
+                    :class="
+                      bet.profitLoss == null
+                        ? ''
+                        : bet.profitLoss >= 0
+                          ? 'text-theme-primary'
+                          : 'text-secondary-2'
+                    "
                   >
-                    {{ bet.profitLoss >= 0 ? '+' : '-' }}{{ currencySymbol
-                    }}{{ Math.abs(bet.profitLoss).toFixed(2) }}
+                    {{ bet.profitLoss == null ? '—' : formatSignedAmount(bet.profitLoss) }}
                     <RightArrowIcon class="ml-[1px] size-[14px] text-text-3" />
                   </span>
                 </div>
@@ -168,7 +173,7 @@ const props = withDefaults(
     currencyCode: string
     currencyIcon: string
     balanceText: string
-    period: number
+    gameName: string
     bets: RecentBetRecord[]
     summary: RecentBetSummary
     variant?: 'h5' | 'pc'
@@ -199,7 +204,7 @@ const openBetHistory = () => {
 const openBetDetail = (bet: RecentBetRecord) => {
   const detail: HashGameBetDetail = {
     ...bet,
-    period: props.period,
+    gameName: props.gameName,
     currencyCode: props.currencyCode,
     currencyIcon: props.currencyIcon
   }
