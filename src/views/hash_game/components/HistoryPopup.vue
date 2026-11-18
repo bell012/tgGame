@@ -89,11 +89,7 @@
                       : 'flex items-center justify-center gap-[7px]'
                   "
                 >
-                  <b
-                    :class="
-                      record.outcome === 'evenSmall' ? 'text-secondary-2' : 'text-secondary-11'
-                    "
-                  >
+                  <b class="text-theme-primary">
                     {{ record.digit }}
                   </b>
                   <span
@@ -106,31 +102,27 @@
                   />
                   <span :class="variant === 'pc' ? 'flex gap-[4px]' : 'flex gap-[3px]'">
                     <i
-                      v-for="mark in resultMarks(record.outcome)"
+                      v-for="mark in record.outcomes"
                       :key="mark"
                       :class="[
                         variant === 'pc'
                           ? 'flex size-[20px] items-center justify-center rounded-full not-italic text-[14px] text-[#fff]'
                           : 'flex size-[18px] items-center justify-center rounded-full not-italic text-[11px] text-[#fff]',
-                        record.outcome === 'evenSmall' ? 'bg-[#E63533]' : 'bg-[#22A89A]'
+                        ['even', 'small', 'lose', 'player'].includes(mark)
+                          ? 'bg-[#E63533]'
+                          : 'bg-[#22A89A]'
                       ]"
                       >{{ t(`hashGame.${mark}Mark`) }}</i
                     >
                   </span>
                 </span>
                 <span class="min-w-0 truncate px-[2px]">
-                  {{ record.blockHash.slice(0, -1)
-                  }}<b
-                    :class="
-                      Number(record.blockHash.slice(-1)) % 2 === 0
-                        ? 'text-secondary-2'
-                        : 'text-secondary-11'
-                    "
-                    >{{ record.blockHash.slice(-1) }}</b
-                  >
+                  {{ record.blockHash ? '…' + record.blockHash.slice(-8) : '—' }}
                 </span>
-                <button
-                  type="button"
+                <a
+                  :href="record.explorerUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   :class="
                     variant === 'pc'
                       ? 'justify-self-end text-[16px] text-theme-primary text-right'
@@ -138,7 +130,7 @@
                   "
                 >
                   {{ t('hashGame.verify') }}
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -159,7 +151,4 @@ withDefaults(
 )
 const emit = defineEmits<{ 'update:visible': [visible: boolean] }>()
 const { t } = useI18n()
-
-const resultMarks = (outcome: HashGameHistoryRecord['outcome']) =>
-  outcome === 'evenSmall' ? ['even', 'small'] : ['odd', 'big']
 </script>

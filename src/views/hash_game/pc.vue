@@ -4,19 +4,19 @@
       class="mb-[16px] flex gap-[10px] overflow-x-auto rounded-[12px] bg-bg-2 px-[20px] py-[14px]"
     >
       <button
-        v-for="period in periodOptions"
-        :key="period"
+        v-for="game in hashGames"
+        :key="game.gameCode"
         type="button"
         class="shrink-0 rounded-[6px] px-[12px] py-[10px] text-[14px]"
         :class="
-          selectedPeriod === period
+          selectedHashGameCode === game.gameCode
             ? 'bg-theme-primary font-bold text-text-4'
             : 'bg-bg-3 text-text-1'
         "
-        :aria-pressed="selectedPeriod === period"
-        @click="selectPeriod(period)"
+        :aria-pressed="selectedHashGameCode === game.gameCode"
+        @click="selectHashGame(game.gameCode)"
       >
-        {{ period }}s Hash
+        {{ game.gameName }}
       </button>
     </nav>
 
@@ -24,16 +24,18 @@
       <main class="min-w-0 rounded-[12px] bg-bg-2 p-[24px]">
         <header class="mb-[36px] flex items-center justify-between">
           <div class="flex items-center gap-[10px]">
-            <h1 class="text-[16px] font-bold text-text-1">{{ selectedPeriod }}s Hash</h1>
-            <span class="rounded-[4px] bg-bg-3 px-[10px] py-[3px] text-[12px] text-text-2"
-              >1.9 x</span
+            <h1 class="text-[16px] font-bold text-text-1">{{ hashGameName }}</h1>
+            <span
+              v-if="defaultOdds !== '—'"
+              class="rounded-[4px] bg-bg-3 px-[10px] py-[3px] text-[12px] text-text-2"
+              >{{ defaultOdds }} x</span
             >
           </div>
           <div class="flex gap-[10px]">
             <button
               type="button"
               class="flex items-center gap-[10px] rounded-[6px] bg-bg-3 px-[10px] py-[6px] text-[14px] text-text-2"
-              @click="recentBetsOpen = true"
+              @click="openRecentBets"
             >
               <RecentIcon class="size-[20px] text-icon-2" />{{ t('hashGame.recentBets') }}
             </button>
@@ -52,18 +54,22 @@
             <p class="text-[14px] font-[700] text-text-1">{{ t('hashGame.lastBlock') }}</p>
             <div class="mt-[6px] flex items-center justify-center gap-[2px]">
               <strong class="text-[24px] font-[700] text-text-1 underline underline-offset-1">{{
-                mockRound.lastBlock
+                round.lastBlock
               }}</strong>
-              <span
+              <a
+                v-if="round.explorerUrl"
+                :href="round.explorerUrl"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="rounded-[4px] bg-theme-primary px-[4px] py-[2px] text-[12px] text-text-4"
-                >{{ t('hashGame.verify') }}</span
+                >{{ t('hashGame.verify') }}</a
               >
             </div>
           </div>
           <div
             class="relative mx-auto grid size-[40px] place-items-center rounded-full border-[5px] border-secondary-10 border-l-bg-1 text-[16px] font-[700] text-text-1"
           >
-            {{ mockRound.countdown }}
+            {{ round.countdown }}
           </div>
           <div class="text-secondary-10">
             <p class="text-[14px] font-[700] text-secondary-10">
@@ -71,7 +77,7 @@
             </p>
             <strong
               class="mt-[6px] block text-[24px] text-secondary-10 font-[700] underline underline-offset-1"
-              >{{ mockRound.currentBlock }}</strong
+              >{{ round.currentBlock }}</strong
             >
           </div>
         </section>
@@ -82,11 +88,9 @@
             >{{ hashParts.before }}<b class="text-theme-primary">{{ hashParts.digit }}</b
             >{{ hashParts.after }}</span
           >
-          <span class="mx-[4px] text-[14px] font-[700] text-text-2"
-            >(<b class="text-secondary-2">{{ t('hashGame.odd') }}</b
-            >、<b class="text-secondary-4">{{ t('hashGame.big') }}</b
-            >)</span
-          >
+          <span v-if="roundOutcome" class="mx-[4px] text-[14px] font-[700] text-theme-primary">
+            ({{ roundOutcome }})
+          </span>
           <button
             type="button"
             class="flex items-center whitespace-nowrap text-[14px] font-[700] text-theme-primary"
@@ -101,7 +105,7 @@
           <div
             class="relative mb-[20px] flex min-w-[150px] h-[30px] items-center justify-between gap-[12px]"
           >
-            <div class="flex gap-[6px]">
+            <div v-if="roadmapModes.length > 1" class="flex gap-[6px]">
               <button
                 v-for="mode in roadmapModes"
                 :key="mode"
@@ -118,21 +122,20 @@
               </button>
             </div>
             <div class="flex items-center gap-[21px] whitespace-nowrap">
-              <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
+              <span
+                v-for="entry in roadmap.counts"
+                :key="entry.key"
+                class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2"
+              >
                 <i
-                  class="grid size-[20px] place-items-center rounded-full bg-[#22A89A] text-[14px] not-italic text-white"
-                  >{{ resultLabels.positive }}</i
-                >{{ mockRound.positiveCount }}
-              </span>
-              <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
-                <i
-                  class="grid size-[20px] place-items-center rounded-full bg-[#E63533] text-[14px] not-italic text-white"
-                  >{{ resultLabels.negative }}</i
-                >{{ mockRound.negativeCount }}
+                  class="grid size-[20px] place-items-center rounded-full text-[14px] not-italic text-white"
+                  :style="{ background: entry.color }"
+                  >{{ entry.label }}</i
+                >{{ entry.count }}
               </span>
             </div>
             <div class="flex items-center">
-              <span class="text-[14px] text-secondary-8">{{ resultLabels.streak }}</span>
+              <span class="text-[14px] text-secondary-8">{{ roadmap.streak }}</span>
             </div>
             <div class="flex items-center gap-[10px]">
               <button
@@ -186,26 +189,32 @@
               </div>
             </div>
           </div>
-          <div class="overflow-x-auto">
+          <div v-if="roadmap.columns.length" ref="roadmapViewport" class="overflow-x-auto">
             <div class="flex w-max gap-[4px]">
               <div
-                v-for="(column, columnIndex) in resultColumns"
+                v-for="(column, columnIndex) in roadmap.columns"
                 :key="columnIndex"
                 class="grid grid-rows-5 gap-[4px]"
               >
                 <span
-                  v-for="cell in column"
-                  :key="cell.id"
+                  v-for="(cell, rowIndex) in column"
+                  :key="rowIndex"
                   class="grid size-[20px] place-items-center rounded-full text-[14px] text-white"
-                  :class="[
-                    cell.positive ? 'bg-[#22A89A]' : 'bg-[#E63533]',
-                    { invisible: !cell.filled }
-                  ]"
-                  >{{ cell.positive ? resultLabels.positive : resultLabels.negative }}</span
+                  :class="{ invisible: !cell }"
+                  :style="{ background: cell?.color }"
+                  :aria-hidden="!cell"
+                  >{{ cell?.label }}</span
                 >
               </div>
             </div>
           </div>
+          <p
+            v-else-if="roadmap.emptyMessage"
+            class="py-3 text-center text-sm text-text-3"
+            role="status"
+          >
+            {{ roadmap.emptyMessage }}
+          </p>
         </section>
 
         <section class="mt-[20px]">
@@ -216,7 +225,7 @@
               >{{ t('hashGame.fairness') }}</span
             >
           </div>
-          <div class="grid grid-cols-4 gap-[10px]">
+          <div class="grid gap-[10px]" :style="betGridStyle">
             <div
               v-for="option in betOptions"
               :key="option.key"
@@ -263,7 +272,7 @@
               <span
                 class="absolute top-[3px] left-[7px] text-[12px]"
                 :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
-                >{{ mockBet.odds }}</span
+                >{{ option.odds }}</span
               >
               <strong
                 class="mb-[12px] block text-center text-[24px] font-[700]"
@@ -277,7 +286,7 @@
                   ><PeopleIcon
                     class="size-[14px]"
                     :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
-                  />{{ mockBet.people }}</span
+                  />{{ option.people }}</span
                 >
                 <span
                   class="flex items-center gap-[6px] rounded-[4px] bg-opacity-6 px-[6px] py-[4px]"
@@ -285,13 +294,13 @@
                   ><AmountIcon
                     class="size-[14px]"
                     :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
-                  />{{ mockBet.amount }}</span
+                  />{{ option.amount }}</span
                 >
               </span>
               <span class="mt-[10px] block h-[4px] overflow-hidden rounded bg-opacity-6">
                 <i
                   class="block h-full rounded-[inherit]"
-                  :style="{ width: mockBet.progress + '%', background: option.color }"
+                  :style="{ width: option.progress + '%', background: option.color }"
                 />
               </span>
             </div>
@@ -365,7 +374,8 @@
           </button>
           <button
             type="button"
-            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1"
+            disabled
+            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1 disabled:opacity-50"
           >
             <ConfirmIcon class="size-[16px] text-icon-2" />{{ t('hashGame.confirmBet') }}
           </button>
@@ -406,7 +416,7 @@
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :balance-text="currentBalanceText"
-      :period="selectedPeriod"
+      :game-name="hashGameName"
       :bets="recentBets"
       :summary="recentBetSummary"
       @select-bet="openBetDetailPopup"
@@ -422,11 +432,7 @@
     <!-- 筹码设置 -->
     <ChipEditorPopup :page="props.page" variant="pc" />
     <!-- 规则弹窗 -->
-    <HashGameRules
-      v-model:visible="rulesPopupOpen"
-      v-model:selected-period="selectedPeriod"
-      variant="pc"
-    />
+    <HashGameRules v-model:visible="rulesPopupOpen" variant="pc" />
     <!-- 飞筹码动画 -->
     <Teleport to="body">
       <FlyingChip
@@ -444,7 +450,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { HashGameBetDetail, HashGamePageState } from './index'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
@@ -478,16 +484,20 @@ import CommonFooter from '@/components/commonFooter.vue'
 const props = defineProps<{ page: HashGamePageState }>()
 const {
   t,
-  selectedPeriod,
-  periodOptions,
+  hashGames,
+  hashGameName,
+  selectedHashGameCode,
+  selectHashGame,
   roadmapMode,
   chipOptions,
   selectedChip,
-  mockRound,
+  round,
+  roundOutcome,
   hashParts,
-  mockBet,
-  resultLabels,
-  resultColumns,
+  defaultOdds,
+  roadmap,
+  roadmapModes,
+  betGridStyle,
   betOptions,
   quickBetPopupOpen,
   quickBetEnabled,
@@ -501,7 +511,7 @@ const {
   recentBetSummary,
   historyPopupOpen,
   historyRecords,
-  selectPeriod,
+  loadRecentBets,
   openRecords,
   selectBet,
   chooseChip,
@@ -537,6 +547,21 @@ const {
 
 const chatDraft = ref('')
 const recentBetsOpen = ref(false)
+/** 打开弹窗时刷新当前玩法的近期投注。 */
+const openRecentBets = () => {
+  recentBetsOpen.value = true
+  void loadRecentBets()
+}
+const roadmapViewport = ref<HTMLElement | null>(null)
+watch(
+  roadmap,
+  () => {
+    const viewport = roadmapViewport.value
+    if (viewport) viewport.scrollLeft = viewport.scrollWidth
+  },
+  { flush: 'post' }
+)
+watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
 const betDetailPopupOpen = ref(false)
 const selectedBetDetail = ref<HashGameBetDetail | null>(null)
 const rulesPopupOpen = ref(false)
@@ -648,7 +673,6 @@ onBeforeUnmount(() => {
   }
 })
 
-const roadmapModes = ['size', 'parity'] as const
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
 
 const formatChipAmount = (amount: number) => {

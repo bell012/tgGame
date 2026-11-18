@@ -1,8 +1,14 @@
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import Api from '@/api'
+import type {
+  HashGameLotteryGame,
+  HashGameLotteryInfo,
+  HashGameLotteryIssue
+} from '@/api/interface/hash_game.interface'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
@@ -10,30 +16,38 @@ import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
-import { createMockPlaceBetResponse, createMockRoomEvents } from './chat/mock'
 import { useHashGameChat } from './chat/useHashGameChat'
 import { createMockChatConfig, type HashChatConfig } from './chat/config'
-import type { HashBetOption, HashPlaceBetRequest } from './chat/types'
+import type { HashWsEvent } from './chat/types'
+import {
+  BET_COLORS,
+  BET_KEYS,
+  MARKET_OPTIONS,
+  buildRoadColumns,
+  formatOdds,
+  formatStakeAmount,
+  issueExplorerUrl,
+  issueOutcome,
+  timestampMillis,
+  type BetKey,
+  type RoadmapMode
+} from './lotteryDisplay'
 import backgroundMusicUrl from '@/static/mp3/hash/beijing.mp3?url'
 
-type RoadmapMode = 'size' | 'parity'
-type BetKey = 'big' | 'small' | 'odd' | 'even'
 type ChipOption = { id: number; value: number; hue: number }
 type ChipDraft = { id: number; value: string; hue: number; enabled: boolean }
 type CustomChipDraft = { id: number; value: string; hue: number }
-/** H5 周期菜单与 PC 顶部周期标签共用此选项，接口接入后由这里统一维护。 */
-export const HASH_GAME_PERIOD_OPTIONS = [6, 15, 30, 45] as const
 export type RecentBetRecord = {
   id: string
   block: string
   blockHash: string
-  selection: 'odd' | 'even'
+  selection: BetKey
   betAmount: number
-  profitLoss: number
+  profitLoss: number | null
   betTime: string
 }
 export type HashGameBetDetail = RecentBetRecord & {
-  period: number
+  gameName: string
   currencyCode: string
   currencyIcon: string
 }
@@ -46,36 +60,15 @@ export type HashGameHistoryRecord = {
   id: number
   block: string
   digit: string
-  outcome: 'evenSmall' | 'oddBig'
+  outcomes: BetKey[]
   blockHash: string
+  explorerUrl: string
 }
-
-const MOCK_RECENT_BETS: RecentBetRecord[] = Array.from({ length: 12 }, (_, index) => ({
-  id: `ts0768456746746746${index}`,
-  block: '85598756',
-  blockHash: '89hf84947772d6a3bca88102f7c6943d',
-  selection: index % 2 === 0 ? 'odd' : 'even',
-  betAmount: 876.98,
-  profitLoss: index % 2 === 1 ? 1000 : -1,
-  betTime: '12/18/2026 11:14:15 AM'
-}))
-const MOCK_RECENT_BET_SUMMARY: RecentBetSummary = {
-  betCount: 1,
-  betAmount: 183.91,
-  todayProfitLoss: -876.98
+const EMPTY_BET_SUMMARY: RecentBetSummary = {
+  betCount: 0,
+  betAmount: 0,
+  todayProfitLoss: 0
 }
-// 生成页面展示用的模拟历史开奖结果。
-const MOCK_HASH_GAME_HISTORY: HashGameHistoryRecord[] = Array.from({ length: 24 }, (_, index) => {
-  const evenSmall = index % 2 === 0
-  const digit = evenSmall ? '2' : '7'
-  return {
-    id: index,
-    block: '85598756',
-    digit,
-    outcome: evenSmall ? 'evenSmall' : 'oddBig',
-    blockHash: `...8c14fc4fe${digit}`
-  }
-})
 
 // H5、PC 共用筹码配置，面额与配色保持在同一项中。
 const CHIP_OPTIONS = [
@@ -97,35 +90,9 @@ const CHIP_OPTIONS = [
 ] as const
 const CUSTOM_CHIP_HUES = [190, 215, 245, 275, 305]
 
-// 仅展示用的走势，每列为同一结果连续出现的次数。
-const MOCK_RESULT_COLUMNS = [
-  [true, 5],
-  [false, 3],
-  [true, 1],
-  [false, 4],
-  [true, 2],
-  [true, 1],
-  [true, 2],
-  [false, 1],
-  [true, 3],
-  [false, 5],
-  [true, 1],
-  [false, 3],
-  [true, 3],
-  [false, 1],
-  [true, 4],
-  [false, 3],
-  [true, 5],
-  [false, 2],
-  [true, 1],
-  [false, 4],
-  [true, 2],
-  [false, 1]
-] as const
-
 /** 组合哈希游戏页面的投注、走势和聊天室状态。 */
 const createHashGamePageState = () => {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const isMobile = useIsMobile()
   const router = useRouter()
   const userStore = useUserStore()
@@ -133,15 +100,174 @@ const createHashGamePageState = () => {
   userStore.syncStoredUserData()
   const { isRefreshingBalance } = storeToRefs(userStore)
   const currency = useDisplayCurrency()
+  const hashGames = ref<HashGameLotteryGame[]>([])
+  const selectedHashGameCode = ref('')
+  const hashGameInfo = ref<HashGameLotteryInfo | null>(null)
+  const roadmapIssues = ref<HashGameLotteryIssue[]>([])
+  const roadmapStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
+  const recentBets = ref<RecentBetRecord[]>([])
+  const recentBetSummary = ref<RecentBetSummary>(EMPTY_BET_SUMMARY)
+  const selectedHashGame = computed(() =>
+    hashGames.value.find(game => game.gameCode === selectedHashGameCode.value)
+  )
+  const hashGameName = computed(() => selectedHashGame.value?.gameName ?? '')
+  let gameListRequestId = 0
+  let gameInfoRequestId = 0
+  let recentBetsRequestId = 0
+  let clockOffset = 0
+  const now = ref(Date.now())
+  let countdownInterval: ReturnType<typeof setInterval> | undefined
+
+  /** 清空上一玩法的详情、走势和投注记录。 */
+  const clearHashGameDisplay = () => {
+    hashGameInfo.value = null
+    roadmapIssues.value = []
+    roadmapStatus.value = 'idle'
+    recentBetsRequestId++
+    recentBets.value = []
+    recentBetSummary.value = EMPTY_BET_SUMMARY
+    selectedBet.value = null
+    lastSelection = null
+  }
+
+  /** 用路单接口返回的 items 更新当前玩法，区分空路单和请求失败。 */
+  const loadHashGameRoadmap = async (gameCode: string, requestId: number) => {
+    roadmapStatus.value = 'loading'
+    try {
+      const { result } = await Api.hashGame.getHashGameRoadmap(gameCode)
+      if (requestId !== gameInfoRequestId) return
+      if (!Array.isArray(result?.items)) throw new Error('路单响应缺少 items')
+      roadmapIssues.value = result.items
+      roadmapStatus.value = 'ready'
+    } catch (error) {
+      if (requestId !== gameInfoRequestId) return
+      roadmapStatus.value = 'error'
+      console.error(error)
+    }
+  }
+
+  /** 获取玩法详情和历史路单，切换游戏或货币后忽略旧响应。 */
+  const loadHashGameInfo = async (gameCode: string, currencyCode: string) => {
+    const requestId = ++gameInfoRequestId
+    const startedAt = Date.now()
+    await Promise.allSettled([
+      Api.hashGame.getHashGameInfo({ gameCode, currency: currencyCode }).then(({ result }) => {
+        if (requestId !== gameInfoRequestId || result?.gameCode !== gameCode) return
+        now.value = Date.now()
+        const serverTime = timestampMillis(result.serverTime)
+        clockOffset = serverTime ? serverTime - (startedAt + now.value) / 2 : 0
+        hashGameInfo.value = result
+      }),
+      loadHashGameRoadmap(gameCode, requestId)
+    ])
+  }
+
+  /** 首次进入时选中列表第一项，刷新列表时优先保留仍可用的玩法。 */
+  const loadHashGameList = async () => {
+    const requestId = ++gameListRequestId
+    const previousCode = selectedHashGameCode.value
+    gameInfoRequestId++
+    clearHashGameDisplay()
+    hashGames.value = []
+    selectedHashGameCode.value = ''
+    const requestedCurrency = currency.currentCurrencyCode.value
+    try {
+      const response = await Api.hashGame.getHashGameList({ currency: requestedCurrency })
+      if (requestId !== gameListRequestId) return
+      hashGames.value = response.result ?? []
+      const game =
+        hashGames.value.find(item => item.gameCode === previousCode) ?? hashGames.value[0]
+      if (!game) return
+      selectedHashGameCode.value = game.gameCode
+      await loadHashGameInfo(game.gameCode, requestedCurrency)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  /** H5 和 PC 均按真实游戏编码切换玩法。 */
+  const selectHashGame = async (gameCode: string) => {
+    periodsOpen.value = false
+    if (!hashGames.value.some(game => game.gameCode === gameCode)) return
+    if (gameCode === selectedHashGameCode.value && hashGameInfo.value) {
+      if (roadmapStatus.value === 'error') {
+        await loadHashGameRoadmap(gameCode, gameInfoRequestId)
+      }
+      return
+    }
+    selectedHashGameCode.value = gameCode
+    clearHashGameDisplay()
+    await loadHashGameInfo(gameCode, currency.currentCurrencyCode.value)
+  }
+
+  /** 打开近期投注时，读取当前玩法与币种的真实记录和汇总。 */
+  const loadRecentBets = async () => {
+    const gameCode = selectedHashGameCode.value
+    if (!gameCode || (!userStore.userInfo?.tradeToken && !userStore.acctInfo?.memberId)) return
+    const requestId = ++recentBetsRequestId
+    const currencyCode = currency.currentCurrencyCode.value
+    try {
+      const { result } = await Api.hashGame.getHashGameRecentBets({
+        gameCode,
+        currency: currencyCode
+      })
+      if (requestId !== recentBetsRequestId || !result) return
+      const start = new Date()
+      start.setHours(0, 0, 0, 0)
+      const end = new Date(start)
+      end.setDate(end.getDate() + 1)
+      const summary = { ...EMPTY_BET_SUMMARY }
+      recentBets.value = result.list.flatMap(bet => {
+        const betTime = new Date(timestampMillis(bet.betTime) || bet.betTime)
+        if (
+          bet.gameCode !== gameCode ||
+          bet.currency !== currencyCode ||
+          !(betTime >= start && betTime < end)
+        )
+          return []
+        const betAmount = Number(bet.amount)
+        const profitLoss =
+          bet.status === 'WIN' || bet.status === 'LOSE'
+            ? Number(bet.payoutAmount) - betAmount
+            : null
+        if (bet.status !== 'CANCEL') {
+          summary.betCount++
+          summary.betAmount += betAmount
+          summary.todayProfitLoss += profitLoss ?? 0
+        }
+        return [
+          {
+            id: bet.orderNo,
+            block: String(bet.anchorBlockNum),
+            blockHash: bet.blockHash ?? '',
+            selection: BET_KEYS[bet.betOption],
+            betAmount,
+            profitLoss,
+            betTime: betTime.toLocaleString(locale.value)
+          }
+        ]
+      })
+      recentBetSummary.value = summary
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  /** 页面挂载后加载玩法，并按服务端时间更新倒计时显示。 */
+  onMounted(() => {
+    countdownInterval = setInterval(() => {
+      now.value = Date.now()
+    }, 1000)
+    void loadHashGameList()
+  })
+  watch([currency.currentCurrencyCode, locale], () => void loadHashGameList())
 
   // 与首页共用余额请求及进行中的查询，进入路由时刷新，离开时停止监听。
   useUserBalancePolling()
   // H5 使用全屏内滚动，需要锁定背景页面；PC 交由主布局滚动，保持 CommonFooter 可达。
   usePageScrollLock(() => isMobile.value)
 
-  const selectedPeriod = ref(15)
-  // 演示环境暂按周期组装房间编码，真实 gameCode 以后由游戏配置提供。
-  const gameCode = computed(() => `CL${selectedPeriod.value}`)
+  const gameCode = selectedHashGameCode
   const chat = useHashGameChat(gameCode)
   /** 当前阶段用本地模拟发送回包更新聊天室。 */
   const sendMockChatMessage = chat.acceptMockChatMessage
@@ -149,13 +275,16 @@ const createHashGamePageState = () => {
 
   /** 模拟按当前游戏标识请求聊天配置，后续替换为 chat/config 接口。 */
   const refreshChatConfig = () => {
+    if (!gameCode.value) {
+      chatConfig.value = null
+      return
+    }
     chatConfig.value = createMockChatConfig(gameCode.value)
     chat.acceptWelcomeText(chatConfig.value.welcomeText)
   }
 
   /** 进入游戏或切换游戏时读取当前房间的聊天配置。 */
   watch(gameCode, refreshChatConfig, { immediate: true })
-  const periodOptions = HASH_GAME_PERIOD_OPTIONS
   const periodsOpen = ref(false)
   const historyPopupOpen = ref(false)
   const periodTriggerRef = ref<HTMLElement | null>(null)
@@ -188,67 +317,87 @@ const createHashGamePageState = () => {
   const selectedBet = ref<BetKey | null>(null)
   let lastSelection: { key: BetKey; chip: number } | null = null
 
-  const mockRound = reactive({
-    online: '2,999',
-    lastBlock: '85346144',
-    currentBlock: '85346144',
-    hash: '...3c2e79',
-    countdown: 3,
-    positiveCount: 25,
-    negativeCount: 22,
-    streak: 5
+  const algorithm = computed(
+    () => hashGameInfo.value?.algorithm ?? selectedHashGame.value?.algorithm
+  )
+  const marketOptions = computed(() =>
+    algorithm.value ? (MARKET_OPTIONS[algorithm.value] ?? []) : []
+  )
+  const roadmapModes = computed<RoadmapMode[]>(() => {
+    if (algorithm.value === 'PARITY') return ['size', 'parity']
+    if (algorithm.value === 'SUM') return ['parity']
+    return algorithm.value ? ['winner'] : []
   })
-  // 模拟每次进入房间后收到的 WS 数据；切换房间时重新从空列表开始。
   watch(
-    gameCode,
-    code => {
-      for (const event of createMockRoomEvents(code)) chat.acceptWsEvent(event)
+    roadmapModes,
+    modes => {
+      if (!modes.includes(roadmapMode.value)) roadmapMode.value = modes[0] ?? 'size'
     },
     { immediate: true }
   )
 
-  // 在线人数由 WS 的 CHAIN_LOTTERY_ONLINE 更新。
-  watch(
-    chat.onlineCount,
-    count => {
-      mockRound.online = count.toLocaleString('en-US')
-    },
-    { immediate: true }
-  )
-
-  /** 模拟投注成功回包，并在确认成功后插入本人的 BET 消息。 */
-  const confirmMockBet = () => {
-    if (!selectedBet.value) return
-    const request: HashPlaceBetRequest = {
-      requestId: `CL_mock_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      gameCode: gameCode.value,
-      currency: currency.currentCurrencyCode.value,
-      betOption: selectedBet.value.toUpperCase() as HashBetOption,
-      amount: selectedChip.value,
-      anchorBlockNum: Number(mockRound.currentBlock)
+  // 先用详情或列表的最近开奖填充，重复的期号以路单接口为准。
+  const issues = computed(() => {
+    const recentIssues =
+      hashGameInfo.value?.recentIssues ?? selectedHashGame.value?.recentIssues ?? []
+    const byBlock = new Map(recentIssues.map(issue => [issue.anchorBlockNum, issue] as const))
+    for (const issue of roadmapIssues.value) {
+      byBlock.set(issue.anchorBlockNum, issue)
     }
-    chat.acceptSuccessfulBet(request, createMockPlaceBetResponse(request))
-  }
-
-  /** 从当前展示币种的 WS 统计中读取每个投注项的参与人数和金额。 */
-  const getBetStats = (option: HashBetOption) => {
-    const stats = chat.betStats.value[currency.currentCurrencyCode.value]
-    const item = stats?.[option]
-    const total = Object.values(stats ?? {}).reduce((sum, entry) => sum + entry.totalAmount, 0)
+    return [...byBlock.values()].sort((a, b) => b.anchorBlockNum - a.anchorBlockNum).slice(0, 300)
+  })
+  const latestIssue = computed(() => issues.value[0])
+  const round = computed(() => {
+    const info = hashGameInfo.value
+    const deadline = timestampMillis(info?.nextAnchorEstimatedTime)
+    const online = info?.onlineCount ?? selectedHashGame.value?.onlineCount
     return {
-      people: item?.participantCount ?? 0,
-      amount: (item?.totalAmount ?? 0).toLocaleString('en-US', { maximumFractionDigits: 2 }),
-      progress: total > 0 ? Math.round(((item?.totalAmount ?? 0) / total) * 100) : 0
+      online: online?.toLocaleString() ?? '—',
+      lastBlock: latestIssue.value?.anchorBlockNum ?? '—',
+      currentBlock: info?.anchorBlockNum ?? '—',
+      explorerUrl: latestIssue.value
+        ? issueExplorerUrl(latestIssue.value.explorerUrl, latestIssue.value.anchorBlockNum)
+        : undefined,
+      countdown: deadline
+        ? Math.max(0, Math.ceil((deadline - now.value - clockOffset) / 1000))
+        : '—'
     }
-  }
+  })
 
-  /** 当前局的模拟投注统计，赔率仍沿用页面占位值。 */
-  const currentBetStats = computed(() => ({
-    big: getBetStats('BIG'),
-    small: getBetStats('SMALL'),
-    odd: getBetStats('ODD'),
-    even: getBetStats('EVEN')
+  /** 赔率取详情接口，人数和金额取当前玩法、期号和币种的 WS 快照。 */
+  const betOptions = computed(() => {
+    const snapshot = chat.betStats.value
+    const info = hashGameInfo.value
+    const stats =
+      snapshot &&
+      info &&
+      snapshot.gameCode === info.gameCode &&
+      snapshot.anchorBlockNum === info.anchorBlockNum
+        ? snapshot.stats[currency.currentCurrencyCode.value]
+        : undefined
+    const total = marketOptions.value.reduce(
+      (sum, option) => sum + (Number(stats?.[option]?.totalAmount) || 0),
+      0
+    )
+    return marketOptions.value.map(option => {
+      const key = BET_KEYS[option]
+      const item = stats?.[option]
+      const amount = Number(item?.totalAmount) || 0
+      return {
+        key,
+        label: t(`hashGame.${key}`),
+        color: BET_COLORS[key],
+        odds: formatOdds(info?.oddsConfig, option),
+        people: stats ? (item?.participantCount ?? 0) : '—',
+        amount: stats ? formatStakeAmount(item?.totalAmount ?? 0) : '—',
+        progress: total > 0 ? Math.round((amount / total) * 100) : 0
+      }
+    })
+  })
+  const betGridStyle = computed(() => ({
+    gridTemplateColumns: `repeat(${Math.max(1, betOptions.value.length)}, minmax(0, 1fr))`
   }))
+  const defaultOdds = computed(() => betOptions.value[0]?.odds ?? '—')
 
   /** 对外接收 HTTP 开奖结果；请求时机与接口来源以后接入。 */
   const acceptHttpDraw = chat.acceptHttpDraw
@@ -259,26 +408,63 @@ const createHashGamePageState = () => {
   /** 关闭当前结算提示，依次展示下一币种及下一输赢状态。 */
   const dismissSettlement = chat.dismissSettlement
 
-  /** 对外接收当前独占连接的 WS 事件；正式连接以后接入。 */
-  const acceptWsEvent = chat.acceptWsEvent
+  /** 接收 WS 事件，丢弃其他期号的投注统计。 */
+  const acceptWsEvent = (event: HashWsEvent) => {
+    if (
+      event.type === 'CHAIN_LOTTERY_BET_STATS' &&
+      event.data.anchorBlockNum !== hashGameInfo.value?.anchorBlockNum
+    )
+      return
+    chat.acceptWsEvent(event)
+  }
 
   // 聊天列表和结算弹窗共用页面状态，H5 / PC 可使用同一数据入口。
   const chatMessages = chat.messages
   const currentSettlement = chat.currentSettlement
 
-  /** 从哈希字符串中取出末尾十进制数字供当前区块展示。 */
+  /** 用最近已开奖区块的哈希展示判定数字，和值玩法高亮末尾三个数字。 */
   const hashParts = computed(() => {
-    const hash = mockRound.hash
-    // 高亮最后一个十进制数字，后面可能仍有哈希字母。
-    const match = /[0-9](?=[^0-9]*$)/.exec(hash)
-    if (!match) return { before: hash, digit: '', after: '' }
+    const hash = latestIssue.value?.blockHash
+    if (!hash) return { before: '—', digit: '', after: '' }
+    const digits = [...hash.matchAll(/[0-9]/g)]
+    const lastDigit = digits[digits.length - 1]?.index
+    const first =
+      algorithm.value === 'LUCKY'
+        ? hash.length - 2
+        : algorithm.value === 'SUM'
+          ? digits[Math.max(0, digits.length - 3)]?.index
+          : lastDigit
+    const end = algorithm.value === 'LUCKY' ? hash.length : (lastDigit ?? -1) + 1
+    if (first === undefined || first < 0)
+      return { before: `…${hash.slice(-6)}`, digit: '', after: '' }
     return {
-      before: hash.slice(0, match.index),
-      digit: match[0],
-      after: hash.slice(match.index + 1)
+      before: `…${hash.slice(Math.min(first, Math.max(hash.length - 6, 0)), first)}`,
+      digit: hash.slice(first, end),
+      after: hash.slice(end)
     }
   })
-  const mockBet = { odds: '1.96', people: 86, amount: '30.6K', progress: 36 }
+
+  /** 从接口结果中提取与当前算法对应的开奖方向。 */
+  const getIssueOutcomes = (issue: HashGameLotteryIssue) =>
+    [...roadmapModes.value].reverse().flatMap(mode => issueOutcome(issue.result, mode) ?? [])
+
+  const roundOutcome = computed(() =>
+    latestIssue.value
+      ? getIssueOutcomes(latestIssue.value)
+          .map(key => t(`hashGame.${key}`))
+          .join('、')
+      : ''
+  )
+  const historyRecords = computed<HashGameHistoryRecord[]>(() =>
+    issues.value.map(issue => ({
+      id: issue.anchorBlockNum,
+      block: String(issue.anchorBlockNum),
+      digit: String(issue.result.sum ?? issue.result.digit ?? issue.result.lastTwo ?? '—'),
+      outcomes: getIssueOutcomes(issue),
+      blockHash: issue.blockHash,
+      explorerUrl: issueExplorerUrl(issue.explorerUrl, issue.anchorBlockNum)
+    }))
+  )
 
   /** 关闭页面中打开的所有浮层。 */
   const closeOverlays = () => {
@@ -302,40 +488,51 @@ const createHashGamePageState = () => {
     periodsOpen.value = false
   }
 
-  /** 根据走势模式选择大小或单双的展示标签。 */
-  const resultLabels = computed(() => {
-    const positive = roadmapMode.value === 'size' ? 'big' : 'odd'
-    const negative = roadmapMode.value === 'size' ? 'small' : 'even'
+  /** 用相同的历史期数计算计数、连开次数和路单。 */
+  const roadmap = computed(() => {
+    const mode = roadmapModes.value.includes(roadmapMode.value)
+      ? roadmapMode.value
+      : roadmapModes.value[0]
+    const history = mode
+      ? [...issues.value].reverse().flatMap(issue => issueOutcome(issue.result, mode) ?? [])
+      : []
+    const keys: readonly BetKey[] =
+      mode === 'size'
+        ? ['big', 'small']
+        : mode === 'parity'
+          ? ['odd', 'even']
+          : algorithm.value === 'LUCKY'
+            ? ['win', 'lose']
+            : marketOptions.value.map(option => BET_KEYS[option])
+    const latest = history[history.length - 1]
+    let count = 0
+    for (let index = history.length - 1; index >= 0 && history[index] === latest; index--) count++
+    const counts = keys.map((key, index) => ({
+      key,
+      label: t(`hashGame.${key}Mark`),
+      count: history.filter(value => value === key).length,
+      color: ['#22A89A', '#E63533', '#407FFF'][index]
+    }))
+    const labels = new Map(counts.map(entry => [entry.key, entry]))
+    const emptyMessage = history.length
+      ? ''
+      : roadmapStatus.value === 'ready'
+        ? t('common.noData')
+        : roadmapStatus.value === 'error'
+          ? t('common.requestError')
+          : ''
     return {
-      positive: t(`hashGame.${positive}Mark`),
-      negative: t(`hashGame.${negative}Mark`),
-      streak: t('hashGame.streak', { name: t(`hashGame.${positive}`), count: mockRound.streak })
+      counts,
+      emptyMessage,
+      columns: buildRoadColumns(history).map(column =>
+        column.map(key => (key ? labels.get(key) : undefined))
+      ),
+      streak:
+        latest && count >= 3 ? t('hashGame.streak', { name: t(`hashGame.${latest}`), count }) : ''
     }
   })
 
-  const resultColumns = MOCK_RESULT_COLUMNS.map(([positive, count], column) =>
-    Array.from({ length: 5 }, (_, row) => ({
-      id: `${column}-${row}`,
-      positive,
-      filled: row < count
-    }))
-  )
-
-  /** 构建当前投注选项的展示颜色和文案。 */
-  const betOptions = computed(() => [
-    { key: 'big' as const, label: t('hashGame.big'), color: '#FF5350' },
-    { key: 'small' as const, label: t('hashGame.small'), color: '#407FFF' },
-    { key: 'odd' as const, label: t('hashGame.odd'), color: '#34D8C7' },
-    { key: 'even' as const, label: t('hashGame.even'), color: '#FF9822' }
-  ])
-
-  /** 切换游戏周期并关闭周期菜单。 */
-  const selectPeriod = (seconds: number) => {
-    selectedPeriod.value = seconds
-    periodsOpen.value = false
-  }
-
-  // 快捷投注开关
+  /** 切换快捷投注开关。 */
   const toggleQuickBet = () => {
     quickBetEnabled.value = !quickBetEnabled.value
   }
@@ -374,6 +571,10 @@ const createHashGamePageState = () => {
   }
 
   onBeforeUnmount(() => {
+    gameListRequestId++
+    gameInfoRequestId++
+    recentBetsRequestId++
+    if (countdownInterval) clearInterval(countdownInterval)
     backgroundAudio?.pause()
     if (backgroundAudio) backgroundAudio.currentTime = 0
   })
@@ -539,11 +740,13 @@ const createHashGamePageState = () => {
     t,
     ...currency,
     isRefreshingBalance,
-    selectedPeriod,
-    periodOptions,
+    hashGames,
+    hashGameName,
+    selectedHashGameCode,
+    selectHashGame,
     periodsOpen,
     historyPopupOpen,
-    historyRecords: MOCK_HASH_GAME_HISTORY,
+    historyRecords,
     periodTriggerRef,
     periodMenuRef,
     currencyPopupOpen,
@@ -572,22 +775,22 @@ const createHashGamePageState = () => {
     refreshChatConfig,
     sendMockChatMessage,
     currentSettlement,
-    currentBetStats,
-    confirmMockBet,
     acceptWsEvent,
     acceptHttpDraw,
     acceptRecentBets,
     dismissSettlement,
     selectedBet,
-    mockRound,
+    round,
+    roundOutcome,
     hashParts,
-    mockBet,
-    recentBets: MOCK_RECENT_BETS,
-    recentBetSummary: MOCK_RECENT_BET_SUMMARY,
-    resultLabels,
-    resultColumns,
+    recentBets,
+    recentBetSummary,
+    loadRecentBets,
+    roadmap,
+    roadmapModes,
     betOptions,
-    selectPeriod,
+    betGridStyle,
+    defaultOdds,
     refreshBalance,
     openCurrencyPopup,
     selectCurrency,
