@@ -1096,11 +1096,6 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       renderAsGroup: true,
       children: [
         {
-          id: 'sponsorships',
-          name: t('menu.sponsorships'),
-          icon: newSideIcons.sponsorshipsIcon
-        },
-        {
           id: 'leave-feedback',
           name: t('menu.leave-feedback'),
           icon: newSideIcons.leaveFeedbackIcon,

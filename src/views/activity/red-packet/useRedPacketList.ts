@@ -1,6 +1,7 @@
-import { computed, reactive, type Ref } from 'vue'
+import { computed, reactive, ref, watch, type Ref } from 'vue'
 import Api from '@/api'
 import type { RedEnvelopeItem } from '@/api/interface/red-envelope'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 
 export type RedPacketDisplayMode = 'pc' | 'h5'
@@ -18,11 +19,16 @@ export function useRedPacketList(options: {
   root: Ref<Element | null | undefined>
 }) {
   const patches = reactive(new Map<number, Partial<RedEnvelopeItem>>())
+  // 首屏滚到底之前不观察顶部哨兵，避免一打开就连续加载更早的页
+  const ready = ref(false)
+  const { currentCurrencyCode } = useDisplayCurrency()
 
   const scroll = useInfiniteScroll({
-    sentinel: options.sentinel,
+    sentinel: () => (ready.value ? options.sentinel.value : null),
     root: options.root,
     pageSize: 10,
+    // 靠近顶部时预加载更早的红包
+    rootMargin: '200px 0px 0px 0px',
     load: ({ page, pageSize }) => Api.redEnvelope.getMemberList(page, pageSize),
     getItems: response => {
       const channel = CHANNEL_BY_MODE[options.displayMode()]
@@ -40,16 +46,32 @@ export function useRedPacketList(options: {
     })
   )
 
+  // 接口按新到旧返回，显示层反转成最旧在上、最新在底部
+  const displayList = computed(() => [...list.value].reverse())
+
   const updateItem = (redEnvelopeId: number, patch: Partial<RedEnvelopeItem>) => {
     patches.set(redEnvelopeId, { ...patches.get(redEnvelopeId), ...patch })
   }
 
+  const markReady = () => {
+    ready.value = true
+  }
+
+  watch(currentCurrencyCode, (value, oldValue) => {
+    if (!value || value === oldValue) return
+    patches.clear()
+    ready.value = false
+    void scroll.refresh()
+  })
+
   return {
     list,
+    displayList,
     loading: scroll.loading,
     finished: scroll.finished,
     error: scroll.error,
     retry: scroll.retry,
-    updateItem
+    updateItem,
+    markReady
   }
 }
