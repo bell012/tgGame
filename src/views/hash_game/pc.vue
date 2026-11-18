@@ -121,14 +121,12 @@
               <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
                 <i
                   class="grid size-[20px] place-items-center rounded-full bg-[#22A89A] text-[14px] not-italic text-white"
-                  >{{ resultLabels.positive }}</i
-                >{{ mockRound.positiveCount }}
+                  >{{ resultLabels.positive }}</i>{{ mockRound.positiveCount }}
               </span>
               <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
                 <i
                   class="grid size-[20px] place-items-center rounded-full bg-[#E63533] text-[14px] not-italic text-white"
-                  >{{ resultLabels.negative }}</i
-                >{{ mockRound.negativeCount }}
+                  >{{ resultLabels.negative }}</i>{{ mockRound.negativeCount }}
               </span>
             </div>
             <div class="flex items-center">
@@ -375,7 +373,7 @@
       <!-- 聊天 -->
       <aside class="flex min-w-0 flex-col rounded-[12px] bg-bg-2 pt-[13px] px-[16px] pb-[16px]">
         <div class="min-h-0 flex-1 overflow-y-auto text-[14px] text-text-2">
-          <p v-if="chatVisible">{{ t('hashGame.chat') }}</p>
+          <HashGameChat v-if="chatVisible" :messages="props.page.chatMessages.value" />
         </div>
         <div class="flex items-center justify-between h-[44px] gap-[10px]">
           <div
@@ -441,6 +439,11 @@
     </Teleport>
   </div>
   <CommonFooter class="mt-[55px]" />
+  <HashSettlementPopup
+    :notice="props.page.currentSettlement.value"
+    :sound-enabled="musicEnabled"
+    @dismiss="props.page.dismissSettlement"
+  />
 </template>
 
 <script setup lang="ts">
@@ -473,6 +476,8 @@ import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
 import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
 import emojiIcon from '@/static/svg/hash_game/biaoqing.svg?url'
 import CommonFooter from '@/components/commonFooter.vue'
+import HashSettlementPopup from './components/HashSettlementPopup.vue'
+import HashGameChat from './components/HashGameChat.vue'
 
 // PC 视图只保留聊天输入草稿；周期、路单、投注和开关都读写 index.ts 共享状态。
 const props = defineProps<{ page: HashGamePageState }>()

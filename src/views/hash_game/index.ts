@@ -13,7 +13,8 @@ import { globalShowToast } from '@/utils/toast'
 import { createMockPlaceBetResponse } from './chat/mock'
 import { useHashGameChat } from './chat/useHashGameChat'
 import { useHashGameSockets } from './chat/useHashGameSockets'
-import { createMockChatConfig, type HashChatConfig } from './chat/config'
+import { type HashChatConfig } from './chat/config'
+import { queryHashChatConfig } from '@/api/modules/hash-game-chat'
 import type { HashBetOption, HashPlaceBetRequest } from './chat/types'
 import backgroundMusicUrl from '@/static/mp3/hash/beijing.mp3?url'
 
@@ -161,10 +162,20 @@ const createHashGamePageState = () => {
   const sendMockChatMessage = chat.acceptMockChatMessage
   const chatConfig = ref<HashChatConfig | null>(null)
 
-  /** 模拟按当前游戏标识请求聊天配置，后续替换为 chat/config 接口。 */
-  const refreshChatConfig = () => {
-    chatConfig.value = createMockChatConfig(gameCode.value)
-    chat.acceptWelcomeText(chatConfig.value.welcomeText)
+  /** 按当前游戏读取真实聊天配置及本人投注展示方式。 */
+  const refreshChatConfig = async () => {
+    const code = gameCode.value
+    chatConfig.value = null
+    chat.betBroadcastMode.value = 'INDIVIDUAL'
+    try {
+      const response = await queryHashChatConfig(code)
+      if (code !== gameCode.value || !response.success || !response.result) return
+      chatConfig.value = response.result
+      chat.betBroadcastMode.value = response.result.betBroadcastMode || 'INDIVIDUAL'
+      chat.acceptWelcomeText(response.result.welcomeText)
+    } catch {
+      /* 下一次配置刷新时重试。 */
+    }
   }
 
   /** 进入游戏或切换游戏时读取当前房间的聊天配置。 */

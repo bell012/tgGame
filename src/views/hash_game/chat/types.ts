@@ -28,7 +28,9 @@ export type HashWsChatData =
       kind: 'DRAW'
       anchorBlockNum: number
       time: number
-      result: unknown
+      result: HashHttpDraw['result']
+      blockHash?: string
+      explorerUrl?: string
     }
   | { id: number; gameCode: string; kind: 'BIG_WIN'; time: number }
   | {
@@ -121,7 +123,14 @@ export type HashPlaceBetResponse = {
 export type HashHttpDraw = {
   gameCode: string
   anchorBlockNum: number
-  result: { digit: number; oddEven: string; bigSmall: string }
+  result: {
+    digit?: number
+    oddEven?: string
+    bigSmall?: string
+    sum?: number
+    lastTwo?: string | number
+    winner?: string
+  }
   time: number
   winners?: number
   totalPayout?: number
@@ -189,13 +198,15 @@ export type HashChatMessage =
       nickname: string
       avatarUrl?: string
     }
-  | { id: string; kind: 'DRAW'; source: 'http'; time: number; draw: HashHttpDraw }
+  | { id: string; kind: 'DRAW'; source: 'http' | 'ws'; time: number; draw: HashHttpDraw }
+  | { id: string; kind: 'BROADCAST_BET'; source: 'ws'; time: number; content: string }
   | {
       id: string
       kind: 'BET'
       source: 'local'
       time: number
       nickname: 'Me'
+      count?: number
       bet: HashPlaceBetRequest & { orderNo: string }
     }
   | {
