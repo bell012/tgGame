@@ -1,13 +1,13 @@
 <template>
   <!-- 订单结果主容器 -->
-  <div class="flex flex-col items-center font-['Inter']">
+  <div class="flex flex-col items-center gap-[10px] sm:gap-4 font-['Inter']">
     <!-- 订单状态图标 -->
-    <div class="w-[76px] h-[76px]">
-      <OrderStatusCompletedIcon v-if="status === 'Completed'" class="w-[76px] h-[76px]" />
-      <OrderStatusCancelledIcon v-else class="w-[76px] h-[76px]" />
+    <div class="w-[60px] h-[60px] sm:w-[76px] sm:h-[76px]">
+      <OrderStatusCompletedIcon v-if="status === 'Completed'" class="w-full h-full" />
+      <OrderStatusCancelledIcon v-else class="w-full h-full" />
     </div>
     <!-- 订单结果标题 -->
-    <p class="mt-4 text-sm sm:text-base font-bold leading-normal text-text-1">
+    <p class="text-sm sm:text-base font-bold leading-normal text-text-1">
       {{ title }}
     </p>
   </div>

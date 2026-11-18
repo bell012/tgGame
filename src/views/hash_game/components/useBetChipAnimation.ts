@@ -1,5 +1,4 @@
 import { ref } from 'vue'
-import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import chipSoundUrl from '@/static/mp3/hash/chouma.mp3?url'
 import type { ChipOrigin } from './chipMotion'
 
@@ -22,7 +21,6 @@ export function useBetChipAnimation<Key extends string>(options: {
   chipOptions: RefLike<readonly ChipOption[]>
   soundEnabled: RefLike<boolean>
   slotSize: number
-  rightInset: number
   selectBet: (key: Key) => void
 }) {
   const maxVisibleChips = 6
@@ -47,10 +45,18 @@ export function useBetChipAnimation<Key extends string>(options: {
     void sound.play().catch(() => {})
   }
 
+  /** 按下注顺序从下往上排列，堆满后保留最后下的筹码。 */
+  const landChip = (key: string, chip: LandedChip) => {
+    landedChips.value[key] = [...(landedChips.value[key] ?? []), chip]
+      .sort((a, b) => a.id - b.id)
+      .slice(-maxVisibleChips)
+  }
+
   /** 累加投注金额并创建飞向对应投注项的筹码动画。 */
   const handleBetOptionClick = (event: MouseEvent, key: Key) => {
     playChipSound()
     const target = event.currentTarget
+    const stack = target instanceof HTMLElement ? target.querySelector('[data-chip-stack]') : null
     const selectedAmount = options.selectedChip.value
     const source = document.querySelector<HTMLElement>(`[data-chip-value="${selectedAmount}"]`)
     const id = ++sequence
@@ -70,12 +76,12 @@ export function useBetChipAnimation<Key extends string>(options: {
       chipFlights.value.filter(flight => flight.option === key).length
     const layer = Math.min(visibleAndFlying, maxVisibleChips - 1)
 
-    if (target instanceof HTMLElement && source) {
-      const targetRect = target.getBoundingClientRect()
+    if (stack && source) {
+      const stackRect = stack.getBoundingClientRect()
       const sourceRect = source.getBoundingClientRect()
       if (
-        targetRect.width > 0 &&
-        targetRect.height > 0 &&
+        stackRect.width > 0 &&
+        stackRect.height > 0 &&
         sourceRect.width > 0 &&
         sourceRect.height > 0
       ) {
@@ -84,42 +90,28 @@ export function useBetChipAnimation<Key extends string>(options: {
           option: key,
           landedChip,
           origin: {
-            image: chipImage,
             amount: selectedAmount,
             x: sourceRect.left + sourceRect.width / 2,
             y: sourceRect.top + sourceRect.height / 2,
             size: Math.min(sourceRect.width, sourceRect.height),
             filter: landedChip.filter
           },
-          x: targetRect.right - options.rightInset - options.slotSize / 2,
-          y:
-            targetRect.top +
-            targetRect.height * 0.48 +
-            options.slotSize / 2 -
-            layer * chipStackStep,
-          size: Math.min(options.slotSize, targetRect.width * 0.3)
+          x: stackRect.left + stackRect.width / 2,
+          y: stackRect.top + stackRect.height / 2 - layer * chipStackStep,
+          size: stackRect.width
         })
         return
       }
     }
 
-    if (visibleAndFlying < maxVisibleChips) {
-      landedChips.value[key] = [...(landedChips.value[key] || []), landedChip]
-    }
+    landChip(key, landedChip)
   }
 
-  /** 动画结束后在堆叠未满时放置筹码，并移除飞行状态。 */
+  /** 飞行动画可能乱序结束，落位时仍按原下注顺序放置。 */
   const finishChipFlight = (id: number) => {
     const finishedFlight = chipFlights.value.find(flight => flight.id === id)
-    if (
-      finishedFlight &&
-      (landedChips.value[finishedFlight.option]?.length || 0) < maxVisibleChips
-    ) {
-      landedChips.value[finishedFlight.option] = [
-        ...(landedChips.value[finishedFlight.option] || []),
-        finishedFlight.landedChip
-      ]
-    }
+    if (!finishedFlight) return
+    landChip(finishedFlight.option, finishedFlight.landedChip)
     chipFlights.value = chipFlights.value.filter(flight => flight.id !== id)
   }
 
@@ -131,7 +123,6 @@ export function useBetChipAnimation<Key extends string>(options: {
   }
 
   return {
-    maxVisibleChips,
     chipStackStep,
     betTotals,
     landedChips,

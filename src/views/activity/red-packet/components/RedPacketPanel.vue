@@ -38,8 +38,9 @@
         ref="listRef"
         class="red-packet-scrollbar flex min-h-0 flex-1 flex-col gap-[20px] overflow-y-auto p-[20px_10px] bg-bg-1"
       >
+        <div ref="sentinelRef" class="h-px shrink-0 -mb-5" />
         <RedPacketCard
-          v-for="item in list"
+          v-for="item in displayList"
           :key="item.redEnvelopeId"
           :item="item"
           @click="handleRedPacketClick"
@@ -68,8 +69,6 @@
         </div>
 
         <RedPacketListStatus v-else-if="showLoadError" class="m-auto" error @retry="retry" />
-
-        <div ref="sentinelRef" class="h-px shrink-0" />
       </div>
 
       <!-- 底部输入栏仅展示，不可交互 -->
@@ -108,10 +107,11 @@
 
 <script setup lang="ts">
 import '../red-packet.css'
-import { computed, ref, shallowRef } from 'vue'
+import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import type { RedEnvelopeItem, RedEnvelopeSchedule } from '@/api/interface/red-envelope'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import CloseIcon from '@/static/svg/red-packet/close.svg?component'
 import EmptyBubbleEar from '@/static/svg/red-packet/empty-bubble-ear.svg?component'
 import SendIcon from '@/static/svg/red-packet/send.svg?component'
@@ -139,10 +139,53 @@ const { t } = useI18n()
 const listRef = ref<HTMLElement | null>(null)
 const sentinelRef = ref<HTMLElement | null>(null)
 
-const { list, loading, error, retry, updateItem } = useRedPacketList({
+const { list, displayList, loading, error, retry, updateItem, markReady } = useRedPacketList({
   displayMode: () => props.displayMode,
   sentinel: sentinelRef,
   root: listRef
+})
+
+const { currentCurrencyCode } = useDisplayCurrency()
+
+// 列表被清空（切币种刷新）时作废还没执行的滚动修正
+let layoutGeneration = 0
+
+watch(
+  () => list.value.length,
+  (count, prevCount) => {
+    const container = listRef.value
+    if (!container) return
+    if (count === 0) {
+      layoutGeneration += 1
+      return
+    }
+
+    const generation = layoutGeneration
+    const beforeHeight = container.scrollHeight
+    const beforeTop = container.scrollTop
+    const isFirstPage = prevCount === 0
+
+    nextTick(() => {
+      const nextContainer = listRef.value
+      if (generation !== layoutGeneration || !nextContainer) return
+
+      if (isFirstPage) {
+        nextContainer.scrollTop = nextContainer.scrollHeight
+        markReady()
+        return
+      }
+
+      nextContainer.scrollTop = beforeTop + (nextContainer.scrollHeight - beforeHeight)
+    })
+  },
+  { flush: 'pre' }
+)
+
+// 第一页被渠道过滤成空列表时，仍然要打开哨兵，才能继续加载后面的页
+watch(loading, (isLoading, wasLoading) => {
+  if (wasLoading && !isLoading && list.value.length === 0) {
+    markReady()
+  }
 })
 
 const isListEmpty = computed(() => !loading.value && list.value.length === 0)
@@ -178,6 +221,13 @@ const setView = (nextView: RedPacketPanelView) => {
   view.value = nextView
   emit('update:view', nextView)
 }
+
+watch(currentCurrencyCode, (value, oldValue) => {
+  if (!value || value === oldValue) return
+  popupState.value = null
+  historyItem.value = null
+  if (view.value !== 'list') setView('list')
+})
 
 const openHistory = () => {
   if (!popupState.value) return

@@ -1,5 +1,24 @@
-/** 哈希游戏可选投注项；通用聊天室不依赖此枚举。 */
-export type HashBetOption = 'BIG' | 'SMALL' | 'ODD' | 'EVEN'
+import type { HashGameBetOption } from '@/api/interface/hash_game.interface'
+
+export type HashBetOption = HashGameBetOption
+
+/** WS 投注统计按币种和投注项提供当前期的完整快照。 */
+export type HashBetStatsSnapshot = {
+  gameCode: string
+  anchorBlockNum: number
+  stats: Record<
+    string,
+    Partial<
+      Record<
+        HashBetOption,
+        {
+          participantCount: number
+          totalAmount: number | string
+        }
+      >
+    >
+  >
+}
 
 /** 服务端聊天室业务消息。 */
 export type HashWsChatData =
@@ -48,11 +67,7 @@ export type HashWsEvent =
   | {
       code: number
       type: 'CHAIN_LOTTERY_BET_STATS'
-      data: {
-        gameCode: string
-        anchorBlockNum: number
-        stats: Record<string, Record<string, { participantCount: number; totalAmount: number }>>
-      }
+      data: HashBetStatsSnapshot
     }
 
 /** 默认业务通道的区块结果；具体 periods 由各游戏自行解释。 */

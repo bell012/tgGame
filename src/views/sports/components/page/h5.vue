@@ -19,42 +19,6 @@
     <div class="filter-slide-stage" data-tab-transition="slide">
       <Transition :name="filterSlideName">
         <div :key="matchSlideKey" class="filter-slide-pane">
-          <div
-            v-if="!emptyLeagueFilter && page.homepageError.value"
-            class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
-            role="status"
-          >
-            <span>{{ page.sportsLoadFailedText.value }}</span>
-            <button
-              type="button"
-              class="shrink-0 text-theme-primary disabled:opacity-50"
-              :disabled="page.homepageLoading.value"
-              @click="page.retrySports"
-            >
-              {{ page.sportsRetryText.value }}
-            </button>
-          </div>
-
-          <div
-            v-if="!emptyLeagueFilter && page.hotEventsError.value && !liveMatches.length"
-            class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
-            role="status"
-          >
-            <span
-              >{{ t('sports.homepage.popularMatches') }}：{{
-                page.sportsLoadFailedText.value
-              }}</span
-            >
-            <button
-              type="button"
-              class="shrink-0 text-theme-primary disabled:opacity-50"
-              :disabled="page.hotEventsLoading.value"
-              @click="page.retryHotEvents"
-            >
-              {{ page.sportsRetryText.value }}
-            </button>
-          </div>
-
           <section
             v-if="liveMatches.length"
             :aria-label="t('sports.homepage.popularMatches')"
@@ -213,20 +177,6 @@
                   >
                     {{ $t('common.loadingMore') }}
                   </p>
-                  <div
-                    v-else-if="getGroupLoadState(group.id)?.error"
-                    class="flex items-center justify-center gap-3 py-3 text-xs text-text-2"
-                    role="status"
-                  >
-                    <span>{{ page.sportsLoadFailedText.value }}</span>
-                    <button
-                      type="button"
-                      class="shrink-0 text-theme-primary"
-                      @click="retryGroup(group.id)"
-                    >
-                      {{ page.sportsRetryText.value }}
-                    </button>
-                  </div>
                 </div>
               </section>
             </div>
@@ -245,21 +195,6 @@
               >
                 {{ $t('common.loadingMore') }}
               </p>
-              <div
-                v-else-if="page.matchesError.value && !page.homepageError.value"
-                class="flex items-center justify-center gap-3 py-4 text-xs text-text-2"
-                role="status"
-              >
-                <span>{{ page.sportsLoadFailedText.value }}</span>
-                <button
-                  type="button"
-                  class="shrink-0 text-theme-primary disabled:opacity-50"
-                  :disabled="page.matchesLoading.value"
-                  @click="page.retrySports"
-                >
-                  {{ page.sportsRetryText.value }}
-                </button>
-              </div>
             </template>
           </section>
           <p
@@ -530,11 +465,6 @@ const getGroupLoadState = (groupId: string) => {
   if (props.page.keyword.value.trim()) return undefined
   const id = getCompetitionId(groupId)
   return id === null ? undefined : props.page.getLeagueLoadState(id)
-}
-const retryGroup = (groupId: string) => {
-  if (pageDisposed || !pageActive.value || props.page.keyword.value.trim()) return
-  const id = getCompetitionId(groupId)
-  if (id !== null) props.page.retryLeague(id)
 }
 
 // 只补查已显示且展开的联赛，搜索结果不补查。

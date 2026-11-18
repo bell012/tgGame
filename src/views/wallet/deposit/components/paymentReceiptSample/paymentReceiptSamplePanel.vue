@@ -1,28 +1,30 @@
 <template>
   <div
-    class="w-full max-w-[480px] max-h-[66%] sm:max-h-[612px] overflow-hidden rounded-xl modal-container bg-bg-1 sm:h-[612px] font-['Inter'] flex flex-col"
+    class="w-full max-w-[480px] max-h-[66%] sm:max-h-[612px] overflow-hidden rounded-t-xl sm:rounded-lg modal-container bg-bg-1 sm:h-[612px] font-['Inter'] flex flex-col"
   >
     <div
-      class="relative shrink-0 flex items-center justify-between h-14 bg-bg-2 rounded-tl-xl rounded-tr-xl"
+      class="relative shrink-0 flex items-center justify-between h-12 sm:h-14 bg-bg-2 rounded-t-xl sm:rounded-t-lg"
     >
       <h2
-        class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg sm:font-semibold text-text-1 whitespace-nowrap"
+        class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-bold text-text-1 whitespace-nowrap"
       >
         {{ t('deposit.payment_receipt_sample_title') }}
       </h2>
 
       <button
-        class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center z-10"
+        class="absolute top-[10px] right-[14px] sm:top-4 sm:right-4 w-7 h-7 sm:w-6 sm:h-6 bg-opacity-10 rounded-md sm:rounded flex items-center justify-center z-10"
         @click="handleClose"
       >
         <CloseIcon class="h-2.5 w-2.5 text-text-1" />
       </button>
     </div>
 
-    <div class="flex-1 min-h-0 overflow-y-auto p-4">
+    <div
+      class="flex-1 min-h-0 overflow-y-auto px-[14px] pt-[10px] pb-[14px] sm:px-12 sm:pt-6 sm:pb-6"
+    >
       <div class="flex items-start justify-center">
         <img
-          class="w-full sm:w-[386px]"
+          class="w-full sm:w-[384px] rounded-[20px] sm:rounded-[26px] overflow-hidden"
           :src="paymentReceiptSampleImage"
           :alt="t('deposit.payment_receipt_sample_alt')"
         />

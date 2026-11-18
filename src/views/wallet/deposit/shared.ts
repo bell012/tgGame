@@ -25,7 +25,6 @@ export type DepositTabType = 'Fiat' | 'Crypto'
 export type DepositPageMode = 'mobile' | 'pc'
 
 export const DEPOSIT_TABS: DepositTabType[] = ['Crypto', 'Fiat']
-export const DEPOSIT_CRYPTO_COLUMN_NAME = 'USDT泰达币'
 
 export const getDepositTabI18nKey = (tab: DepositTabType) =>
   tab === 'Crypto' ? 'deposit.tabs.crypto' : 'deposit.tabs.fiat'
@@ -48,26 +47,12 @@ export const normalizeDepositPresetAmounts = (
   return parsed.length > 0 ? parsed : [...fallback]
 }
 
-export const createDepositPresetDiscountRatioMap = (
-  discountItem: QueryPayQuickAmountConfig | null
-) => {
-  const ratioMap: Record<number, string> = {}
-
-  discountItem?.quickAmount.forEach(value => {
-    const amount = Number(value)
-    if (!Number.isFinite(amount)) return
-
-    ratioMap[amount] = String(discountItem.ratio)
-  })
-
-  return ratioMap
-}
-
 export const createDepositWageringOptions = (discountList: QueryPayQuickAmountConfig[]) =>
   discountList.map(item => ({
     rowId: item.rowId,
     multiple: item.multiple,
-    label: item.payQuickName
+    label: item.payQuickName,
+    ratio: Number(item.ratio) || 0
   }))
 
 export const parseDepositLocalizedName = (value: string, localeCode: string) => {
@@ -130,30 +115,40 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
   const discountList = computed(() => selectedSubColumn.value?.quickAmountConfigs ?? [])
   const selectedDiscountItem = ref<QueryPayQuickAmountConfig | null>(null)
   const amount = ref<number>()
-  const coinCode = ref('USDT')
-  const coinMoreShow = ref(false)
   const orderPopShow = ref(false)
   const orderInfo = ref<Partial<QueryPayOrderByOrderIdResult>>({})
   const currentOrderId = ref('')
   const currentCreateTime = ref<number | null>(null)
   const pollTimer = ref<number | null>(null)
   const presetAmounts = ref<number[]>([...defaultPresetAmounts])
+  let subColumnRequestId = 0
+
+  const coinOptions = computed(() =>
+    payMethods.value.map(item => ({
+      columnCode: item.columnCode,
+      label: parseDepositLocalizedName(item.columnName, String(locale.value || 'eng')),
+      icon: toDepositPayImageUrl(item.columnIco)
+    }))
+  )
+  const selectedCoinIcon = computed(() =>
+    toDepositPayImageUrl(selectedMethod.value?.columnIco ?? '')
+  )
 
   const channelOptions = computed(() =>
     paySubColumns.value.map(item => ({
       rowId: item.rowId,
-      label: parseDepositLocalizedName(item.subColumnName, String(locale.value || 'eng'))
+      label: parseDepositLocalizedName(item.subColumnName, String(locale.value || 'eng')),
+      bonusRatio: resolveDepositMethodBonusRatio(item)
     }))
   )
   const wageringOptions = computed(() => createDepositWageringOptions(discountList.value))
+  const showWageringSection = computed(() => wageringOptions.value.length > 1)
   const showChannelSection = computed(() => paySubColumns.value.length > 1)
   const isManualAmountAllowed = computed(() => selectedSubColumn.value?.manualAmountIn !== 0)
-  const selectedPayChannelCode = computed(() =>
-    resolvePayChannelTabKey(selectedMethod.value?.columnName)
-  )
-  const presetDiscountRatioMap = computed(() =>
-    createDepositPresetDiscountRatioMap(selectedDiscountItem.value)
-  )
+  const selectedPayChannelCode = computed(() => {
+    const ownCode = String(selectedMethod.value?.payChannelCode ?? '').trim()
+    return ownCode || resolvePayChannelTabKey(selectedMethod.value?.columnName)
+  })
   const amountPlaceholder = computed(() =>
     isManualAmountAllowed.value
       ? t('deposit.deposit_amount_input_placeholder')
@@ -177,20 +172,6 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
       message: t('deposit.unavailable'),
       type: 'fail'
     })
-  }
-
-  const selectCoinCode = (code: string) => {
-    if (code !== 'USDT') {
-      showUnavailableToast()
-      return
-    }
-
-    coinCode.value = code
-    coinMoreShow.value = false
-  }
-
-  const openCoinMorePanel = () => {
-    showUnavailableToast()
   }
 
   const clearAmount = () => {
@@ -237,7 +218,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
       orderId: currentOrderId.value,
       createTime: currentCreateTime.value ?? Date.now(),
       accountAmount: Number(amount.value ?? 0),
-      accountCurrency: selectedSubColumn.value?.currency ?? coinCode.value,
+      accountCurrency: selectedSubColumn.value?.currency ?? '',
       accountName: selectedSubColumn.value?.offlineAccount?.accountName ?? '',
       accountNo: selectedSubColumn.value?.offlineAccount?.accountNo ?? '',
       busiAmount: Number(amount.value ?? 0),
@@ -286,6 +267,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
   }
 
   const loadPaySubColumnPage = async (columnCode: number) => {
+    const requestId = ++subColumnRequestId
     try {
       const param: QueryPaySubColumnPageForm = {
         page: {
@@ -297,6 +279,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
         }
       }
       const response = await Api.wallet.queryPaySubColumnPage(param)
+      if (requestId !== subColumnRequestId) return
       ensureApiBusinessSuccess(response)
       const result: QueryPaySubColumnItem[] = Array.isArray(response.result) ? response.result : []
 
@@ -305,6 +288,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
       selectedDiscountItem.value = discountList.value[0] ?? null
       syncPresetAmounts()
     } catch (error) {
+      if (requestId !== subColumnRequestId) return
       console.error('queryPaySubColumnPage failed', error)
       paySubColumns.value = []
       selectedSubColumn.value = null
@@ -326,7 +310,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
 
       ensureApiBusinessSuccess(response)
       const result = Array.isArray(response.result) ? response.result : []
-      payMethods.value = result.filter(item => item.columnName === DEPOSIT_CRYPTO_COLUMN_NAME)
+      payMethods.value = result
 
       // 任务中心传入方式编码时优先精确选中，未匹配则保留充值页原有默认方式。
       const initialMethodCode = String(options.initialMethodCode ?? '').trim()
@@ -356,6 +340,16 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
     } finally {
       isInitialLoading.value = false
     }
+  }
+
+  const selectMethod = (columnCode: number) => {
+    if (selectedMethod.value?.columnCode === columnCode) return
+    const target = payMethods.value.find(item => item.columnCode === columnCode)
+    if (!target) return
+
+    selectedMethod.value = target
+    clearAmount()
+    void loadPaySubColumnPage(columnCode)
   }
 
   const loadWallet = () => {
@@ -440,21 +434,20 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
     discountList,
     selectedDiscountItem,
     amount,
-    coinCode,
-    coinMoreShow,
     orderPopShow,
     orderInfo,
     presetAmounts,
+    coinOptions,
+    selectedCoinIcon,
     channelOptions,
     wageringOptions,
     showChannelSection,
+    showWageringSection,
     isManualAmountAllowed,
-    presetDiscountRatioMap,
     amountPlaceholder,
     isDepositDisabled,
     showUnavailableToast,
-    selectCoinCode,
-    openCoinMorePanel,
+    selectMethod,
     clearAmount,
     selectChannel,
     selectWagering,
@@ -473,6 +466,12 @@ export interface DepositCategoryOption {
 
 export const resolveDepositMethodIcon = (item: QueryPaySubColumnItem) =>
   toDepositPayImageUrl(item.platformLogo || '')
+
+// 只有一个流水档时流水 Tab 被隐藏，加赠比例改挂到充值方式上；多个流水档时由流水 Tab 展示。
+export const resolveDepositMethodBonusRatio = (item: QueryPaySubColumnItem) => {
+  const configs = item.quickAmountConfigs ?? []
+  return configs.length === 1 ? Number(configs[0].ratio) || 0 : 0
+}
 
 export const useDepositFiatFlow = (options: DepositFlowOptions) => {
   const { t, locale } = useI18n()
@@ -521,10 +520,10 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
     if (!method) return ''
     return String(method.payChannelCode || resolvePayChannelTabKey(method.platformName) || '')
   })
-  const presetDiscountRatioMap = computed(() =>
-    createDepositPresetDiscountRatioMap(selectedDiscountItem.value)
-  )
   const wageringOptions = computed(() => createDepositWageringOptions(discountList.value))
+  // 只有一个选项时不展示选择区，仍默认选中该项；没有充值方式时保留不可用提示。
+  const showMethodSection = computed(() => methods.value.length !== 1)
+  const showWageringSection = computed(() => wageringOptions.value.length > 1)
   const amountPlaceholder = computed(() =>
     isManualAmountAllowed.value
       ? t('deposit.deposit_amount_input_or_select_placeholder')
@@ -809,13 +808,15 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
     orderPopShow,
     isDepositDisabled,
     isManualAmountAllowed,
-    presetDiscountRatioMap,
     wageringOptions,
+    showMethodSection,
+    showWageringSection,
     amountPlaceholder,
     isAmountInputHighlighted,
     clearAmount,
     selectPresetAmount,
     resolveMethodIcon: resolveDepositMethodIcon,
+    resolveMethodBonusRatio: resolveDepositMethodBonusRatio,
     resolveMethodName,
     selectWagering,
     selectCategory,

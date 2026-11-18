@@ -103,8 +103,7 @@ import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useThemeStore } from '@/stores/theme'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/game/detail/refresh.svg?component'
-import { getCurrencySymbol } from '@/utils/locale'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { getCurrencyImageByCode, getCurrencySymbol } from '@/utils/locale'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -151,7 +150,7 @@ const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.valu
 const currentRequestCurrency = computed(
   () => normalizeValue(currentCurrencyCode.value).toUpperCase() || 'PHP'
 )
-const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
+const currentCurrencyIcon = computed(() => getCurrencyImageByCode(currentRequestCurrency.value))
 
 const emptyStatistics = (): GameStatisticsResult => ({
   profit: 0,

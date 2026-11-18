@@ -1,22 +1,26 @@
 <template>
   <div class="mx-auto w-full max-w-[1296px] px-[14px] pt-[16px]">
     <nav
-      class="mb-[16px] flex gap-[10px] overflow-x-auto rounded-[12px] bg-bg-2 px-[20px] py-[14px]"
+      ref="gameTabsRef"
+      class="scrollbar-none mb-[16px] flex select-none gap-[10px] overflow-x-auto overscroll-x-contain rounded-[12px] bg-bg-2 px-[20px] py-[14px]"
+      :class="isDraggingGameTabs ? 'cursor-grabbing' : 'cursor-grab'"
+      :aria-label="t('hashGame.games')"
     >
       <button
-        v-for="period in periodOptions"
-        :key="period"
+        v-for="game in hashGames"
+        :key="game.gameCode"
+        data-scroll-center
         type="button"
         class="shrink-0 rounded-[6px] px-[12px] py-[10px] text-[14px]"
         :class="
-          selectedPeriod === period
+          selectedHashGameCode === game.gameCode
             ? 'bg-theme-primary font-bold text-text-4'
             : 'bg-bg-3 text-text-1'
         "
-        :aria-pressed="selectedPeriod === period"
-        @click="selectPeriod(period)"
+        :aria-pressed="selectedHashGameCode === game.gameCode"
+        @click="selectHashGame(game.gameCode)"
       >
-        {{ period }}s Hash
+        {{ game.gameName }}
       </button>
     </nav>
 
@@ -24,16 +28,18 @@
       <main class="min-w-0 rounded-[12px] bg-bg-2 p-[24px]">
         <header class="mb-[36px] flex items-center justify-between">
           <div class="flex items-center gap-[10px]">
-            <h1 class="text-[16px] font-bold text-text-1">{{ selectedPeriod }}s Hash</h1>
-            <span class="rounded-[4px] bg-bg-3 px-[10px] py-[3px] text-[12px] text-text-2"
-              >1.9 x</span
+            <h1 class="text-[16px] font-bold text-text-1">{{ hashGameName }}</h1>
+            <span
+              v-if="defaultOdds !== '—'"
+              class="rounded-[4px] bg-bg-3 px-[10px] py-[3px] text-[12px] text-text-2"
+              >{{ defaultOdds }} x</span
             >
           </div>
           <div class="flex gap-[10px]">
             <button
               type="button"
               class="flex items-center gap-[10px] rounded-[6px] bg-bg-3 px-[10px] py-[6px] text-[14px] text-text-2"
-              @click="recentBetsOpen = true"
+              @click="openRecentBets"
             >
               <RecentIcon class="size-[20px] text-icon-2" />{{ t('hashGame.recentBets') }}
             </button>
@@ -52,18 +58,22 @@
             <p class="text-[14px] font-[700] text-text-1">{{ t('hashGame.lastBlock') }}</p>
             <div class="mt-[6px] flex items-center justify-center gap-[2px]">
               <strong class="text-[24px] font-[700] text-text-1 underline underline-offset-1">{{
-                mockRound.lastBlock
+                round.lastBlock
               }}</strong>
-              <span
+              <a
+                v-if="round.explorerUrl"
+                :href="round.explorerUrl"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="rounded-[4px] bg-theme-primary px-[4px] py-[2px] text-[12px] text-text-4"
-                >{{ t('hashGame.verify') }}</span
+                >{{ t('hashGame.verify') }}</a
               >
             </div>
           </div>
           <div
             class="relative mx-auto grid size-[40px] place-items-center rounded-full border-[5px] border-secondary-10 border-l-bg-1 text-[16px] font-[700] text-text-1"
           >
-            {{ mockRound.countdown }}
+            {{ round.countdown }}
           </div>
           <div class="text-secondary-10">
             <p class="text-[14px] font-[700] text-secondary-10">
@@ -71,7 +81,7 @@
             </p>
             <strong
               class="mt-[6px] block text-[24px] text-secondary-10 font-[700] underline underline-offset-1"
-              >{{ mockRound.currentBlock }}</strong
+              >{{ round.currentBlock }}</strong
             >
           </div>
         </section>
@@ -82,11 +92,9 @@
             >{{ hashParts.before }}<b class="text-theme-primary">{{ hashParts.digit }}</b
             >{{ hashParts.after }}</span
           >
-          <span class="mx-[4px] text-[14px] font-[700] text-text-2"
-            >(<b class="text-secondary-2">{{ t('hashGame.odd') }}</b
-            >、<b class="text-secondary-4">{{ t('hashGame.big') }}</b
-            >)</span
-          >
+          <span v-if="roundOutcome" class="mx-[4px] text-[14px] font-[700] text-theme-primary">
+            ({{ roundOutcome }})
+          </span>
           <button
             type="button"
             class="flex items-center whitespace-nowrap text-[14px] font-[700] text-theme-primary"
@@ -101,7 +109,7 @@
           <div
             class="relative mb-[20px] flex min-w-[150px] h-[30px] items-center justify-between gap-[12px]"
           >
-            <div class="flex gap-[6px]">
+            <div v-if="roadmapModes.length > 1" class="flex gap-[6px]">
               <button
                 v-for="mode in roadmapModes"
                 :key="mode"
@@ -118,19 +126,19 @@
               </button>
             </div>
             <div class="flex items-center gap-[21px] whitespace-nowrap">
-              <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
+              <span
+                v-for="entry in roadmap.counts"
+                :key="entry.key"
+                class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2"
+              >
                 <i
-                  class="grid size-[20px] place-items-center rounded-full bg-[#22A89A] text-[14px] not-italic text-white"
-                  >{{ resultLabels.positive }}</i>{{ mockRound.positiveCount }}
-              </span>
-              <span class="flex items-center gap-[4px] text-[14px] font-[700] text-text-2">
-                <i
-                  class="grid size-[20px] place-items-center rounded-full bg-[#E63533] text-[14px] not-italic text-white"
-                  >{{ resultLabels.negative }}</i>{{ mockRound.negativeCount }}
+                  class="grid size-[20px] place-items-center rounded-full text-[14px] not-italic text-white"
+                  :style="{ background: entry.color }"
+                  >{{ entry.label }}</i>{{ entry.count }}
               </span>
             </div>
             <div class="flex items-center">
-              <span class="text-[14px] text-secondary-8">{{ resultLabels.streak }}</span>
+              <span class="text-[14px] text-secondary-8">{{ roadmap.streak }}</span>
             </div>
             <div class="flex items-center gap-[10px]">
               <button
@@ -184,26 +192,39 @@
               </div>
             </div>
           </div>
-          <div class="overflow-x-auto">
+          <div
+            v-if="roadmap.columns.length"
+            ref="roadmapViewport"
+            class="select-none overflow-x-auto overscroll-x-contain"
+            :class="isDraggingRoadmap ? 'cursor-grabbing' : 'cursor-grab'"
+            :aria-label="t('hashGame.history')"
+            tabindex="0"
+          >
             <div class="flex w-max gap-[4px]">
               <div
-                v-for="(column, columnIndex) in resultColumns"
+                v-for="(column, columnIndex) in roadmap.columns"
                 :key="columnIndex"
                 class="grid grid-rows-5 gap-[4px]"
               >
                 <span
-                  v-for="cell in column"
-                  :key="cell.id"
+                  v-for="(cell, rowIndex) in column"
+                  :key="rowIndex"
                   class="grid size-[20px] place-items-center rounded-full text-[14px] text-white"
-                  :class="[
-                    cell.positive ? 'bg-[#22A89A]' : 'bg-[#E63533]',
-                    { invisible: !cell.filled }
-                  ]"
-                  >{{ cell.positive ? resultLabels.positive : resultLabels.negative }}</span
+                  :class="{ invisible: !cell }"
+                  :style="{ background: cell?.color }"
+                  :aria-hidden="!cell"
+                  >{{ cell?.label }}</span
                 >
               </div>
             </div>
           </div>
+          <p
+            v-else-if="roadmap.emptyMessage"
+            class="py-3 text-center text-sm text-text-3"
+            role="status"
+          >
+            {{ roadmap.emptyMessage }}
+          </p>
         </section>
 
         <section class="mt-[20px]">
@@ -214,7 +235,7 @@
               >{{ t('hashGame.fairness') }}</span
             >
           </div>
-          <div class="grid grid-cols-4 gap-[10px]">
+          <div class="grid gap-[10px]" :style="betGridStyle">
             <div
               v-for="option in betOptions"
               :key="option.key"
@@ -228,40 +249,31 @@
               <span
                 v-if="hasBetAmount(option.key)"
                 class="absolute right-[12px] z-[2] flex min-h-[24px] items-center justify-center rounded-[20px] bg-theme-primary px-[6px] text-[12px] font-[500] leading-[24px] text-text-4 transition-[top] duration-200"
-                :style="{ top: `calc(48% - 14px - ${getChipStackOffset(option.key)}px)` }"
+                :style="{ top: `calc(48% - 18px - ${getChipStackOffset(option.key)}px)` }"
               >
                 {{ betTotals[option.key] }}
               </span>
               <span
-                class="pointer-events-none absolute right-[12px] top-[48%] z-[1] size-[36px] [perspective:420px] [transform-style:preserve-3d]"
+                class="pointer-events-none absolute right-[12px] top-[48%] z-[1] size-[36px] text-[12px]"
+                data-chip-stack
                 aria-hidden="true"
               >
                 <span
                   v-for="(chip, layer) in landedChips[option.key] || []"
                   :key="chip.id"
-                  class="absolute inset-0 grid place-items-center [transform-style:preserve-3d] drop-shadow-[0_2px_1px_rgb(0_0_0_/_45%)] after:absolute after:inset-[1px_1px_-2px] after:z-0 after:rounded-full after:bg-[repeating-linear-gradient(180deg,#cbd2cf_0px,#cbd2cf_1px,#59615f_1px,#59615f_2px,#252b2a_2px,#252b2a_3px)] after:shadow-[0_2px_0_rgb(0_0_0_/_30%)] after:[transform:translateZ(-2px)]"
+                  class="absolute inset-0"
                   :style="{
-                    '--chip-stack-offset': `${-layer * chipStackStep}px`,
-                    transform: `translateY(var(--chip-stack-offset, 0px)) rotateZ(-12deg) rotateX(24deg)`,
-                    transformStyle: 'preserve-3d',
-                    zIndex: maxVisibleChips - layer
+                    transform: `translateY(${-layer * chipStackStep}px)`,
+                    zIndex: layer + 1
                   }"
                 >
-                  <img
-                    :src="chipImage"
-                    alt=""
-                    class="absolute inset-0 z-[1] size-full rounded-full"
-                    :style="{ filter: chip.filter }"
-                  />
-                  <b class="relative z-[2] text-[10px] font-bold leading-none text-white">{{
-                    formatChipAmount(chip.amount)
-                  }}</b>
+                  <BetChip :amount="chip.amount" :filter="chip.filter" />
                 </span>
               </span>
               <span
                 class="absolute top-[3px] left-[7px] text-[12px]"
                 :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
-                >{{ mockBet.odds }}</span
+                >{{ option.odds }}</span
               >
               <strong
                 class="mb-[12px] block text-center text-[24px] font-[700]"
@@ -275,7 +287,7 @@
                   ><PeopleIcon
                     class="size-[14px]"
                     :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
-                  />{{ mockBet.people }}</span
+                  />{{ option.people }}</span
                 >
                 <span
                   class="flex items-center gap-[6px] rounded-[4px] bg-opacity-6 px-[6px] py-[4px]"
@@ -283,13 +295,13 @@
                   ><AmountIcon
                     class="size-[14px]"
                     :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
-                  />{{ mockBet.amount }}</span
+                  />{{ option.amount }}</span
                 >
               </span>
               <span class="mt-[10px] block h-[4px] overflow-hidden rounded bg-opacity-6">
                 <i
                   class="block h-full rounded-[inherit]"
-                  :style="{ width: mockBet.progress + '%', background: option.color }"
+                  :style="{ width: option.progress + '%', background: option.color }"
                 />
               </span>
             </div>
@@ -301,18 +313,10 @@
           ref="chipTrackRef"
           class="scrollbar-none mt-[20px] flex touch-pan-x select-none items-center gap-[12px] overflow-x-auto overflow-y-hidden py-[4px] pb-[20px]"
           :class="isDraggingChips ? 'cursor-grabbing' : 'cursor-grab'"
-          @pointerdown="onChipTrackPointerDown"
-          @pointermove="onChipTrackPointerMove"
-          @pointerup="onChipTrackPointerUp"
-          @pointercancel="onChipTrackPointerCancel"
-          @lostpointercapture="onChipTrackPointerCancel"
-          @click.capture="suppressDraggedChipClick"
-          @selectstart.prevent
-          @dragstart.prevent
         >
           <button
             type="button"
-            class="relative size-[50px] shrink-0"
+            class="relative size-[50px] shrink-0 brightness-[0.7]"
             :aria-label="t('hashGame.editChips')"
             @click="openChipEditor"
           >
@@ -327,9 +331,9 @@
             v-for="chip in chipOptions"
             :key="chip.id"
             :data-chip-value="chip.value"
+            data-scroll-center
             type="button"
-            class="relative size-[50px] shrink-0 rounded-full transition-transform"
-            :class="selectedChip === chip.value ? 'scale-105' : ''"
+            class="relative size-[50px] shrink-0 rounded-full brightness-[0.7] transition-[filter] duration-[180ms] aria-pressed:brightness-100 motion-reduce:transition-none"
             :aria-pressed="selectedChip === chip.value"
             @click="chooseChip(chip.value)"
           >
@@ -363,7 +367,8 @@
           </button>
           <button
             type="button"
-            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1"
+            disabled
+            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1 disabled:opacity-50"
           >
             <ConfirmIcon class="size-[16px] text-icon-2" />{{ t('hashGame.confirmBet') }}
           </button>
@@ -404,7 +409,7 @@
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :balance-text="currentBalanceText"
-      :period="selectedPeriod"
+      :game-name="hashGameName"
       :bets="recentBets"
       :summary="recentBetSummary"
       @select-bet="openBetDetailPopup"
@@ -420,11 +425,7 @@
     <!-- 筹码设置 -->
     <ChipEditorPopup :page="props.page" variant="pc" />
     <!-- 规则弹窗 -->
-    <HashGameRules
-      v-model:visible="rulesPopupOpen"
-      v-model:selected-period="selectedPeriod"
-      variant="pc"
-    />
+    <HashGameRules v-model:visible="rulesPopupOpen" variant="pc" />
     <!-- 飞筹码动画 -->
     <Teleport to="body">
       <FlyingChip
@@ -447,13 +448,16 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
 import type { HashGameBetDetail, HashGamePageState } from './index'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
 import FlyingChip from './components/FlyingChip.vue'
+import BetChip from './components/BetChip.vue'
+import { formatChipAmount } from './components/chipMotion'
 import { useBetChipAnimation } from './components/useBetChipAnimation'
 import HashGameRules from './rules.vue'
 import HashGameBetDetailPopup from './bet-detail.vue'
@@ -483,16 +487,20 @@ import HashGameChat from './components/HashGameChat.vue'
 const props = defineProps<{ page: HashGamePageState }>()
 const {
   t,
-  selectedPeriod,
-  periodOptions,
+  hashGames,
+  hashGameName,
+  selectedHashGameCode,
+  selectHashGame,
   roadmapMode,
   chipOptions,
   selectedChip,
-  mockRound,
+  round,
+  roundOutcome,
   hashParts,
-  mockBet,
-  resultLabels,
-  resultColumns,
+  defaultOdds,
+  roadmap,
+  roadmapModes,
+  betGridStyle,
   betOptions,
   quickBetPopupOpen,
   quickBetEnabled,
@@ -506,7 +514,7 @@ const {
   recentBetSummary,
   historyPopupOpen,
   historyRecords,
-  selectPeriod,
+  loadRecentBets,
   openRecords,
   selectBet,
   chooseChip,
@@ -521,7 +529,6 @@ const {
 } = props.page
 
 const {
-  maxVisibleChips,
   chipStackStep,
   betTotals,
   landedChips,
@@ -536,99 +543,31 @@ const {
   chipOptions,
   soundEnabled: musicEnabled,
   slotSize: 36,
-  rightInset: 12,
   selectBet
 })
 
 const chatDraft = ref('')
 const recentBetsOpen = ref(false)
+/** 打开弹窗时刷新当前玩法的近期投注。 */
+const openRecentBets = () => {
+  recentBetsOpen.value = true
+  void loadRecentBets()
+}
+const { viewport: gameTabsRef, dragging: isDraggingGameTabs } = useHorizontalScroll({
+  centerOnClick: true
+})
+const { viewport: chipTrackRef, dragging: isDraggingChips } = useHorizontalScroll({
+  centerOnClick: true
+})
+const { viewport: roadmapViewport, dragging: isDraggingRoadmap } = useHorizontalScroll({
+  endOnChange: () => roadmap.value.columns
+})
+watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
 const betDetailPopupOpen = ref(false)
 const selectedBetDetail = ref<HashGameBetDetail | null>(null)
 const rulesPopupOpen = ref(false)
 const quickBetPopupRef = ref<HTMLElement | null>(null)
 const quickBetTriggerRef = ref<HTMLElement | null>(null)
-const chipTrackRef = ref<HTMLElement | null>(null)
-const isDraggingChips = ref(false)
-let chipPointerId: number | null = null
-let chipDragStartX = 0
-let chipDragStartScrollLeft = 0
-let suppressChipClick = false
-let clearChipClickTimer: ReturnType<typeof setTimeout> | undefined
-const chipDragThreshold = 6
-
-// 鼠标按住筹码栏并横向移动时记录起点；只有实际溢出时才启用拖动。
-const onChipTrackPointerDown = (event: PointerEvent) => {
-  if (event.pointerType !== 'mouse' || event.button !== 0) return
-  const element = chipTrackRef.value
-  if (!element || element.scrollWidth <= element.clientWidth) return
-
-  if (clearChipClickTimer) clearTimeout(clearChipClickTimer)
-  suppressChipClick = false
-  chipPointerId = event.pointerId
-  chipDragStartX = event.clientX
-  chipDragStartScrollLeft = element.scrollLeft
-}
-
-// 超过拖动阈值后滚动筹码栏，并记录需要拦截浏览器合成点击。
-const onChipTrackPointerMove = (event: PointerEvent) => {
-  const element = chipTrackRef.value
-  if (!element || event.pointerId !== chipPointerId) return
-  if (!(event.buttons & 1)) {
-    onChipTrackPointerCancel(event)
-    return
-  }
-
-  const distance = event.clientX - chipDragStartX
-  if (!isDraggingChips.value && Math.abs(distance) <= chipDragThreshold) return
-  if (!isDraggingChips.value) {
-    isDraggingChips.value = true
-    suppressChipClick = true
-    element.setPointerCapture(event.pointerId)
-  }
-
-  event.preventDefault()
-  element.scrollLeft = Math.max(
-    0,
-    Math.min(element.scrollWidth - element.clientWidth, chipDragStartScrollLeft - distance)
-  )
-}
-
-// 结束鼠标拖动并释放捕获；轻点仍由按钮自身的 click 事件处理。
-const onChipTrackPointerUp = (event: PointerEvent) => {
-  if (event.pointerId !== chipPointerId) return
-  const element = chipTrackRef.value
-  const wasDragging = isDraggingChips.value
-  chipPointerId = null
-  isDraggingChips.value = false
-  if (element?.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId)
-
-  if (wasDragging) {
-    clearChipClickTimer = setTimeout(() => {
-      suppressChipClick = false
-      clearChipClickTimer = undefined
-    }, 0)
-  }
-}
-
-// 指针被系统取消或组件卸载时清理拖动状态。
-const onChipTrackPointerCancel = (event: PointerEvent) => {
-  if (event.pointerId !== chipPointerId) return
-  const element = chipTrackRef.value
-  chipPointerId = null
-  isDraggingChips.value = false
-  suppressChipClick = false
-  if (clearChipClickTimer) clearTimeout(clearChipClickTimer)
-  clearChipClickTimer = undefined
-  if (element?.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId)
-}
-
-// 拖动结束后拦截合成 click，避免松开鼠标时误选筹码；键盘触发的 click 正常通过。
-const suppressDraggedChipClick = (event: MouseEvent) => {
-  if (!suppressChipClick || event.detail === 0) return
-  suppressChipClick = false
-  event.preventDefault()
-  event.stopPropagation()
-}
 
 // 点击弹层与设置齿轮以外的区域时关闭弹层，不改动快捷投注开关值。
 const handleQuickBetOutsidePointerDown = (event: PointerEvent) => {
@@ -644,23 +583,9 @@ const handleQuickBetOutsidePointerDown = (event: PointerEvent) => {
 
 // 页面挂载期间监听外部点击，卸载时移除监听，避免重复绑定。
 onMounted(() => document.addEventListener('pointerdown', handleQuickBetOutsidePointerDown))
-onBeforeUnmount(() => {
-  document.removeEventListener('pointerdown', handleQuickBetOutsidePointerDown)
-  if (clearChipClickTimer) clearTimeout(clearChipClickTimer)
-  if (chipPointerId !== null) {
-    const element = chipTrackRef.value
-    if (element?.hasPointerCapture(chipPointerId)) element.releasePointerCapture(chipPointerId)
-  }
-})
+onBeforeUnmount(() => document.removeEventListener('pointerdown', handleQuickBetOutsidePointerDown))
 
-const roadmapModes = ['size', 'parity'] as const
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
-
-const formatChipAmount = (amount: number) => {
-  if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
-  if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
-  return String(amount)
-}
 
 const handleCancelSelection = () => {
   clearBetChips()

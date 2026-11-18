@@ -46,7 +46,7 @@
     </div>
 
     <!-- 充值方式 -->
-    <div class="flex flex-col gap-[10px]">
+    <div v-if="showMethodSection" class="flex flex-col gap-[10px]">
       <p class="text-sm font-medium leading-[17px] text-text-1">{{ t('deposit.methods') }}</p>
       <div
         v-if="methods.length > 0"
@@ -57,7 +57,7 @@
           v-for="item in methods"
           :key="item.rowId"
           type="button"
-          class="flex min-w-0 flex-col items-center gap-[3px] rounded-[8px] p-[8px]"
+          class="relative flex min-w-0 flex-col items-center gap-[3px] rounded-[8px] p-[8px]"
           :class="
             selectedMethod?.rowId === item.rowId
               ? 'bg-theme-primary font-bold text-text-4'
@@ -65,6 +65,11 @@
           "
           @click="selectMethod(item)"
         >
+          <DepositBonusBadge
+            v-if="resolveMethodBonusRatio(item) > 0"
+            :ratio="resolveMethodBonusRatio(item)"
+            class="-top-[5px] right-[6px]"
+          />
           <span class="flex h-6 w-full items-center justify-center">
             <img
               v-if="resolveMethodIcon(item)"
@@ -90,7 +95,7 @@
           {{ t('deposit.deposit_amount') }}
         </p>
         <div
-          class="flex h-[45px] w-full items-center gap-[7px] rounded-[8px] border bg-mask-20 px-[14px]"
+          class="flex h-[45px] w-full items-center gap-[7px] rounded-[8px] border bg-input-3 px-[14px]"
           :class="isAmountInputHighlighted ? 'border-theme-primary' : 'border-opacity-10'"
         >
           <span
@@ -112,8 +117,11 @@
 
       <div class="flex flex-col gap-[10px]">
         <!-- 流水选项 -->
-        <div class="overflow-x-auto scrollbar-hide touch-pan-x border-b border-opacity-10">
-          <div class="flex w-max items-center gap-[14px] pb-[8px]">
+        <div
+          v-if="showWageringSection"
+          class="overflow-x-auto scrollbar-hide touch-pan-x border-b border-opacity-10"
+        >
+          <div class="flex w-max items-center gap-[14px] pb-[8px] pt-[10px]">
             <template v-for="(item, index) in wageringOptions" :key="item.rowId">
               <button
                 type="button"
@@ -126,6 +134,11 @@
                 @click="selectWagering(item.rowId)"
               >
                 {{ item.label }}
+                <DepositBonusBadge
+                  v-if="item.ratio > 0"
+                  :ratio="item.ratio"
+                  class="-right-4 -top-[9px]"
+                />
                 <span
                   v-if="selectedDiscountItem?.rowId === item.rowId"
                   class="absolute inset-x-0 -bottom-[9px] h-px bg-theme-primary"
@@ -159,13 +172,6 @@
               @click="selectPresetAmount(preset)"
             >
               <span>{{ preset }}</span>
-              <span
-                v-if="presetDiscountRatioMap[preset] !== undefined"
-                class="absolute -right-1 -top-2 bg-contain bg-center bg-no-repeat px-2 pb-0.5 text-[10px] font-normal text-text-1"
-                :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
-              >
-                {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
-              </span>
             </button>
           </div>
           <button
@@ -223,7 +229,6 @@
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import DropdownChevron from '@/static/svg/casino/dropdown_chevron.svg?component'
@@ -236,6 +241,7 @@ import { useI18n } from 'vue-i18n'
 import { useDepositFiatFlow } from '../shared'
 import DepositMobileFiatSkeleton from './DepositMobileFiatSkeleton.vue'
 import depositFiatOrderPop from './order/fiat/depositFiatOrderPop.vue'
+import DepositBonusBadge from './shared/DepositBonusBadge.vue'
 import { usePresetGrid } from './shared/usePresetGrid'
 
 const { t } = useI18n()
@@ -268,12 +274,14 @@ const {
   orderPopShow,
   isDepositDisabled,
   isManualAmountAllowed,
-  presetDiscountRatioMap,
   wageringOptions,
+  showMethodSection,
+  showWageringSection,
   amountPlaceholder,
   isAmountInputHighlighted,
   selectPresetAmount,
   resolveMethodIcon,
+  resolveMethodBonusRatio,
   resolveMethodName,
   selectWagering,
   selectCategory,

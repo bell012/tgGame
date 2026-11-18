@@ -4,7 +4,7 @@
     class="relative w-full max-w-[481px] h-full sm:h-auto sm:max-h-[562px] flex flex-col sm:rounded-lg modal-container bg-bg-1 overflow-hidden font-['Inter']"
   >
     <!-- 数字币订单结果头部 -->
-    <div class="relative shrink-0 h-14 bg-bg-2">
+    <div class="relative shrink-0 h-[49px] sm:h-14 bg-bg-2">
       <h2
         class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base sm:text-lg font-bold text-text-1"
       >
@@ -14,14 +14,14 @@
       <template v-if="isMobile">
         <!-- 移动端返回按钮 -->
         <button
-          class="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-md bg-opacity-10 text-text-1"
+          class="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 flex h-[33px] w-[33px] items-center justify-center rounded-lg bg-opacity-6 text-text-1"
           @click="handleClose"
         >
           <LeftArrowIcon class="w-4 h-4" />
         </button>
         <!-- 移动端详情按钮 -->
         <button
-          class="absolute right-3.5 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-md bg-opacity-10 text-text-1"
+          class="absolute right-3.5 top-1/2 -translate-y-1/2 z-10 flex h-[33px] w-[33px] items-center justify-center rounded-lg bg-opacity-6 text-text-1"
           @click="handleClose"
         >
           <DetailsIcon class="w-4 h-4" />
@@ -40,23 +40,23 @@
     </div>
 
     <!-- 数字币订单结果内容区域 -->
-    <div class="flex-1 min-h-0 overflow-y-auto bg-bg-1 p-4">
+    <div class="flex-1 min-h-0 overflow-y-auto bg-bg-1 p-[14px] sm:p-4">
       <!-- 数字币订单结果卡片 -->
       <div
-        class="flex min-h-full w-full flex-col items-center gap-6 rounded-lg bg-bg-2 px-4 py-8 sm:min-h-0"
+        class="flex w-full flex-col items-center gap-[30px] sm:gap-6 rounded-lg bg-bg-2 px-[14px] sm:px-4 pt-[30px] pb-[14px] sm:pt-10 sm:pb-8"
       >
         <!-- 订单状态展示区域 -->
-        <div class="flex flex-col items-center gap-4">
-          <orderStatusResult :status="displayStatus" :title="displayTitle" />
-        </div>
+        <orderStatusResult :status="displayStatus" :title="displayTitle" />
 
         <!-- 订单明细区域 -->
-        <div class="w-full rounded-lg bg-bg-4 px-5 py-4">
+        <div class="w-full grid gap-5 sm:gap-4 rounded-lg bg-bg-4 p-[14px] sm:px-5 sm:py-4">
           <orderDetailRows
             :rows="detailRows"
-            row-class="min-h-5 py-2 flex items-center justify-between gap-4"
-            value-class="max-w-[240px] text-base text-text-1 flex items-center justify-end text-right break-all"
-            icon-class="w-5 h-5 mr-1"
+            row-class="min-h-5 flex items-center justify-between gap-4"
+            value-class="max-w-[150px] sm:max-w-[240px] text-sm sm:text-base text-text-1 flex items-center justify-end text-right break-all"
+            icon-class="h-5 w-5 mr-[5px] sm:mr-1"
+            copy-class="ml-[5px] sm:ml-2 shrink-0"
+            copy-icon-class="w-4 h-4 sm:w-6 sm:h-6"
             @copy="copyWord"
           />
         </div>

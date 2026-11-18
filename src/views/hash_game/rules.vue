@@ -91,23 +91,21 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import rulesImage from '@/static/img/1125.png'
-import { HASH_GAME_PERIOD_OPTIONS } from './index'
 
 const props = withDefaults(defineProps<{ variant?: 'h5' | 'pc' }>(), {
   variant: 'h5'
 })
 const visible = defineModel<boolean>('visible', { default: false })
-const selectedPeriod = defineModel<number>('selectedPeriod', {
-  default: HASH_GAME_PERIOD_OPTIONS[0]
-})
+// 规则页展示固定的说明分类，实际可玩的游戏由接口列表决定。
+const periodOptions = [6, 15, 30, 45] as const
+const selectedPeriod = ref<number>(periodOptions[0])
 
 const { t } = useI18n()
-const periodOptions = HASH_GAME_PERIOD_OPTIONS
 
 const close = () => {
   if (props.variant === 'pc') visible.value = false

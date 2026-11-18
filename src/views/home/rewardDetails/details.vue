@@ -104,7 +104,7 @@ import ArrowRight2Icon from '@/static/svg/arrow_right2.svg?component'
 import shareTriggerImg from '@/static/svg/coin/share.svg?url'
 import placeholderImg from '@/static/img/home/errimg1.png'
 import ellipseBg from '@/views/home/img/Ellipse.png'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { getCurrencyImageByCode } from '@/utils/locale'
 import { formatUsDateTime12h } from '@/utils/date'
 import { deriveBetAmountFromWinAndMultiplier } from '@/stores/deriveBetAmount'
 import { navigateToName } from '@/utils/router'
@@ -139,7 +139,7 @@ const parseFromHistory = (): RewardDetailsRawItem | null => {
 
 const row = computed(() => props.rewardData ?? parseFromHistory())
 
-const currencyIconUrl = computed(() => getCurrencyIconByCode(row.value?.currency))
+const currencyIconUrl = computed(() => getCurrencyImageByCode(row.value?.currency))
 
 const betTimeDisplay = computed(() => {
   const item = row.value
