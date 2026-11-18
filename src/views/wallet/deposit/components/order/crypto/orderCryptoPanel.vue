@@ -1,27 +1,29 @@
 <template>
   <!-- 订单弹窗主容器 -->
   <div
-    class="relative w-full max-w-[480px] flex flex-col sm:rounded-xl modal-container bg-bg-2 font-['Inter']"
+    class="relative w-full max-w-[480px] flex flex-col sm:rounded-lg modal-container bg-bg-1 font-['Inter']"
     :style="panelInlineStyle"
     :class="panelHeightClass"
   >
     <!-- 订单弹窗头部 -->
-    <div class="relative shrink-0 flex items-center justify-between h-14">
-      <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-semibold text-text-1">
+    <div
+      class="relative shrink-0 flex items-center justify-between h-[49px] sm:h-14 sm:rounded-t-lg bg-bg-2"
+    >
+      <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-bold text-text-1">
         {{ t('deposit.deposit_order') }}
       </h2>
       <!-- 移动端头部操作区 -->
       <template v-if="isMobile">
         <!-- 返回按钮 -->
         <button
-          class="absolute left-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
+          class="absolute left-3.5 top-1/2 -translate-y-1/2 w-[33px] h-[33px] bg-opacity-6 rounded-lg flex items-center justify-center z-10"
           @click="handleClose"
         >
           <LeftArrowIcon class="w-4 h-4" />
         </button>
         <!-- 订单详情按钮 -->
         <button
-          class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
+          class="absolute right-3.5 top-1/2 -translate-y-1/2 w-[33px] h-[33px] bg-opacity-6 rounded-lg flex items-center justify-center z-10"
           @click="openDepositOrder"
         >
           <DetailsIcon class="w-4 h-4" />
@@ -31,7 +33,7 @@
       <template v-else>
         <!-- 关闭按钮 -->
         <button
-          class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md sm:flex items-center justify-center z-10"
+          class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded flex items-center justify-center z-10"
           @click="handleClose"
         >
           <CloseIcon class="h-2.5 w-2.5 text-text-1" />
@@ -42,31 +44,40 @@
     <!-- 待上传凭证状态区域 -->
     <div
       v-show="isUploadNotStarted"
-      class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[628px]"
+      class="w-full flex-1 min-h-0 relative flex flex-col gap-[10px] sm:gap-6 bg-bg-1 p-[14px] sm:p-4 sm:rounded-b-lg overflow-y-auto sm:max-h-[628px]"
     >
       <!-- 待支付卡片 -->
-      <div class="w-full bg-bg-2 rounded-lg relative">
+      <div class="w-full shrink-0 bg-bg-2 rounded-lg relative pb-[14px] sm:pb-3">
         <!-- 倒计时区域 -->
-        <div class="relative flex items-center p-3 border-b border-input-1">
+        <div
+          class="relative flex items-center px-[14px] py-[10px] sm:h-[60px] sm:px-5 sm:py-0 border-b border-opacity-10 sm:border-opacity-6"
+        >
           <!-- 倒计时图标 -->
-          <div class="w-5 mr-4">
-            <CryptoOrderCountdownIcon class="w-5 h-5" />
+          <div class="w-[18px] sm:w-5 mr-[10px] sm:mr-4 shrink-0">
+            <CryptoOrderCountdownIcon class="w-[18px] h-[18px] sm:w-5 sm:h-5" />
           </div>
           <!-- 跑马灯提示 -->
           <div class="flex items-center justify-between w-full overflow-hidden whitespace-nowrap">
-            <p class="marquee">{{ t('deposit.order_pay_and_upload_tips') }}</p>
+            <p class="marquee text-sm sm:text-base font-medium sm:font-bold text-text-1">
+              {{ t('deposit.order_pay_and_upload_tips') }}
+            </p>
           </div>
           <!-- 倒计时展示 -->
           <div class="mx-1 bg-bg-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <CountDown :key="countdownKey" :time="countdownTime">
               <template #default="timeData">
-                <span class="led-font text-secondary-7 text-[33px] font-bold leading-none">{{
-                  timeData.minutes
-                }}</span>
-                <span class="led-font text-secondary-7 text-[33px] font-bold leading-none">:</span>
-                <span class="led-font text-secondary-7 text-[33px] font-bold leading-none">{{
-                  formatCountdownUnit(timeData.seconds)
-                }}</span>
+                <span
+                  class="led-font text-secondary-7 text-[22px] sm:text-[28px] font-bold leading-none"
+                  >{{ timeData.minutes }}</span
+                >
+                <span
+                  class="led-font text-secondary-7 text-[22px] sm:text-[28px] font-bold leading-none"
+                  >:</span
+                >
+                <span
+                  class="led-font text-secondary-7 text-[22px] sm:text-[28px] font-bold leading-none"
+                  >{{ formatCountdownUnit(timeData.seconds) }}</span
+                >
               </template>
             </CountDown>
           </div>
@@ -76,116 +87,146 @@
           :amount="cryptoDisplayAmount"
           :method="cryptoDisplayMethod"
           :rate="cryptoRate"
+          wrapper-class="pt-5 sm:pt-3"
         />
         <!-- 二维码区域 -->
-        <div class="w-full mt-6 flex justify-center">
-          <canvas class="w-[153px]" ref="canvasRef" />
+        <div class="w-full mt-[13px] sm:mt-6 flex justify-center">
+          <canvas class="!w-[102px] !h-[102px] sm:!w-[153px] sm:!h-[153px]" ref="canvasRef" />
         </div>
         <!-- 网络名称区域 -->
         <div
           v-if="cryptoNetwork"
-          class="w-full mt-4 px-3 text-theme-primary text-sm sm:text-2xl font-bold leading-none capitalize text-center"
+          class="w-full mt-[10px] sm:mt-[15px] px-[14px] sm:px-4 text-theme-primary text-sm sm:text-2xl font-bold leading-normal capitalize text-center"
         >
           {{ cryptoNetwork }}
         </div>
         <!-- 地址展示区域 -->
-        <div v-if="cryptoAddress" class="w-full p-3 mt-1.5">
+        <div v-if="cryptoAddress" class="w-full mt-5 sm:mt-3 px-[14px] sm:px-4">
           <div
-            class="w-full p-4 rounded-lg bg-bg-4 text-text-1 text-sm sm:text-base break-all leading-normal"
+            class="w-full px-[14px] py-[10px] sm:p-4 rounded-lg bg-bg-4 text-text-1 text-sm sm:text-base break-all leading-normal"
           >
             {{ cryptoAddress }}
           </div>
         </div>
         <!-- 地址操作按钮区域 -->
-        <div v-if="cryptoAddress" class="p-3 grid grid-cols-2 gap-2">
+        <div
+          v-if="cryptoAddress"
+          class="mt-[10px] sm:mt-3 px-[14px] sm:px-4 grid grid-cols-2 gap-[10px] sm:gap-2"
+        >
           <!-- 保存二维码按钮 -->
           <button
             @click.stop="doCapture"
-            class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
+            class="h-10 sm:h-[52px] px-2 bg-theme-3 rounded-lg sm:rounded-xl text-theme-primary text-sm sm:text-base font-bold leading-tight flex items-center justify-center"
           >
             {{ t('deposit.order_save_qr_code') }}
           </button>
           <!-- 复制地址按钮 -->
           <button
             @click.stop="copyWord(cryptoAddress)"
-            class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
+            class="h-10 sm:h-[52px] px-2 bg-theme-3 rounded-lg sm:rounded-xl text-theme-primary text-sm sm:text-base font-bold leading-tight flex items-center justify-center"
           >
             {{ t('deposit.order_copy_address') }}
           </button>
         </div>
       </div>
       <!-- 订单摘要区域 -->
-      <div class="mt-6 px-5 py-3 w-full bg-bg-2 rounded-lg relative grid gap-2">
-        <orderDetailRows :rows="cryptoSummaryRows" @copy="copyWord" />
+      <div
+        class="w-full shrink-0 p-[14px] sm:px-5 sm:py-3 bg-bg-2 rounded-lg relative grid gap-5 sm:gap-3"
+      >
+        <orderDetailRows
+          :rows="cryptoSummaryRows"
+          row-class="min-h-5 flex items-center justify-between gap-4"
+          value-class="max-w-[150px] sm:max-w-[322px] text-sm sm:text-base flex items-center justify-end text-right break-all text-text-1"
+          icon-class="h-5 w-5 mr-[5px] sm:mr-1"
+          copy-class="ml-[5px] sm:ml-2 shrink-0"
+          copy-icon-class="w-4 h-4 sm:w-6 sm:h-6"
+          @copy="copyWord"
+        />
       </div>
-      <!-- 上传凭证按钮 -->
-      <button
-        class="mt-6 w-full h-10 sm:h-12 rounded-lg text-text-4 text-sm font-bold flex items-center justify-center btn-primary"
-        @click.stop="openUploadPop"
-      >
-        {{ t('deposit.upload_proof') }}
-      </button>
-      <!-- 取消订单按钮 -->
-      <button
-        class="mt-3 w-full h-10 sm:h-12 rounded-lg bg-opacity-10 text-text-2 text-sm font-bold flex items-center justify-center"
-        @click.stop="doCancelOrder"
-      >
-        {{ t('deposit.cancel_order_title') }}
-      </button>
-      <!-- 底部提示文案 -->
-      <div class="mt-3 w-full text-center text-secondary-7 text-xs sm:text-sm leading-normal">
-        {{ t('deposit.deposit_order_bottom_tips') }}
+      <!-- 底部操作区域 -->
+      <div class="w-full shrink-0 mt-[10px] sm:mt-0 flex flex-col gap-[14px] sm:gap-3">
+        <!-- 上传凭证按钮 -->
+        <button
+          class="w-full h-10 sm:h-12 rounded-lg text-text-4 text-sm font-bold flex items-center justify-center btn-primary"
+          @click.stop="openUploadPop"
+        >
+          {{ t('deposit.upload_proof') }}
+        </button>
+        <!-- 取消订单按钮 -->
+        <button
+          class="w-full h-10 sm:h-12 rounded-lg bg-opacity-10 text-text-2 text-sm font-normal sm:font-bold flex items-center justify-center"
+          @click.stop="doCancelOrder"
+        >
+          {{ t('deposit.cancel_order_title') }}
+        </button>
+        <!-- 底部提示文案 -->
+        <div class="w-full text-center text-secondary-7 text-xs sm:text-[13px] leading-normal">
+          {{ t('deposit.deposit_order_bottom_tips') }}
+        </div>
       </div>
     </div>
 
     <!-- 上传中状态区域 -->
     <div
       v-show="isUploadInProgress"
-      class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[623px]"
+      class="w-full flex-1 min-h-0 relative flex flex-col gap-5 sm:gap-6 bg-bg-1 p-[14px] sm:p-4 sm:rounded-b-lg overflow-y-auto sm:max-h-[623px]"
     >
-      <!-- 上传中提示卡片 -->
-      <div class="w-full bg-bg-2 rounded-tl-lg rounded-tr-lg">
+      <!-- 上传中卡片 -->
+      <div class="w-full shrink-0 flex flex-col bg-bg-2 rounded-lg pb-[14px] sm:pb-4">
         <!-- 上传中头部 -->
-        <div class="flex items-center p-3 border-b border-input-1">
+        <div
+          class="flex items-center px-[14px] py-[10px] sm:h-[57px] sm:px-5 sm:py-0 border-b border-opacity-10 sm:border-opacity-6"
+        >
           <!-- 上传中图标 -->
-          <div class="w-5 mr-4">
-            <CryptoOrderVerifyingIcon class="w-5 h-5" />
+          <div class="w-[18px] sm:w-5 mr-[10px] sm:mr-4 shrink-0">
+            <CryptoOrderVerifyingIcon class="w-[18px] h-[18px] sm:w-5 sm:h-5" />
           </div>
           <!-- 上传中提示文案 -->
           <div class="w-full overflow-hidden whitespace-nowrap">
-            <p class="marquee">
+            <p class="marquee text-sm sm:text-base font-medium sm:font-bold text-text-1">
               {{ t('deposit.upload_proof_verifying_marquee') }}
             </p>
           </div>
         </div>
-      </div>
-      <!-- 上传中详情卡片 -->
-      <div class="bg-bg-2 p-4 rounded-bl-lg rounded-br-lg">
         <orderAmountHeader
           :amount="cryptoDisplayAmount"
           :method="cryptoDisplayMethod"
           :rate="cryptoRate"
-          wrapper-class="pt-2"
+          wrapper-class="pt-5 sm:pt-6 [&_p+p]:text-text-1"
         />
         <!-- 上传中订单摘要 -->
-        <div class="mt-4 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid gap-2">
-          <orderDetailRows :rows="cryptoSummaryRows" @copy="copyWord" />
+        <div
+          class="mt-5 sm:mt-[18px] mx-[14px] sm:mx-4 p-[14px] sm:px-5 sm:py-4 bg-bg-4 rounded-lg relative grid gap-5 sm:gap-3"
+        >
+          <orderDetailRows
+            :rows="cryptoSummaryRows"
+            row-class="min-h-5 flex items-center justify-between gap-4"
+            value-class="max-w-[150px] sm:max-w-[322px] text-sm sm:text-base flex items-center justify-end text-right break-all text-text-1"
+            icon-class="h-5 w-5 mr-[5px] sm:mr-1"
+            copy-class="ml-[5px] sm:ml-2 shrink-0"
+            copy-icon-class="w-4 h-4 sm:w-6 sm:h-6"
+            @copy="copyWord"
+          />
         </div>
       </div>
       <!-- 重新上传按钮 -->
       <button
-        class="mt-6 w-full h-10 sm:h-12 rounded-lg text-text-4 text-sm font-bold flex items-center justify-center btn-primary"
+        class="w-full shrink-0 h-10 sm:h-12 rounded-lg text-text-4 text-sm font-bold flex items-center justify-center btn-primary"
         @click.stop="openUploadPop"
       >
         {{ t('deposit.upload_proof_again_btn_text') }}
       </button>
       <!-- 上传中提醒区域 -->
-      <div class="bg-bg-2 mt-6 p-5 rounded-lg text-sm sm:text-base font-normal sm:leading-normal">
-        <p class="text-[color:#F44854]">{{ t('deposit.upload_proof_reminder_title') }}</p>
-        <p class="text-text-3 mt-4">
+      <div
+        class="w-full shrink-0 flex flex-col gap-[10px] sm:gap-4 bg-bg-2 p-[14px] sm:p-5 rounded-lg sm:rounded-xl font-normal leading-normal"
+      >
+        <p class="text-sm sm:text-base font-medium sm:font-normal text-[color:#F44854]">
+          {{ t('deposit.upload_proof_reminder_title') }}
+        </p>
+        <p class="text-xs sm:text-base text-text-3">
           {{ t('deposit.upload_proof_reminder_line_1') }}
         </p>
-        <p class="text-text-3 mt-4">
+        <p class="text-xs sm:text-base text-text-3">
           {{ t('deposit.upload_proof_reminder_line_2') }}
         </p>
       </div>
@@ -194,14 +235,26 @@
     <!-- 上传完成状态区域 -->
     <div
       v-show="isUploadCompleted"
-      class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[506px]"
+      class="w-full flex-1 min-h-0 relative bg-bg-1 p-[14px] sm:p-4 sm:rounded-b-lg overflow-y-auto sm:max-h-[506px]"
     >
       <!-- 上传完成结果卡片 -->
-      <div class="w-full bg-bg-2 rounded-lg pt-10 px-4 pb-8">
+      <div
+        class="w-full flex flex-col gap-[30px] sm:gap-6 bg-bg-2 rounded-lg px-[14px] sm:px-4 pt-[30px] pb-[14px] sm:pt-10 sm:pb-8"
+      >
         <orderStatusResult :status="orderStatus" :title="completedStatusTitle" />
         <!-- 完成态订单详情 -->
-        <div class="mt-6 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid gap-3">
-          <orderDetailRows :rows="cryptoCompletedRows" @copy="copyWord" />
+        <div
+          class="w-full p-[14px] sm:px-5 sm:py-4 bg-bg-4 rounded-lg relative grid gap-5 sm:gap-4"
+        >
+          <orderDetailRows
+            :rows="cryptoCompletedRows"
+            row-class="min-h-5 flex items-center justify-between gap-4"
+            value-class="max-w-[150px] sm:max-w-[240px] text-sm sm:text-base flex items-center justify-end text-right break-all text-text-1"
+            icon-class="h-5 w-5 mr-[5px] sm:mr-1"
+            copy-class="ml-[5px] sm:ml-2 shrink-0"
+            copy-icon-class="w-4 h-4 sm:w-6 sm:h-6"
+            @copy="copyWord"
+          />
         </div>
       </div>
     </div>

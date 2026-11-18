@@ -11,38 +11,48 @@
         >
           <!-- 取消订单弹窗主体 -->
           <div
-            class="relative p-5 sm:px-4 sm:py-6 w-[300px] sm:w-[368px] h-[327px] sm:h-[352px] rounded-xl modal-container bg-bg-1 dark:bg-bg-2 font-['Inter']"
+            class="relative p-5 sm:px-4 sm:py-6 w-[300px] sm:w-[368px] rounded-[14px] sm:rounded-3xl modal-container bg-bg-1 font-['Inter']"
           >
             <!-- 标题栏 -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between pr-9 sm:pr-8">
               <h2 class="text-text-1 text-xl font-bold leading-normal capitalize font-['Inter']">
                 {{ t('deposit.cancel_order_title') }}
               </h2>
             </div>
             <!-- 关闭按钮 -->
             <button
-              class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center"
+              class="absolute top-[14px] right-[14px] sm:top-6 sm:right-4 w-7 h-7 sm:w-6 sm:h-6 bg-opacity-10 rounded-md sm:rounded flex items-center justify-center"
               @click="handleClose"
             >
               <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
             <!-- 取消提示文案 -->
-            <p class="mt-2.5 text-sm font-normal leading-normal text-text-2 font-['Inter']">
+            <p
+              class="mt-[15px] sm:mt-4 text-sm font-normal leading-normal text-text-2 font-['Inter']"
+            >
               {{ t('deposit.cancel_order_tips') }}
             </p>
             <!-- 取消原因列表容器 -->
-            <div class="mt-4 h-[156px] w-full p-2.5 sm:p-3 rounded-lg bg-bg-6 overflow-y-auto">
+            <div
+              class="mt-[15px] sm:mt-4 w-full flex flex-col gap-[5px] sm:gap-0 p-[10px] sm:p-3 rounded-lg bg-bg-6 sm:border sm:border-opacity-6"
+            >
               <!-- 取消原因选项 -->
               <div
-                class="flex items-center justify-between p-2.5 sm:p-3 text-text-1 text-[14px] rounded-lg"
+                class="flex items-center justify-between gap-2 min-h-[42px] px-[10px] sm:min-h-0 sm:p-3 text-text-1 text-[14px] leading-normal rounded-lg cursor-pointer"
                 v-for="item in cancellations"
                 :key="item.id"
                 @click.stop="selectlation(item)"
                 :class="[cancellationId === item.id ? 'bg-theme-3' : '']"
               >
                 <p class="font-['Inter']">{{ item.text }}</p>
-                <RadioCheckedIcon class="w-4 h-4" v-show="cancellationId === item.id" />
-                <RadioUncheckedIcon class="w-4 h-4" v-show="cancellationId !== item.id" />
+                <RadioCheckedIcon
+                  class="w-5 h-5 sm:w-4 sm:h-4 shrink-0"
+                  v-show="cancellationId === item.id"
+                />
+                <RadioUncheckedIcon
+                  class="w-5 h-5 sm:w-4 sm:h-4 shrink-0"
+                  v-show="cancellationId !== item.id"
+                />
               </div>
             </div>
             <!-- 确认取消按钮 -->

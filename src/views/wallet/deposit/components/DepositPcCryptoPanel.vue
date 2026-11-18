@@ -5,47 +5,27 @@
   <div v-else-if="payMethods.length > 0" class="w-full rounded-xl bg-bg-2 p-6 font-['Inter']">
     <!-- 数字币充值面板主体内容 -->
     <div class="flex flex-col gap-6">
-      <!-- 币种展示区域 -->
-      <div class="flex items-center justify-between gap-2">
-        <!-- 币种按钮列表 -->
-        <div class="mr-auto flex max-w-[744px] min-w-0 flex-1 items-center justify-start gap-4">
-          <!-- 单个币种按钮 -->
-          <button
-            v-for="coin in visibleCoins"
-            :key="coin.code"
-            type="button"
-            class="flex h-9 items-center rounded-full border bg-bg-3 px-6 text-sm leading-[17px] transition-colors"
-            :class="
-              coin.code === coinCode
-                ? 'border-[3px] border-theme-primary bg-theme-primary text-text-4'
-                : 'border-transparent text-text-1 lg:hover:bg-theme-3'
-            "
-            @click.stop="selectCoinCode(coin.code)"
-          >
-            <img class="mr-2 h-5 w-5 shrink-0" :src="coin.icon" :alt="coin.name" />
-            <span class="font-bold">{{ coin.name }}</span>
-          </button>
-        </div>
-
-        <!-- 更多币种入口按钮 -->
+      <!-- 币种按钮列表 -->
+      <div
+        ref="coinListRef"
+        class="flex items-center gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
+        @wheel.prevent="handleCoinWheel"
+      >
+        <!-- 单个币种按钮 -->
         <button
+          v-for="coin in coinOptions"
+          :key="coin.columnCode"
           type="button"
-          class="flex h-9 shrink-0 items-center rounded-full border bg-bg-3 px-4 text-sm leading-[17px] transition-colors"
+          class="flex h-9 shrink-0 items-center rounded-full px-6 text-sm font-bold leading-[17px] transition-colors"
           :class="
-            coinMoreShow
-              ? 'border-theme-primary text-theme-primary'
-              : 'border-transparent text-text-2 lg:hover:bg-theme-3'
+            coin.columnCode === selectedMethod?.columnCode
+              ? 'bg-theme-primary text-text-4'
+              : 'bg-bg-3 text-text-3 lg:hover:bg-theme-3'
           "
-          @click.stop="openCoinMorePanel"
+          @click.stop="selectMethod(coin.columnCode)"
         >
-          <!-- 更多币种图标组合 -->
-          <div class="mr-2 flex h-5 w-[37px] items-center">
-            <img class="relative z-30 h-5 w-5 shrink-0" :src="DOGEIcon" alt="DOGE" />
-            <img class="relative z-20 -ml-3 h-5 w-5 shrink-0" :src="TRXIcon" alt="TRX" />
-            <img class="relative z-10 -ml-3 h-5 w-5 shrink-0" :src="BNBIcon" alt="BNB" />
-          </div>
-          <span class="font-bold">{{ t('deposit.deposit_more') }}</span>
-          <ChevronRightSmallIcon class="ml-1 h-2 w-2 shrink-0 text-icon-2" />
+          <img v-if="coin.icon" class="mr-2 h-5 w-5 shrink-0" :src="coin.icon" :alt="coin.label" />
+          <span class="whitespace-nowrap">{{ coin.label }}</span>
         </button>
       </div>
 
@@ -63,7 +43,7 @@
             v-for="channel in channelOptions"
             :key="channel.rowId"
             type="button"
-            class="flex h-9 items-center justify-center rounded-lg border px-3 text-center text-sm leading-5 transition-colors"
+            class="relative flex h-9 items-center justify-center rounded-lg border px-3 text-center text-sm leading-5 transition-colors"
             :class="[
               'text-text-1 lg:hover:bg-theme-3',
               selectedSubColumn?.rowId === channel.rowId
@@ -75,6 +55,11 @@
             }"
             @click="selectChannel(channel.rowId)"
           >
+            <DepositBonusBadge
+              v-if="channel.bonusRatio > 0"
+              :ratio="channel.bonusRatio"
+              class="-top-[5px] right-[6px]"
+            />
             {{ channel.label }}
           </button>
         </div>
@@ -106,7 +91,13 @@
           <div
             class="flex h-12 items-center rounded-lg border border-opacity-10 bg-input-3 px-3 transition-colors focus-within:border-theme-primary"
           >
-            <DepositTokenIcon class="mr-2 h-6 w-6 shrink-0 text-theme-primary" />
+            <img
+              v-if="selectedCoinIcon"
+              class="mr-2 h-6 w-6 shrink-0 rounded-full"
+              :src="selectedCoinIcon"
+              alt=""
+            />
+            <DepositTokenIcon v-else class="mr-2 h-6 w-6 shrink-0 text-theme-primary" />
 
             <!-- 充值金额输入框 -->
             <input
@@ -134,9 +125,9 @@
         <!-- 流水选项与提示区域 -->
         <div class="flex flex-col gap-2">
           <!-- 流水选项切换容器 -->
-          <div class="border-b border-opacity-10 pb-2">
+          <div v-if="showWageringSection" class="border-b border-opacity-10 pb-2">
             <!-- 流水选项列表 -->
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-6 pt-[10px]">
               <!-- 区块：template -->
               <template v-for="(item, index) in wageringOptions" :key="item.rowId">
                 <!-- 单个流水选项按钮 -->
@@ -151,6 +142,11 @@
                   @click="selectWagering(item.rowId)"
                 >
                   {{ item.label }}
+                  <DepositBonusBadge
+                    v-if="item.ratio > 0"
+                    :ratio="item.ratio"
+                    class="-right-4 -top-[9px]"
+                  />
                   <span
                     v-if="selectedDiscountItem?.rowId === item.rowId"
                     class="absolute inset-x-0 -bottom-[9px] h-px bg-theme-primary"
@@ -191,14 +187,6 @@
             >
               <!-- 预设金额文本 -->
               <span>{{ preset }}</span>
-              <!-- 预设金额优惠角标 -->
-              <span
-                v-if="presetDiscountRatioMap[preset] !== undefined"
-                class="pointer-events-none absolute -right-1 -top-1 min-w-8 bg-center bg-[length:100%_100%] bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4 text-white whitespace-nowrap"
-                :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
-              >
-                {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
-              </span>
             </button>
           </div>
 
@@ -263,20 +251,11 @@
 
 <script setup lang="ts">
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import BNBIcon from '@/static/img/crypto/BNB.png'
-import BTCIcon from '@/static/img/crypto/BTC.png'
-import DOGEIcon from '@/static/img/crypto/DOGE.png'
-import ETHIcon from '@/static/img/crypto/ETH.png'
 import groupIcon from '@/static/img/crypto/groupIcons.png'
-import TRXIcon from '@/static/img/crypto/TRX.png'
-import USDCIcon from '@/static/img/crypto/USDC.png'
-import USDTIcon from '@/static/img/crypto/USDT.png'
-import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
-import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
 import DepositTokenIcon from '@/static/svg/deposit/deposit-token.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
@@ -285,6 +264,7 @@ import { useI18n } from 'vue-i18n'
 import { useDepositCryptoFlow } from '../shared'
 import DepositPcCryptoSkeleton from './DepositPcCryptoSkeleton.vue'
 import depositCryptoOrderPop from './order/crypto/depositCryptoOrderPop.vue'
+import DepositBonusBadge from './shared/DepositBonusBadge.vue'
 import { usePresetGrid } from './shared/usePresetGrid'
 
 const { t } = useI18n()
@@ -297,50 +277,27 @@ const emit = defineEmits<{
   hidden: [value: boolean]
 }>()
 
-const visibleCoins = [
-  {
-    name: 'USDT',
-    code: 'USDT',
-    icon: USDTIcon
-  },
-  {
-    name: 'ETH',
-    code: 'ETH',
-    icon: ETHIcon
-  },
-  {
-    name: 'BTC',
-    code: 'BTC',
-    icon: BTCIcon
-  },
-  {
-    name: 'USDC',
-    code: 'USDC',
-    icon: USDCIcon
-  }
-] as const
-
 const {
   isInitialLoading,
   payMethods,
+  selectedMethod,
   selectedSubColumn,
   selectedDiscountItem,
   amount,
-  coinCode,
-  coinMoreShow,
   orderPopShow,
   orderInfo,
   presetAmounts,
+  coinOptions,
+  selectedCoinIcon,
   channelOptions,
   wageringOptions,
   showChannelSection,
+  showWageringSection,
   isManualAmountAllowed,
-  presetDiscountRatioMap,
   amountPlaceholder,
   isDepositDisabled,
   showUnavailableToast,
-  selectCoinCode,
-  openCoinMorePanel,
+  selectMethod,
   clearAmount,
   selectChannel,
   selectWagering,
@@ -359,6 +316,16 @@ const {
 
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded } = usePresetGrid(presetsRef)
+
+const coinListRef = ref<HTMLDivElement | null>(null)
+
+// 鼠标竖向滚轮转为币种列表横向滚动
+const handleCoinWheel = (event: WheelEvent) => {
+  coinListRef.value?.scrollBy({
+    left: event.deltaY !== 0 ? event.deltaY : event.deltaX,
+    behavior: 'auto'
+  })
+}
 </script>
 
 <style scoped lang="scss">

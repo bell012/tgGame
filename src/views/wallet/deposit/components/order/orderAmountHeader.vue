@@ -1,18 +1,18 @@
 <template>
   <!-- 金额头部主容器 -->
   <div
-    class="mx-auto flex w-full max-w-[352px] flex-col items-center gap-1 font-['Inter']"
+    class="mx-auto flex w-full max-w-[352px] flex-col items-center gap-[5px] sm:gap-1 font-['Inter']"
     :class="wrapperClass"
   >
     <!-- 金额与币种区域 -->
     <div class="relative flex w-full items-baseline justify-center gap-[3px] isolate">
       <p
-        class="shrink-0 whitespace-nowrap text-center text-[26.67px] font-bold leading-[32.33px] text-text-1 capitalize"
+        class="shrink-0 whitespace-nowrap text-center text-[27px] sm:text-[40px] font-bold leading-normal text-text-1 capitalize"
       >
         {{ amount }}
       </p>
       <p
-        class="shrink-0 whitespace-nowrap text-center text-[14px] font-bold leading-[17px] text-text-1 capitalize"
+        class="shrink-0 whitespace-nowrap text-center text-[14px] sm:text-[18px] font-bold leading-normal text-text-2 sm:text-text-1 capitalize"
       >
         {{ method }}
       </p>
@@ -20,7 +20,7 @@
     <!-- 汇率展示区域 -->
     <div
       v-if="displayRate"
-      class="order-1 h-[35px] w-full grow-0 shrink-0 text-center font-['Inter'] text-[16px] font-normal leading-[19px] text-text-3"
+      class="order-1 w-full grow-0 shrink-0 text-center font-['Inter'] text-[12px] sm:text-[16px] font-normal leading-normal text-text-2"
     >
       {{ displayRate }}
     </div>
