@@ -31,6 +31,13 @@ export type HashWsChatData =
       result: unknown
     }
   | { id: number; gameCode: string; kind: 'BIG_WIN'; time: number }
+  | {
+      id: number
+      gameCode: string
+      kind: 'BET' | 'STREAK'
+      time: number
+      [key: string]: unknown
+    }
 
 /** 页面接收的 WS 事件；在线和投注统计只更新页面状态。 */
 export type HashWsEvent =
@@ -45,6 +52,55 @@ export type HashWsEvent =
         stats: Record<string, Record<string, { participantCount: number; totalAmount: number }>>
       }
     }
+
+/** 默认业务通道的区块结果；具体 periods 由各游戏自行解释。 */
+export type HashWsBlockResultEvent = {
+  code: number
+  type: 'BLOCK_RESULT'
+  data: {
+    blockNum?: number
+    blockHash?: string
+    periods?: Record<string, unknown>
+    [key: string]: unknown
+  }
+}
+
+/** 默认业务通道的链游结算通知；当前只保留接线入口，不直接改变结算逻辑。 */
+export type HashWsSettlementEvent = {
+  code: number
+  type: 'CHAIN_LOTTERY_SETTLE'
+  data: Record<string, unknown>
+}
+
+/** 默认业务通道的长龙通知；当前只保留接线入口。 */
+export type HashWsStreakEvent = {
+  code: number
+  type: 'CHAIN_LOTTERY_STREAK'
+  data: Record<string, unknown>
+}
+
+/** 默认业务通道的本人私有聊天室消息；当前只保留接线入口。 */
+export type HashWsPrivateChatEvent = {
+  code: number
+  type: 'CHAT_PRIVATE'
+  data: Record<string, unknown>
+}
+
+/** 默认业务通道事件集合。 */
+export type HashWsDefaultEvent =
+  HashWsBlockResultEvent | HashWsSettlementEvent | HashWsStreakEvent | HashWsPrivateChatEvent
+
+/** 服务端协议错误。 */
+export type HashWsErrorEvent = {
+  code: number
+  type: 'ERROR'
+  message?: string
+  data?: unknown
+}
+
+/** 两条哈希游戏 WS 通道可能收到的服务端事件。 */
+export type HashWsServerEvent =
+  HashWsEvent | HashWsDefaultEvent | HashWsErrorEvent | { type: 'PONG' }
 
 /** 本地投注请求和成功响应；只有确认成功才生成聊天消息。 */
 export type HashPlaceBetRequest = {

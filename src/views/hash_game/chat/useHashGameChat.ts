@@ -294,8 +294,8 @@ export function useHashGameChat(gameCode: Ref<string>) {
     settlementQueue.value = settlementQueue.value.slice(1)
   }
 
-  /** 开启一个新的模拟房间；后续可替换为独占 WS 的连接入口。 */
-  function openMockRoom(code: string) {
+  /** 开启一个新的游戏房间，并清理仅属于上一游戏的页面会话状态。 */
+  function openRoom(code: string) {
     const generation = ++roomGeneration
     feed.clear()
     placedOrders.clear()
@@ -307,7 +307,19 @@ export function useHashGameChat(gameCode: Ref<string>) {
     void loadHistory(code, generation)
   }
 
-  /** 离开游戏时结束当前模拟会话，真实连接接入后在此关闭 WS。 */
+  /** 聊天 WS 重连后重新加载当前房间的可展示消息，保留本地已成功下注的结算追踪。 */
+  function reloadChatMessages() {
+    const code = gameCode.value
+    if (!activeRoom.value || activeRoom.value !== `CHAT:${code}`) return
+
+    const generation = ++roomGeneration
+    feed.clear()
+    onlineCount.value = 0
+    betStats.value = {}
+    void loadHistory(code, generation)
+  }
+
+  /** 离开游戏时结束当前页面会话。 */
   function closeRoom() {
     roomGeneration += 1
     activeRoom.value = ''
@@ -317,7 +329,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     settlementQueue.value = []
   }
 
-  watch(gameCode, openMockRoom, { immediate: true })
+  watch(gameCode, openRoom, { immediate: true })
   onScopeDispose(closeRoom)
 
   return {
@@ -333,6 +345,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     acceptHttpDraw,
     acceptRecentBets,
     dismissSettlement,
+    reloadChatMessages,
     closeRoom
   }
 }

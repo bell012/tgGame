@@ -10,8 +10,9 @@ import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
-import { createMockPlaceBetResponse, createMockRoomEvents } from './chat/mock'
+import { createMockPlaceBetResponse } from './chat/mock'
 import { useHashGameChat } from './chat/useHashGameChat'
+import { useHashGameSockets } from './chat/useHashGameSockets'
 import { createMockChatConfig, type HashChatConfig } from './chat/config'
 import type { HashBetOption, HashPlaceBetRequest } from './chat/types'
 import backgroundMusicUrl from '@/static/mp3/hash/beijing.mp3?url'
@@ -143,6 +144,19 @@ const createHashGamePageState = () => {
   // 演示环境暂按周期组装房间编码，真实 gameCode 以后由游戏配置提供。
   const gameCode = computed(() => `CL${selectedPeriod.value}`)
   const chat = useHashGameChat(gameCode)
+  /** 优先使用请求层保存的认证令牌，缺失时回退用户资料中的交易令牌。 */
+  const hashGameSocketToken = computed(() => {
+    const storedToken =
+      typeof window === 'undefined'
+        ? ''
+        : String(window.localStorage.getItem('xAuthToken') ?? '').trim()
+    return storedToken || String(userStore.userInfo?.tradeToken ?? '').trim()
+  })
+  // Hash 游戏同时建立默认业务通道和公共聊天室通道；连接重建时由聊天室重新加载当前可展示消息。
+  useHashGameSockets(gameCode, hashGameSocketToken, {
+    onChatEvent: chat.acceptWsEvent,
+    onChatReconnect: chat.reloadChatMessages
+  })
   /** 当前阶段用本地模拟发送回包更新聊天室。 */
   const sendMockChatMessage = chat.acceptMockChatMessage
   const chatConfig = ref<HashChatConfig | null>(null)
@@ -198,15 +212,6 @@ const createHashGamePageState = () => {
     negativeCount: 22,
     streak: 5
   })
-  // 模拟每次进入房间后收到的 WS 数据；切换房间时重新从空列表开始。
-  watch(
-    gameCode,
-    code => {
-      for (const event of createMockRoomEvents(code)) chat.acceptWsEvent(event)
-    },
-    { immediate: true }
-  )
-
   // 在线人数由 WS 的 CHAIN_LOTTERY_ONLINE 更新。
   watch(
     chat.onlineCount,

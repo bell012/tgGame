@@ -74,6 +74,8 @@ export default defineConfig(() => {
   const apiProxy: ProxyOptions = {
     target: 'https://web.txtvv9.top/v1',
     changeOrigin: true,
+    // Hash 游戏的两条 WebSocket 连接在开发环境同样通过 /api 转发。
+    ws: true,
     rewrite: path => path.replace(/^\/api/, '')
   }
   return {
