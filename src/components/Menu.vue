@@ -1217,9 +1217,32 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   }
 
   .sidebar-menu-pc-expanded .launch-card {
+    position: relative;
     width: 208px;
     max-width: 208px;
     flex-shrink: 0;
+  }
+
+  .sidebar-menu-pc-expanded .launch-card:hover:not(.launch-card-active) {
+    background: transparent;
+  }
+
+  .sidebar-menu-pc-expanded .launch-card:hover:not(.launch-card-active)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 4px;
+    bottom: 0;
+    left: 4px;
+    z-index: 0;
+    border-radius: 8px;
+    background: var(--color-hover-1);
+    pointer-events: none;
+  }
+
+  .sidebar-menu-pc-expanded .launch-card > * {
+    position: relative;
+    z-index: 1;
   }
 }
 
