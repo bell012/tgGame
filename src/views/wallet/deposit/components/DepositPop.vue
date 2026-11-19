@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import type { DepositTabType } from '../shared'
+import { DEPOSIT_TABS, type DepositTabType } from '../shared'
 import depositPanel from './DepositPanel.vue'
 import depositPopShell from './shared/depositPopShell.vue'
 
@@ -28,7 +28,7 @@ const emit = defineEmits<{
   'update:modelValue': [val: boolean]
 }>()
 
-const activeTab = ref<DepositTabType>('Fiat')
+const activeTab = ref<DepositTabType>(DEPOSIT_TABS[0])
 const hiddenPop = ref<boolean>(false)
 
 // 处理关闭事件

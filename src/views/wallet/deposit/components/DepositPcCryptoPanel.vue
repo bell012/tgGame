@@ -173,8 +173,11 @@
           <!-- 预设金额按钮网格 -->
           <div
             ref="presetsRef"
-            class="grid grid-cols-6 gap-2 p-2 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
-            :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'"
+            class="grid grid-cols-6 gap-2 p-2 bg-bg-4 transition-all duration-300"
+            :class="[
+              canExpand ? 'rounded-tl-lg rounded-tr-lg' : 'rounded-lg',
+              expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'
+            ]"
           >
             <!-- 单个预设金额按钮 -->
             <button
@@ -191,7 +194,7 @@
           </div>
 
           <!-- 展开与收起控制区域 -->
-          <div class="mt-2 flex justify-center">
+          <div v-if="canExpand" class="mt-2 flex justify-center">
             <!-- 展开与收起按钮 -->
             <button
               type="button"
@@ -315,7 +318,7 @@ const {
 })
 
 const presetsRef = ref<HTMLDivElement | null>(null)
-const { expanded } = usePresetGrid(presetsRef)
+const { expanded, canExpand } = usePresetGrid(presetsRef, presetAmounts, 6)
 
 const coinListRef = ref<HTMLDivElement | null>(null)
 
