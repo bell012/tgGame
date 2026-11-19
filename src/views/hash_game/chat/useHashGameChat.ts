@@ -113,6 +113,11 @@ export function useHashGameChat(gameCode: Ref<string>) {
     }
 
     const data = event.data
+    // 部分聊天室推送不带 id；用消息本身构造稳定键，避免全部落到 "undefined"。
+    const messageId =
+      data.id !== undefined && data.id !== null
+        ? `ws:${data.gameCode}:${data.id}`
+        : `ws:${data.gameCode}:${data.kind}:${data.time}:${data.kind === 'USER' ? `${data.nickname}:${data.content}` : data.kind === 'BET' ? String(data.content ?? '') : data.kind === 'JOIN' || data.kind === 'LEAVE' ? data.nickname : ''}`
     if (data.kind === 'DRAW') {
       feed.append({
         id: `draw:${data.gameCode}:${data.anchorBlockNum}`,
@@ -126,7 +131,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     if (data.kind === 'BET') {
       if (typeof data.content === 'string')
         feed.append({
-          id: `ws:${data.gameCode}:${data.id}`,
+          id: messageId,
           kind: 'BROADCAST_BET',
           source: 'ws',
           time: data.time,
@@ -136,7 +141,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     }
     if (data.kind === 'USER') {
       feed.append({
-        id: `ws:${data.gameCode}:${data.id}`,
+        id: messageId,
         kind: 'USER',
         source: 'ws',
         time: data.time,
@@ -146,7 +151,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
       })
     } else if (data.kind === 'JOIN' || data.kind === 'LEAVE') {
       feed.append({
-        id: `ws:${data.gameCode}:${data.id}`,
+        id: messageId,
         kind: data.kind,
         source: 'ws',
         time: data.time,
