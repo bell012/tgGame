@@ -46,12 +46,14 @@ export type ApiResponsePayload = {
 export type ApiResponseToastOptions = {
   showSuccessToast?: boolean
   showErrorToast?: boolean
+  preserveResponseMessage?: boolean
 }
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
     showSuccessToast?: boolean
     showErrorToast?: boolean
+    preserveResponseMessage?: boolean
     skipRequestEncryption?: boolean
     directEncryptedPayload?: boolean
   }
@@ -346,7 +348,9 @@ function finalizeApiResponse<T extends ApiResponsePayload>(
   payload: T,
   options?: ApiResponseToastOptions
 ) {
-  const normalizedPayload = normalizeApiResponseMessage(payload)
+  const normalizedPayload = options?.preserveResponseMessage
+    ? payload
+    : normalizeApiResponseMessage(payload)
   const authExpiredError = rejectAuthExpiredResponse(normalizedPayload, options)
 
   if (authExpiredError) {

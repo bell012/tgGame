@@ -589,6 +589,7 @@
     <HashChatComposerPopup
       :visible="chatComposerOpen"
       :config="chatConfig"
+      :busy="chatSendBusy"
       @close="chatComposerOpen = false"
       @send="sendChatMessage"
       @bet="chatComposerOpen = false"
@@ -614,54 +615,60 @@
 
 <script setup lang="ts">
 import { sendHashChatMessage } from '@/api/modules/hash-game-chat'
-import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
-import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
-import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
-import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
-import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
-import RecordsIcon from '@/static/svg/sift.svg?component'
-import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
-import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
-import ArrowDownIcon from '@/static/svg/hash_game/jiantou_xia.svg?component'
-import CollapseIcon from '@/static/svg/hash_game/jiantou_shang2.svg?component'
-import RefreshIcon from '@/static/svg/hash_game/shauxin.svg?component'
-import ResultArrowIcon from '@/static/svg/hash_game/zhixiang.svg?component'
-import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
-import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
-import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
-import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
-import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
-import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
-import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
-import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
-import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
-import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
-import chipImage from '@/static/svg/hash_game/chouma.svg?url'
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
+import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
+import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
+import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
+import chipImage from '@/static/svg/hash_game/chouma.svg?url'
+import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
+import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
+import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
+import CollapseIcon from '@/static/svg/hash_game/jiantou_shang2.svg?component'
+import ArrowDownIcon from '@/static/svg/hash_game/jiantou_xia.svg?component'
+import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
+import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
+import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
+import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
+import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
+import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
+import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
+import RefreshIcon from '@/static/svg/hash_game/shauxin.svg?component'
+import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
+import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
+import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
+import ResultArrowIcon from '@/static/svg/hash_game/zhixiang.svg?component'
+import RecordsIcon from '@/static/svg/sift.svg?component'
 import { navigateTo } from '@/utils/router'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
-import HashGameChat from './components/HashGameChat.vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import BetChip from './components/BetChip.vue'
+import ChipEditorPopup from './components/ChipEditorPopup.vue'
+import { formatChipAmount } from './components/chipMotion'
+import FlyingChip from './components/FlyingChip.vue'
 import HashChatComposerPopup from './components/HashChatComposerPopup.vue'
+import HashGameChat from './components/HashGameChat.vue'
 import HashSettlementPopup from './components/HashSettlementPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
-import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
-import ChipEditorPopup from './components/ChipEditorPopup.vue'
-import FlyingChip from './components/FlyingChip.vue'
-import BetChip from './components/BetChip.vue'
-import { formatChipAmount } from './components/chipMotion'
+import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import { useBetChipAnimation } from './components/useBetChipAnimation'
 import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
 const chatComposerOpen = ref(false)
-const sendChatMessage = (content: string, custom: boolean) => {
+const chatSendBusy = ref(false)
+const sendChatMessage = async (content: string, custom: boolean) => {
   const gameCode = props.page.selectedHashGameCode.value
-  if (!gameCode) return
-  void sendHashChatMessage({ gameCode, content, custom }).catch(() => {
+  if (!gameCode || chatSendBusy.value) return
+  chatSendBusy.value = true
+  try {
+    await sendHashChatMessage({ gameCode, content, custom })
+  } catch {
     // 请求层负责展示发送失败提示。
-  })
+  } finally {
+    chatSendBusy.value = false
+  }
 }
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
 

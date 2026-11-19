@@ -40,6 +40,7 @@
                   type="button"
                   class="grid size-[40px] place-items-center rounded-[8px] bg-transparent p-0 text-[30px] leading-none active:bg-bg-2"
                   :aria-label="emoji"
+                  :disabled="busy"
                   @mousedown.prevent
                   @click="selectEmoji(emoji)"
                 >
@@ -57,6 +58,7 @@
                 :key="phrase"
                 type="button"
                 class="rounded-full bg-bg-2 px-[10px] py-[8px] text-left text-[12px] text-text-2"
+                :disabled="busy"
                 @click="selectPhrase(phrase)"
               >
                 {{ phrase }}
@@ -81,7 +83,7 @@
             <button
               type="button"
               class="h-[42px] rounded-[10px] bg-theme-primary px-[18px] text-[16px] font-bold text-text-4"
-              :disabled="!draft.trim()"
+              :disabled="busy || !draft.trim()"
               @click="send"
             >
               Send
@@ -129,6 +131,7 @@ import type { HashChatConfig } from '../chat/config'
 const props = defineProps<{
   visible: boolean
   config: HashChatConfig | null
+  busy: boolean
 }>()
 
 const emit = defineEmits<{
@@ -142,6 +145,7 @@ const draft = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 
 function selectEmoji(emoji: string) {
+  if (props.busy) return
   if (props.config?.unlocked) {
     void appendEmoji(emoji)
     return
@@ -151,6 +155,7 @@ function selectEmoji(emoji: string) {
 }
 
 function selectPhrase(phrase: string) {
+  if (props.busy) return
   if (props.config?.unlocked) {
     appendText(phrase)
     return
@@ -251,6 +256,7 @@ function appendText(value: string) {
 
 /** 提交非空内容并收起输入弹窗。 */
 function send() {
+  if (props.busy) return
   const text = draft.value.trim()
 
   if (!props.config?.unlocked || !text) return

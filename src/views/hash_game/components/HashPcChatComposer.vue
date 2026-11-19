@@ -106,6 +106,7 @@ import lockIcon from '@/static/svg/hash_game/chat/lock.svg?url'
 import phrasesIcon from '@/static/svg/hash_game/liaotian.svg?url'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { globalShowToast } from '@/utils/toast'
 import EmojiPanel from '@/views/chat/chat-public/components/emoji-panel.vue'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { HashChatConfig } from '../chat/config'
@@ -117,14 +118,17 @@ const root = ref<HTMLElement | null>(null)
 const draft = ref('')
 const panel = ref<'emoji' | 'phrases' | null>(null)
 const busy = ref(false)
-let lastSentAt = 0
 let roomGeneration = 0
 function toggle(value: 'emoji' | 'phrases') {
   panel.value = panel.value === value ? null : value
 }
 async function send(content: string, custom: boolean) {
   content = content.trim()
-  if (!content || !props.gameCode || busy.value || Date.now() - lastSentAt < 1000) return false
+  if (!content || !props.gameCode) return false
+  if (busy.value) {
+    globalShowToast({ message: '发言过于频繁', type: 'fail' })
+    return false
+  }
   if (!user.userInfo?.tradeToken && !user.acctInfo?.memberId) {
     auth.openLoginModal()
     return false
@@ -132,10 +136,9 @@ async function send(content: string, custom: boolean) {
   if (custom && (!props.config?.unlocked || content.length > props.config.lengthLimit)) return false
   const generation = roomGeneration
   busy.value = true
-  lastSentAt = Date.now()
   try {
     const response = await sendHashChatMessage({ gameCode: props.gameCode, content, custom })
-    return generation === roomGeneration && response.success
+    return generation === roomGeneration && response.code === 'C2' && response.success
   } catch {
     return false
   } finally {
