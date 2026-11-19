@@ -72,7 +72,7 @@
               "
             >
               <div
-                v-for="(record, index) in records"
+                v-for="(record, index) in rows"
                 :key="record.id"
                 :class="[
                   variant === 'pc'
@@ -89,11 +89,7 @@
                       : 'flex items-center justify-center gap-[7px]'
                   "
                 >
-                  <b
-                    :class="
-                      record.outcome === 'evenSmall' ? 'text-secondary-2' : 'text-secondary-11'
-                    "
-                  >
+                  <b :class="record.digit !== '—' ? record.resultColor : undefined">
                     {{ record.digit }}
                   </b>
                   <span
@@ -106,31 +102,32 @@
                   />
                   <span :class="variant === 'pc' ? 'flex gap-[4px]' : 'flex gap-[3px]'">
                     <i
-                      v-for="mark in resultMarks(record.outcome)"
+                      v-for="mark in record.outcomes"
                       :key="mark"
                       :class="[
                         variant === 'pc'
                           ? 'flex size-[20px] items-center justify-center rounded-full not-italic text-[14px] text-[#fff]'
                           : 'flex size-[18px] items-center justify-center rounded-full not-italic text-[11px] text-[#fff]',
-                        record.outcome === 'evenSmall' ? 'bg-[#E63533]' : 'bg-[#22A89A]'
+                        ['even', 'small', 'lose', 'player'].includes(mark)
+                          ? 'bg-[#E63533]'
+                          : 'bg-[#22A89A]'
                       ]"
                       >{{ t(`hashGame.${mark}Mark`) }}</i
                     >
                   </span>
                 </span>
                 <span class="min-w-0 truncate px-[2px]">
-                  {{ record.blockHash.slice(0, -1)
-                  }}<b
-                    :class="
-                      Number(record.blockHash.slice(-1)) % 2 === 0
-                        ? 'text-secondary-2'
-                        : 'text-secondary-11'
-                    "
-                    >{{ record.blockHash.slice(-1) }}</b
+                  <span
+                    v-for="(part, partIndex) in record.hashParts"
+                    :key="partIndex"
+                    :class="part.highlighted ? record.resultColor : undefined"
+                    >{{ part.text }}</span
                   >
                 </span>
-                <button
-                  type="button"
+                <a
+                  :href="record.explorerUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   :class="
                     variant === 'pc'
                       ? 'justify-self-end text-[16px] text-theme-primary text-right'
@@ -138,7 +135,7 @@
                   "
                 >
                   {{ t('hashGame.verify') }}
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -150,16 +147,53 @@
 
 <script setup lang="ts">
 import CloseIcon from '@/static/svg/close.svg?component'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { HashGameHistoryRecord } from '../index'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{ visible: boolean; records: HashGameHistoryRecord[]; variant?: 'h5' | 'pc' }>(),
   { variant: 'h5' }
 )
 const emit = defineEmits<{ 'update:visible': [visible: boolean] }>()
 const { t } = useI18n()
 
-const resultMarks = (outcome: HashGameHistoryRecord['outcome']) =>
-  outcome === 'evenSmall' ? ['even', 'small'] : ['odd', 'big']
+/** 只高亮该玩法用于判定结果的哈希字符，其余字符沿用表格文字颜色。 */
+const getHashParts = (record: HashGameHistoryRecord) => {
+  const hash = record.blockHash
+  if (!hash) return [{ text: '—', highlighted: false }]
+
+  let start = Math.max(0, hash.length - (record.hashHighlight === 'sum' ? 10 : 9))
+  let highlighted: number[] = []
+  if (record.hashHighlight === 'sum') {
+    highlighted = Array.from(hash.matchAll(/[0-9]/g), match => match.index ?? 0).slice(-3)
+    start = Math.min(start, highlighted[0] ?? start)
+  } else if (record.hashHighlight === 'lucky') {
+    highlighted = [hash.length - 2, hash.length - 1]
+  } else {
+    const lastDigit = hash.search(/[0-9](?=[^0-9]*$)/)
+    if (lastDigit >= start && hash[lastDigit] === record.digit) highlighted = [lastDigit]
+  }
+
+  return [
+    { text: '…', highlighted: false },
+    ...Array.from(hash.slice(start), (text, index) => ({
+      text,
+      highlighted: highlighted.includes(start + index)
+    }))
+  ]
+}
+
+const rows = computed(() =>
+  props.records.map(record => {
+    const outcome = record.colorOutcome
+    const resultColor =
+      outcome && ['odd', 'big', 'win'].includes(outcome)
+        ? 'text-secondary-11'
+        : outcome && ['even', 'small', 'lose'].includes(outcome)
+          ? 'text-secondary-2'
+          : undefined
+    return { ...record, resultColor, hashParts: getHashParts(record) }
+  })
+)
 </script>

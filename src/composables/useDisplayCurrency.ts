@@ -3,10 +3,14 @@ import { storeToRefs } from 'pinia'
 import { useLocaleStore } from '@/stores/locale'
 import { SITE_CONFIG_STORAGE_KEY, useSiteConfigStore, type SiteConfig } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
-import { getCurrentCurrency, getFormattedBalance, formatBalance } from '@/utils/locale'
+import {
+  getCurrencyImageByCode,
+  getCurrentCurrency,
+  getFormattedBalance,
+  formatBalance
+} from '@/utils/locale'
 import { getBalanceByCurrency, type BalanceCarrier } from '@/utils/balance'
 import {
-  getCurrencyIconByCode,
   getCurrencySelectOptionsFromCache,
   type CurrencyOptionItem
 } from '@/components/common/currency-selector/currency-select-options'
@@ -107,7 +111,7 @@ export const useDisplayCurrency = () => {
       {
         value: currentCode,
         label: currentCode,
-        icon: getCurrencyIconByCode(currentCode)
+        icon: getCurrencyImageByCode(currentCode)
       },
       ...baseOptions
     ]
@@ -149,7 +153,7 @@ export const useDisplayCurrency = () => {
   const currentBalanceText = computed(() =>
     getFormattedBalance(currentBalance.value, currentCurrencyCode.value, 2)
   )
-  const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentCurrencyCode.value))
+  const currentCurrencyIcon = computed(() => getCurrencyImageByCode(currentCurrencyCode.value))
 
   const currencyOptions = computed<DisplayCurrencyOption[]>(() => {
     const codesFromConfig = readDisplayCurrencyCodesFromSiteConfig(config.value)
@@ -168,7 +172,7 @@ export const useDisplayCurrency = () => {
 
       return {
         code,
-        icon: getCurrencyIconByCode(code),
+        icon: getCurrencyImageByCode(code),
         balanceText: getFormattedBalance(balance, code, 2)
       }
     })

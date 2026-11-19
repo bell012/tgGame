@@ -28,10 +28,10 @@
           <span
             class="flex items-center gap-[3px] whitespace-nowrap text-base font-bold text-text-1"
           >
-            {{ selectedPeriod }}s hash <ArrowDownIcon class="w-[10px] h-[10px] text-icon-1" />
+            {{ hashGameName }} <ArrowDownIcon class="w-[10px] h-[10px] text-icon-1" />
           </span>
           <span class="flex items-center gap-[2px] whitespace-nowrap text-[11px] text-text-2">
-            <i class="size-1.5 rounded-full bg-theme-primary" />{{ mockRound.online }}
+            <i class="size-1.5 rounded-full bg-theme-primary" />{{ round.online }}
             {{ t('hashGame.online') }}
           </span>
         </button>
@@ -129,19 +129,19 @@
               </h2>
               <div class="grid grid-cols-2 gap-[5px] gap-y-[8px]">
                 <button
-                  v-for="seconds in periodOptions"
-                  :key="seconds"
+                  v-for="game in hashGames"
+                  :key="game.gameCode"
                   type="button"
                   class="rounded-[8px] px-[12px] py-[9px] text-[13px]"
                   :class="
-                    selectedPeriod === seconds
+                    game.gameCode === selectedHashGameCode
                       ? 'bg-theme-3 text-theme-primary'
                       : 'bg-bg-3 text-text-2'
                   "
-                  :aria-pressed="selectedPeriod === seconds"
-                  @click="selectPeriod(seconds)"
+                  :aria-pressed="game.gameCode === selectedHashGameCode"
+                  @click="selectHashGame(game.gameCode)"
                 >
-                  {{ seconds }}s Hash
+                  {{ game.gameName }}
                 </button>
               </div>
               <button
@@ -170,18 +170,22 @@
               <span class="text-[13px] text-text-1">{{ t('hashGame.lastBlock') }}</span>
               <div class="flex items-center justify-center gap-[4px]">
                 <span class="text-[18px] font-bold text-text-1 border-b border-text-1">{{
-                  mockRound.lastBlock
+                  round.lastBlock
                 }}</span>
-                <span
+                <a
+                  v-if="round.explorerUrl"
+                  :href="round.explorerUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   class="rounded-[3px] px-[4px] py-[1px] bg-theme-primary text-[10px] text-text-4"
-                  >{{ t('hashGame.verify') }}</span
+                  >{{ t('hashGame.verify') }}</a
                 >
               </div>
             </div>
 
             <div
               class="relative flex w-[42px] h-[42px] mx-[5px] shrink-0"
-              :aria-label="String(mockRound.countdown)"
+              :aria-label="String(round.countdown)"
             >
               <svg
                 viewBox="0 0 48 48"
@@ -199,14 +203,14 @@
               </svg>
               <strong
                 class="absolute inset-0 grid place-items-center text-[20px] font-[600] text-text-1"
-                >{{ mockRound.countdown }}</strong
+                >{{ round.countdown }}</strong
               >
             </div>
 
             <div class="flex min-w-0 flex-1 flex-col items-center gap-[6px] text-secondary-10">
               <span class="text-[13px]">{{ t('hashGame.currentBlock') }}</span>
               <span class="text-[18px] font-[700] border-b border-secondary-10">{{
-                mockRound.currentBlock
+                round.currentBlock
               }}</span>
             </div>
           </div>
@@ -218,11 +222,12 @@
               >{{ hashParts.before }}<span class="text-theme-primary">{{ hashParts.digit }}</span
               >{{ hashParts.after }}</span
             >
-            <span class="whitespace-nowrap text-[13px] text-text-2 mx-[10px]"
-              >(<span class="text-theme-primary"
-                >{{ t('hashGame.odd') }}、{{ t('hashGame.big') }}</span
-              >)</span
+            <span
+              v-if="roundOutcome"
+              class="mx-[10px] whitespace-nowrap text-[13px] text-theme-primary"
             >
+              ({{ roundOutcome }})
+            </span>
             <button
               type="button"
               class="flex items-center whitespace-nowrap text-[13px] text-theme-primary"
@@ -251,72 +256,71 @@
             <div v-if="roadmapVisible" id="hash-game-roadmap">
               <div class="mb-[10px] flex min-w-0 items-center gap-[10px]">
                 <div
+                  v-if="roadmapModes.length > 1"
                   class="flex shrink-0 rounded-[12px] bg-bg-1 p-[2px]"
                   role="group"
                   :aria-label="t('hashGame.history')"
                 >
                   <button
+                    v-for="mode in roadmapModes"
+                    :key="mode"
                     type="button"
                     class="whitespace-nowrap rounded-[12px] px-[10px] py-[5px] text-[11px]"
-                    :class="roadmapMode === 'size' ? 'bg-bg-2 text-text-1' : 'text-text-3'"
-                    :aria-pressed="roadmapMode === 'size'"
-                    @click="roadmapMode = 'size'"
+                    :class="roadmapMode === mode ? 'bg-bg-2 text-text-1' : 'text-text-3'"
+                    :aria-pressed="roadmapMode === mode"
+                    @click="roadmapMode = mode"
                   >
-                    {{ t('hashGame.bigSmall') }}
-                  </button>
-                  <button
-                    type="button"
-                    class="whitespace-nowrap rounded-[12px] px-[10px] py-[5px] text-[11px]"
-                    :class="roadmapMode === 'parity' ? 'bg-bg-2 text-text-1' : 'text-text-3'"
-                    :aria-pressed="roadmapMode === 'parity'"
-                    @click="roadmapMode = 'parity'"
-                  >
-                    {{ t('hashGame.oddEven') }}
+                    {{ t(mode === 'size' ? 'hashGame.bigSmall' : 'hashGame.oddEven') }}
                   </button>
                 </div>
                 <div class="flex items-center gap-[7px]">
-                  <span class="flex items-center gap-[3px] text-[12px] font-[500] text-text-2">
+                  <span
+                    v-for="entry in roadmap.counts"
+                    :key="entry.key"
+                    class="flex items-center gap-[3px] text-[12px] font-[500] text-text-2"
+                  >
                     <i
-                      class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#22A89A] text-[11px] not-italic text-text-1"
-                      >{{ resultLabels.positive }}</i
-                    >{{ mockRound.positiveCount }}
-                  </span>
-                  <span class="flex items-center gap-[3px] text-[12px] font-[500] text-text-2">
-                    <i
-                      class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#E63533] text-[11px] not-italic text-text-1"
-                      >{{ resultLabels.negative }}</i
-                    >{{ mockRound.negativeCount }}
+                      class="flex size-[18px] shrink-0 items-center justify-center rounded-full text-[11px] not-italic text-text-1"
+                      :style="{ background: entry.color }"
+                      >{{ entry.label }}</i>{{ entry.count }}
                   </span>
                 </div>
                 <span class="ml-auto min-w-0 whitespace-nowrap text-[11px] text-secondary-8">{{
-                  resultLabels.streak
+                  roadmap.streak
                 }}</span>
               </div>
               <div
+                v-if="roadmap.columns.length"
+                ref="roadmapViewport"
                 class="overflow-x-auto overscroll-x-contain"
                 tabindex="0"
                 :aria-label="t('hashGame.history')"
               >
                 <div class="flex w-max gap-[5px]">
                   <div
-                    v-for="(column, columnIndex) in resultColumns"
+                    v-for="(column, columnIndex) in roadmap.columns"
                     :key="columnIndex"
                     class="grid gap-[5px]"
                   >
                     <span
-                      v-for="cell in column"
-                      :key="cell.id"
+                      v-for="(cell, rowIndex) in column"
+                      :key="rowIndex"
                       class="flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] text-text-1"
-                      :class="[
-                        cell.positive ? 'bg-[#22A89A]' : 'bg-[#E63533]',
-                        { invisible: !cell.filled }
-                      ]"
-                      :aria-hidden="!cell.filled"
-                      >{{ cell.positive ? resultLabels.positive : resultLabels.negative }}</span
+                      :class="{ invisible: !cell }"
+                      :style="{ background: cell?.color }"
+                      :aria-hidden="!cell"
+                      >{{ cell?.label }}</span
                     >
                   </div>
                 </div>
               </div>
+              <p
+                v-else-if="roadmap.emptyMessage"
+                class="py-2 text-center text-xs text-text-3"
+                role="status"
+              >
+                {{ roadmap.emptyMessage }}
+              </p>
             </div>
           </Transition>
         </section>
@@ -330,7 +334,7 @@
               >{{ t('hashGame.fairness') }}</span
             >
           </div>
-          <div class="grid grid-cols-4 gap-x-[5px]">
+          <div class="grid gap-x-[5px]" :style="betGridStyle">
             <div
               v-for="option in betOptions"
               :key="option.key"
@@ -347,34 +351,25 @@
               <span
                 v-if="hasBetAmount(option.key)"
                 class="absolute right-[5px] z-[2] flex items-center justify-center rounded-[12px] bg-theme-primary px-[8px] text-[12px] font-[500] text-text-4"
-                :style="{ top: `calc(48% - 10px - ${getChipStackOffset(option.key)}px)` }"
+                :style="{ top: `calc(48% - 14px - ${getChipStackOffset(option.key)}px)` }"
               >
                 {{ betTotals[option.key] }}
               </span>
               <span
-                class="pointer-events-none absolute right-[5px] top-[48%] z-[1] size-[25px] [perspective:420px] [transform-style:preserve-3d]"
+                class="pointer-events-none absolute right-[5px] top-[48%] z-[1] size-[25px] text-[9px]"
+                data-chip-stack
                 aria-hidden="true"
               >
                 <span
                   v-for="(chip, layer) in landedChips[option.key] || []"
                   :key="chip.id"
-                  class="absolute inset-0 grid place-items-center [transform-style:preserve-3d] drop-shadow-[0_2px_1px_rgb(0_0_0_/_45%)] after:absolute after:inset-[1px_1px_-2px] after:z-0 after:rounded-full after:bg-[repeating-linear-gradient(180deg,#cbd2cf_0px,#cbd2cf_1px,#59615f_1px,#59615f_2px,#252b2a_2px,#252b2a_3px)] after:shadow-[0_2px_0_rgb(0_0_0_/_30%)] after:[transform:translateZ(-2px)]"
+                  class="absolute inset-0"
                   :style="{
-                    '--chip-stack-offset': `${-layer * chipStackStep}px`,
-                    transform: `translateY(var(--chip-stack-offset, 0px)) rotateZ(-12deg) rotateX(24deg)`,
-                    transformStyle: 'preserve-3d',
-                    zIndex: maxVisibleChips - layer
+                    transform: `translateY(${-layer * chipStackStep}px)`,
+                    zIndex: layer + 1
                   }"
                 >
-                  <img
-                    :src="chipImage"
-                    alt=""
-                    class="absolute inset-0 z-[1] size-full rounded-full"
-                    :style="{ filter: chip.filter }"
-                  />
-                  <b class="relative z-[2] text-[8px] font-bold leading-none text-white">{{
-                    formatChipAmount(chip.amount)
-                  }}</b>
+                  <BetChip :amount="chip.amount" :filter="chip.filter" />
                 </span>
               </span>
               <span class="flex items-baseline justify-center gap-[5px] whitespace-nowrap">
@@ -384,7 +379,7 @@
                 <span
                   class="text-xs font-[500]"
                   :class="hasBetAmount(option.key) ? 'text-text-1' : 'text-text-2'"
-                  >{{ mockBet.odds }}</span
+                  >{{ option.odds }}</span
                 >
               </span>
               <span class="mt-[4px] flex items-center justify-center gap-[3px]">
@@ -394,7 +389,7 @@
                   ><PeopleIcon
                     class="w-[10px] h-[10px]"
                     :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
-                  />{{ currentBetStats[option.key].people }}</span
+                  />{{ option.people }}</span
                 >
                 <span
                   class="flex items-center gap-0.5 whitespace-nowrap text-[10px]"
@@ -402,13 +397,13 @@
                   ><AmountIcon
                     class="w-[10px] h-[10px]"
                     :class="hasBetAmount(option.key) ? 'text-icon-1' : 'text-icon-2'"
-                  />{{ currentBetStats[option.key].amount }}</span
+                  />{{ option.amount }}</span
                 >
               </span>
               <span class="mt-[7px] block h-[3px] overflow-hidden rounded bg-bg-9">
                 <i
                   class="block h-full rounded-[inherit] bg-[var(--bet-color)]"
-                  :style="{ width: currentBetStats[option.key].progress + '%' }"
+                  :style="{ width: option.progress + '%' }"
                 />
               </span>
             </div>
@@ -453,7 +448,7 @@
         <div class="flex items-center gap-[20px]">
           <button
             type="button"
-            class="relative flex size-[34px] shrink-0 items-center justify-center rounded-full bg-bg-3"
+            class="relative flex size-[35px] shrink-0 items-center justify-center rounded-full bg-bg-3 brightness-[0.7]"
             :aria-label="t('hashGame.editChips')"
             @click="openChipEditor"
           >
@@ -464,7 +459,8 @@
             >
           </button>
           <div
-            class="flex h-[45px] min-w-0 flex-1 items-center gap-[13px] overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            ref="chipTrackRef"
+            class="scrollbar-none flex h-[45px] min-w-0 flex-1 select-none items-center gap-[13px] overflow-x-auto overscroll-x-contain"
             role="group"
             :aria-label="t('hashGame.editChips')"
           >
@@ -472,9 +468,9 @@
               v-for="chip in chipOptions"
               :key="chip.id"
               :data-chip-value="chip.value"
+              data-scroll-center
               type="button"
-              class="relative shrink-0 transition-[width,height] duration-[180ms] motion-reduce:transition-none"
-              :class="selectedChip === chip.value ? 'h-[45px] w-[45px]' : 'h-[35px] w-[35px]'"
+              class="relative size-[35px] shrink-0 brightness-[0.7] transition-[filter] duration-[180ms] aria-pressed:brightness-100 motion-reduce:transition-none"
               :aria-pressed="selectedChip === chip.value"
               @click="chooseChip(chip.value)"
             >
@@ -486,15 +482,7 @@
               />
               <span
                 class="absolute inset-x-0 bottom-[3px] top-0 grid place-items-center text-text-1 font-[700]"
-                :class="
-                  chip.value >= 1000
-                    ? selectedChip === chip.value
-                      ? 'text-[13px]'
-                      : 'text-[10px]'
-                    : selectedChip === chip.value
-                      ? 'text-[24px]'
-                      : 'text-[16px]'
-                "
+                :class="chip.value >= 1000 ? 'text-[10px]' : 'text-[16px]'"
                 >{{ formatChipAmount(chip.value) }}</span
               >
             </button>
@@ -525,11 +513,10 @@
             >
               <RepeatIcon class="size-[14px] text-icon-2" />{{ t('hashGame.repeat') }}
             </button>
-            <!-- 模拟成功回包的投注确认按钮。 -->
             <button
               type="button"
-              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
-              @click="confirmMockBet"
+              disabled
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 disabled:opacity-50"
             >
               <ConfirmIcon class="size-[14px] text-icon-2" />{{ t('hashGame.confirmBet') }}
             </button>
@@ -583,7 +570,7 @@
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :balance-text="currentBalanceText"
-      :period="selectedPeriod"
+      :game-name="hashGameName"
       :bets="recentBets"
       :summary="recentBetSummary"
     />
@@ -592,7 +579,11 @@
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" />
 
     <!-- 按币种逐条展示结算提示。 -->
-    <HashSettlementPopup :notice="currentSettlement" @dismiss="dismissSettlement" />
+    <HashSettlementPopup
+      :notice="currentSettlement"
+      :sound-enabled="musicEnabled"
+      @dismiss="dismissSettlement"
+    />
 
     <!-- H5 聊天输入弹窗由 ChatIcon 打开。 -->
     <HashChatComposerPopup
@@ -645,7 +636,8 @@ import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
 import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
 import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
 import { navigateTo } from '@/utils/router'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import HashGameChat from './components/HashGameChat.vue'
@@ -656,6 +648,8 @@ import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import FlyingChip from './components/FlyingChip.vue'
+import BetChip from './components/BetChip.vue'
+import { formatChipAmount } from './components/chipMotion'
 import { useBetChipAnimation } from './components/useBetChipAnimation'
 import type { HashGamePageState } from './index'
 
@@ -681,8 +675,10 @@ const {
   currentBalanceText,
   currencyOptions,
   isRefreshingBalance,
-  selectedPeriod,
-  periodOptions,
+  hashGames,
+  hashGameName,
+  selectedHashGameCode,
+  selectHashGame,
   periodsOpen,
   periodTriggerRef,
   periodMenuRef,
@@ -701,20 +697,19 @@ const {
   refreshChatConfig,
   sendMockChatMessage,
   currentSettlement,
-  currentBetStats,
-  confirmMockBet,
   dismissSettlement,
-  mockRound,
+  round,
+  roundOutcome,
   hashParts,
-  mockBet,
   recentBets,
   historyPopupOpen,
   historyRecords,
   recentBetSummary,
-  resultLabels,
-  resultColumns,
+  roadmap,
+  roadmapModes,
+  loadRecentBets,
+  betGridStyle,
   betOptions,
-  selectPeriod,
   refreshBalance,
   openCurrencyPopup,
   selectCurrency,
@@ -735,7 +730,6 @@ const {
 } = props.page
 
 const {
-  maxVisibleChips,
   chipStackStep,
   betTotals,
   landedChips,
@@ -750,16 +744,14 @@ const {
   chipOptions,
   soundEnabled: musicEnabled,
   slotSize: 25,
-  rightInset: 5,
   selectBet
 })
 
-/** 将筹码面额缩写为适合按钮展示的文字。 */
-const formatChipAmount = (amount: number) => {
-  if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
-  if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
-  return String(amount)
-}
+const { viewport: chipTrackRef } = useHorizontalScroll({ centerOnClick: true })
+const { viewport: roadmapViewport } = useHorizontalScroll({
+  endOnChange: () => roadmap.value.columns
+})
+watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
 
 const handleCancelSelection = () => {
   clearBetChips()
@@ -809,6 +801,7 @@ const handleEscape = () => {
 const openRecentBets = () => {
   recordsMenuOpen.value = false
   recentBetsOpen.value = true
+  void loadRecentBets()
 }
 
 /** 跳转至游戏规则页并收起记录菜单。 */

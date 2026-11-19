@@ -80,10 +80,18 @@
                 <strong
                   :class="[
                     variant === 'pc' ? 'text-[24px] font-bold' : 'text-[25px] font-bold',
-                    bet.profitLoss >= 0 ? 'text-theme-primary' : 'text-secondary-2'
+                    bet.profitLoss == null
+                      ? ''
+                      : bet.profitLoss >= 0
+                        ? 'text-theme-primary'
+                        : 'text-secondary-2'
                   ]"
                 >
-                  {{ bet.profitLoss >= 0 ? '+' : '-' }}{{ Math.abs(bet.profitLoss).toFixed(2) }}
+                  {{
+                    bet.profitLoss == null
+                      ? '—'
+                      : `${bet.profitLoss >= 0 ? '+' : '-'}${Math.abs(bet.profitLoss).toFixed(2)}`
+                  }}
                 </strong>
                 <span
                   :class="
@@ -92,7 +100,11 @@
                       : 'mt-[5px] text-[14px] text-text-1'
                   "
                 >
-                  {{ t(bet.profitLoss >= 0 ? 'betHistory.win' : 'betHistory.loss') }}
+                  {{
+                    bet.profitLoss == null
+                      ? '—'
+                      : t(bet.profitLoss >= 0 ? 'betHistory.win' : 'betHistory.loss')
+                  }}
                 </span>
               </div>
 
@@ -116,7 +128,7 @@
                     :class="
                       variant === 'pc' ? 'text-[16px] text-text-1' : 'text-[14px] text-text-1'
                     "
-                    >{{ bet.period }}s hash</span
+                    >{{ bet.gameName }}</span
                   >
                 </div>
                 <div class="flex items-center justify-between gap-3">
@@ -226,8 +238,13 @@
                         : 'flex min-w-0 items-center gap-1 text-[14px]'
                     "
                   >
-                    <span class="min-w-0 truncate text-text-1">{{ bet.blockHash }}</span>
-                    <button type="button" class="shrink-0" @click="copyValue(bet.blockHash)">
+                    <span class="min-w-0 truncate text-text-1">{{ bet.blockHash || '—' }}</span>
+                    <button
+                      v-if="bet.blockHash"
+                      type="button"
+                      class="shrink-0"
+                      @click="copyValue(bet.blockHash)"
+                    >
                       <CopyIcon
                         :class="
                           variant === 'pc' ? 'size-[22px] text-icon-2' : 'size-[16px] text-icon-2'

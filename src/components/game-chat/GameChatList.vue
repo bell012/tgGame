@@ -11,7 +11,7 @@
       @scroll="updateScrollPosition"
     >
       <!-- 游戏决定每种消息的具体渲染方式。 -->
-      <div class="flex min-h-full flex-col items-start justify-end gap-1.5 pt-6">
+      <div class="flex min-h-full flex-col items-start gap-1.5 pt-6">
         <template v-for="message in messages" :key="message.id">
           <slot :message="message" />
         </template>

@@ -2,6 +2,7 @@ import { computed, onScopeDispose, ref, shallowRef, watch, type Ref } from 'vue'
 import { useGameChatFeed } from '@/composables/useGameChatFeed'
 import { queryHashChatHistory } from '@/api/modules/hash-game-chat'
 import type {
+  HashBetStatsSnapshot,
   HashChatHistoryItem,
   HashChatMessage,
   HashHttpDraw,
@@ -28,12 +29,11 @@ function roundAmount(value: number) {
 
 /** 管理哈希游戏单次进入页面期间的聊天室和结算展示状态。 */
 export function useHashGameChat(gameCode: Ref<string>) {
+  const betBroadcastMode = ref('INDIVIDUAL')
   const feed = useGameChatFeed<HashChatMessage>()
   const activeRoom = ref('')
   const onlineCount = ref(0)
-  const betStats = shallowRef<
-    Record<string, Record<string, { participantCount: number; totalAmount: number }>>
-  >({})
+  const betStats = shallowRef<HashBetStatsSnapshot>()
   const settlementQueue = shallowRef<HashSettlementNotice[]>([])
   const currentSettlement = computed(() => settlementQueue.value[0] ?? null)
   const placedOrders = new Map<string, { gameCode: string; anchorBlockNum: number }>()
@@ -99,7 +99,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     }
   }
 
-  /** 处理当前房间的 WS 数据；开奖数据只等待后续 HTTP 入口。 */
+  /** 处理当前房间实时消息，开奖按玩法和期号去重。 */
   function acceptWsEvent(event: HashWsEvent) {
     if (!activeRoom.value || event.code !== 0 || event.data.gameCode !== gameCode.value) return
 
@@ -108,11 +108,32 @@ export function useHashGameChat(gameCode: Ref<string>) {
       return
     }
     if (event.type === 'CHAIN_LOTTERY_BET_STATS') {
-      betStats.value = event.data.stats
+      betStats.value = event.data
       return
     }
 
     const data = event.data
+    if (data.kind === 'DRAW') {
+      feed.append({
+        id: `draw:${data.gameCode}:${data.anchorBlockNum}`,
+        kind: 'DRAW',
+        source: 'ws',
+        time: data.time,
+        draw: { ...data }
+      })
+      return
+    }
+    if (data.kind === 'BET') {
+      if (typeof data.content === 'string')
+        feed.append({
+          id: `ws:${data.gameCode}:${data.id}`,
+          kind: 'BROADCAST_BET',
+          source: 'ws',
+          time: data.time,
+          content: data.content
+        })
+      return
+    }
     if (data.kind === 'USER') {
       feed.append({
         id: `ws:${data.gameCode}:${data.id}`,
@@ -133,7 +154,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
         avatarUrl: data.avatarUrl
       })
     }
-    // DRAW 的结果等待 HTTP 数据；BIG_WIN 本阶段不展示。
+    // 未支持的消息忽略。
   }
 
   /** 仅在投注接口成功并返回订单号后插入本人投注消息。 */
@@ -149,10 +170,33 @@ export function useHashGameChat(gameCode: Ref<string>) {
     )
       return false
 
+    if (placedOrders.has(result.orderNo)) return false
     placedOrders.set(result.orderNo, {
       gameCode: request.gameCode,
       anchorBlockNum: request.anchorBlockNum
     })
+    if (betBroadcastMode.value === 'MERGED') {
+      const existing = feed.messages.value.find(
+        item =>
+          item.kind === 'BET' &&
+          item.bet.gameCode === request.gameCode &&
+          item.bet.anchorBlockNum === request.anchorBlockNum &&
+          item.bet.betOption === request.betOption &&
+          item.bet.currency === result.currency
+      )
+      if (existing?.kind === 'BET') {
+        feed.messages.value = feed.messages.value.map(item =>
+          item.id === existing.id
+            ? {
+                ...existing,
+                count: (existing.count ?? 1) + 1,
+                bet: { ...existing.bet, amount: roundAmount(existing.bet.amount + request.amount) }
+              }
+            : item
+        )
+        return true
+      }
+    }
     return feed.append({
       id: `bet:${result.orderNo}`,
       kind: 'BET',
@@ -294,20 +338,32 @@ export function useHashGameChat(gameCode: Ref<string>) {
     settlementQueue.value = settlementQueue.value.slice(1)
   }
 
-  /** 开启一个新的模拟房间；后续可替换为独占 WS 的连接入口。 */
-  function openMockRoom(code: string) {
+  /** 开启一个新的游戏房间，并清理仅属于上一游戏的页面会话状态。 */
+  function openRoom(code: string) {
     const generation = ++roomGeneration
     feed.clear()
     placedOrders.clear()
     settledRounds.clear()
     settlementQueue.value = []
     onlineCount.value = 0
-    betStats.value = {}
-    activeRoom.value = `CHAT:${code}`
+    betStats.value = undefined
+    activeRoom.value = code ? `CHAT:${code}` : ''
+    if (code) void loadHistory(code, generation)
+  }
+
+  /** 聊天 WS 重连后重新加载当前房间的可展示消息，保留本地已成功下注的结算追踪。 */
+  function reloadChatMessages() {
+    const code = gameCode.value
+    if (!activeRoom.value || activeRoom.value !== `CHAT:${code}`) return
+
+    const generation = ++roomGeneration
+    feed.clear()
+    onlineCount.value = 0
+    betStats.value = undefined
     void loadHistory(code, generation)
   }
 
-  /** 离开游戏时结束当前模拟会话，真实连接接入后在此关闭 WS。 */
+  /** 离开游戏时结束当前页面会话。 */
   function closeRoom() {
     roomGeneration += 1
     activeRoom.value = ''
@@ -317,11 +373,12 @@ export function useHashGameChat(gameCode: Ref<string>) {
     settlementQueue.value = []
   }
 
-  watch(gameCode, openMockRoom, { immediate: true })
+  watch(gameCode, openRoom, { immediate: true })
   onScopeDispose(closeRoom)
 
   return {
     messages: feed.messages,
+    betBroadcastMode,
     activeRoom,
     onlineCount,
     betStats,
@@ -333,6 +390,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     acceptHttpDraw,
     acceptRecentBets,
     dismissSettlement,
+    reloadChatMessages,
     closeRoom
   }
 }

@@ -40,7 +40,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { getCurrencyImageByCode } from '@/utils/locale'
 
 const props = defineProps<{
   visible: boolean
@@ -59,7 +59,7 @@ const listOptions = computed(() => {
   return props.options.map(item => ({
     value: item.code,
     label: item.code,
-    icon: item.icon || getCurrencyIconByCode(item.code),
+    icon: item.icon || getCurrencyImageByCode(item.code),
     trailingText: item.balanceText
   }))
 })

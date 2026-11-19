@@ -21,6 +21,7 @@
       </p>
 
       <!-- WS 用户进入或离开提示。 -->
+      <p v-else-if="message.kind === 'BROADCAST_BET'" class="m-0">{{ message.content }}</p>
       <p v-else-if="message.kind === 'JOIN' || message.kind === 'LEAVE'" class="m-0 text-text-3">
         {{ message.nickname }} {{ message.kind === 'JOIN' ? 'is coming.' : 'has left.' }}
       </p>
@@ -43,12 +44,17 @@
           :class="optionColor(message.bet.betOption)"
           >{{ optionShortLabel(message.bet.betOption) }}</span
         >
+        <span
+          v-if="(message.count ?? 1) > 1"
+          class="rounded-full border border-secondary-7 px-[7px] text-[11px] text-secondary-7"
+          >x{{ message.count }}</span
+        >
       </p>
 
-      <!-- HTTP 开奖结果，仅从传入的 draw 结构读取字段。 -->
+      <!-- 历史与实时开奖采用同一张结果卡片。 -->
       <div
         v-else-if="message.kind === 'DRAW'"
-        class="flex max-w-full flex-col gap-0.5 rounded-[5px] border border-secondary-10 bg-hash-chat-draw-frame p-2"
+        class="flex max-w-full flex-col gap-0.5 rounded-[5px] border border-secondary-7 bg-hash-chat-draw-frame p-2"
       >
         <!-- 开奖局号与开奖结果。 -->
         <p class="m-0 flex flex-wrap items-center gap-[5px]">
@@ -57,14 +63,13 @@
             message.draw.anchorBlockNum
           }}</em>
           Result：
-          <strong class="text-base text-theme-primary">{{ message.draw.result.digit }}</strong>
+          <strong class="text-base text-theme-primary">{{ resultValue(message.draw) }}</strong>
           <span
-            class="inline-grid min-w-4 h-4 place-items-center rounded bg-[var(--hash-chat-odd)] px-0.5 leading-none text-white"
-            >{{ optionShortLabel(message.draw.result.oddEven) }}</span
-          >
-          <span
-            class="inline-grid min-w-4 h-4 place-items-center rounded bg-[var(--hash-chat-even)] px-0.5 leading-none text-white"
-            >{{ optionShortLabel(message.draw.result.bigSmall) }}</span
+            v-for="option in resultBadges(message.draw)"
+            :key="option"
+            class="inline-grid min-w-4 h-4 place-items-center rounded px-0.5 leading-none text-white"
+            :class="optionColor(option)"
+            >{{ optionShortLabel(option) }}</span
           >
         </p>
         <!-- 后续 HTTP 若返回总中奖人数与派彩金额，则展示汇总行。 -->
@@ -95,6 +100,12 @@
       </p>
     </template>
     <template #overlay="{ scrollToBottom }">
+      <div v-if="currentJoin" :key="currentJoin.id" class="join-banner" @animationend="finishJoin">
+        <img :src="currentJoin.avatarUrl || joinAvatar" alt="" />
+        <span
+          >Welcome <strong>{{ currentJoin.nickname }}</strong> to the room</span
+        >
+      </div>
       <!-- 顶部渐隐蒙层。 -->
       <img
         :src="topFadeIcon"
@@ -120,8 +131,65 @@ import scrollBottomIcon from '@/static/svg/hash_game/chat/scroll-bottom.svg?url'
 import topFadeIcon from '@/static/svg/hash_game/chat/top-fade.svg?url'
 import GameChatList from '@/components/game-chat/GameChatList.vue'
 import type { HashChatMessage } from '../chat/types'
+import type { HashHttpDraw } from '../chat/types'
+import { ref, watch, onBeforeUnmount } from 'vue'
+import joinAvatar from '@/static/img/hash_game/join-avatar.png'
 
-defineProps<{ messages: HashChatMessage[] }>()
+const props = defineProps<{
+  messages: HashChatMessage[]
+  parityOnly?: boolean
+  sizeOnly?: boolean
+  sumParityOnly?: boolean
+  luckyOnly?: boolean
+}>()
+type JoinMessage = Extract<HashChatMessage, { kind: 'JOIN' | 'LEAVE' }>
+const currentJoin = ref<JoinMessage | null>(null)
+const joinQueue: JoinMessage[] = []
+const seenJoins = new Set<string>()
+function finishJoin() {
+  currentJoin.value = joinQueue.shift() ?? null
+}
+watch(
+  () => props.messages,
+  messages => {
+    if (!messages.length) {
+      joinQueue.length = 0
+      currentJoin.value = null
+      seenJoins.clear()
+    }
+    for (const message of messages) {
+      if (message.kind !== 'JOIN' || message.source !== 'ws' || seenJoins.has(message.id)) continue
+      seenJoins.add(message.id)
+      joinQueue.push(message)
+    }
+    if (!currentJoin.value) finishJoin()
+  },
+  { immediate: true }
+)
+onBeforeUnmount(() => {
+  joinQueue.length = 0
+})
+function resultValue(draw: HashHttpDraw) {
+  if (props.luckyOnly) return draw.result.lastTwo ?? (draw.blockHash?.slice(-2) || '—')
+  if (props.sumParityOnly)
+    return (
+      draw.result.sum ??
+      (draw.blockHash
+        ? [...draw.blockHash].reduce(
+            (sum, digit) => sum + (/\d/.test(digit) ? Number(digit) : 0),
+            0
+          )
+        : '—')
+    )
+  return draw.result.digit ?? '—'
+}
+function resultBadges(draw: HashHttpDraw) {
+  if (props.luckyOnly) return draw.result.winner ? [draw.result.winner] : []
+  return [
+    !props.sizeOnly ? draw.result.oddEven : undefined,
+    !props.parityOnly && !props.sumParityOnly ? draw.result.bigSmall : undefined
+  ].filter((value): value is string => !!value)
+}
 
 /** 将金额与币种组合为可读的聊天文案。 */
 function formatAmount(amount: number, currency?: string) {
@@ -146,5 +214,47 @@ function optionColor(option: string) {
 .hash-game-chat {
   --hash-chat-odd: #22a89a;
   --hash-chat-even: #e63533;
+}
+.join-banner {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  padding: 2px 15px 2px 2px;
+  border-radius: 13px;
+  background: linear-gradient(90deg, #e2a033, #e2a033cc);
+  color: white;
+  font-size: 14px;
+  white-space: nowrap;
+  animation: join-slide 3s both;
+}
+.join-banner img {
+  width: 20px;
+  height: 20px;
+  border: 1px solid white;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.join-banner strong {
+  color: yellow;
+}
+@keyframes join-slide {
+  0% {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
 }
 </style>

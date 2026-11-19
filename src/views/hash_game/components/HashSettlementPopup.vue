@@ -78,8 +78,23 @@ import type { HashSettlementNotice } from '../chat/types'
 import backgroundMask from '@/static/img/hash_game/settlement/background-mask.svg'
 import confettiLeft from '@/static/img/hash_game/settlement/confetti-left.png'
 import confettiRight from '@/static/img/hash_game/settlement/confetti-right.png'
+import settlementSound from '@/static/mp3/hash/zhongjiang.mp3?url'
 
-const props = defineProps<{ notice: HashSettlementNotice | null }>()
+const props = defineProps<{ notice: HashSettlementNotice | null; soundEnabled?: boolean }>()
+const playedRounds = new Set<number>()
+let audio: HTMLAudioElement | undefined
+watch(
+  () => [props.notice, props.soundEnabled] as const,
+  ([notice, enabled]) => {
+    if (!enabled) audio?.pause()
+    if (!notice || !enabled || playedRounds.has(notice.anchorBlockNum)) return
+    playedRounds.add(notice.anchorBlockNum)
+    audio ??= new Audio(settlementSound)
+    audio.currentTime = 0
+    void audio.play().catch(() => {})
+  },
+  { immediate: true }
+)
 const emit = defineEmits<{ dismiss: [] }>()
 const currencySymbol = computed(() => getCurrencySymbol(props.notice?.currency))
 let dismissTimer: ReturnType<typeof setTimeout> | undefined
@@ -101,6 +116,7 @@ watch(
 
 /** 组件卸载时清除自动关闭计时器。 */
 onBeforeUnmount(() => {
+  audio?.pause()
   if (dismissTimer) clearTimeout(dismissTimer)
 })
 </script>
