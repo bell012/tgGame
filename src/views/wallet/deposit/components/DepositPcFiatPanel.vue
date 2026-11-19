@@ -192,6 +192,7 @@
           </button>
         </div>
         <button
+          v-if="canExpand"
           type="button"
           class="flex h-5 items-center gap-2 text-[13px] leading-4 text-text-3 transition lg:hover:text-text-1"
           @click="expanded = !expanded"
@@ -317,7 +318,7 @@ const handleCurrencySelect = (code: string) => {
 }
 
 const presetsRef = ref<HTMLDivElement | null>(null)
-const { expanded } = usePresetGrid(presetsRef)
+const { expanded, canExpand } = usePresetGrid(presetsRef, presetAmounts, 6)
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,

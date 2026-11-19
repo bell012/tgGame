@@ -151,10 +151,11 @@
         <!-- 快捷金额列表 -->
         <div
           ref="presetsRef"
-          class="grid grid-cols-3 gap-2 sm:gap-3 p-2.5 sm:p-5 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
-          :class="
+          class="grid grid-cols-3 gap-2 sm:gap-3 p-2.5 sm:p-5 bg-bg-4 transition-all duration-300"
+          :class="[
+            canExpand ? 'rounded-tl-lg rounded-tr-lg' : 'rounded-lg',
             expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[106px] sm:max-h-[148px] overflow-hidden'
-          "
+          ]"
         >
           <!-- 单个快捷金额按钮 -->
           <button
@@ -168,7 +169,10 @@
           </button>
         </div>
         <!-- 快捷金额展开收起区域 -->
-        <div class="w-full bg-bg-4 rounded-bl-lg rounded-br-lg p-1.5 sm:p-3 relative -mt-3 z-10">
+        <div
+          v-if="canExpand"
+          class="w-full bg-bg-4 rounded-bl-lg rounded-br-lg p-1.5 sm:p-3 relative -mt-3 z-10"
+        >
           <!-- 展开收起按钮 -->
           <button
             class="mx-auto flex items-center gap-1 text-xs text-text-3 lg:hover:text-text-1 transition"
@@ -274,7 +278,7 @@ const channelItemRefs = ref<Record<string, HTMLElement | null>>({})
 const wageringListRef = ref<HTMLDivElement | null>(null)
 const wageringItemRefs = ref<Record<string, HTMLElement | null>>({})
 const presetsRef = ref<HTMLDivElement | null>(null)
-const { expanded } = usePresetGrid(presetsRef)
+const { expanded, canExpand } = usePresetGrid(presetsRef, presetAmounts, 3)
 
 // 解析并返回 HTMLElement 节点
 const resolveHTMLElement = (el: Element | ComponentPublicInstance | null) => {

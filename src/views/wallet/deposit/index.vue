@@ -36,14 +36,14 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import DepositPageContent from './components/DepositPageContent.vue'
 import PcLayout from './pc-layout.vue'
-import type { DepositTabType } from './shared'
+import { DEPOSIT_TABS, type DepositTabType } from './shared'
 
 const { t } = useI18n()
 
 const isMobile = useIsMobile()
 const { depositPageRefreshKey } = useDepositPageRefresh()
 const route = useRoute()
-const tabType = ref<DepositTabType>('Fiat')
+const tabType = ref<DepositTabType>(DEPOSIT_TABS[0])
 
 /** 读取任务中心充值跳转指定的法币或数字币页签。 */
 const resolveTaskCenterDepositTab = (value: unknown): DepositTabType =>

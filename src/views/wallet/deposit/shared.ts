@@ -24,7 +24,7 @@ import { defaultFiatOrder, type FiatOrderType } from './components/order/orderTy
 export type DepositTabType = 'Fiat' | 'Crypto'
 export type DepositPageMode = 'mobile' | 'pc'
 
-export const DEPOSIT_TABS: DepositTabType[] = ['Crypto', 'Fiat']
+export const DEPOSIT_TABS: DepositTabType[] = ['Fiat', 'Crypto']
 
 export const getDepositTabI18nKey = (tab: DepositTabType) =>
   tab === 'Crypto' ? 'deposit.tabs.crypto' : 'deposit.tabs.fiat'
