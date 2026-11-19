@@ -8,7 +8,7 @@
     >
       <!-- 弹窗主体。 -->
       <section
-        class="flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-t-[24px] bg-bg-1 pt-[20px] font-inter"
+        class="flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-t-[24px] bg-bg-1 pt-[20px] pb-[40px] font-inter"
         role="dialog"
         aria-modal="true"
         aria-label="Send message"
@@ -90,11 +90,11 @@
           v-else
           class="mx-[12px] mt-[24px] flex shrink-0 items-center gap-[12px] rounded-[10px] border border-dashed border-bg-3 px-[12px] py-[10px]"
         >
-          <span aria-hidden="true" class="text-[24px]"> 🔒 </span>
+          <img :src="lockIcon" alt="" class="size-[24px] shrink-0" />
 
           <div class="min-w-0 flex-1 text-[12px] text-text-2">
             <p class="text-[13px] text-text-1">Bet to send custom content.</p>
-            <p>Bet to unlock emojis and phrases.</p>
+            <p>Bet any amount to unlock emojis and phrases.</p>
           </div>
 
           <button
@@ -117,6 +117,7 @@
 </template>
 
 <script setup lang="ts">
+import lockIcon from '@/static/svg/hash_game/chat/lock.svg?url'
 import { getWebRuntimeEnvironment } from '@/utils/runtime-environment'
 import { nextTick, ref } from 'vue'
 import type { HashChatConfig } from '../chat/config'

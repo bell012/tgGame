@@ -23,7 +23,7 @@ export type HashBetStatsSnapshot = {
 /** 服务端聊天室业务消息。 */
 export type HashWsChatData =
   | {
-      id: number
+      id?: number
       gameCode: string
       kind: 'USER'
       nickname: string
@@ -32,7 +32,7 @@ export type HashWsChatData =
       robot: boolean
     }
   | {
-      id: number
+      id?: number
       gameCode: string
       kind: 'JOIN' | 'LEAVE'
       nickname: string
@@ -42,7 +42,7 @@ export type HashWsChatData =
       robot: boolean
     }
   | {
-      id: number
+      id?: number
       gameCode: string
       kind: 'DRAW'
       anchorBlockNum: number
@@ -51,9 +51,9 @@ export type HashWsChatData =
       blockHash?: string
       explorerUrl?: string
     }
-  | { id: number; gameCode: string; kind: 'BIG_WIN'; time: number }
+  | { id?: number; gameCode: string; kind: 'BIG_WIN'; time: number }
   | {
-      id: number
+      id?: number
       gameCode: string
       kind: 'BET' | 'STREAK'
       time: number
