@@ -61,39 +61,41 @@
         <img :src="phrasesIcon" alt="" class="size-[22px]" />
       </button>
     </div>
-    <section
-      v-if="panel === 'phrases'"
-      class="mt-[12px] h-[288px] overflow-hidden rounded-[10px] bg-bg-3 px-[12px] pt-[12px]"
-      aria-label="Common Expressions"
-    >
-      <p class="m-0 text-[12px] text-text-2">Common Expressions</p>
-      <div
-        class="mt-[12px] flex h-[249px] flex-col items-start gap-[12px] overflow-y-auto pb-[12px]"
+    <Transition name="hash-pc-panel" mode="out-in">
+      <section
+        v-if="panel === 'phrases'"
+        class="mt-[12px] h-[288px] overflow-hidden rounded-[10px] bg-bg-3 px-[12px] pt-[12px]"
+        aria-label="Common Expressions"
       >
-        <button
-          v-for="(phrase, index) in config?.phrases ?? []"
-          :key="index"
-          type="button"
-          :disabled="busy"
-          class="max-w-full shrink-0 rounded-[24px] bg-bg-2 px-[15px] py-[4px] text-left text-[14px] leading-[20px] text-text-2 hover:text-text-1 disabled:opacity-50"
-          @click="send(phrase, false)"
+        <p class="m-0 text-[12px] text-text-2">Common Expressions</p>
+        <div
+          class="mt-[12px] flex h-[249px] flex-col items-start gap-[12px] overflow-y-auto pb-[12px]"
         >
-          {{ phrase }}
-        </button>
-        <p v-if="!config?.phrases.length" class="text-[12px] text-text-2">
-          No expressions available.
-        </p>
-      </div>
-    </section>
-    <EmojiPanel
-      v-else-if="panel === 'emoji'"
-      :has-emoji="false"
-      display-mode="pc"
-      :close-on-outside="false"
-      picker-background="bg-3"
-      class="mt-[12px] h-[288px] rounded-[10px] !bg-bg-3"
-      @select="send($event, false)"
-    />
+          <button
+            v-for="(phrase, index) in config?.phrases ?? []"
+            :key="index"
+            type="button"
+            :disabled="busy"
+            class="max-w-full shrink-0 rounded-[24px] bg-bg-2 px-[15px] py-[4px] text-left text-[14px] leading-[20px] text-text-2 hover:text-text-1 disabled:opacity-50"
+            @click="send(phrase, false)"
+          >
+            {{ phrase }}
+          </button>
+          <p v-if="!config?.phrases.length" class="text-[12px] text-text-2">
+            No expressions available.
+          </p>
+        </div>
+      </section>
+      <EmojiPanel
+        v-else-if="panel === 'emoji'"
+        :has-emoji="false"
+        display-mode="pc"
+        :close-on-outside="false"
+        picker-background="bg-3"
+        class="mt-[12px] h-[288px] rounded-[10px] !bg-bg-3"
+        @select="send($event, false)"
+      />
+    </Transition>
   </div>
 </template>
 
@@ -163,3 +165,25 @@ watch(
 onMounted(() => document.addEventListener('pointerdown', closeOutside))
 onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOutside))
 </script>
+
+<style scoped>
+.hash-pc-panel-enter-active,
+.hash-pc-panel-leave-active {
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.hash-pc-panel-enter-from,
+.hash-pc-panel-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hash-pc-panel-enter-active,
+  .hash-pc-panel-leave-active {
+    transition-duration: 0.01ms;
+  }
+}
+</style>

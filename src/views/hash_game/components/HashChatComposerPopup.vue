@@ -1,117 +1,122 @@
 <template>
   <!-- H5 聊天输入弹窗及背景蒙层。 -->
   <Teleport to="body">
-    <div
-      v-if="visible"
-      class="fixed inset-0 z-[1100] flex items-end bg-mask-60-1"
-      @click.self="emit('close')"
-    >
-      <!-- 弹窗主体。 -->
-      <section
-        class="flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-t-[24px] bg-bg-1 pt-[20px] pb-[40px] font-inter"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Send message"
+    <Transition name="hash-chat-popup">
+      <div
+        v-if="visible"
+        class="fixed inset-0 z-[1100] flex items-end bg-mask-60-1"
+        @click.self="emit('close')"
       >
-        <!-- 标题与关闭按钮。 -->
-        <header class="flex shrink-0 items-center justify-between px-[12px]">
-          <h2 class="text-[16px] font-bold text-text-1">Send message</h2>
-          <button
-            type="button"
-            class="grid size-[28px] place-items-center rounded-[6px] bg-opacity-10 text-[24px] leading-none text-text-1"
-            aria-label="Close"
-            @click="emit('close')"
-          >
-            ×
-          </button>
-        </header>
+        <!-- 弹窗主体。 -->
+        <section
+          class="flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-t-[24px] bg-bg-1 pt-[20px] pb-[40px] font-inter"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Send message"
+        >
+          <!-- 标题与关闭按钮。 -->
+          <header class="flex shrink-0 items-center justify-between px-[12px]">
+            <h2 class="text-[16px] font-bold text-text-1">Send message</h2>
+            <button
+              type="button"
+              class="grid size-[28px] place-items-center rounded-[6px] bg-opacity-10 text-[24px] leading-none text-text-1"
+              aria-label="Close"
+              @click="emit('close')"
+            >
+              ×
+            </button>
+          </header>
 
-        <!-- 表情和常用语区域。 -->
-        <div class="mt-[20px] min-h-0 overflow-y-auto px-[12px]">
-          <p class="text-[14px] text-text-2">expression</p>
+          <!-- 表情和常用语区域。 -->
+          <div class="mt-[20px] min-h-0 overflow-y-auto px-[12px]">
+            <p class="text-[14px] text-text-2">expression</p>
 
-          <!-- 固定两行，超出屏幕宽度后横向滑动。 -->
-          <div class="hash-chat-emoji-scroll mt-[10px] w-full" aria-label="Emoji list">
-            <div class="hash-chat-emoji-grid">
+            <!-- 固定两行，超出屏幕宽度后横向滑动。 -->
+            <div class="hash-chat-emoji-scroll mt-[10px] w-full" aria-label="Emoji list">
+              <div class="hash-chat-emoji-grid">
+                <button
+                  v-for="emoji in commonEmojis"
+                  :key="emoji"
+                  type="button"
+                  class="grid size-[40px] place-items-center rounded-[8px] bg-transparent p-0 text-[30px] leading-none active:bg-bg-2"
+                  :aria-label="emoji"
+                  @mousedown.prevent
+                  @click="selectEmoji(emoji)"
+                >
+                  {{ emoji }}
+                </button>
+              </div>
+            </div>
+
+            <!-- 常用语按聊天配置动态展示。 -->
+            <p class="mt-[20px] text-[14px] text-text-2">Common Expressions</p>
+
+            <div class="mt-[10px] flex max-h-[140px] flex-wrap gap-[10px] overflow-y-auto">
               <button
-                v-for="emoji in commonEmojis"
-                :key="emoji"
+                v-for="phrase in config?.phrases ?? []"
+                :key="phrase"
                 type="button"
-                class="grid size-[40px] place-items-center rounded-[8px] bg-transparent p-0 text-[30px] leading-none active:bg-bg-2"
-                :aria-label="emoji"
-                @mousedown.prevent
-                @click="selectEmoji(emoji)"
+                class="rounded-full bg-bg-2 px-[10px] py-[8px] text-left text-[12px] text-text-2"
+                @click="selectPhrase(phrase)"
               >
-                {{ emoji }}
+                {{ phrase }}
               </button>
             </div>
           </div>
 
-          <!-- 常用语按聊天配置动态展示。 -->
-          <p class="mt-[20px] text-[14px] text-text-2">Common Expressions</p>
+          <!-- 解锁后输入消息。 -->
+          <div
+            v-if="config?.unlocked"
+            class="mt-[24px] flex shrink-0 gap-[9px] px-[12px] py-[11px]"
+          >
+            <input
+              ref="inputRef"
+              v-model="draft"
+              class="h-[42px] min-w-0 flex-1 rounded-[10px] border border-input-2 bg-bg-3 px-[12px] text-[13px] text-text-1 outline-none placeholder:text-text-3"
+              :maxlength="config.lengthLimit"
+              placeholder="Say something..."
+              @keydown.enter="send"
+            />
 
-          <div class="mt-[10px] flex max-h-[140px] flex-wrap gap-[10px] overflow-y-auto">
             <button
-              v-for="phrase in config?.phrases ?? []"
-              :key="phrase"
               type="button"
-              class="rounded-full bg-bg-2 px-[10px] py-[8px] text-left text-[12px] text-text-2"
-              @click="selectPhrase(phrase)"
+              class="h-[42px] rounded-[10px] bg-theme-primary px-[18px] text-[16px] font-bold text-text-4"
+              :disabled="!draft.trim()"
+              @click="send"
             >
-              {{ phrase }}
+              Send
             </button>
           </div>
-        </div>
 
-        <!-- 解锁后输入消息。 -->
-        <div v-if="config?.unlocked" class="mt-[24px] flex shrink-0 gap-[9px] px-[12px] py-[11px]">
-          <input
-            ref="inputRef"
-            v-model="draft"
-            class="h-[42px] min-w-0 flex-1 rounded-[10px] border border-input-2 bg-bg-3 px-[12px] text-[13px] text-text-1 outline-none placeholder:text-text-3"
-            :maxlength="config.lengthLimit"
-            placeholder="Say something..."
-            @keydown.enter="send"
-          />
-
-          <button
-            type="button"
-            class="h-[42px] rounded-[10px] bg-theme-primary px-[18px] text-[16px] font-bold text-text-4"
-            :disabled="!draft.trim()"
-            @click="send"
+          <!-- 未解锁时显示下注提示。 -->
+          <div
+            v-else
+            class="mx-[12px] mt-[24px] flex shrink-0 items-center gap-[12px] rounded-[10px] border-2 border-dashed border-bg-3 px-[12px] py-[10px]"
           >
-            Send
-          </button>
-        </div>
+            <img :src="lockIcon" alt="" class="size-[24px] shrink-0" />
 
-        <!-- 未解锁时显示下注提示。 -->
-        <div
-          v-else
-          class="mx-[12px] mt-[24px] flex shrink-0 items-center gap-[12px] rounded-[10px] border-2 border-dashed border-bg-3 px-[12px] py-[10px]"
-        >
-          <img :src="lockIcon" alt="" class="size-[24px] shrink-0" />
+            <div class="min-w-0 flex-1 text-[12px] text-text-2">
+              <p class="text-[13px] text-text-1">Bet to send custom content.</p>
+              <p>Bet any amount to unlock emojis and phrases.</p>
+            </div>
 
-          <div class="min-w-0 flex-1 text-[12px] text-text-2">
-            <p class="text-[13px] text-text-1">Bet to send custom content.</p>
-            <p>Bet any amount to unlock emojis and phrases.</p>
+            <button
+              type="button"
+              class="shrink-0 rounded-full bg-theme-primary px-[10px] py-[6px] text-[11px] text-text-4"
+              @click="emit('bet')"
+            >
+              去下注
+            </button>
           </div>
 
-          <button
-            type="button"
-            class="shrink-0 rounded-full bg-theme-primary px-[10px] py-[6px] text-[11px] text-text-4"
-            @click="emit('bet')"
-          >
-            去下注
-          </button>
-        </div>
-
-        <!-- 底部安全区。 -->
-        <div
-          class="hash-chat-bottom-safe shrink-0 bg-bg-1"
-          :class="`hash-chat-bottom-safe--${environment}`"
-        />
-      </section>
-    </div>
+          <!-- 底部安全区。 -->
+          <div
+            class="hash-chat-bottom-safe shrink-0 bg-bg-1"
+            :class="`hash-chat-bottom-safe--${environment}`"
+          />
+        </section>
+      </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -257,6 +262,35 @@ function send() {
 </script>
 
 <style scoped>
+.hash-chat-popup-enter-active,
+.hash-chat-popup-leave-active {
+  transition: opacity 220ms ease;
+}
+
+.hash-chat-popup-enter-from,
+.hash-chat-popup-leave-to {
+  opacity: 0;
+}
+
+.hash-chat-popup-enter-active > section,
+.hash-chat-popup-leave-active > section {
+  transition: transform 220ms ease;
+}
+
+.hash-chat-popup-enter-from > section,
+.hash-chat-popup-leave-to > section {
+  transform: translateY(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hash-chat-popup-enter-active,
+  .hash-chat-popup-leave-active,
+  .hash-chat-popup-enter-active > section,
+  .hash-chat-popup-leave-active > section {
+    transition-duration: 0.01ms;
+  }
+}
+
 .hash-chat-bottom-safe {
   height: calc(1px + env(safe-area-inset-bottom, 0px));
 }
