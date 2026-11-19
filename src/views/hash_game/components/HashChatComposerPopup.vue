@@ -39,9 +39,8 @@
                 type="button"
                 class="grid size-[40px] place-items-center rounded-[8px] bg-transparent p-0 text-[30px] leading-none active:bg-bg-2"
                 :aria-label="emoji"
-                :disabled="!config?.unlocked"
                 @mousedown.prevent
-                @click="appendEmoji(emoji)"
+                @click="selectEmoji(emoji)"
               >
                 {{ emoji }}
               </button>
@@ -57,7 +56,7 @@
               :key="phrase"
               type="button"
               class="rounded-full bg-bg-2 px-[10px] py-[8px] text-left text-[12px] text-text-2"
-              @click="appendText(phrase)"
+              @click="selectPhrase(phrase)"
             >
               {{ phrase }}
             </button>
@@ -88,7 +87,7 @@
         <!-- 未解锁时显示下注提示。 -->
         <div
           v-else
-          class="mx-[12px] mt-[24px] flex shrink-0 items-center gap-[12px] rounded-[10px] border border-dashed border-bg-3 px-[12px] py-[10px]"
+          class="mx-[12px] mt-[24px] flex shrink-0 items-center gap-[12px] rounded-[10px] border-2 border-dashed border-bg-3 px-[12px] py-[10px]"
         >
           <img :src="lockIcon" alt="" class="size-[24px] shrink-0" />
 
@@ -129,13 +128,31 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: []
-  send: [text: string]
+  send: [text: string, custom: boolean]
   bet: []
 }>()
 
 const environment = getWebRuntimeEnvironment()
 const draft = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
+
+function selectEmoji(emoji: string) {
+  if (props.config?.unlocked) {
+    void appendEmoji(emoji)
+    return
+  }
+  emit('send', emoji, false)
+  emit('close')
+}
+
+function selectPhrase(phrase: string) {
+  if (props.config?.unlocked) {
+    appendText(phrase)
+    return
+  }
+  emit('send', phrase, false)
+  emit('close')
+}
 
 /**
  * 50 个常用 Emoji。
@@ -233,7 +250,7 @@ function send() {
 
   if (!props.config?.unlocked || !text) return
 
-  emit('send', text)
+  emit('send', text, true)
   draft.value = ''
   emit('close')
 }

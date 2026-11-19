@@ -590,7 +590,7 @@
       :visible="chatComposerOpen"
       :config="chatConfig"
       @close="chatComposerOpen = false"
-      @send="sendMockChatMessage"
+      @send="sendChatMessage"
       @bet="chatComposerOpen = false"
     />
 
@@ -613,6 +613,7 @@
 </template>
 
 <script setup lang="ts">
+import { sendHashChatMessage } from '@/api/modules/hash-game-chat'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
 import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
@@ -655,6 +656,13 @@ import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
 const chatComposerOpen = ref(false)
+const sendChatMessage = (content: string, custom: boolean) => {
+  const gameCode = props.page.selectedHashGameCode.value
+  if (!gameCode) return
+  void sendHashChatMessage({ gameCode, content, custom }).catch(() => {
+    // 请求层负责展示发送失败提示。
+  })
+}
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
 
 /** 点击聊天按钮时刷新当前游戏配置并打开 H5 输入弹窗。 */
@@ -695,7 +703,6 @@ const {
   chatMessages,
   chatConfig,
   refreshChatConfig,
-  sendMockChatMessage,
   currentSettlement,
   dismissSettlement,
   round,
