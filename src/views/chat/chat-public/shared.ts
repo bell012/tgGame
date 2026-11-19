@@ -136,7 +136,7 @@ export const sanitizeChatRichText = (value: unknown) => {
     : source
   const input = parser.parseFromString(decodedSource, 'text/html')
   const output = document.implementation.createHTMLDocument('')
-  const allowedTags = new Set(['P', 'STRONG', 'B', 'EM', 'I', 'BR', 'A', 'UL', 'OL', 'LI'])
+  const allowedTags = new Set(['P', 'STRONG', 'B', 'EM', 'I', 'BR', 'A', 'UL', 'OL', 'LI', 'IMG'])
   const discardedTags = new Set([
     'SCRIPT',
     'STYLE',
@@ -162,6 +162,19 @@ export const sanitizeChatRichText = (value: unknown) => {
     const target = allowedTags.has(element.tagName)
       ? output.createElement(element.tagName.toLowerCase())
       : parent
+
+    if (element.tagName === 'IMG') {
+      if (!(target instanceof HTMLImageElement)) return
+      const src = element.getAttribute('src') || ''
+      try {
+        const url = new URL(src, window.location.origin)
+        if (url.protocol !== 'https:' && url.protocol !== 'http:') return
+        target.src = url.href
+        target.alt = ''
+      } catch {
+        return
+      }
+    }
 
     if (element.tagName === 'A' && target instanceof HTMLAnchorElement) {
       const href = element.getAttribute('href') || ''

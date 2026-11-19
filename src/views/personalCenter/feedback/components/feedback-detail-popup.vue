@@ -3,7 +3,12 @@
     <transition name="feedback-detail-popup">
       <div v-if="props.show" class="feedback-detail-popup-mask">
         <div class="feedback-detail-popup-card" :style="popupCardStyle">
-          <FeedbackDetailPage embedded :record-id="props.recordId" @back="emit('close')" />
+          <FeedbackDetailPage
+            embedded
+            :record-id="props.recordId"
+            @back="emit('close')"
+            @close-modal="emit('close-modal')"
+          />
         </div>
       </div>
     </transition>
@@ -23,6 +28,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: []
+  'close-modal': []
 }>()
 
 const popupCardStyle = ref<Record<string, string>>({})

@@ -152,6 +152,24 @@ const getChatVisitorId = () => {
   return visitorId
 }
 
+/** 图片消息没有 imageList 时，从正文里的地址或 img 标签补齐。 */
+const collectContentImageItems = (content: string): ChatImageItem[] => {
+  const source = content.trim()
+  if (!source) return []
+
+  const imageFilePattern = /\.(?:avif|bmp|gif|jpe?g|png|webp)(?:[?#].*)?$/i
+  if (/^(?:https?:\/\/|\/)/i.test(source) && imageFilePattern.test(source)) {
+    return [mapChatImage({ imgUrl: source })]
+  }
+
+  if (typeof DOMParser === 'undefined') return []
+
+  const documentNode = new DOMParser().parseFromString(source, 'text/html')
+  return Array.from(documentNode.querySelectorAll('img'))
+    .map(image => mapChatImage({ imgUrl: image.getAttribute('src') || '' }))
+    .filter(image => image.imgUrl)
+}
+
 /** 将服务端图片字段补全为页面与 Socket 共用的图片结构。 */
 const mapChatImage = (image: Partial<ChatImageItem>): ChatImageItem => ({
   imgUrl: resolveChatMediaUrl(image.imgUrl),
@@ -545,7 +563,11 @@ export function useChatRuntime() {
     const redPacket = payload.contentType === 'redPack' ? parseChatRedPacket(payload.content) : null
     const isRedPacket = Boolean(redPacket)
     const isReply = payload.contentType === 'reply' || Boolean(payload.replyInfo)
-    const imageList = toArray<Partial<ChatImageItem>>(payload.imageList).map(mapChatImage)
+    const listedImages = toArray<Partial<ChatImageItem>>(payload.imageList).map(mapChatImage)
+    const imageList =
+      isImage && !listedImages.some(image => image.imgUrl)
+        ? collectContentImageItems(String(payload.content ?? ''))
+        : listedImages
     const replyInfo = payload.replyInfo
     const replyToType = replyInfo ? getReplyContentType(replyInfo.replyToType) : 'text'
 
@@ -564,7 +586,7 @@ export function useChatRuntime() {
                 ? 'reply'
                 : 'text',
       text: isRedPacket ? '' : getChatPlainText(payload.content),
-      image: isImage ? resolveChatMediaUrl(imageList[0]?.imgUrl) : undefined,
+      image: isImage ? imageList[0]?.imgUrl : undefined,
       video: isVideo ? resolveChatMediaUrl(payload.content) : undefined,
       imageList,
       time: formatChatMessageTime(timestamp),
