@@ -4,8 +4,10 @@
     class="flex w-full"
     :class="message.direction === 'outgoing' ? 'justify-end' : 'justify-start'"
   >
-    <div class="relative">
+    <div class="relative flex max-w-full flex-col gap-[6px]">
       <button
+        v-for="(url, index) in imageUrls"
+        :key="`${url}-${index}`"
         type="button"
         data-chat-message-bubble
         class="relative overflow-hidden"
@@ -18,13 +20,18 @@
         @pointercancel="clearLongPress"
       >
         <img
-          :src="message.image"
+          :src="url"
           alt=""
-          class="object-cover"
-          :class="props.displayMode === 'pc' ? 'size-[180px]' : 'size-[188px]'"
+          class="block h-auto w-auto object-contain"
+          :class="
+            props.displayMode === 'pc'
+              ? 'max-h-[360px] max-w-[249px]'
+              : 'max-h-[420px] max-w-[240px]'
+          "
         />
-        <!-- 图片消息的时间与已读状态。 -->
+        <!-- 图片消息的时间与已读状态，只放在最后一张上。 -->
         <div
+          v-if="index === imageUrls.length - 1"
           class="absolute flex items-center gap-[4px] rounded-full text-common-100"
           :class="
             props.displayMode === 'pc'
@@ -61,7 +68,7 @@
 import messageReadStatusImage from '@/static/img/chat/public/message-read-status.png'
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
-import { onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatMessage } from '../types'
 
@@ -74,6 +81,15 @@ const emit = defineEmits<{
   focus: [message: ChatMessage, event: MouseEvent, target: HTMLElement | null]
   retry: [message: ChatMessage]
 }>()
+
+/** 同一条消息里的全部图片；群发可能在 imageList 中带多张。 */
+const imageUrls = computed(() => {
+  const urls = (props.message.imageList ?? []).map(image => image.imgUrl).filter(Boolean)
+  if (props.message.image && !urls.includes(props.message.image)) {
+    urls.unshift(props.message.image)
+  }
+  return urls
+})
 
 const longPressTriggered = ref(false)
 let longPressTimer: ReturnType<typeof setTimeout> | undefined

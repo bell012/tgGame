@@ -252,6 +252,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   back: []
+  'close-modal': []
 }>()
 
 const route = useRoute()
@@ -352,8 +353,11 @@ const handleDetailBack = () => {
   }
 }
 
-/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
+/** H5 只打开客服。PC 关掉意见反馈弹窗，反馈详情保持原页面逻辑。 */
 const handleCustomerServiceClick = () => {
+  if (isEmbeddedMode.value) {
+    emit('close-modal')
+  }
   openOnlineCustomer()
 }
 
