@@ -781,13 +781,6 @@ html.android-app-shell .casino-page--mobile {
     color: var(--color-text-level-2);
   }
 
-  .casino-tab-button--active {
-    background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
-    box-shadow:
-      0 0 13px 0 rgba(35, 238, 136, 0.3),
-      0 -2px 0 0 #1dca6a inset;
-  }
-
   .casino-tab-button--active .casino-tab-icon,
   .casino-tab-button--active .casino-tab-icon :deep(svg),
   .casino-tab-button--active .casino-tab-label {
@@ -821,7 +814,10 @@ html.android-app-shell .casino-page--mobile {
   }
 
   .casino-tab-button--active {
-    background: var(--color-theme-level-1);
+    background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+    box-shadow:
+      0 0 13px 0 rgba(35, 238, 136, 0.3),
+      0 -2px 0 0 #1dca6a inset;
   }
 
   .casino-tab-button--active .casino-tab-icon,
