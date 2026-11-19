@@ -376,29 +376,21 @@
       </main>
 
       <!-- 聊天 -->
-      <aside class="flex min-w-0 flex-col rounded-[12px] bg-bg-2 pt-[13px] px-[16px] pb-[16px]">
+      <aside
+        class="flex min-w-0 min-h-0 flex-col overflow-hidden rounded-[12px] bg-bg-2 px-[10px] pb-[10px]"
+      >
         <div class="min-h-0 flex-1 overflow-y-auto text-[14px] text-text-2">
-          <HashGameChat v-if="chatVisible" :messages="props.page.chatMessages.value" />
+          <HashGameChat
+            v-if="chatVisible"
+            :messages="props.page.chatMessages.value"
+            variant="pc"
+            class="mx-[6px]"
+          />
         </div>
-        <div class="flex items-center justify-between h-[44px] gap-[10px]">
-          <div
-            class="flex items-center justify-between flex-1 h-full rounded-[10px] bg-bg-3 py-[10px] px-[12px]"
-          >
-            <input
-              v-model="chatDraft"
-              class="flex-1 bg-transparent text-[14px] outline-none text-text-1 placeholder:text-text-3 pr-[2px]"
-              :placeholder="t('hashGame.chat')"
-            />
-            <button type="button" :aria-label="t('hashGame.chat')">
-              <img :src="emojiIcon" alt="" class="size-[24px] text-icon-2" />
-            </button>
-          </div>
-          <div class="w-[44px] h-[44px] bg-bg-3 rounded-[10px] flex items-center justify-center">
-            <button type="button" :aria-label="t('hashGame.chat')">
-              <ChatIcon class="size-[22px] text-icon-2" />
-            </button>
-          </div>
-        </div>
+        <HashPcChatComposer
+          :game-code="selectedHashGameCode"
+          :config="props.page.chatConfig.value"
+        />
       </aside>
     </div>
 
@@ -448,40 +440,39 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import CommonFooter from '@/components/commonFooter.vue'
 import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
-import type { HashGameBetDetail, HashGamePageState } from './index'
-import RecentBetsPopup from './components/RecentBetsPopup.vue'
-import HistoryPopup from './components/HistoryPopup.vue'
-import ChipEditorPopup from './components/ChipEditorPopup.vue'
-import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
-import FlyingChip from './components/FlyingChip.vue'
-import BetChip from './components/BetChip.vue'
-import { formatChipAmount } from './components/chipMotion'
-import { useBetChipAnimation } from './components/useBetChipAnimation'
-import HashGameRules from './rules.vue'
-import HashGameBetDetailPopup from './bet-detail.vue'
-import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
-import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
-import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
+import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
+import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
 import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
-import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
-import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
-import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
-import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
-import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
-import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
-import ResultArrowIcon2 from '@/static/svg/hash_game/zhixiang2.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
-import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
-import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
-import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
+import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
+import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
+import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
+import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
+import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
+import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
+import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
+import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
 import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
-import emojiIcon from '@/static/svg/hash_game/biaoqing.svg?url'
-import CommonFooter from '@/components/commonFooter.vue'
-import HashSettlementPopup from './components/HashSettlementPopup.vue'
+import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
+import ResultArrowIcon2 from '@/static/svg/hash_game/zhixiang2.svg?component'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import HashGameBetDetailPopup from './bet-detail.vue'
+import BetChip from './components/BetChip.vue'
+import ChipEditorPopup from './components/ChipEditorPopup.vue'
+import { formatChipAmount } from './components/chipMotion'
+import FlyingChip from './components/FlyingChip.vue'
 import HashGameChat from './components/HashGameChat.vue'
+import HashPcChatComposer from './components/HashPcChatComposer.vue'
+import HashSettlementPopup from './components/HashSettlementPopup.vue'
+import HistoryPopup from './components/HistoryPopup.vue'
+import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
+import RecentBetsPopup from './components/RecentBetsPopup.vue'
+import { useBetChipAnimation } from './components/useBetChipAnimation'
+import type { HashGameBetDetail, HashGamePageState } from './index'
+import HashGameRules from './rules.vue'
 
 // PC 视图只保留聊天输入草稿；周期、路单、投注和开关都读写 index.ts 共享状态。
 const props = defineProps<{ page: HashGamePageState }>()
@@ -546,7 +537,6 @@ const {
   selectBet
 })
 
-const chatDraft = ref('')
 const recentBetsOpen = ref(false)
 /** 打开弹窗时刷新当前玩法的近期投注。 */
 const openRecentBets = () => {

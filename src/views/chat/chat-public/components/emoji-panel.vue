@@ -10,7 +10,13 @@
     <emoji-picker
       ref="pickerRef"
       class="chat-emoji-picker mt-[8px]"
-      :class="props.displayMode === 'pc' ? 'chat-emoji-picker--pc' : ''"
+      :class="
+        props.pickerBackground === 'bg-3'
+          ? 'chat-emoji-picker--bg-3'
+          : props.displayMode === 'pc'
+            ? 'chat-emoji-picker--pc'
+            : ''
+      "
     />
     <!-- 删除与发送操作区。 -->
     <div
@@ -91,9 +97,18 @@ onMounted(async () => {
 
 const { t } = useI18n()
 
-const props = withDefaults(defineProps<{ hasEmoji: boolean; displayMode?: 'h5' | 'pc' }>(), {
-  displayMode: 'h5'
-})
+const props = withDefaults(
+  defineProps<{
+    hasEmoji: boolean
+    displayMode?: 'h5' | 'pc'
+    closeOnOutside?: boolean
+    pickerBackground?: 'bg-3'
+  }>(),
+  {
+    displayMode: 'h5',
+    closeOnOutside: true
+  }
+)
 
 const emit = defineEmits<{ select: [emoji: string]; delete: []; send: []; close: [] }>()
 const pickerRef = ref<HTMLElement | null>(null)
@@ -117,6 +132,7 @@ const unbindPickerEvent = () =>
  * 面板自身、ChatComposer 及其下方区域均不参与关闭，避免操作输入区时面板意外消失。
  */
 const handleDocumentPointerDown = (event: PointerEvent) => {
+  if (!props.closeOnOutside) return
   if (panelRef.value && event.composedPath().includes(panelRef.value)) return
 
   const composer = document.querySelector<HTMLElement>('[data-chat-composer]')
@@ -153,5 +169,8 @@ onBeforeUnmount(() => {
 
 .chat-emoji-picker--pc {
   --background: var(--color-background-level-5);
+}
+.chat-emoji-picker--bg-3 {
+  --background: var(--color-background-level-3);
 }
 </style>
