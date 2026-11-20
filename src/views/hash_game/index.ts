@@ -21,6 +21,7 @@ import { useHashGameSockets } from './chat/useHashGameSockets'
 import { type HashChatConfig } from './chat/config'
 import { queryHashChatConfig } from '@/api/modules/hash-game-chat'
 import type { HashWsEvent } from './chat/types'
+import { requestHashGames } from './gameList'
 import {
   BET_COLORS,
   BET_KEYS,
@@ -176,9 +177,9 @@ const createHashGamePageState = () => {
     selectedHashGameCode.value = ''
     const requestedCurrency = currency.currentCurrencyCode.value
     try {
-      const response = await Api.hashGame.getHashGameList({ currency: requestedCurrency })
+      const games = await requestHashGames(requestedCurrency, locale.value, { refresh: true })
       if (requestId !== gameListRequestId) return
-      hashGames.value = response.result ?? []
+      hashGames.value = games
       const game =
         hashGames.value.find(item => item.gameCode === previousCode) ?? hashGames.value[0]
       if (!game) return

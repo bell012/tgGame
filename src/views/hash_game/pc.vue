@@ -134,7 +134,8 @@
                 <i
                   class="grid size-[20px] place-items-center rounded-full text-[14px] not-italic text-white"
                   :style="{ background: entry.color }"
-                  >{{ entry.label }}</i>{{ entry.count }}
+                  >{{ entry.label }}</i
+                >{{ entry.count }}
               </span>
             </div>
             <div class="flex items-center">
@@ -417,7 +418,12 @@
     <!-- 筹码设置 -->
     <ChipEditorPopup :page="props.page" variant="pc" />
     <!-- 规则弹窗 -->
-    <HashGameRules v-model:visible="rulesPopupOpen" variant="pc" />
+    <HashGameRules
+      v-model:visible="rulesPopupOpen"
+      variant="pc"
+      :games="hashGames"
+      :initial-game-code="selectedHashGameCode"
+    />
     <!-- 飞筹码动画 -->
     <Teleport to="body">
       <FlyingChip

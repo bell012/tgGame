@@ -15,7 +15,7 @@
         <section
           :class="
             variant === 'pc'
-              ? 'flex max-h-[85vh] min-h-[50vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[8px] bg-bg-1 text-text-1'
+              ? 'flex max-h-[85vh] min-h-[85vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[8px] bg-bg-1 text-text-1'
               : 'flex min-h-0 flex-1 flex-col overflow-hidden bg-bg-1'
           "
           :role="variant === 'pc' ? 'dialog' : undefined"
@@ -46,42 +46,49 @@
             :class="variant === 'pc' ? 'px-[16px] py-[16px]' : 'px-[12px] py-[12px]'"
           >
             <div
-              :class="
-                variant === 'pc'
-                  ? 'mb-[20px] flex items-center gap-[8px]'
-                  : 'mb-[20px] flex items-center gap-[10px]'
-              "
+              v-if="games.length"
+              ref="tabsViewport"
+              class="scrollbar-none mb-[20px] flex select-none items-center overflow-x-auto overscroll-x-contain"
+              :class="[
+                variant === 'pc' ? 'gap-[8px]' : 'gap-[10px]',
+                { 'cursor-grabbing': draggingTabs }
+              ]"
               role="tablist"
               :aria-label="t('hashGame.gameRules')"
             >
               <button
-                v-for="period in periodOptions"
-                :key="period"
+                v-for="game in games"
+                :key="game.gameCode"
+                data-scroll-center
                 type="button"
                 role="tab"
-                class=""
+                class="shrink-0 whitespace-nowrap"
                 :class="[
                   variant === 'pc'
                     ? 'h-[32px] rounded-[16px] px-[24px] text-[14px]'
                     : 'h-[30px] rounded-[8px] px-[6px] text-[13px]',
-                  {
-                    'bg-theme-primary font-[600] text-text-4': selectedPeriod === period,
-                    'bg-bg-2 font-[400] text-text-2': selectedPeriod !== period
-                  }
+                  selectedGame?.gameCode === game.gameCode
+                    ? 'bg-theme-primary font-[600] text-text-4'
+                    : 'bg-bg-2 font-[400] text-text-2'
                 ]"
-                :aria-selected="selectedPeriod === period"
-                @click="selectedPeriod = period"
+                :aria-selected="selectedGame?.gameCode === game.gameCode"
+                @click="selectedGameCode = game.gameCode"
               >
-                {{ period }}s Hash
+                {{ game.gameName }}
               </button>
             </div>
 
-            <div class="overflow-hidden">
+            <div v-if="selectedGame" class="overflow-hidden">
               <img
-                :src="rulesImage"
-                :alt="t('hashGame.gameRules')"
+                v-if="rulesImageUrl"
+                :key="rulesImageUrl"
+                :src="rulesImageUrl"
+                :alt="selectedGame.gameName"
                 class="block h-auto w-full rounded-[8px] object-contain"
               />
+              <p v-else class="py-[20px] text-center text-[14px] text-text-2">
+                {{ t('hashGame.rulesImageNotConfigured') }}
+              </p>
             </div>
           </main>
         </section>
@@ -91,21 +98,86 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { HashGameLotteryGame } from '@/api/interface/hash_game.interface'
 import H5Header from '@/components/common/H5Header.vue'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
 import CloseIcon from '@/static/svg/close.svg?component'
-import rulesImage from '@/static/img/1125.png'
+import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useUserStore } from '@/stores/user'
+import { resolveGameImageUrl } from '@/utils/image'
+import { requestHashGames } from './gameList'
 
-const props = withDefaults(defineProps<{ variant?: 'h5' | 'pc' }>(), {
-  variant: 'h5'
-})
+const props = withDefaults(
+  defineProps<{
+    variant?: 'h5' | 'pc'
+    games?: readonly HashGameLotteryGame[]
+    initialGameCode?: string
+  }>(),
+  { variant: 'h5' }
+)
 const visible = defineModel<boolean>('visible', { default: false })
-// 规则页展示固定的说明分类，实际可玩的游戏由接口列表决定。
-const periodOptions = [6, 15, 30, 45] as const
-const selectedPeriod = ref<number>(periodOptions[0])
+const { t, locale } = useI18n()
+const routeGames = shallowRef<HashGameLotteryGame[]>([])
+const {
+  viewport: tabsViewport,
+  dragging: draggingTabs,
+  centerItem: centerTab
+} = useHorizontalScroll({ centerOnClick: true })
 
-const { t } = useI18n()
+if (props.variant === 'h5') {
+  useUserStore().syncStoredUserData()
+  const { currentCurrencyCode } = useDisplayCurrency()
+  watch(
+    [currentCurrencyCode, locale],
+    async ([currency, language], _, onCleanup) => {
+      let current = true
+      onCleanup(() => {
+        current = false
+      })
+      routeGames.value = []
+      try {
+        const games = await requestHashGames(currency, language)
+        if (current) routeGames.value = games
+      } catch (error) {
+        if (current) console.error(error)
+      }
+    },
+    { immediate: true }
+  )
+}
+
+const games = computed(() => props.games ?? routeGames.value)
+const selectedGameCode = ref(props.initialGameCode)
+const selectedGame = computed(
+  () => games.value.find(game => game.gameCode === selectedGameCode.value) ?? games.value[0]
+)
+
+watch([() => props.initialGameCode, visible], ([gameCode, isVisible], [, wasVisible]) => {
+  if (props.variant === 'h5' || (isVisible && !wasVisible)) selectedGameCode.value = gameCode
+})
+
+watch(
+  tabsViewport,
+  viewport => {
+    const tab = viewport?.querySelector<HTMLElement>('[aria-selected="true"]')
+    if (tab) void centerTab(tab)
+  },
+  { flush: 'post' }
+)
+
+const siteConfig = useSiteConfigStore()
+const rulesImageUrl = ref('')
+
+watch(
+  [() => selectedGame.value?.introImageUrl, () => siteConfig.config],
+  ([imagePath]) => {
+    rulesImageUrl.value = resolveGameImageUrl(imagePath)
+  },
+  { immediate: true }
+)
 
 const close = () => {
   if (props.variant === 'pc') visible.value = false

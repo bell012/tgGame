@@ -57,6 +57,7 @@
     "recordsMenu": "Bet history menu",
     "recentBets": "Recent Bets",
     "gameRules": "Game Rules",
+    "rulesImageNotConfigured": "A tutorial image hasn’t been configured for this game yet.",
     "more": "More",
     "currency": "Currency",
     "bets": "Bets",

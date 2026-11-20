@@ -23,10 +23,10 @@ export interface HashGameListParams {
 export interface HashGameLotteryGame {
   gameCode: string // 游戏编码
   gameName: string // 游戏名称
-  imageUrl?: string
+  imageUrl?: string // 游戏图片
   description?: string | null
   currencies?: readonly string[] // 该玩法支持的投注币种，空数组表示不限制
-  introImageUrl?: string | null
+  introImageUrl?: string | null // 游戏规则中玩法说明图片
   allowMultipleBets?: boolean
   multiBet?: boolean
   multipleBet?: boolean

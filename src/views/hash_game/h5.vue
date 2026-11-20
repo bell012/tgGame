@@ -282,7 +282,8 @@
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full text-[11px] not-italic text-text-1"
                       :style="{ background: entry.color }"
-                      >{{ entry.label }}</i>{{ entry.count }}
+                      >{{ entry.label }}</i
+                    >{{ entry.count }}
                   </span>
                 </div>
                 <span class="ml-auto min-w-0 whitespace-nowrap text-[11px] text-secondary-8">{{
@@ -821,6 +822,8 @@ const openRecentBets = () => {
 /** 跳转至游戏规则页并收起记录菜单。 */
 const openGameRules = () => {
   recordsMenuOpen.value = false
-  void navigateTo('/hash-game/rules')
+  void navigateTo('/hash-game/rules', {
+    query: { gameCode: selectedHashGameCode.value || undefined }
+  })
 }
 </script>
