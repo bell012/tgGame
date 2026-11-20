@@ -249,13 +249,13 @@
             >
               <span
                 v-if="hasBetAmount(option.key)"
-                class="absolute right-[12px] z-[2] flex min-h-[24px] items-center justify-center rounded-[20px] bg-theme-primary px-[6px] text-[12px] font-[500] leading-[24px] text-text-4 transition-[top] duration-200"
-                :style="{ top: `calc(48% - 18px - ${getChipStackOffset(option.key)}px)` }"
+                class="pointer-events-none absolute right-[30px] z-[2] flex w-max translate-x-1/2 items-center justify-center rounded-[36px] bg-theme-primary px-[8px] py-[0px] text-[10px] font-[700] text-text-4 transition-[top] duration-200"
+                :style="{ top: `calc(48% - 6px - ${getChipStackOffset(option.key)}px)` }"
               >
                 {{ betTotals[option.key] }}
               </span>
               <span
-                class="pointer-events-none absolute right-[12px] top-[48%] z-[1] size-[36px] text-[12px]"
+                class="pointer-events-none absolute right-[12px] top-[50%] z-[1] size-[36px] text-[12px]"
                 data-chip-stack
                 aria-hidden="true"
               >

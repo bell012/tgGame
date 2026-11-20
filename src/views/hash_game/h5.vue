@@ -351,7 +351,7 @@
             >
               <span
                 v-if="hasBetAmount(option.key)"
-                class="absolute right-[5px] z-[2] flex items-center justify-center rounded-[12px] bg-theme-primary px-[8px] text-[12px] font-[500] text-text-4"
+                class="absolute right-[4px] z-[2] flex items-center justify-center rounded-[12px] bg-theme-primary px-[8px] text-[12px] font-[500] text-text-4"
                 :style="{ top: `calc(48% - 14px - ${getChipStackOffset(option.key)}px)` }"
               >
                 {{ betTotals[option.key] }}
