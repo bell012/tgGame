@@ -82,7 +82,10 @@
     "betDetailStatus": {
       "win": "Won",
       "lose": "Did not win",
+      "confirming": "Confirming",
       "voided": "Voided (automatically refunded)",
+      "pending": "Awaiting draw",
+      "refund": "Refunded",
       "error": "Settlement error",
       "cancelled": "Cancelled"
     },

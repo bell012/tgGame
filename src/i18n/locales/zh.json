@@ -82,7 +82,10 @@
     "betDetailStatus": {
       "win": "中奖",
       "lose": "未中奖",
+      "confirming": "确认中",
       "voided": "已作废（自动退款）",
+      "pending": "待开奖",
+      "refund": "退款",
       "error": "结算异常",
       "cancelled": "已取消"
     },

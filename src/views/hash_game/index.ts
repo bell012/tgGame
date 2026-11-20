@@ -31,8 +31,11 @@ import {
   formatStakeAmount,
   issueExplorerUrl,
   issueOutcome,
+  recentGameBets,
   timestampMillis,
   type BetKey,
+  type RecentBetRecord,
+  type RecentBetSummary,
   type RoadmapMode
 } from './lotteryDisplay'
 import backgroundMusicUrl from '@/static/mp3/hash/beijing.mp3?url'
@@ -40,18 +43,6 @@ import backgroundMusicUrl from '@/static/mp3/hash/beijing.mp3?url'
 type ChipOption = { id: number; value: number; hue: number }
 type ChipDraft = { id: number; value: string; hue: number; enabled: boolean }
 type CustomChipDraft = { id: number; value: string; hue: number }
-export type RecentBetRecord = {
-  id: string
-  block: string
-  selection: BetKey
-  betAmount: number
-  profitLoss: number | null
-}
-export type RecentBetSummary = {
-  betCount: number
-  betAmount: number
-  todayProfitLoss: number
-}
 export type HashGameHistoryRecord = {
   id: number
   block: string
@@ -63,9 +54,9 @@ export type HashGameHistoryRecord = {
   explorerUrl: string
 }
 const EMPTY_BET_SUMMARY: RecentBetSummary = {
-  betCount: 0,
-  betAmount: 0,
-  todayProfitLoss: 0
+  count: 0,
+  totalBetAmount: 0,
+  profitLoss: 0
 }
 
 // H5、PC 共用筹码配置，面额与配色保持在同一项中。
@@ -96,6 +87,11 @@ const createHashGamePageState = () => {
   const userStore = useUserStore()
   const authModalStore = useAuthModalStore()
   userStore.syncStoredUserData()
+  const account = computed(() => {
+    const memberId = userStore.acctInfo?.memberId
+    const token = userStore.userInfo?.tradeToken
+    return memberId || token ? String(memberId || userStore.userInfo?.memberId || token) : ''
+  })
   const { isRefreshingBalance } = storeToRefs(userStore)
   const currencyOverride = ref<string>()
   const currency = useDisplayCurrency(currencyOverride)
@@ -120,15 +116,20 @@ const createHashGamePageState = () => {
   let roundRefreshPending = false
   let lastRoundRefreshAt = 0
 
+  const clearRecentBets = () => {
+    recentBetsRequestId++
+    recentBets.value = []
+    recentBetSummary.value = EMPTY_BET_SUMMARY
+  }
+  watch(account, clearRecentBets, { flush: 'sync' })
+
   /** 清空上一玩法的详情、走势和投注记录。 */
   const clearHashGameDisplay = () => {
     hashGameInfo.value = null
     hashGameInfoCurrency.value = ''
     roadmapIssues.value = []
     roadmapStatus.value = 'idle'
-    recentBetsRequestId++
-    recentBets.value = []
-    recentBetSummary.value = EMPTY_BET_SUMMARY
+    clearRecentBets()
   }
 
   /** 用路单接口返回的 items 更新当前玩法，区分空路单和请求失败。 */
@@ -231,48 +232,18 @@ const createHashGamePageState = () => {
   /** 打开近期投注时，读取当前玩法与币种的真实记录和汇总。 */
   const loadRecentBets = async () => {
     const gameCode = selectedHashGameCode.value
-    if (!gameCode || (!userStore.userInfo?.tradeToken && !userStore.acctInfo?.memberId)) return
-    const requestId = ++recentBetsRequestId
     const currencyCode = currency.currentCurrencyCode.value
+    if (!gameCode || !currencyCode || !account.value) return
+    const requestId = ++recentBetsRequestId
     try {
-      const { result } = await Api.hashGame.getHashGameRecentBets({
+      const { result, success } = await Api.hashGame.getHashGameRecentBets({
         gameCode,
         currency: currencyCode
       })
-      if (requestId !== recentBetsRequestId || !result) return
-      const start = new Date()
-      start.setHours(0, 0, 0, 0)
-      const end = new Date(start)
-      end.setDate(end.getDate() + 1)
-      const summary = { ...EMPTY_BET_SUMMARY }
-      recentBets.value = result.list.flatMap(bet => {
-        const betTime = new Date(timestampMillis(bet.betTime) || bet.betTime)
-        if (
-          bet.gameCode !== gameCode ||
-          bet.currency !== currencyCode ||
-          !(betTime >= start && betTime < end)
-        )
-          return []
-        const betAmount = Number(bet.amount)
-        const profitLoss =
-          bet.status === 'WIN' || bet.status === 'LOSE'
-            ? Number(bet.payoutAmount) - betAmount
-            : null
-        if (bet.status !== 'CANCEL') {
-          summary.betCount++
-          summary.betAmount += betAmount
-          summary.todayProfitLoss += profitLoss ?? 0
-        }
-        return [
-          {
-            id: bet.orderNo,
-            block: String(bet.anchorBlockNum),
-            selection: BET_KEYS[bet.betOption],
-            betAmount,
-            profitLoss
-          }
-        ]
-      })
+      if (requestId !== recentBetsRequestId || success === false || !Array.isArray(result?.list))
+        return
+      const { records, summary } = recentGameBets(result.list, gameCode, currencyCode)
+      recentBets.value = records
       recentBetSummary.value = summary
     } catch (error) {
       console.error(error)
@@ -385,11 +356,7 @@ const createHashGamePageState = () => {
     algorithm.value ? (MARKET_OPTIONS[algorithm.value] ?? []) : []
   )
   const betting = useHashGameBetting({
-    account: computed(() => {
-      const memberId = userStore.acctInfo?.memberId
-      const token = userStore.userInfo?.tradeToken
-      return memberId || token ? String(memberId || userStore.userInfo?.memberId || token) : ''
-    }),
+    account,
     currency: currency.currentCurrencyCode,
     gameCode,
     info: computed(() =>

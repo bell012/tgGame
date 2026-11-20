@@ -409,7 +409,6 @@
       variant="pc"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
-      :balance-text="currentBalanceText"
       :bets="recentBets"
       :summary="recentBetSummary"
       @select-bet="openBetDetailPopup"
@@ -513,7 +512,6 @@ const {
   chatVisible,
   currentCurrencyCode,
   currentCurrencyIcon,
-  currentBalanceText,
   recentBets,
   recentBetSummary,
   historyPopupOpen,

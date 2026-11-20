@@ -5,10 +5,12 @@ export type HashGameAlgorithm = 'PARITY' | 'SUM' | 'LUCKY' | 'BANKER_PLAYER' | '
 /** Hash 彩票支持的投注选项。 */
 export type HashGameBetOption =
   'ODD' | 'EVEN' | 'BIG' | 'SMALL' | 'WIN' | 'LOSE' | 'BANKER' | 'PLAYER' | 'TIE'
+//  `ODD` / `EVEN` / `BIG` / `SMALL` | 单 / 双 / 大 / 小 | `WIN` / `LOSE` | 赢 / 输 |  `BANKER` / `PLAYER` / `TIE` | 庄 / 闲 / 和 |
 
 /** 投注单状态。 */
 export type HashGameBetStatus =
   'CONFIRMING' | 'VOIDED' | 'PENDING' | 'WIN' | 'LOSE' | 'REFUND' | 'ERROR' | 'CANCEL'
+// `CONFIRMING` 确认中、`VOIDED` 已作废（自动退款）、`PENDING` 待开奖、 `WIN` 中奖、`LOSE` 未中奖、`REFUND` 退款、`ERROR` 结算异常、`CANCEL` 已取消 |
 
 /** 由算法决定结构的开奖结果。 */
 export type HashGameLotteryResult = Record<string, unknown>

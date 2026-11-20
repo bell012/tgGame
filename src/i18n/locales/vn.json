@@ -82,7 +82,10 @@
     "betDetailStatus": {
       "win": "Trúng thưởng",
       "lose": "Không trúng thưởng",
+      "confirming": "Đang xác nhận",
       "voided": "Đã vô hiệu (tự động hoàn tiền)",
+      "pending": "Chờ kết quả",
+      "refund": "Đã hoàn tiền",
       "error": "Lỗi quyết toán",
       "cancelled": "Đã hủy"
     },

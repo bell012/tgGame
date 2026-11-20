@@ -575,7 +575,6 @@
       v-model:visible="recentBetsOpen"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
-      :balance-text="currentBalanceText"
       :bets="recentBets"
       :summary="recentBetSummary"
     />

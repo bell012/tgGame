@@ -16,7 +16,7 @@
           class="bottom-sheet-panel flex flex-col overflow-hidden bg-bg-1 text-text-1"
           :class="
             variant === 'pc'
-              ? 'max-h-[90vh] w-full max-w-[480px] rounded-[8px]'
+              ? 'max-h-[85vh] min-h-[85vh] w-full max-w-[480px] rounded-[8px]'
               : 'h-[65vh] w-full rounded-t-[12px] px-[12px] py-[16px]'
           "
           role="dialog"
@@ -95,9 +95,9 @@
                   <img :src="currencyIcon" :alt="currencyCode" class="size-[18px] object-contain" />
                   {{ currencyCode }}
                 </span>
-                <span>{{ summary.betCount }}</span>
-                <span>{{ currencySymbol }}{{ summary.betAmount.toFixed(2) }}</span>
-                <span>{{ formatSignedAmount(summary.todayProfitLoss) }}</span>
+                <span>{{ summary.count }}</span>
+                <span>{{ currencySymbol }}{{ summary.totalBetAmount.toFixed(2) }}</span>
+                <span>{{ formatSignedAmount(summary.profitLoss) }}</span>
               </div>
             </div>
 
@@ -118,8 +118,8 @@
                 :class="variant === 'pc' ? 'rounded-b-[12px] bg-bg-2' : 'rounded-b-[8px] bg-bg-2'"
               >
                 <div
-                  v-for="(bet, index) in bets"
-                  :key="bet.id"
+                  v-for="bet in bets"
+                  :key="bet.orderNo"
                   :class="
                     variant === 'pc'
                       ? 'grid grid-cols-4 px-[12px] py-[12px] items-center text-center text-[16px] text-text-2 cursor-pointer'
@@ -127,15 +127,15 @@
                   "
                   role="button"
                   tabindex="0"
-                  @click="openBetDetail(bet)"
-                  @keydown.enter.prevent="openBetDetail(bet)"
-                  @keydown.space.prevent="openBetDetail(bet)"
+                  @click="openBetDetail(bet.orderNo)"
+                  @keydown.enter.prevent="openBetDetail(bet.orderNo)"
+                  @keydown.space.prevent="openBetDetail(bet.orderNo)"
                 >
-                  <span class="text-left">{{ bet.block }}</span>
-                  <span>{{ t(`hashGame.${bet.selection}`) }}</span>
-                  <span class="whitespace-nowrap"
-                    >-{{ currencySymbol }}{{ bet.betAmount.toFixed(2) }}</span
-                  >
+                  <span class="text-left">{{ bet.anchorBlockNum }}</span>
+                  <span>{{ formatBetOption(bet.betOption) }}</span>
+                  <span class="whitespace-nowrap">
+                    {{ bet.amount == null ? '—' : `-${currencySymbol}${bet.amount.toFixed(2)}` }}
+                  </span>
                   <span
                     class="flex items-center justify-end whitespace-nowrap"
                     :class="
@@ -146,8 +146,14 @@
                           : 'text-secondary-2'
                     "
                   >
-                    {{ bet.profitLoss == null ? '—' : formatSignedAmount(bet.profitLoss) }}
-                    <RightArrowIcon class="ml-[1px] size-[14px] text-text-3" />
+                    <span
+                      class="min-w-0"
+                      :class="{
+                        'whitespace-normal break-words text-right': bet.profitLoss == null
+                      }"
+                      >{{ formatBetResult(bet) }}</span
+                    >
+                    <RightArrowIcon class="ml-[1px] size-[14px] shrink-0 text-text-3" />
                   </span>
                 </div>
               </div>
@@ -164,15 +170,15 @@ import RightArrowIcon from '@/static/svg/hash_game/jiantou_you2.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { RecentBetRecord, RecentBetSummary } from '../index'
+import { getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import { BET_KEYS, type RecentBetRecord, type RecentBetSummary } from '../lotteryDisplay'
 
 const props = withDefaults(
   defineProps<{
     visible: boolean
     currencyCode: string
     currencyIcon: string
-    balanceText: string
     bets: RecentBetRecord[]
     summary: RecentBetSummary
     variant?: 'h5' | 'pc'
@@ -187,26 +193,45 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 
-const currencySymbol = computed(() => {
-  const match = props.balanceText.match(/^[^\d\s]+/)
-  return match?.[0] ?? `${props.currencyCode} `
-})
+const statusKeys = {
+  CONFIRMING: 'confirming',
+  VOIDED: 'voided',
+  PENDING: 'pending',
+  REFUND: 'refund',
+  ERROR: 'error',
+  CANCEL: 'cancelled'
+} satisfies Record<Exclude<RecentBetRecord['status'], 'WIN' | 'LOSE'>, string>
+
+const currencySymbol = computed(() => getCurrencySymbol(props.currencyCode))
+
+const formatBetOption = (option: RecentBetRecord['betOption']) => {
+  const key = BET_KEYS[option]
+  return key ? t(`hashGame.${key}`) : '—'
+}
 
 const formatSignedAmount = (amount: number) =>
   `${amount < 0 ? '-' : '+'}${currencySymbol.value}${Math.abs(amount).toFixed(2)}`
+
+const formatBetResult = ({ status, profitLoss }: RecentBetRecord) => {
+  if (status === 'WIN' || status === 'LOSE') {
+    return profitLoss == null ? '—' : formatSignedAmount(profitLoss)
+  }
+  const key = statusKeys[status]
+  return typeof key === 'string' ? t(`hashGame.betDetailStatus.${key}`) : '—'
+}
 
 const openBetHistory = () => {
   emit('update:visible', false)
   void navigateTo('/bet-history')
 }
 
-const openBetDetail = (bet: RecentBetRecord) => {
+const openBetDetail = (orderNo: string) => {
   emit('update:visible', false)
   if (props.variant === 'pc') {
-    emit('select-bet', bet.id)
+    emit('select-bet', orderNo)
     return
   }
 
-  void navigateTo(`/hash-game/bet-details/${encodeURIComponent(bet.id)}`)
+  void navigateTo(`/hash-game/bet-details/${encodeURIComponent(orderNo)}`)
 }
 </script>
