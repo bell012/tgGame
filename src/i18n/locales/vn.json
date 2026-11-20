@@ -79,6 +79,13 @@
     "resultBlock": "Khối kết quả",
     "blockHash": "Hash khối",
     "betTime": "Thời gian cược",
+    "betDetailStatus": {
+      "win": "Trúng thưởng",
+      "lose": "Không trúng thưởng",
+      "voided": "Đã vô hiệu (tự động hoàn tiền)",
+      "error": "Lỗi quyết toán",
+      "cancelled": "Đã hủy"
+    },
     "back": "Quay lại",
     "chat": "Trò chuyện",
     "close": "Đóng"

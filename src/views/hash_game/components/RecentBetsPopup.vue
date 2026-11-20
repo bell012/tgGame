@@ -164,7 +164,7 @@ import RightArrowIcon from '@/static/svg/hash_game/jiantou_you2.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { HashGameBetDetail, RecentBetRecord, RecentBetSummary } from '../index'
+import type { RecentBetRecord, RecentBetSummary } from '../index'
 import { navigateTo } from '@/utils/router'
 
 const props = withDefaults(
@@ -173,7 +173,6 @@ const props = withDefaults(
     currencyCode: string
     currencyIcon: string
     balanceText: string
-    gameName: string
     bets: RecentBetRecord[]
     summary: RecentBetSummary
     variant?: 'h5' | 'pc'
@@ -184,7 +183,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   'update:visible': [visible: boolean]
-  'select-bet': [bet: HashGameBetDetail]
+  'select-bet': [orderNo: string]
 }>()
 const { t } = useI18n()
 
@@ -202,22 +201,12 @@ const openBetHistory = () => {
 }
 
 const openBetDetail = (bet: RecentBetRecord) => {
-  const detail: HashGameBetDetail = {
-    ...bet,
-    gameName: props.gameName,
-    currencyCode: props.currencyCode,
-    currencyIcon: props.currencyIcon
-  }
   emit('update:visible', false)
   if (props.variant === 'pc') {
-    emit('select-bet', detail)
+    emit('select-bet', bet.id)
     return
   }
 
-  void navigateTo(`/hash-game/bet-details/${bet.id}`, {
-    state: {
-      hashGameBet: JSON.stringify(detail)
-    }
-  })
+  void navigateTo(`/hash-game/bet-details/${encodeURIComponent(bet.id)}`)
 }
 </script>

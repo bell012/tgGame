@@ -43,16 +43,9 @@ type CustomChipDraft = { id: number; value: string; hue: number }
 export type RecentBetRecord = {
   id: string
   block: string
-  blockHash: string
   selection: BetKey
   betAmount: number
   profitLoss: number | null
-  betTime: string
-}
-export type HashGameBetDetail = RecentBetRecord & {
-  gameName: string
-  currencyCode: string
-  currencyIcon: string
 }
 export type RecentBetSummary = {
   betCount: number
@@ -274,11 +267,9 @@ const createHashGamePageState = () => {
           {
             id: bet.orderNo,
             block: String(bet.anchorBlockNum),
-            blockHash: bet.blockHash ?? '',
             selection: BET_KEYS[bet.betOption],
             betAmount,
-            profitLoss,
-            betTime: betTime.toLocaleString(locale.value)
+            profitLoss
           }
         ]
       })

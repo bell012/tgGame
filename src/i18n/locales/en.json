@@ -79,6 +79,13 @@
     "resultBlock": "Result Block",
     "blockHash": "Block Hash",
     "betTime": "Bet Time",
+    "betDetailStatus": {
+      "win": "Won",
+      "lose": "Did not win",
+      "voided": "Voided (automatically refunded)",
+      "error": "Settlement error",
+      "cancelled": "Cancelled"
+    },
     "back": "Back",
     "chat": "Chat",
     "close": "Close"

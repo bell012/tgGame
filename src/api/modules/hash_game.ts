@@ -134,6 +134,6 @@ export function getHashGameBetDetail(
     method: 'post',
     data: { orderNo },
     showSuccessToast: false,
-    showErrorToast: true
+    showErrorToast: false
   })
 }

@@ -410,7 +410,6 @@
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :balance-text="currentBalanceText"
-      :game-name="hashGameName"
       :bets="recentBets"
       :summary="recentBetSummary"
       @select-bet="openBetDetailPopup"
@@ -419,7 +418,7 @@
     <HashGameBetDetailPopup
       v-model:visible="betDetailPopupOpen"
       variant="pc"
-      :bet="selectedBetDetail"
+      :order-no="selectedOrderNo"
     />
     <!-- 历史投注 -->
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" variant="pc" />
@@ -485,7 +484,7 @@ import HistoryPopup from './components/HistoryPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
 import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import { useBetChipAnimation } from './components/useBetChipAnimation'
-import type { HashGameBetDetail, HashGamePageState } from './index'
+import type { HashGamePageState } from './index'
 import HashGameRules from './rules.vue'
 
 // PC 视图只保留聊天输入草稿；周期、路单、投注和开关都读写 index.ts 共享状态。
@@ -566,7 +565,7 @@ const { chipStackStep, landedChips, chipFlights, getChipStackOffset, finishChipF
     slotSize: 36
   })
 const betDetailPopupOpen = ref(false)
-const selectedBetDetail = ref<HashGameBetDetail | null>(null)
+const selectedOrderNo = ref<string>()
 const rulesPopupOpen = ref(false)
 const quickBetPopupRef = ref<HTMLElement | null>(null)
 const quickBetTriggerRef = ref<HTMLElement | null>(null)
@@ -589,8 +588,8 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', handleQuickBet
 
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
 
-const openBetDetailPopup = (bet: HashGameBetDetail) => {
-  selectedBetDetail.value = bet
+const openBetDetailPopup = (orderNo: string) => {
+  selectedOrderNo.value = orderNo
   betDetailPopupOpen.value = true
 }
 </script>

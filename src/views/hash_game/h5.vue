@@ -576,7 +576,6 @@
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :balance-text="currentBalanceText"
-      :game-name="hashGameName"
       :bets="recentBets"
       :summary="recentBetSummary"
     />
