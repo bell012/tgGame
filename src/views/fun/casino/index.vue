@@ -214,13 +214,13 @@
 
       <div
         class="tabs-content filter-slide-stage min-h-48"
-        :class="{ '-mr-3.5 sm:-mr-4': isMobile }"
+        :class="isLobbyContent ? 'max-sm:-mx-3.5' : 'max-sm:-mr-3.5'"
       >
         <Transition :name="slideName">
           <div
             :key="tabSlideKey"
             class="filter-slide-pane w-full"
-            :class="{ 'pr-3.5 sm:pr-4': isMobile }"
+            :class="isLobbyContent ? 'max-sm:px-3.5' : 'max-sm:pr-3.5'"
           >
             <component :is="getPageStyle" v-bind="currentPageProps" />
           </div>
@@ -334,6 +334,7 @@ const getPageStyle = computed(() => {
 
   return basePageStyle.value
 })
+const isLobbyContent = computed(() => getPageStyle.value === pageStyle1)
 const currentQueryOptions = computed(() => {
   if (trimmedSearchKeyword.value) {
     if (basePageStyle.value === pageStyle1) {

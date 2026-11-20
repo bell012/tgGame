@@ -234,7 +234,7 @@
             <img class="absolute bottom-15 right-80 scale-150" :src="dotC8z5Aoh" alt="" />
           </div>
           <div
-            class="relative z-10 flex h-full flex-col items-center justify-center lg:!flex-row-reverse"
+            class="relative z-10 flex h-full flex-col items-center justify-center sm:[container:payment/inline-size] lg:!flex-row-reverse"
           >
             <div class="max-lg:hidden lg:flex lg:items-center lg:justify-center">
               <img class="-ml-1 w-6" :src="BTC" alt="" />
@@ -249,7 +249,9 @@
               <img class="-ml-1 w-6" :src="MATIC" alt="" />
               <img class="-ml-1 w-6" :src="TRX" alt="" />
             </div>
-            <div class="mx-auto hidden items-center justify-center gap-6 max-sm:hidden sm:flex">
+            <div
+              class="mx-auto hidden min-w-0 max-w-full items-center justify-center gap-6 sm:flex [@container_payment_(max-width:29rem)]:gap-2 [&>img]:min-w-0"
+            >
               <img class="w-14" :src="MAYA" alt="" />
               <img class="w-20" :src="GCASH" alt="" />
               <img class="w-14" :src="VISA" alt="" />

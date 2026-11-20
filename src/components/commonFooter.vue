@@ -52,7 +52,7 @@
 
       <!-- 第三排：行间竖线不用 divide-*（无 token / 易受 reset 影响），用 border-l 显式分隔 -->
       <div class="w-full border-b border-opacity-10 py-6">
-        <div class="flex w-full flex-wrap gap-x-10">
+        <div class="flex w-full flex-wrap gap-x-10 sm:flex-nowrap sm:overflow-x-auto">
           <!-- 左 -->
           <div class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6">
             <a
