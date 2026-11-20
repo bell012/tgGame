@@ -1,13 +1,13 @@
 import { computed, onScopeDispose, ref, shallowRef, watch, type Ref } from 'vue'
 import { useGameChatFeed } from '@/composables/useGameChatFeed'
 import { queryHashChatHistory } from '@/api/modules/hash-game-chat'
+import type { HashGamePlaceBetResult } from '@/api/interface/hash_game.interface'
 import type {
   HashBetStatsSnapshot,
   HashChatHistoryItem,
   HashChatMessage,
   HashHttpDraw,
   HashPlaceBetRequest,
-  HashPlaceBetResponse,
   HashRecentBetsResponse,
   HashSettlementNotice,
   HashSettledOrder,
@@ -27,13 +27,33 @@ function roundAmount(value: number) {
   return Number(value.toFixed(8))
 }
 
+/** 空快照表示清零，格式不完整的推送不覆盖已有统计。 */
+function isValidBetStats(stats: HashBetStatsSnapshot['stats']) {
+  if (!stats || typeof stats !== 'object' || Array.isArray(stats)) return false
+  return Object.values(stats).every(entries => {
+    if (!entries || typeof entries !== 'object' || Array.isArray(entries)) return false
+    return Object.values(entries).every(stat => {
+      if (!stat || !Number.isSafeInteger(stat.participantCount) || stat.participantCount < 0)
+        return false
+      const { totalAmount } = stat
+      if (
+        typeof totalAmount !== 'number' &&
+        (typeof totalAmount !== 'string' || !totalAmount.trim())
+      )
+        return false
+      const amount = Number(totalAmount)
+      return Number.isFinite(amount) && amount >= 0
+    })
+  })
+}
+
 /** 管理哈希游戏单次进入页面期间的聊天室和结算展示状态。 */
 export function useHashGameChat(gameCode: Ref<string>) {
   const betBroadcastMode = ref('INDIVIDUAL')
   const feed = useGameChatFeed<HashChatMessage>()
   const activeRoom = ref('')
-  const onlineCount = ref(0)
-  const betStats = shallowRef<HashBetStatsSnapshot>()
+  const onlineCount = ref<number>()
+  const betStats = shallowRef(new Map<number, HashBetStatsSnapshot>())
   const settlementQueue = shallowRef<HashSettlementNotice[]>([])
   const currentSettlement = computed(() => settlementQueue.value[0] ?? null)
   const placedOrders = new Map<string, { gameCode: string; anchorBlockNum: number }>()
@@ -101,14 +121,23 @@ export function useHashGameChat(gameCode: Ref<string>) {
 
   /** 处理当前房间实时消息，开奖按玩法和期号去重。 */
   function acceptWsEvent(event: HashWsEvent) {
-    if (!activeRoom.value || event.code !== 0 || event.data.gameCode !== gameCode.value) return
+    const code = event.data?.gameCode
+    if (!code || event.code !== 0 || code !== gameCode.value || activeRoom.value !== `CHAT:${code}`)
+      return
 
     if (event.type === 'CHAIN_LOTTERY_ONLINE') {
-      onlineCount.value = event.data.onlineCount
+      const count = event.data.onlineCount
+      if (Number.isSafeInteger(count) && count >= 0) onlineCount.value = count
       return
     }
     if (event.type === 'CHAIN_LOTTERY_BET_STATS') {
-      betStats.value = event.data
+      const { anchorBlockNum, stats } = event.data
+      if (!Number.isSafeInteger(anchorBlockNum) || anchorBlockNum <= 0 || !isValidBetStats(stats))
+        return
+      // 下一期的推送可能先于详情接口到达，保留最近两期的快照。
+      const snapshots = new Map(betStats.value).set(anchorBlockNum, event.data)
+      if (snapshots.size > 2) snapshots.delete(Math.min(...snapshots.keys()))
+      betStats.value = snapshots
       return
     }
 
@@ -163,14 +192,11 @@ export function useHashGameChat(gameCode: Ref<string>) {
   }
 
   /** 仅在投注接口成功并返回订单号后插入本人投注消息。 */
-  function acceptSuccessfulBet(request: HashPlaceBetRequest, response: HashPlaceBetResponse) {
-    const result = response.result
+  function acceptSuccessfulBet(request: HashPlaceBetRequest, result: HashGamePlaceBetResult) {
     if (
       !activeRoom.value ||
       request.gameCode !== gameCode.value ||
-      !response.success ||
-      response.code !== 'C2' ||
-      !result?.orderNo ||
+      result.currency !== request.currency ||
       result.anchorBlockNum !== request.anchorBlockNum
     )
       return false
@@ -350,8 +376,8 @@ export function useHashGameChat(gameCode: Ref<string>) {
     placedOrders.clear()
     settledRounds.clear()
     settlementQueue.value = []
-    onlineCount.value = 0
-    betStats.value = undefined
+    onlineCount.value = undefined
+    betStats.value = new Map()
     activeRoom.value = code ? `CHAT:${code}` : ''
     if (code) void loadHistory(code, generation)
   }
@@ -363,8 +389,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
 
     const generation = ++roomGeneration
     feed.clear()
-    onlineCount.value = 0
-    betStats.value = undefined
+    betStats.value = new Map()
     void loadHistory(code, generation)
   }
 

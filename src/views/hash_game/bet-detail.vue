@@ -87,11 +87,7 @@
                         : 'text-secondary-2'
                   ]"
                 >
-                  {{
-                    bet.profitLoss == null
-                      ? '—'
-                      : `${bet.profitLoss >= 0 ? '+' : '-'}${Math.abs(bet.profitLoss).toFixed(2)}`
-                  }}
+                  {{ bet.profitLossText }}
                 </strong>
                 <span
                   :class="
@@ -100,11 +96,7 @@
                       : 'mt-[5px] text-[14px] text-text-1'
                   "
                 >
-                  {{
-                    bet.profitLoss == null
-                      ? '—'
-                      : t(bet.profitLoss >= 0 ? 'betHistory.win' : 'betHistory.loss')
-                  }}
+                  {{ bet.statusText }}
                 </span>
               </div>
 
@@ -143,8 +135,8 @@
                   <div
                     :class="
                       variant === 'pc'
-                        ? 'flex min-w-0 items-center gap-1 text-[16px] text-text-1'
-                        : 'flex min-w-0 items-center gap-1 text-[14px] text-text-1'
+                        ? 'flex min-w-0 items-center gap-1 text-[14px] text-text-1'
+                        : 'flex min-w-0 items-center gap-1 text-[12px] text-text-1'
                     "
                   >
                     <span class="min-w-0 truncate">{{ bet.id }}</span>
@@ -174,7 +166,7 @@
                         : 'flex size-[20px] items-center justify-center rounded-full bg-[#22A89A] text-[12px] text-text-1'
                     "
                   >
-                    {{ t(`hashGame.${bet.selection}Mark`) }}
+                    {{ bet.selection ? t(`hashGame.${bet.selection}Mark`) : '—' }}
                   </span>
                 </div>
                 <div class="flex items-center justify-between gap-3">
@@ -191,7 +183,7 @@
                     :class="
                       variant === 'pc' ? 'text-[16px] text-text-1' : 'text-[14px] text-text-1'
                     "
-                    >{{ bet.betAmount.toFixed(2) }} {{ bet.currencyCode }}</span
+                    >{{ bet.amountText }}</span
                   >
                 </div>
                 <div class="flex items-center justify-between gap-3">
@@ -234,8 +226,8 @@
                   <div
                     :class="
                       variant === 'pc'
-                        ? 'flex min-w-0 items-center gap-1 text-[16px]'
-                        : 'flex min-w-0 items-center gap-1 text-[14px]'
+                        ? 'flex min-w-0 items-center gap-1 text-[14px]'
+                        : 'flex min-w-0 items-center gap-1 text-[12px]'
                     "
                   >
                     <span class="min-w-0 truncate text-text-1">{{ bet.blockHash || '—' }}</span>
@@ -251,7 +243,12 @@
                         "
                       />
                     </button>
-                    <button type="button" class="shrink-0 text-theme-primary">
+                    <button
+                      type="button"
+                      class="shrink-0 text-theme-primary"
+                      :disabled="!bet.explorerUrl"
+                      @click="verifyBlock(bet.explorerUrl)"
+                    >
                       {{ t('hashGame.verify') }}
                     </button>
                   </div>
@@ -284,44 +281,129 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import type {
+  HashGameBetStatus,
+  HashGameLotteryBetDetail
+} from '@/api/interface/hash_game.interface'
+import { getHashGameBetDetail } from '@/api/modules/hash_game'
 import H5Header from '@/components/common/H5Header.vue'
 import KefuIcon from '@/static/svg/vip/kefu.svg?component'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
+import { useUserStore } from '@/stores/user'
+import { isApiBusinessSuccess } from '@/utils/apiBusiness'
+import { getCurrencyImageByCode } from '@/utils/currencyIcon'
+import { formatUsDateTime12h } from '@/utils/date'
 import { globalShowToast } from '@/utils/toast'
-import type { HashGameBetDetail } from './index'
+import { BET_KEYS, issueExplorerUrl } from './lotteryDisplay'
+
+const statusKeys: Record<HashGameBetStatus, string> = {
+  CONFIRMING: 'betHistory.filterOptions.unsettled',
+  VOIDED: 'hashGame.betDetailStatus.voided',
+  PENDING: 'betHistory.filterOptions.unsettled',
+  WIN: 'hashGame.betDetailStatus.win',
+  LOSE: 'hashGame.betDetailStatus.lose',
+  REFUND: 'betHistory.filterOptions.settled',
+  ERROR: 'hashGame.betDetailStatus.error',
+  CANCEL: 'hashGame.betDetailStatus.cancelled'
+}
 
 const props = withDefaults(
   defineProps<{
     variant?: 'h5' | 'pc'
-    bet?: HashGameBetDetail | null
+    orderNo?: string
   }>(),
-  { variant: 'h5', bet: null }
+  { variant: 'h5' }
 )
 const visible = defineModel<boolean>('visible', { default: false })
 
 const { t } = useI18n()
-const router = useRouter()
+const route = useRoute()
+const userStore = useUserStore()
 const { open: openOnlineCustomer } = useOnlineCustomerService()
-const routeBet = ref<HashGameBetDetail | null>(null)
-const bet = computed(() => (props.variant === 'pc' ? props.bet : routeBet.value))
+const detail = shallowRef<HashGameLotteryBetDetail>()
+const loading = ref(false)
+const loadFailed = ref(false)
+const orderNo = computed(() => {
+  if (props.variant === 'pc') return visible.value ? props.orderNo : undefined
+  return typeof route.params.id === 'string' ? route.params.id : undefined
+})
 
-onMounted(() => {
-  if (props.variant !== 'h5') return
-  const state = history.state as { hashGameBet?: string }
-  if (!state.hashGameBet) {
-    router.back()
-    return
-  }
+watch(
+  [
+    orderNo,
+    () => userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId,
+    () => userStore.userInfo?.tradeToken
+  ],
+  async ([id], _, onCleanup) => {
+    detail.value = undefined
+    loading.value = Boolean(id)
+    loadFailed.value = false
+    if (!id) return
 
-  try {
-    routeBet.value = JSON.parse(state.hashGameBet) as HashGameBetDetail
-  } catch {
-    router.back()
+    let active = true
+    onCleanup(() => {
+      active = false
+    })
+    try {
+      const response = await getHashGameBetDetail(id)
+      if (!active) return
+      if ((response.success ?? isApiBusinessSuccess(response)) && response.result?.orderNo === id) {
+        detail.value = response.result
+      } else {
+        loadFailed.value = true
+      }
+    } catch {
+      if (active) loadFailed.value = true
+    } finally {
+      if (active) loading.value = false
+    }
+  },
+  { immediate: true }
+)
+
+const bet = computed(() => {
+  if (!orderNo.value) return null
+  const value = detail.value
+  const currencyCode = value?.currency ?? ''
+  const statusKey = value && statusKeys[value.status]
+  const isWinOrLoss = value?.status === 'WIN' || value?.status === 'LOSE'
+  const amount = Number(value?.betAmount ?? NaN)
+  const profit = Number(value?.payoutAmount ?? NaN) - amount
+  const profitLoss = isWinOrLoss && Number.isFinite(profit) ? profit : null
+  const anchor = value?.anchorBlockNum
+  const hasAnchor = typeof anchor === 'number' && Number.isSafeInteger(anchor) && anchor > 0
+  return {
+    id: value?.orderNo ?? orderNo.value,
+    gameName: value?.gameName || '—',
+    selection: value && BET_KEYS[value.betOption],
+    currencyCode,
+    currencyIcon: getCurrencyImageByCode(currencyCode === 'TYJ' ? 'CNY' : currencyCode),
+    statusText: statusKey
+      ? t(statusKey)
+      : loading.value
+        ? t('common.loading')
+        : loadFailed.value
+          ? t('common.requestError')
+          : '—',
+    amountText: Number.isFinite(amount)
+      ? `${amount.toFixed(2)} ${currencyCode === 'TYJ' ? '¥' : currencyCode}`.trimEnd()
+      : '—',
+    profitLoss,
+    profitLossText:
+      profitLoss != null
+        ? `${profitLoss > 0 ? '+' : ''}${profitLoss.toFixed(2)}`
+        : value && !isWinOrLoss
+          ? '0.00'
+          : '—',
+    block: hasAnchor ? String(anchor) : '—',
+    blockHash: value?.blockHash,
+    explorerUrl: hasAnchor ? issueExplorerUrl(value?.explorerUrl, anchor) : undefined,
+    betTime: formatUsDateTime12h(value?.betTime)
   }
 })
 
@@ -339,7 +421,12 @@ onBeforeUnmount(() => document.removeEventListener('keydown', handleDocumentKeyd
 const openKefuPopup = () => openOnlineCustomer()
 
 const copyValue = async (value: string) => {
+  if (!value || value === '—') return
   await navigator.clipboard.writeText(value)
   globalShowToast(t('betDetails.copy'))
+}
+
+const verifyBlock = (url?: string) => {
+  if (url) window.open(url, '_blank', 'noopener,noreferrer')
 }
 </script>

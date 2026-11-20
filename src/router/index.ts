@@ -160,6 +160,10 @@ const baseRoutes: RouteRecordRaw[] = [
     path: 'hash-game/rules',
     name: 'hashGameRules',
     component: () => import('@/views/hash_game/rules.vue'),
+    props: route => ({
+      initialGameCode: typeof route.query.gameCode === 'string' ? route.query.gameCode : undefined,
+      currencyCode: typeof route.query.currency === 'string' ? route.query.currency : undefined
+    }),
     meta: {
       title: 'Game Rules',
       slideTransition: true, // 启用滑动动画

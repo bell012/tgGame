@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, type Ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useLocaleStore } from '@/stores/locale'
 import { SITE_CONFIG_STORAGE_KEY, useSiteConfigStore, type SiteConfig } from '@/stores/siteConfig'
@@ -75,7 +75,7 @@ export const readDisplayCurrencyCodesFromSiteConfig = (
   }
 }
 
-export const useDisplayCurrency = () => {
+export const useDisplayCurrency = (currencyOverride?: Readonly<Ref<string | undefined>>) => {
   const localeStore = useLocaleStore()
   const siteConfigStore = useSiteConfigStore()
   const userStore = useUserStore()
@@ -83,6 +83,9 @@ export const useDisplayCurrency = () => {
   const { config } = storeToRefs(siteConfigStore)
 
   const currentCurrencyCode = computed(() => {
+    const override = normalizeDisplayCurrencyCode(currencyOverride?.value)
+    if (override && override !== 'NONE') return override
+
     const accountCurrency = normalizeDisplayCurrencyCode(
       acctInfo.value?.currency || userInfo.value?.currency
     )
