@@ -155,6 +155,7 @@ export interface HashGamePlaceBetResult {
 export interface HashGameCancelBetParams {
   gameCode: string
   orderNo: string
+  currency: string
 }
 
 /** 取消成功的投注信息。 */

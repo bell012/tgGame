@@ -335,7 +335,7 @@
               >{{ t('hashGame.fairness') }}</span
             >
           </div>
-          <div class="grid gap-x-[5px]" :style="betGridStyle">
+          <div ref="betGridRef" class="grid gap-x-[5px]" :style="betGridStyle">
             <div
               v-for="option in betOptions"
               :key="option.key"
@@ -347,7 +347,8 @@
               "
               :style="{ '--bet-color': option.color }"
               :aria-pressed="hasBetAmount(option.key)"
-              @click="handleBetOptionClick($event, option.key)"
+              :disabled="betBusy"
+              @click="selectBet(option.key)"
             >
               <span
                 v-if="hasBetAmount(option.key)"
@@ -502,22 +503,26 @@
           <div class="flex w-full items-center gap-[7px]">
             <button
               type="button"
-              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
-              @click="handleCancelSelection"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 disabled:opacity-50"
+              :disabled="!canCancelBet"
+              @click="cancelBet"
             >
               <CancelIcon class="size-[14px] text-icon-2" />{{ t('hashGame.cancel') }}
             </button>
             <button
               type="button"
-              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
-              @click="repeatSelection"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 disabled:opacity-50"
+              :disabled="!canRepeatBet"
+              @click="repeatBets"
             >
               <RepeatIcon class="size-[14px] text-icon-2" />{{ t('hashGame.repeat') }}
             </button>
             <button
+              v-if="!quickBetEnabled"
               type="button"
-              disabled
+              :disabled="!canConfirmBet"
               class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 disabled:opacity-50"
+              @click="confirmBets"
             >
               <ConfirmIcon class="size-[14px] text-icon-2" />{{ t('hashGame.confirmBet') }}
             </button>
@@ -642,7 +647,7 @@ import ResultArrowIcon from '@/static/svg/hash_game/zhixiang.svg?component'
 import RecordsIcon from '@/static/svg/sift.svg?component'
 import { navigateTo } from '@/utils/router'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import BetChip from './components/BetChip.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import { formatChipAmount } from './components/chipMotion'
@@ -731,10 +736,18 @@ const {
   handleBack,
   openRecords,
   selectBet,
+  betChips,
+  betTotals,
+  betBusy,
+  hasBetAmount,
+  canCancelBet,
+  canRepeatBet,
+  canConfirmBet,
   toggleBackgroundMusic,
   toggleMusic,
-  cancelSelection,
-  repeatSelection,
+  cancelBet,
+  repeatBets,
+  confirmBets,
   chooseChip,
   toggleQuickBet,
   toggleQuickBetPopup,
@@ -744,34 +757,19 @@ const {
   handlePeriodOutsidePointerDown
 } = props.page
 
-const {
-  chipStackStep,
-  betTotals,
-  landedChips,
-  chipFlights,
-  hasBetAmount,
-  getChipStackOffset,
-  handleBetOptionClick,
-  finishChipFlight,
-  clearBetChips
-} = useBetChipAnimation({
-  selectedChip,
-  chipOptions,
-  soundEnabled: musicEnabled,
-  slotSize: 25,
-  selectBet
-})
-
 const { viewport: chipTrackRef } = useHorizontalScroll({ centerOnClick: true })
 const { viewport: roadmapViewport } = useHorizontalScroll({
   endOnChange: () => roadmap.value.columns
 })
-watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
-
-const handleCancelSelection = () => {
-  clearBetChips()
-  cancelSelection()
-}
+const betGridRef = ref<HTMLElement | null>(null)
+const { chipStackStep, landedChips, chipFlights, getChipStackOffset, finishChipFlight } =
+  useBetChipAnimation({
+    chips: betChips,
+    chipTrack: chipTrackRef,
+    betGrid: betGridRef,
+    soundEnabled: musicEnabled,
+    slotSize: 25
+  })
 
 /** 点击记录菜单和周期菜单外部时关闭对应浮层。 */
 const handleOutsidePointerDown = (event: PointerEvent) => {
@@ -823,7 +821,10 @@ const openRecentBets = () => {
 const openGameRules = () => {
   recordsMenuOpen.value = false
   void navigateTo('/hash-game/rules', {
-    query: { gameCode: selectedHashGameCode.value || undefined }
+    query: {
+      gameCode: selectedHashGameCode.value || undefined,
+      currency: currentCurrencyCode.value || undefined
+    }
   })
 }
 </script>

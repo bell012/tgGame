@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { HashGameLotteryGame } from '@/api/interface/hash_game.interface'
 import H5Header from '@/components/common/H5Header.vue'
@@ -115,6 +115,7 @@ const props = withDefaults(
     variant?: 'h5' | 'pc'
     games?: readonly HashGameLotteryGame[]
     initialGameCode?: string
+    currencyCode?: string
   }>(),
   { variant: 'h5' }
 )
@@ -129,7 +130,7 @@ const {
 
 if (props.variant === 'h5') {
   useUserStore().syncStoredUserData()
-  const { currentCurrencyCode } = useDisplayCurrency()
+  const { currentCurrencyCode } = useDisplayCurrency(toRef(props, 'currencyCode'))
   watch(
     [currentCurrencyCode, locale],
     async ([currency, language], _, onCleanup) => {

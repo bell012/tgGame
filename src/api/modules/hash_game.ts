@@ -53,6 +53,7 @@ export function placeHashGameBet(
     url: `/chain-lottery/bet/place`,
     method: 'post',
     data,
+    useSuccessFlag: true,
     showSuccessToast: false,
     showErrorToast: true
   })
@@ -66,6 +67,7 @@ export function cancelHashGameBet(
     url: `/chain-lottery/bet/cancel`,
     method: 'post',
     data,
+    useSuccessFlag: true,
     showSuccessToast: false,
     showErrorToast: true
   })

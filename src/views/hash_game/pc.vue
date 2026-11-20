@@ -236,7 +236,7 @@
               >{{ t('hashGame.fairness') }}</span
             >
           </div>
-          <div class="grid gap-[10px]" :style="betGridStyle">
+          <div ref="betGridRef" class="grid gap-[10px]" :style="betGridStyle">
             <div
               v-for="option in betOptions"
               :key="option.key"
@@ -245,7 +245,8 @@
               class="relative rounded-[8px] border border-input-1 bg-bg-3 px-[12px] pt-[16px] pb-[12px] text-left cursor-pointer"
               :class="{ 'border-theme-primary': hasBetAmount(option.key) }"
               :aria-pressed="hasBetAmount(option.key)"
-              @click="handleBetOptionClick($event, option.key)"
+              :disabled="betBusy"
+              @click="selectBet(option.key)"
             >
               <span
                 v-if="hasBetAmount(option.key)"
@@ -351,25 +352,32 @@
           </button>
         </section>
 
-        <footer class="mt-[0px] grid grid-cols-3 gap-[10px]">
+        <footer
+          class="mt-[0px] grid gap-[10px]"
+          :class="quickBetEnabled ? 'grid-cols-2' : 'grid-cols-3'"
+        >
           <button
             type="button"
-            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1"
-            @click="handleCancelSelection"
+            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1 disabled:opacity-50"
+            :disabled="!canCancelBet"
+            @click="cancelBet"
           >
             <CancelIcon class="size-[16px] text-icon-2" />{{ t('hashGame.cancel') }}
           </button>
           <button
             type="button"
-            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1"
-            @click="repeatSelection"
+            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1 disabled:opacity-50"
+            :disabled="!canRepeatBet"
+            @click="repeatBets"
           >
             <RepeatIcon class="size-[16px] text-icon-2" />{{ t('hashGame.repeat') }}
           </button>
           <button
+            v-if="!quickBetEnabled"
             type="button"
-            disabled
+            :disabled="!canConfirmBet"
             class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1 disabled:opacity-50"
+            @click="confirmBets"
           >
             <ConfirmIcon class="size-[16px] text-icon-2" />{{ t('hashGame.confirmBet') }}
           </button>
@@ -464,7 +472,7 @@ import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
 import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
 import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
 import ResultArrowIcon2 from '@/static/svg/hash_game/zhixiang2.svg?component'
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import HashGameBetDetailPopup from './bet-detail.vue'
 import BetChip from './components/BetChip.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
@@ -514,9 +522,17 @@ const {
   loadRecentBets,
   openRecords,
   selectBet,
+  betChips,
+  betTotals,
+  betBusy,
+  hasBetAmount,
+  canCancelBet,
+  canRepeatBet,
+  canConfirmBet,
   chooseChip,
-  cancelSelection,
-  repeatSelection,
+  cancelBet,
+  repeatBets,
+  confirmBets,
   openChipEditor,
   toggleQuickBetPopup,
   toggleQuickBet,
@@ -524,24 +540,6 @@ const {
   toggleBackgroundMusic,
   toggleMusic
 } = props.page
-
-const {
-  chipStackStep,
-  betTotals,
-  landedChips,
-  chipFlights,
-  hasBetAmount,
-  getChipStackOffset,
-  handleBetOptionClick,
-  finishChipFlight,
-  clearBetChips
-} = useBetChipAnimation({
-  selectedChip,
-  chipOptions,
-  soundEnabled: musicEnabled,
-  slotSize: 36,
-  selectBet
-})
 
 const recentBetsOpen = ref(false)
 /** 打开弹窗时刷新当前玩法的近期投注。 */
@@ -558,7 +556,15 @@ const { viewport: chipTrackRef, dragging: isDraggingChips } = useHorizontalScrol
 const { viewport: roadmapViewport, dragging: isDraggingRoadmap } = useHorizontalScroll({
   endOnChange: () => roadmap.value.columns
 })
-watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
+const betGridRef = ref<HTMLElement | null>(null)
+const { chipStackStep, landedChips, chipFlights, getChipStackOffset, finishChipFlight } =
+  useBetChipAnimation({
+    chips: betChips,
+    chipTrack: chipTrackRef,
+    betGrid: betGridRef,
+    soundEnabled: musicEnabled,
+    slotSize: 36
+  })
 const betDetailPopupOpen = ref(false)
 const selectedBetDetail = ref<HashGameBetDetail | null>(null)
 const rulesPopupOpen = ref(false)
@@ -582,11 +588,6 @@ onMounted(() => document.addEventListener('pointerdown', handleQuickBetOutsidePo
 onBeforeUnmount(() => document.removeEventListener('pointerdown', handleQuickBetOutsidePointerDown))
 
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
-
-const handleCancelSelection = () => {
-  clearBetChips()
-  cancelSelection()
-}
 
 const openBetDetailPopup = (bet: HashGameBetDetail) => {
   selectedBetDetail.value = bet

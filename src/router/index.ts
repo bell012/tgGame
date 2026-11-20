@@ -161,7 +161,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'hashGameRules',
     component: () => import('@/views/hash_game/rules.vue'),
     props: route => ({
-      initialGameCode: typeof route.query.gameCode === 'string' ? route.query.gameCode : undefined
+      initialGameCode: typeof route.query.gameCode === 'string' ? route.query.gameCode : undefined,
+      currencyCode: typeof route.query.currency === 'string' ? route.query.currency : undefined
     }),
     meta: {
       title: 'Game Rules',
