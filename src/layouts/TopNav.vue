@@ -124,7 +124,7 @@
               </div>
               <!-- 金额 -->
               <span class="text-[14px] font-[600] text-text-1">
-                {{ currentBalanceText }}
+                {{ currentCompactBalanceText }}
               </span>
             </div>
             <!-- 充值 -->
@@ -164,7 +164,7 @@
               </div>
               <!-- 金额 -->
               <span class="min-w-0 truncate text-[14px] font-[600] text-text-1">
-                {{ currentBalanceText }}
+                {{ currentCompactBalanceText }}
               </span>
             </div>
 
@@ -584,7 +584,8 @@ const runFoldIconScalePulse = (target: 'h5' | 'sidebar') => {
 const {
   currentCurrencyCode,
   currentCurrencyIcon,
-  currentBalanceText,
+  // 顶部余额按 M / B / T 缩写展示（PC 与 H5 共用），其他页面仍用完整金额。
+  currentCompactBalanceText,
   currencyOptions,
   setDisplayCurrency
 } = useDisplayCurrency()

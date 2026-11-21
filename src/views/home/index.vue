@@ -77,7 +77,7 @@
             </div>
 
             <div
-              class="flex flex-nowrap gap-2 overflow-x-auto sm:grid sm:grid-cols-4 sm:overflow-visible lg:!gap-4 xl:!gap-3"
+              class="flex flex-nowrap gap-2 overflow-x-auto sm:grid sm:grid-cols-5 sm:overflow-visible lg:!gap-4 xl:!gap-3"
             >
               <button
                 v-for="value in listImg"
@@ -85,7 +85,7 @@
                 class="relative aspect-[189/246] w-[calc((100%-2rem)/5)] shrink-0 overflow-hidden rounded-xl bg-[image:var(--home-card-bg-h5)] bg-cover bg-center text-white sm:min-w-0 sm:w-full sm:aspect-[140.8/82] sm:bg-right sm:[container-type:inline-size] sm:bg-[image:var(--home-card-bg-md)] lg:aspect-[257/120] sm:max-lg:rounded-lg lg:bg-[image:var(--home-card-bg-pc)] xl:aspect-[257/120] xl:bg-[image:var(--home-card-bg-xl)] 2xl:aspect-[257/120]"
                 :style="getCardBgStyle(value)"
                 type="button"
-                @click="navigateTo(value.path)"
+                @click="navigateToCasinoCategory(value.path)"
               >
                 <img
                   :src="value.art"
@@ -353,7 +353,7 @@ import RecentBigWins from './components/RecentBigWins.vue'
 import slotsIcon from './img/Image.svg?url'
 import fishingIcon from './img/Image1.svg?url'
 import liveIcon from './img/Image2.svg?url'
-// import lotteryIcon from './img/Image3.svg?url'
+import lotteryIcon from './img/Image3.svg?url'
 import casinoIcon from './img/Image5.svg?url'
 import sportsIcon from './img/Image6.svg?url'
 import contractIcon from './img/pokerIcon.svg?url'
@@ -407,7 +407,9 @@ import slotsCardXlIcon from '@/static/img/home/xl/slots-icon.svg?url'
 import contractCardXlIcon from '@/static/img/home/xl/contract-icon.svg?url'
 import fishingCardXlIcon from '@/static/img/home/xl/fishing-icon.svg?url'
 import liveCardXlIcon from '@/static/img/home/xl/live-icon.svg?url'
-// import lotteryCardImg from '@/static/img/home/lottery.png'
+import lotteryCardImg from '@/static/img/home/lottery.png'
+import hashCardBg from '@/static/img/home/hash-bg.png'
+import hashCardArt from '@/static/img/home/hash-art.png'
 import casinoCardH5Img from '@/static/img/home/h5/casino.png'
 import sportsCardH5Img from '@/static/img/home/h5/sports.png'
 import slotsCardH5Img from '@/static/img/home/h5/slots.png'
@@ -415,7 +417,7 @@ import contractCardH5Img from '@/static/img/home/h5/contract.png'
 // h5 目录下 FISHING / LIVE / Lottery 三张图的文件名与内容错位，按图片内容引用
 import fishingCardH5Img from '@/static/img/home/h5/lottery.png'
 import liveCardH5Img from '@/static/img/home/h5/fishing.png'
-// import lotteryCardH5Img from '@/static/img/home/h5/live.png'
+import lotteryCardH5Img from '@/static/img/home/h5/live.png'
 
 interface EventListItem {
   image: string
@@ -504,7 +506,7 @@ const listImg = computed(() => [
     lgTitleClass: entryLgClasses.value.categoryTitle,
     h5Name: t('home.slots'),
     xlTitleClass: 'xl:text-xl xl:leading-6 2xl:text-xl 2xl:leading-6',
-    xlContentClass: 'xl:left-[15.5642%] xl:w-[25.6809%] xl:min-w-[66px] xl:gap-0',
+    xlContentClass: 'xl:left-[5.4047%] xl:w-[46%] xl:min-w-[66px] xl:gap-0',
     xlArtClass: 'xl:left-[53.1524%] xl:top-[10.8333%] xl:w-[37.3541%]',
     img: slotsCardImg,
     mdImg: slotsCardMdImg,
@@ -516,9 +518,9 @@ const listImg = computed(() => [
     path: '/casino/DZ'
   },
   {
-    name: t('home.contract'),
+    name: t('home.table'),
     lgTitleClass: entryLgClasses.value.compactCategoryTitle,
-    h5Name: t('home.contract'),
+    h5Name: t('home.table'),
     xlTitleClass: 'xl:text-lg xl:leading-[22px] 2xl:text-lg 2xl:leading-[22px]',
     xlContentClass: 'xl:left-[7.9371%] xl:w-[40.4669%] xl:min-w-[104px] xl:gap-[1.5564cqw]',
     xlArtClass: 'xl:left-[54.4747%] xl:top-[9.7518%] xl:w-[36.1868%]',
@@ -548,7 +550,7 @@ const listImg = computed(() => [
     path: '/casino/BY'
   },
   {
-    name: t('home.LiveCasino'),
+    name: t('home.live'),
     lgTitleClass: entryLgClasses.value.compactCategoryTitle,
     h5Name: t('home.live'),
     xlTitleClass: 'xl:text-lg xl:leading-[22px] 2xl:text-lg 2xl:leading-[22px]',
@@ -562,16 +564,30 @@ const listImg = computed(() => [
     h5Img: liveCardH5Img,
     icon: liveIcon,
     path: '/casino/live'
+  },
+  {
+    name: t('home.hash'),
+    h5Name: t('home.hash'),
+    lgTitleClass: entryLgClasses.value.categoryTitle,
+    xlTitleClass: 'xl:text-xl xl:leading-6 2xl:text-xl 2xl:leading-6',
+    xlContentClass: 'xl:left-[19.6154%] xl:w-[22.3077%] xl:min-w-[58px] xl:gap-[1.5385cqw]',
+    xlArtClass: 'xl:left-[57.1544%] xl:top-[13.3333%] xl:w-[35.3846%]',
+    img: lotteryCardImg,
+    mdImg: hashCardBg,
+    art: hashCardArt,
+    xlImg: hashCardBg,
+    xlIcon: lotteryIcon,
+    h5Img: lotteryCardH5Img,
+    icon: lotteryIcon,
+    path: '/casino/HX'
   }
-  // {
-  //   name: t('home.hash'),
-  //   h5Name: t('home.hash'),
-  //   img: lotteryCardImg,
-  //   h5Img: lotteryCardH5Img,
-  //   icon: lotteryIcon,
-  //   path: '/hash-game'
-  // }
 ])
+
+const navigateToCasinoCategory = (path: string) => {
+  const hasTab = casinoTabsStore.tabButtons.some(tab => path === `/casino/${tab.sysGameTypeCode}`)
+  if (!hasTab) return
+  navigateTo(path)
+}
 
 const getCardBgStyle = (card: { img: string; h5Img: string; mdImg: string; xlImg: string }) => ({
   '--home-card-bg-h5': `url('${card.h5Img}')`,

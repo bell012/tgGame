@@ -51,7 +51,7 @@
               class="size-5 shrink-0 object-contain"
             />
             <span class="truncate text-[14px] font-[700] text-text-1">{{
-              currentBalanceText
+              currentCompactBalanceText
             }}</span>
           </button>
           <button
@@ -691,7 +691,7 @@ const {
   t,
   currentCurrencyCode,
   currentCurrencyIcon,
-  currentBalanceText,
+  currentCompactBalanceText,
   currencyOptions,
   isRefreshingBalance,
   hashGames,
