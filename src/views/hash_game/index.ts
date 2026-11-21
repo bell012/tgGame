@@ -278,7 +278,7 @@ const createHashGamePageState = () => {
     return storedToken || String(userStore.userInfo?.tradeToken ?? '').trim()
   })
   // Hash 游戏同时建立默认业务通道和公共聊天室通道；连接重建时由聊天室重新加载当前可展示消息。
-  useHashGameSockets(gameCode, hashGameSocketToken, {
+  useHashGameSockets(gameCode, currency.currentCurrencyCode, hashGameSocketToken, {
     onChatEvent: acceptWsEvent,
     onChatReconnect: chat.reloadChatMessages,
     onDefaultEvent: event => {

@@ -81,6 +81,7 @@ type UseHashGameSocketsOptions = {
 /** 管理 Hash 游戏默认业务通道与 hashchat 通道的两条独立 WS 连接。 */
 export function useHashGameSockets(
   gameCode: Ref<string>,
+  currency: Readonly<Ref<string>>,
   accessToken: Readonly<Ref<string>>,
   options: UseHashGameSocketsOptions
 ) {
@@ -106,8 +107,13 @@ export function useHashGameSockets(
   /** 发送当前游戏对应的公共聊天室订阅指令。 */
   function subscribeCurrentRoom() {
     const code = gameCode.value.trim()
-    if (!code) return false
-    return chatSocket.sendJson({ type: 'SUBSCRIBE_ROOM', room: `CHAT:${code}` })
+    const currentCurrency = currency.value.trim()
+    if (!code || !currentCurrency) return false
+    return chatSocket.sendJson({
+      type: 'SUBSCRIBE_ROOM',
+      room: `CHAT:${code}`,
+      currency: currentCurrency
+    })
   }
 
   /** 接收默认业务通道的协议消息并交给页面业务层。 */
@@ -194,7 +200,7 @@ export function useHashGameSockets(
   }
 
   watch(accessToken, reconnectWithLatestIdentity, { immediate: true })
-  watch(gameCode, subscribeCurrentRoom)
+  watch([gameCode, currency], subscribeCurrentRoom)
 
   return {
     defaultSocketState: defaultSocket.state,
