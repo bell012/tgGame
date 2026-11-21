@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/user'
 import {
   getCurrencyImageByCode,
   getCurrentCurrency,
+  getCompactFormattedBalance,
   getFormattedBalance,
   formatBalance
 } from '@/utils/locale'
@@ -156,6 +157,10 @@ export const useDisplayCurrency = (currencyOverride?: Readonly<Ref<string | unde
   const currentBalanceText = computed(() =>
     getFormattedBalance(currentBalance.value, currentCurrencyCode.value, 2)
   )
+  // 顶部余额栏专用：1 百万起按 M / B / T 缩写，其他位置仍用 currentBalanceText 的完整金额。
+  const currentCompactBalanceText = computed(() =>
+    getCompactFormattedBalance(currentBalance.value, currentCurrencyCode.value)
+  )
   const currentCurrencyIcon = computed(() => getCurrencyImageByCode(currentCurrencyCode.value))
 
   const currencyOptions = computed<DisplayCurrencyOption[]>(() => {
@@ -197,6 +202,7 @@ export const useDisplayCurrency = (currencyOverride?: Readonly<Ref<string | unde
     currentBalance,
     currentBalanceAmountText,
     currentBalanceText,
+    currentCompactBalanceText,
     currencyOptions,
     currencySelectOptions,
     setDisplayCurrency

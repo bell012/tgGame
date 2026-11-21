@@ -124,7 +124,7 @@
               </div>
               <!-- 金额 -->
               <span class="text-[14px] font-[600] text-text-1">
-                {{ topNavBalanceText }}
+                {{ currentCompactBalanceText }}
               </span>
             </div>
             <!-- 充值 -->
@@ -164,7 +164,7 @@
               </div>
               <!-- 金额 -->
               <span class="min-w-0 truncate text-[14px] font-[600] text-text-1">
-                {{ topNavBalanceText }}
+                {{ currentCompactBalanceText }}
               </span>
             </div>
 
@@ -382,7 +382,7 @@ import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
-import { getCompactFormattedBalance, stripLocalePrefix, type Locale } from '@/utils/locale'
+import { stripLocalePrefix, type Locale } from '@/utils/locale'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
@@ -584,15 +584,11 @@ const runFoldIconScalePulse = (target: 'h5' | 'sidebar') => {
 const {
   currentCurrencyCode,
   currentCurrencyIcon,
-  currentBalance,
+  // 顶部余额按 M / B / T 缩写展示（PC 与 H5 共用），其他页面仍用完整金额。
+  currentCompactBalanceText,
   currencyOptions,
   setDisplayCurrency
 } = useDisplayCurrency()
-
-// 顶部余额单独按 M / B / T 缩写展示（PC 与 H5 共用），其他页面仍用完整金额。
-const topNavBalanceText = computed(() =>
-  getCompactFormattedBalance(currentBalance.value, currentCurrencyCode.value)
-)
 
 // 同步同账号在其他标签页更新后的本地用户信息。
 const handleStorageChange = () => {
