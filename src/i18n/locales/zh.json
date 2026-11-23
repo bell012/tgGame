@@ -576,6 +576,12 @@
     "view_all": "查看全部"
   },
   "gameDetail": {
+    "liveRtp": "实时 RTP",
+    "realRtp": "实际 RTP",
+    "volatility": "波动性",
+    "maxBonus": "最高奖励",
+    "demo": "Demo",
+    "refreshBalance": "刷新余额",
     "playWithSelectedCurrency": "使用所选币种游玩",
     "selectedCurrency": "所选币种",
     "selectCurrencyTitle": "选择币种",

@@ -1,22 +1,24 @@
 <template>
   <!-- 顶部搜索 -->
-  <div class="currency-select-trigger relative rounded-[10px]">
+  <div class="currency-select-trigger relative rounded-lg">
     <div
-      class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px]"
+      class="text-[13px] h-[40px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px]"
       @click="visible = true"
     >
-      <div class="flex gap-[10px] min-w-0">
+      <div class="flex flex-1 gap-[10px] min-w-0">
         <div v-if="selectedData" class="flex gap-[8px] items-center min-w-0">
-          <SmartImage alt="" :src="selectedData.icon" class="size-[24px] object-contain" />
-          <div class="text-[14px] leading-[20px] shrink-0">{{ selectedData.label }}</div>
-          <div class="balance-text text-[14px] font-semibold shrink-0">
+          <SmartImage alt="" :src="selectedData.icon" class="size-[24px] shrink-0 object-contain" />
+          <div class="text-[13px] font-bold leading-[20px] shrink-0">{{ selectedData.label }}</div>
+          <div class="balance-text min-w-0 text-[13px] font-extrabold">
             <span class="balance-bracket">(</span>
-            <span>{{ selectedBalanceText }}</span>
+            <span class="min-w-0 truncate" :title="selectedBalanceText">{{
+              selectedBalanceText
+            }}</span>
             <span class="balance-bracket">)</span>
           </div>
         </div>
       </div>
-      <div class="flex items-center gap-[8px] min-w-0">
+      <div class="flex shrink-0 items-center gap-[8px]">
         <div class="trigger-arrow-bg">
           <ArrowDownIcon class="trigger-arrow-icon" />
         </div>
@@ -82,7 +84,7 @@ provide('currency-select-on-select', handleSelect)
 
 .currency-select-trigger {
   border: none;
-  background: var(--color-opacity-10);
+  background: var(--color-background-level-3);
   box-shadow: none;
 }
 
@@ -97,8 +99,8 @@ provide('currency-select-on-select', handleSelect)
 }
 
 .trigger-arrow-icon {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   fill: none;
 }
 

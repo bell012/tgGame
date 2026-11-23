@@ -1,46 +1,91 @@
 <template>
-  <!-- 顶部搜索 -->
-  <div class="currency-select-trigger relative rounded-[6px]">
-    <div
-      class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px] rounded-[6px]"
+  <div
+    class="currency-select-trigger relative flex h-[35px] items-center gap-[5px] rounded-lg bg-opacity-6 px-2"
+  >
+    <button
+      type="button"
+      class="flex min-w-0 flex-1 items-center gap-[5px] text-[13px] font-semibold text-text-1"
+      :aria-label="t('gameDetail.selectedCurrency')"
       @click="visible = true"
     >
-      <div class="flex min-w-0 flex-1 gap-[10px]">
-        <div v-if="selectedData" class="flex min-w-0 items-center gap-[8px]">
-          <SmartImage alt="" :src="selectedData.icon" class="size-[24px] shrink-0 object-contain" />
-          <div class="shrink-0 text-[14px] font-[700] leading-[20px]">{{ selectedData.label }}</div>
-          <div class="balance-text min-w-0 truncate text-[14px] font-[700]">
-            <span class="balance-bracket">(</span>
-            <span>{{ selectedBalanceText }}</span>
-            <span class="balance-bracket">)</span>
-          </div>
-        </div>
-      </div>
-      <div class="ml-auto flex shrink-0 items-center gap-[8px]">
-        <div class="trigger-arrow-bg">
-          <component
-            :is="casinoIcons.dropdown_chevron"
-            class="trigger-arrow-icon fill-current [&_path]:fill-current"
-          />
-        </div>
-      </div>
-    </div>
-    <!-- 搜索类型弹窗 -->
+      <SmartImage
+        v-if="selectedData"
+        :src="selectedData.icon"
+        alt=""
+        class="size-5 shrink-0 object-contain"
+      />
+      <span class="min-w-0 truncate" :title="selectedBalanceText">{{ selectedBalanceText }}</span>
+    </button>
+    <button
+      type="button"
+      class="flex h-full shrink-0 items-center text-text-1 disabled:opacity-50"
+      :aria-label="t('gameDetail.refreshBalance')"
+      :aria-busy="isRefreshBusy"
+      :disabled="isRefreshBusy"
+      @click="refreshBalance"
+    >
+      <RefreshIcon
+        class="size-[15px] motion-reduce:animate-none"
+        :class="{ 'animate-[spin_2s_linear_infinite]': isRefreshBusy }"
+        aria-hidden="true"
+      />
+    </button>
+    <button
+      type="button"
+      class="ml-auto flex h-full shrink-0 items-center pl-1 text-icon-2"
+      :aria-label="t('gameDetail.selectCurrencyTitle')"
+      @click="visible = true"
+    >
+      <component
+        :is="casinoIcons.dropdown_chevron"
+        class="size-[10px] fill-current [&_path]:fill-current"
+        aria-hidden="true"
+      />
+    </button>
     <Teleport to="body" v-if="isMobile">
       <popup v-model:visible="visible" />
     </Teleport>
-    <popup v-else class="desktop-popup" v-model:visible="visible" desktop />
+    <popup
+      v-else
+      class="absolute left-0 top-[calc(100%+10px)] w-full"
+      v-model:visible="visible"
+      desktop
+    />
   </div>
 </template>
-
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
+import RefreshIcon from '@/static/svg/game/detail/top/refresh.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
-import { computed, provide, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, provide, ref, watch } from 'vue'
 import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import SmartImage from '@/components/common/SmartImage.vue'
 import type { CurrencyOptionItem } from '@/components/common/currency-selector/currency-select-options'
+
+const { t } = useI18n()
+const userStore = useUserStore()
+const refreshFeedbackActive = ref(false)
+const isRefreshBusy = computed(() => userStore.isRefreshingBalance || refreshFeedbackActive.value)
+let refreshFeedbackTimer: ReturnType<typeof setTimeout> | undefined
+
+const clearRefreshFeedback = () => {
+  clearTimeout(refreshFeedbackTimer)
+  refreshFeedbackTimer = undefined
+  refreshFeedbackActive.value = false
+}
+
+const refreshBalance = () => {
+  if (isRefreshBusy.value) return
+  // 至少展示一圈动画，不延迟余额请求或结果更新。
+  refreshFeedbackActive.value = true
+  refreshFeedbackTimer = setTimeout(clearRefreshFeedback, 2000)
+  void userStore.refreshBalance()
+}
+onDeactivated(clearRefreshFeedback)
+onBeforeUnmount(clearRefreshFeedback)
 
 const isMobile = useIsMobile()
 const visible = ref(false)
@@ -86,51 +131,3 @@ watch(
   { immediate: true }
 )
 </script>
-
-<style scoped lang="scss">
-.desktop-popup {
-  top: calc(100% + 10px);
-  position: absolute;
-  left: 0;
-  width: 100%;
-}
-
-.currency-select-trigger {
-  border: none;
-  background: var(--color-opacity-10);
-  box-shadow: none;
-}
-
-.trigger-arrow-bg {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-opacity-10);
-}
-
-.trigger-arrow-icon {
-  width: 8px;
-  height: 8px;
-  color: var(--color-icon-level-2);
-}
-
-.trigger-arrow-icon :deep(path) {
-  fill: currentColor;
-}
-
-.balance-text {
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-}
-
-.balance-bracket {
-  line-height: 1;
-  position: relative;
-  top: -0.5px;
-}
-</style>

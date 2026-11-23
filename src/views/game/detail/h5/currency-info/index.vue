@@ -1,8 +1,8 @@
 <template>
-  <div class="currency-info-panel w-full p-[14px] pb-[20px] rounded-t-[10px]">
-    <div class="flex gap-[10px]">
+  <div class="mx-0.5">
+    <div class="flex items-stretch gap-[10px]">
       <div
-        class="relative w-[110px] h-[146px] rounded-md bg-[var(--color-background-level-2)] flex items-center justify-center overflow-hidden"
+        class="relative aspect-[84/111] w-[24.2075%] shrink-0 self-start overflow-hidden rounded-md bg-bg-2 flex items-center justify-center"
       >
         <img
           :src="displayGameImg"
@@ -27,89 +27,55 @@
           </div>
         </div>
       </div>
-      <div class="flex min-w-0 flex-1 flex-col">
-        <template v-if="isLogin">
-          <div class="flex h-[146px] flex-col justify-between">
-            <div class="text-[15px] font-bold leading-[15px]">
-              {{ t('gameDetail.playWithSelectedCurrency') }}
-            </div>
-            <currency-select @change="handleCurrencyChange"></currency-select>
-            <div
-              class="text-[12px] leading-[12px] font-[400] text-[var(--color-text-level-2)] text-center"
-            >
-              {{ t('gameDetail.playNowHint') }}
-            </div>
-            <div class="play-btn cursor-pointer" @click="handlePlayAction">
-              <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
-              <div class="text-[15px] font-bold text-text-4">
-                {{ playButtonText }}
-              </div>
-            </div>
-          </div>
-        </template>
-        <template v-else>
-          <div class="flex-1 flex flex-col justify-start pt-[4px]">
-            <div
-              class="line-clamp-2 text-[15px] font-bold leading-[18px] text-[var(--color-text-level-1)]"
+      <div class="flex min-w-0 flex-1 flex-col justify-between min-[375px]:py-2">
+        <div class="flex items-start gap-1">
+          <div class="min-w-0 flex-1">
+            <h1
+              class="line-clamp-2 break-words text-[15px] font-bold leading-[18px] text-text-1"
+              :title="displayGameName"
             >
               {{ displayGameName }}
-            </div>
-            <div class="mt-[4px] text-[12px] leading-[16px] text-[var(--color-text-level-2)]">
-              {{ t('gameDetail.by') }}
-              <span class="text-[var(--color-text-level-2)]">{{ displayProviderName }}</span>
-            </div>
+            </h1>
+            <span
+              class="mt-[5px] inline-block max-w-full truncate rounded bg-bg-2 px-[5px] py-[2px] align-top text-[11px] font-normal leading-[13.33px] text-text-3"
+              :title="displayProviderName"
+              >{{ displayProviderName }}</span
+            >
           </div>
-        </template>
-
-        <div v-if="!isLogin" class="play-btn cursor-pointer" @click="handlePlayAction">
-          <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
-          <div class="text-[15px] font-bold text-text-4">
-            {{ playButtonText }}
-          </div>
+          <GameDetailActions mobile />
         </div>
+        <GameDetailStats mobile />
       </div>
     </div>
+    <GameDetailPreview class="mt-[10px] aspect-[1041/592] rounded-t-[10px]" />
+    <CurrencyBar />
   </div>
-  <currency-bar></currency-bar>
 </template>
 <script setup lang="ts">
 import '@/views/game/detail/styles/colors.css'
 import errorImg from '@/static/img/home/errimg.png'
 import errorImg1 from '@/static/img/home/errimg1.png'
-import playIcon from '@/static/img/game/detail/play.png'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
-import CurrencySelect from '../currency-select/index.vue'
+import GameDetailActions from '../../common/GameDetailActions.vue'
+import GameDetailStats from '../../common/GameDetailStats.vue'
+import GameDetailPreview from '../../common/GameDetailPreview.vue'
 import CurrencyBar from '../currency-bar/index.vue'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 import { useGameStore } from '@/stores/game'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
-import { useAuthModalStore } from '@/stores/authModal'
 import { resolveGameImageUrl } from '@/utils/image'
 import { storeToRefs } from 'pinia'
 
-const { gamePlay, currentGameDetail } = useGamePlatformPlay()
+const { currentGameDetail } = useGamePlatformPlay()
 const gameStore = useGameStore()
 const siteConfigStore = useSiteConfigStore()
-const { t } = useI18n()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
-const authModalStore = useAuthModalStore()
 const { theme } = storeToRefs(themeStore)
-const { userInfo } = storeToRefs(userStore)
-const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
-
-const selectedData = ref<{ value: string; label: string; icon: string } | undefined>(undefined)
-const handleCurrencyChange = (
-  value: { value: string; label: string; icon: string } | undefined
-) => {
-  selectedData.value = value
-}
-
 const toImageUrl = (value: string) => {
   const imagePath = value.trim()
   if (!imagePath) return ''
@@ -160,7 +126,10 @@ const resolvePlatformLogo = async () => {
     return
   }
 
-  platformLogoImg.src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
+  const src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
+  if (platformCode === String(currentGameDetail.value?.platformCode ?? '').trim()) {
+    platformLogoImg.src = src
+  }
 }
 
 const gameCovernameShow = computed(() => {
@@ -180,19 +149,6 @@ const gameCovernameShow = computed(() => {
   return Number.isFinite(value) && value > 0
 })
 
-const playButtonText = computed(() =>
-  isLogin.value ? t('gameDetail.playNow') : t('gameDetail.guestCtaH5')
-)
-
-const handlePlayAction = () => {
-  if (!isLogin.value) {
-    authModalStore.openLoginModal()
-    return
-  }
-
-  void gamePlay()
-}
-
 onMounted(() => {
   userStore.syncStoredUserData()
   void resolvePlatformLogo()
@@ -205,19 +161,3 @@ watch(
   }
 )
 </script>
-<style scoped lang="scss">
-.currency-info-panel {
-  background: var(--color-background-level-2);
-}
-
-.play-btn {
-  border-radius: 8px;
-  background: var(--color-play-gradient);
-  box-shadow: var(--color-play-shadow);
-  height: 36px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-}
-</style>

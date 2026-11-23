@@ -50,6 +50,7 @@ import { useGameStore } from '@/stores/game'
 import { useLocaleStore } from '@/stores/locale'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -61,6 +62,8 @@ import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
 import H5Header from './h5/header.vue'
 import {
+  calculateGameDetailRtp,
+  parseCollectionsCount,
   findGameDetailItemByIdentity,
   isValidGameDetailResult,
   normalizeGameDetailRecord,
@@ -124,10 +127,15 @@ const currentGameDetailState = ref<CurrentGameDetail>(null)
 
 /** 与 getCommentSubject.result.isCollections 同步，供收藏星标 inject */
 const gameDetailSubjectIsCollections = ref<boolean | null>(null)
+const gameDetailCollectionsCount = ref<number | null>(null)
+const gameDetailRtp = ref<number | null>(null)
+let favoriteRequestVersion = 0
 
 // ===== provide =====
 provide('game-detail-game-data', gameData)
 provide('game-detail-subject-is-collections', gameDetailSubjectIsCollections)
+provide('game-detail-collections-count', gameDetailCollectionsCount)
+provide('game-detail-rtp', gameDetailRtp)
 
 // ===== 滚动条状态 =====
 const isBrowserEnv = typeof window !== 'undefined' && typeof document !== 'undefined'
@@ -247,13 +255,19 @@ provide('game-detail-current-game', currentGameDetail)
 
 // ===== 数据同步 =====
 const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
-  gameDetailSubjectIsCollections.value = null
-  if (!gameIdRaw) {
+  if (!gameIdRaw || gameIdRaw !== rowId.value) {
     return
   }
 
   userStore.syncStoredUserData()
+  const version = ++favoriteRequestVersion
+  const session = userStore.userInfo?.tradeToken
   const memberRowIdNum = Number(userStore.acctInfo?.memberRowId)
+  const isCurrent = () =>
+    version === favoriteRequestVersion &&
+    gameIdRaw === rowId.value &&
+    session === userStore.userInfo?.tradeToken &&
+    Object.is(memberRowIdNum, Number(userStore.acctInfo?.memberRowId))
 
   try {
     const res = await Api.game.getCommentSubject(
@@ -269,17 +283,22 @@ const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
         showErrorToast: false
       }
     )
-    const raw = (res?.result as { isCollections?: unknown } | null | undefined)?.isCollections
-    gameDetailSubjectIsCollections.value = readIsCollections(raw)
+    if (!isCurrent()) return
+    ensureApiBusinessSuccess(res)
+    gameDetailSubjectIsCollections.value = readIsCollections(res.result?.isCollections)
+    gameDetailCollectionsCount.value = parseCollectionsCount(res.result?.collectionsCount)
   } catch {
-    gameDetailSubjectIsCollections.value = null
+    if (isCurrent()) gameDetailCollectionsCount.value = null
   }
 }
+provide('game-detail-refresh-favorite', () => syncFavoriteFromCommentSubject(rowId.value))
 
 // ===== 数据请求 =====
 const fetchCurrentGameDetail = async () => {
   const targetRowId = rowId.value
+  favoriteRequestVersion += 1
   gameDetailSubjectIsCollections.value = null
+  gameDetailCollectionsCount.value = null
 
   try {
     const res = await Api.game.queryGameDetails({ rowId: targetRowId }, API_REQUEST_OPTIONS)
@@ -332,6 +351,20 @@ const openCurrentCategoryAllGamesPage = () => {
 
 // ===== 监听 =====
 watch(
+  () => [currentGameDetail.value?.rtpMin, currentGameDetail.value?.rtpMax] as const,
+  ([min, max]) => {
+    gameDetailRtp.value = calculateGameDetailRtp(min, max)
+  },
+  { immediate: true }
+)
+
+watch([() => userStore.userInfo?.tradeToken, () => userStore.acctInfo?.memberRowId], () => {
+  gameDetailSubjectIsCollections.value = null
+  gameDetailCollectionsCount.value = null
+  void syncFavoriteFromCommentSubject(rowId.value)
+})
+
+watch(
   [rowId],
   () => {
     void fetchCurrentGameDetail()
@@ -357,6 +390,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  favoriteRequestVersion += 1
   clearParentScrollbarHidden()
 })
 </script>

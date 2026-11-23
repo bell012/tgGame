@@ -236,11 +236,19 @@ export interface GetCommentSubjectParams {
 }
 
 export interface GameCommentSubjectResult {
+  id?: string | number
   subjectId?: string | number
   rowId?: string | number
   gameId?: string | number
+  platformCode?: string
   /** 当前用户是否已收藏该游戏（getCommentSubject） */
   isCollections?: boolean
+  /** 收藏总数，0 是有效值 */
+  collectionsCount?: number | string | null
+  commentCount?: number | string | null
+  isLike?: boolean
+  likeCount?: number | string | null
+  shareCount?: number | string | null
   [key: string]: unknown
 }
 

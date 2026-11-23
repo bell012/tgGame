@@ -578,6 +578,12 @@
     "view_all": "Xem tất cả"
   },
   "gameDetail": {
+    "liveRtp": "Live RTP",
+    "realRtp": "Real RTP",
+    "volatility": "Biến động",
+    "maxBonus": "Thưởng max",
+    "demo": "Demo",
+    "refreshBalance": "Làm mới số dư",
     "playWithSelectedCurrency": "Chơi bằng tiền tệ đã chọn",
     "selectedCurrency": "Tiền tệ đã chọn",
     "selectCurrencyTitle": "Chọn tiền tệ",
