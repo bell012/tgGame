@@ -214,13 +214,13 @@
 
       <div
         class="tabs-content filter-slide-stage min-h-48"
-        :class="{ '-mr-3.5 sm:-mr-4': isMobile }"
+        :class="isLobbyContent ? 'max-sm:-mx-3.5' : 'max-sm:-mr-3.5'"
       >
         <Transition :name="slideName">
           <div
             :key="tabSlideKey"
             class="filter-slide-pane w-full"
-            :class="{ 'pr-3.5 sm:pr-4': isMobile }"
+            :class="isLobbyContent ? 'max-sm:px-3.5' : 'max-sm:pr-3.5'"
           >
             <component :is="getPageStyle" v-bind="currentPageProps" />
           </div>
@@ -334,6 +334,7 @@ const getPageStyle = computed(() => {
 
   return basePageStyle.value
 })
+const isLobbyContent = computed(() => getPageStyle.value === pageStyle1)
 const currentQueryOptions = computed(() => {
   if (trimmedSearchKeyword.value) {
     if (basePageStyle.value === pageStyle1) {
@@ -781,13 +782,6 @@ html.android-app-shell .casino-page--mobile {
     color: var(--color-text-level-2);
   }
 
-  .casino-tab-button--active {
-    background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
-    box-shadow:
-      0 0 13px 0 rgba(35, 238, 136, 0.3),
-      0 -2px 0 0 #1dca6a inset;
-  }
-
   .casino-tab-button--active .casino-tab-icon,
   .casino-tab-button--active .casino-tab-icon :deep(svg),
   .casino-tab-button--active .casino-tab-label {
@@ -821,7 +815,10 @@ html.android-app-shell .casino-page--mobile {
   }
 
   .casino-tab-button--active {
-    background: var(--color-theme-level-1);
+    background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+    box-shadow:
+      0 0 13px 0 rgba(35, 238, 136, 0.3),
+      0 -2px 0 0 #1dca6a inset;
   }
 
   .casino-tab-button--active .casino-tab-icon,

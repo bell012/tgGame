@@ -68,6 +68,7 @@
       :show="showFeedbackDetailPopup"
       :record-id="selectedFeedbackDetailRecordId"
       @close="closeFeedbackDetailPopup"
+      @close-modal="emit('close')"
     />
   </div>
 </template>

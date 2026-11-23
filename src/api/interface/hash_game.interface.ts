@@ -5,10 +5,12 @@ export type HashGameAlgorithm = 'PARITY' | 'SUM' | 'LUCKY' | 'BANKER_PLAYER' | '
 /** Hash 彩票支持的投注选项。 */
 export type HashGameBetOption =
   'ODD' | 'EVEN' | 'BIG' | 'SMALL' | 'WIN' | 'LOSE' | 'BANKER' | 'PLAYER' | 'TIE'
+//  `ODD` / `EVEN` / `BIG` / `SMALL` | 单 / 双 / 大 / 小 | `WIN` / `LOSE` | 赢 / 输 |  `BANKER` / `PLAYER` / `TIE` | 庄 / 闲 / 和 |
 
 /** 投注单状态。 */
 export type HashGameBetStatus =
   'CONFIRMING' | 'VOIDED' | 'PENDING' | 'WIN' | 'LOSE' | 'REFUND' | 'ERROR' | 'CANCEL'
+// `CONFIRMING` 确认中、`VOIDED` 已作废（自动退款）、`PENDING` 待开奖、 `WIN` 中奖、`LOSE` 未中奖、`REFUND` 退款、`ERROR` 结算异常、`CANCEL` 已取消 |
 
 /** 由算法决定结构的开奖结果。 */
 export type HashGameLotteryResult = Record<string, unknown>
@@ -23,10 +25,10 @@ export interface HashGameListParams {
 export interface HashGameLotteryGame {
   gameCode: string // 游戏编码
   gameName: string // 游戏名称
-  imageUrl?: string
+  imageUrl?: string // 游戏图片
   description?: string | null
   currencies?: readonly string[] // 该玩法支持的投注币种，空数组表示不限制
-  introImageUrl?: string | null
+  introImageUrl?: string | null // 游戏规则中玩法说明图片
   allowMultipleBets?: boolean
   multiBet?: boolean
   multipleBet?: boolean
@@ -155,6 +157,7 @@ export interface HashGamePlaceBetResult {
 export interface HashGameCancelBetParams {
   gameCode: string
   orderNo: string
+  currency: string
 }
 
 /** 取消成功的投注信息。 */

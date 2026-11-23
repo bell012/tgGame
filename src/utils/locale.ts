@@ -416,3 +416,40 @@ export const getFormattedBalance = (
   const formattedBalance = formatBalance(balance, decimals)
   return `${symbol}${formattedBalance}`
 }
+
+/** 余额缩写单位，从大到小匹配：一万亿 T、十亿 B、一百万 M */
+const COMPACT_BALANCE_UNITS = [
+  { threshold: 1e12, suffix: 'T' },
+  { threshold: 1e9, suffix: 'B' },
+  { threshold: 1e6, suffix: 'M' }
+] as const
+
+/**
+ * 获取币种符号和按国际单位缩写后的余额（仅顶部导航余额使用）
+ * 1 百万以下保持原样两位小数；1 百万起换算为 M，十亿起为 B，一万亿起为 T。
+ * 缩写后最多保留两位小数并去掉末尾的 0，多余位数直接舍去，避免显示金额大于实际余额。
+ * @param balance - 余额数值
+ * @param currency - 币种代码（可选）
+ * @returns 币种符号 + 缩写后的余额
+ * @example 111746.85 -> ₫111746.85；1000000 -> ₫1M；1234567.89 -> ₫1.23M；2500000000 -> ₫2.5B
+ */
+export const getCompactFormattedBalance = (balance?: number, currency?: string): string => {
+  // 全程用整数“分”计算，避免 1.15 * 100 这类浮点误差导致少显示 0.01
+  const cents = Math.round(Number(balance) * 100)
+  const unit = Number.isFinite(cents)
+    ? COMPACT_BALANCE_UNITS.find(item => cents >= item.threshold * 100)
+    : undefined
+
+  if (!unit) {
+    return getFormattedBalance(balance, currency, 2)
+  }
+
+  // 1 个单位 = threshold * 100 分，所以“分 / threshold”就是该单位下的百分位整数
+  const hundredths = (cents - (cents % unit.threshold)) / unit.threshold
+  const integerPart = (hundredths - (hundredths % 100)) / 100
+  const fraction = String(hundredths % 100)
+    .padStart(2, '0')
+    .replace(/0+$/, '')
+
+  return `${getCurrencySymbol(currency)}${integerPart}${fraction ? `.${fraction}` : ''}${unit.suffix}`
+}

@@ -124,7 +124,7 @@
               </div>
               <!-- 金额 -->
               <span class="text-[14px] font-[600] text-text-1">
-                {{ currentBalanceText }}
+                {{ currentCompactBalanceText }}
               </span>
             </div>
             <!-- 充值 -->
@@ -148,28 +148,31 @@
             </div>
           </div>
 
-          <!-- H5 余额和充值容器 -->
+          <!-- H5 余额和充值容器；375 及以下的小屏收紧外边距，给金额多留一点宽度 -->
           <div
             ref="mobileCurrencyAnchorRef"
-            class="search mr-2 flex h-[33px] min-w-0 max-w-[184px] flex-1 cursor-pointer items-center justify-between rounded-lg p-1 sm:hidden"
+            class="search mr-2 flex h-[33px] min-w-0 max-w-[184px] flex-1 cursor-pointer items-center rounded-lg p-1 max-[375px]:mr-1 sm:hidden"
             @click="openLoggedInCurrencyPopup"
           >
-            <div class="ml-1 flex min-w-0 items-center justify-center">
-              <div class="mr-1 h-5 w-5 shrink-0">
-                <img
-                  :src="currentCurrencyIcon"
-                  :alt="currentCurrencyCode"
-                  class="h-full w-full object-cover"
-                />
-              </div>
-              <!-- 金额 -->
-              <span class="min-w-0 truncate text-[14px] font-[600] text-text-1">
-                {{ currentBalanceText }}
-              </span>
+            <div class="ml-1 mr-1 h-5 w-5 shrink-0 max-[375px]:ml-0">
+              <img
+                :src="currentCurrencyIcon"
+                :alt="currentCurrencyCode"
+                class="h-full w-full object-cover"
+              />
             </div>
-
-            <div class="flex items-center">
-              <button type="button" class="top-nav-currency-arrow-bg mr-1 cursor-pointer">
+            <!--
+              金额 + 下拉箭头：固定一行高并允许换行。
+              一行放得下时箭头正常显示，与金额间隔 8px；放不下时箭头整体换到第二行被裁掉，
+              宽度优先留给金额（整个余额栏点击都能打开币种列表，箭头只是提示）。
+            -->
+            <div
+              class="mr-1 flex h-6 min-w-0 flex-1 flex-wrap content-start items-center justify-between overflow-hidden"
+            >
+              <span class="max-w-full truncate text-[14px] font-[600] leading-6 text-text-1">
+                {{ currentCompactBalanceText }}
+              </span>
+              <button type="button" class="top-nav-currency-arrow-bg ml-2 shrink-0 cursor-pointer">
                 <svg
                   class="top-nav-currency-arrow"
                   viewBox="0 0 20 20"
@@ -179,13 +182,13 @@
                   <path d="M6 8L10 12L14 8" />
                 </svg>
               </button>
-              <!-- 充值按钮 -->
-              <div
-                class="cursor-pointer w-[26px] h-[26px] text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
-                @click.stop="openDeposit"
-              >
-                <Jia class="w-3 h-3" />
-              </div>
+            </div>
+            <!-- 充值按钮 -->
+            <div
+              class="cursor-pointer w-[26px] h-[26px] shrink-0 text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
+              @click.stop="openDeposit"
+            >
+              <Jia class="w-3 h-3" />
             </div>
           </div>
 
@@ -194,7 +197,7 @@
             <!-- 礼物图标 -->
             <div
               ref="mobileGiftMenuRef"
-              class="relative mr-2 flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-lg search"
+              class="relative mr-2 flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-lg search max-[375px]:mr-1"
               @click.stop="openRewardClaimPopup"
             >
               <GiftIcon class="h-4 w-4 fill-none" />
@@ -208,7 +211,7 @@
             </div>
             <!-- 通知图标 -->
             <div
-              class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2"
+              class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2 max-[375px]:mr-1"
               @click="handleNotificationClick"
             >
               <SmartImage
@@ -584,7 +587,8 @@ const runFoldIconScalePulse = (target: 'h5' | 'sidebar') => {
 const {
   currentCurrencyCode,
   currentCurrencyIcon,
-  currentBalanceText,
+  // 顶部余额按 M / B / T 缩写展示（PC 与 H5 共用），其他页面仍用完整金额。
+  currentCompactBalanceText,
   currencyOptions,
   setDisplayCurrency
 } = useDisplayCurrency()

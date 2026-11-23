@@ -41,9 +41,7 @@
 
       <main
         class="feedback-detail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
-        :class="
-          isEmbeddedMode ? 'flex items-start justify-center px-0 pb-0 pt-4' : 'px-3.5 pb-6 pt-3'
-        "
+        :class="isEmbeddedMode ? 'flex flex-col items-center px-0 pb-4 pt-4' : 'px-3.5 pb-6 pt-3'"
       >
         <section
           class="rounded-[12px] bg-bg-2"
@@ -113,20 +111,20 @@
 
             <div
               v-if="feedbackDetail.screenshotImages.length"
-              class="grid grid-cols-4 gap-2"
+              class="grid w-full min-w-0 grid-cols-4 gap-2"
               :class="isEmbeddedMode ? '' : 'mt-2.5'"
             >
               <button
                 v-for="(image, index) in feedbackDetail.screenshotImages"
                 :key="`${feedbackDetail.recordId}-screenshot-${index}`"
                 type="button"
-                class="feedback-screenshot-item overflow-hidden rounded-[8px] bg-bg-3"
+                class="feedback-screenshot-item min-w-0 overflow-hidden rounded-[8px] bg-bg-3"
                 @click="openScreenshotPreview(index)"
               >
                 <img
                   :src="image"
                   :alt="t('personalCenter.feedback.detail.screenshotAlt', { index: index + 1 })"
-                  class="h-full w-full object-cover"
+                  class="block h-full w-full object-cover"
                 />
               </button>
             </div>
@@ -151,7 +149,8 @@
 
         <section
           v-if="feedbackDetail.status !== 'pending'"
-          class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5"
+          class="rounded-[12px] bg-bg-2"
+          :class="isEmbeddedMode ? 'mt-4 w-[449px] shrink-0 p-3' : 'mt-3.5 p-3.5'"
         >
           <div class="flex items-center justify-between gap-3">
             <span class="text-[16px] font-[700] text-theme-primary">{{
@@ -252,6 +251,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   back: []
+  'close-modal': []
 }>()
 
 const route = useRoute()
@@ -352,8 +352,11 @@ const handleDetailBack = () => {
   }
 }
 
-/** 打开在线客服入口，根据后台配置进入第三方客服或原生客服页。 */
+/** H5 只打开客服。PC 关掉意见反馈弹窗，反馈详情保持原页面逻辑。 */
 const handleCustomerServiceClick = () => {
+  if (isEmbeddedMode.value) {
+    emit('close-modal')
+  }
   openOnlineCustomer()
 }
 

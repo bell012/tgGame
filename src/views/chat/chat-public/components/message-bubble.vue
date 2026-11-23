@@ -211,4 +211,11 @@ const handleKeyboardFocus = (event: KeyboardEvent) => {
   color: var(--color-theme-level-1);
   text-decoration: underline;
 }
+
+.chat-rich-text :deep(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
 </style>

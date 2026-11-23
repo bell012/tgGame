@@ -1,9 +1,19 @@
 <template>
   <!-- 游戏聊天室容器：只负责展示和滚动，不建立连接或请求接口。 -->
-  <GameChatList :messages="messages" class="hash-game-chat">
+  <GameChatList
+    :messages="messages"
+    class="[--hash-chat-odd:#22a89a] [--hash-chat-even:#e63533]"
+    :class="
+      variant === 'pc' ? 'text-[14px] [&>div]:!top-1 [&>div>div]:!gap-[10px] [&>div>div]:!pt-0' : ''
+    "
+  >
     <template #default="{ message }">
       <!-- 房间公告。 -->
-      <p v-if="message.kind === 'NOTICE'" class="m-0 max-w-[250px] text-text-2">
+      <p
+        v-if="message.kind === 'NOTICE'"
+        class="m-0 text-text-2"
+        :class="variant === 'pc' ? ' min-w-0' : 'max-w-[250px]'"
+      >
         <span
           class="mr-[5px] inline-block rounded-[3px] bg-theme-3 px-[3px] py-0.5 text-theme-primary"
           >Notice</span
@@ -100,14 +110,25 @@
       </p>
     </template>
     <template #overlay="{ scrollToBottom }">
-      <div v-if="currentJoin" :key="currentJoin.id" class="join-banner" @animationend="finishJoin">
-        <img :src="currentJoin.avatarUrl || joinAvatar" alt="" />
+      <div
+        v-if="currentJoin"
+        :key="currentJoin.id"
+        class="absolute left-0 top-[8px] z-[2] flex max-w-full items-center gap-[3px] whitespace-nowrap rounded-[13px] bg-gradient-to-r from-[#e2a033] to-[#e2a033cc] py-[2px] pl-[2px] pr-[15px] text-[14px] text-white animate-[join-slide_3s_both]"
+        @animationend="finishJoin"
+      >
+        <img
+          :src="currentJoin.avatarUrl || joinAvatar"
+          alt=""
+          class="size-[20px] rounded-full border border-white object-cover"
+        />
         <span
-          >Welcome <strong>{{ currentJoin.nickname }}</strong> to the room</span
+          >Welcome <strong class="text-yellow-300">{{ currentJoin.nickname }}</strong> to the
+          room</span
         >
       </div>
       <!-- 顶部渐隐蒙层。 -->
       <img
+        v-if="variant !== 'pc'"
         :src="topFadeIcon"
         alt=""
         aria-hidden="true"
@@ -127,13 +148,12 @@
 </template>
 
 <script setup lang="ts">
+import GameChatList from '@/components/game-chat/GameChatList.vue'
+import joinAvatar from '@/static/img/hash_game/join-avatar.png'
 import scrollBottomIcon from '@/static/svg/hash_game/chat/scroll-bottom.svg?url'
 import topFadeIcon from '@/static/svg/hash_game/chat/top-fade.svg?url'
-import GameChatList from '@/components/game-chat/GameChatList.vue'
-import type { HashChatMessage } from '../chat/types'
-import type { HashHttpDraw } from '../chat/types'
-import { ref, watch, onBeforeUnmount } from 'vue'
-import joinAvatar from '@/static/img/hash_game/join-avatar.png'
+import { onBeforeUnmount, ref, watch } from 'vue'
+import type { HashChatMessage, HashHttpDraw } from '../chat/types'
 
 const props = defineProps<{
   messages: HashChatMessage[]
@@ -141,6 +161,7 @@ const props = defineProps<{
   sizeOnly?: boolean
   sumParityOnly?: boolean
   luckyOnly?: boolean
+  variant?: 'pc' | 'h5'
 }>()
 type JoinMessage = Extract<HashChatMessage, { kind: 'JOIN' | 'LEAVE' }>
 const currentJoin = ref<JoinMessage | null>(null)
@@ -210,38 +231,7 @@ function optionColor(option: string) {
 }
 </script>
 
-<style scoped>
-.hash-game-chat {
-  --hash-chat-odd: #22a89a;
-  --hash-chat-even: #e63533;
-}
-.join-banner {
-  position: absolute;
-  top: 8px;
-  left: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  max-width: 100%;
-  padding: 2px 15px 2px 2px;
-  border-radius: 13px;
-  background: linear-gradient(90deg, #e2a033, #e2a033cc);
-  color: white;
-  font-size: 14px;
-  white-space: nowrap;
-  animation: join-slide 3s both;
-}
-.join-banner img {
-  width: 20px;
-  height: 20px;
-  border: 1px solid white;
-  border-radius: 50%;
-  object-fit: cover;
-}
-.join-banner strong {
-  color: yellow;
-}
+<style>
 @keyframes join-slide {
   0% {
     transform: translateX(-110%);

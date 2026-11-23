@@ -26,8 +26,9 @@ const readSiteConfigValue = <T = unknown>(key: string): T | undefined => {
   }
 }
 
+// 图片前缀取接口
 export const getGameImageBaseUrl = () => {
-  // ossDomain is cached from sy/dlicgh by siteConfig store, so image helpers do not read env.
+  // ossDomain 由 config中的baseSiteConfig下的ossDomain字段 存储从 sy/dlicgh接口 中获取并缓存，因此图片的前缀不会读取环境变量（env）。
   const baseSiteConfig = readSiteConfigValue<Record<string, unknown>>('baseSiteConfig')
   const ossDomain = String(baseSiteConfig?.ossDomain ?? readSiteConfigValue('ossDomain') ?? '')
     .trim()

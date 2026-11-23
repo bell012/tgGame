@@ -1,12 +1,73 @@
 import type {
   HashGameAlgorithm,
   HashGameBetOption,
+  HashGameLotteryBet,
   HashGameLotteryInfo,
   HashGameLotteryResult
 } from '@/api/interface/hash_game.interface'
 
 export type BetKey = Lowercase<HashGameBetOption>
 export type RoadmapMode = 'size' | 'parity' | 'winner'
+
+export type RecentBetRecord = Pick<
+  HashGameLotteryBet,
+  'orderNo' | 'anchorBlockNum' | 'betOption' | 'status'
+> & {
+  amount: number | null
+  profitLoss: number | null
+}
+
+export type RecentBetSummary = {
+  count: number
+  totalBetAmount: number
+  profitLoss: number
+}
+
+const readBetAmount = (value: HashGameLotteryBet['amount']) => {
+  if (value == null || (typeof value === 'string' && !value.trim())) return null
+  const amount = Number(value)
+  return Number.isFinite(amount) && amount >= 0 ? amount : null
+}
+
+/** 按本地日期筛选当前玩法和币种，列表和今日汇总使用同一批记录。 */
+export function recentGameBets(
+  bets: readonly HashGameLotteryBet[],
+  gameCode: string,
+  currency: string,
+  now = new Date()
+) {
+  const start = new Date(now)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(start)
+  end.setDate(end.getDate() + 1)
+
+  const records: RecentBetRecord[] = []
+  const summary: RecentBetSummary = { count: 0, totalBetAmount: 0, profitLoss: 0 }
+  for (const bet of bets) {
+    if (bet.gameCode !== gameCode || bet.currency !== currency) continue
+    const time = new Date(timestampMillis(bet.betTime) || bet.betTime)
+    if (!(time >= start && time < end)) continue
+
+    const amount = readBetAmount(bet.amount)
+    const payout = readBetAmount(bet.payoutAmount)
+    const settled = bet.status === 'WIN' || bet.status === 'LOSE'
+    const profitLoss = settled && amount != null && payout != null ? payout - amount : null
+    records.push({
+      orderNo: bet.orderNo,
+      anchorBlockNum: bet.anchorBlockNum,
+      betOption: bet.betOption,
+      status: bet.status,
+      amount,
+      profitLoss
+    })
+    if (bet.status !== 'CANCEL') {
+      summary.count++
+      summary.totalBetAmount += amount ?? 0
+      summary.profitLoss += profitLoss ?? 0
+    }
+  }
+  return { records, summary }
+}
 
 export const BET_KEYS = {
   BIG: 'big',

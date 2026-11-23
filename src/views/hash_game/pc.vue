@@ -134,7 +134,8 @@
                 <i
                   class="grid size-[20px] place-items-center rounded-full text-[14px] not-italic text-white"
                   :style="{ background: entry.color }"
-                  >{{ entry.label }}</i>{{ entry.count }}
+                  >{{ entry.label }}</i
+                >{{ entry.count }}
               </span>
             </div>
             <div class="flex items-center">
@@ -235,7 +236,7 @@
               >{{ t('hashGame.fairness') }}</span
             >
           </div>
-          <div class="grid gap-[10px]" :style="betGridStyle">
+          <div ref="betGridRef" class="grid gap-[10px]" :style="betGridStyle">
             <div
               v-for="option in betOptions"
               :key="option.key"
@@ -244,17 +245,18 @@
               class="relative rounded-[8px] border border-input-1 bg-bg-3 px-[12px] pt-[16px] pb-[12px] text-left cursor-pointer"
               :class="{ 'border-theme-primary': hasBetAmount(option.key) }"
               :aria-pressed="hasBetAmount(option.key)"
-              @click="handleBetOptionClick($event, option.key)"
+              :disabled="betBusy"
+              @click="selectBet(option.key)"
             >
               <span
                 v-if="hasBetAmount(option.key)"
-                class="absolute right-[12px] z-[2] flex min-h-[24px] items-center justify-center rounded-[20px] bg-theme-primary px-[6px] text-[12px] font-[500] leading-[24px] text-text-4 transition-[top] duration-200"
-                :style="{ top: `calc(48% - 18px - ${getChipStackOffset(option.key)}px)` }"
+                class="pointer-events-none absolute right-[30px] z-[2] flex w-max translate-x-1/2 items-center justify-center rounded-[36px] bg-theme-primary px-[8px] py-[0px] text-[10px] font-[700] text-text-4 transition-[top] duration-200"
+                :style="{ top: `calc(48% - 6px - ${getChipStackOffset(option.key)}px)` }"
               >
                 {{ betTotals[option.key] }}
               </span>
               <span
-                class="pointer-events-none absolute right-[12px] top-[48%] z-[1] size-[36px] text-[12px]"
+                class="pointer-events-none absolute right-[12px] top-[50%] z-[1] size-[36px] text-[12px]"
                 data-chip-stack
                 aria-hidden="true"
               >
@@ -350,25 +352,32 @@
           </button>
         </section>
 
-        <footer class="mt-[0px] grid grid-cols-3 gap-[10px]">
+        <footer
+          class="mt-[0px] grid gap-[10px]"
+          :class="quickBetEnabled ? 'grid-cols-2' : 'grid-cols-3'"
+        >
           <button
             type="button"
-            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1"
-            @click="handleCancelSelection"
+            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1 disabled:opacity-50"
+            :disabled="!canCancelBet"
+            @click="cancelBet"
           >
             <CancelIcon class="size-[16px] text-icon-2" />{{ t('hashGame.cancel') }}
           </button>
           <button
             type="button"
-            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1"
-            @click="repeatSelection"
+            class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1 disabled:opacity-50"
+            :disabled="!canRepeatBet"
+            @click="repeatBets"
           >
             <RepeatIcon class="size-[16px] text-icon-2" />{{ t('hashGame.repeat') }}
           </button>
           <button
+            v-if="!quickBetEnabled"
             type="button"
-            disabled
+            :disabled="!canConfirmBet"
             class="flex h-[40px] items-center justify-center gap-[8px] rounded-[8px] bg-bg-3 text-[14px] font-[700] text-text-1 disabled:opacity-50"
+            @click="confirmBets"
           >
             <ConfirmIcon class="size-[16px] text-icon-2" />{{ t('hashGame.confirmBet') }}
           </button>
@@ -376,29 +385,21 @@
       </main>
 
       <!-- 聊天 -->
-      <aside class="flex min-w-0 flex-col rounded-[12px] bg-bg-2 pt-[13px] px-[16px] pb-[16px]">
+      <aside
+        class="flex min-w-0 min-h-0 flex-col overflow-hidden rounded-[12px] bg-bg-2 px-[10px] pb-[10px]"
+      >
         <div class="min-h-0 flex-1 overflow-y-auto text-[14px] text-text-2">
-          <HashGameChat v-if="chatVisible" :messages="props.page.chatMessages.value" />
+          <HashGameChat
+            v-if="chatVisible"
+            :messages="props.page.chatMessages.value"
+            variant="pc"
+            class="mx-[6px]"
+          />
         </div>
-        <div class="flex items-center justify-between h-[44px] gap-[10px]">
-          <div
-            class="flex items-center justify-between flex-1 h-full rounded-[10px] bg-bg-3 py-[10px] px-[12px]"
-          >
-            <input
-              v-model="chatDraft"
-              class="flex-1 bg-transparent text-[14px] outline-none text-text-1 placeholder:text-text-3 pr-[2px]"
-              :placeholder="t('hashGame.chat')"
-            />
-            <button type="button" :aria-label="t('hashGame.chat')">
-              <img :src="emojiIcon" alt="" class="size-[24px] text-icon-2" />
-            </button>
-          </div>
-          <div class="w-[44px] h-[44px] bg-bg-3 rounded-[10px] flex items-center justify-center">
-            <button type="button" :aria-label="t('hashGame.chat')">
-              <ChatIcon class="size-[22px] text-icon-2" />
-            </button>
-          </div>
-        </div>
+        <HashPcChatComposer
+          :game-code="selectedHashGameCode"
+          :config="props.page.chatConfig.value"
+        />
       </aside>
     </div>
 
@@ -408,8 +409,6 @@
       variant="pc"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
-      :balance-text="currentBalanceText"
-      :game-name="hashGameName"
       :bets="recentBets"
       :summary="recentBetSummary"
       @select-bet="openBetDetailPopup"
@@ -418,14 +417,19 @@
     <HashGameBetDetailPopup
       v-model:visible="betDetailPopupOpen"
       variant="pc"
-      :bet="selectedBetDetail"
+      :order-no="selectedOrderNo"
     />
     <!-- 历史投注 -->
     <HistoryPopup v-model:visible="historyPopupOpen" :records="historyRecords" variant="pc" />
     <!-- 筹码设置 -->
     <ChipEditorPopup :page="props.page" variant="pc" />
     <!-- 规则弹窗 -->
-    <HashGameRules v-model:visible="rulesPopupOpen" variant="pc" />
+    <HashGameRules
+      v-model:visible="rulesPopupOpen"
+      variant="pc"
+      :games="hashGames"
+      :initial-game-code="selectedHashGameCode"
+    />
     <!-- 飞筹码动画 -->
     <Teleport to="body">
       <FlyingChip
@@ -448,40 +452,39 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import CommonFooter from '@/components/commonFooter.vue'
 import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
-import type { HashGameBetDetail, HashGamePageState } from './index'
-import RecentBetsPopup from './components/RecentBetsPopup.vue'
-import HistoryPopup from './components/HistoryPopup.vue'
-import ChipEditorPopup from './components/ChipEditorPopup.vue'
-import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
-import FlyingChip from './components/FlyingChip.vue'
-import BetChip from './components/BetChip.vue'
-import { formatChipAmount } from './components/chipMotion'
-import { useBetChipAnimation } from './components/useBetChipAnimation'
-import HashGameRules from './rules.vue'
-import HashGameBetDetailPopup from './bet-detail.vue'
-import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
-import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
-import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
+import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
+import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
 import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
-import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
-import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
-import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
-import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
-import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
-import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
-import ResultArrowIcon2 from '@/static/svg/hash_game/zhixiang2.svg?component'
 import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
-import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
-import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
-import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
+import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
+import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
+import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
+import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
+import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
+import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
+import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
+import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
 import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
-import emojiIcon from '@/static/svg/hash_game/biaoqing.svg?url'
-import CommonFooter from '@/components/commonFooter.vue'
-import HashSettlementPopup from './components/HashSettlementPopup.vue'
+import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
+import ResultArrowIcon2 from '@/static/svg/hash_game/zhixiang2.svg?component'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import HashGameBetDetailPopup from './bet-detail.vue'
+import BetChip from './components/BetChip.vue'
+import ChipEditorPopup from './components/ChipEditorPopup.vue'
+import { formatChipAmount } from './components/chipMotion'
+import FlyingChip from './components/FlyingChip.vue'
 import HashGameChat from './components/HashGameChat.vue'
+import HashPcChatComposer from './components/HashPcChatComposer.vue'
+import HashSettlementPopup from './components/HashSettlementPopup.vue'
+import HistoryPopup from './components/HistoryPopup.vue'
+import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
+import RecentBetsPopup from './components/RecentBetsPopup.vue'
+import { useBetChipAnimation } from './components/useBetChipAnimation'
+import type { HashGamePageState } from './index'
+import HashGameRules from './rules.vue'
 
 // PC 视图只保留聊天输入草稿；周期、路单、投注和开关都读写 index.ts 共享状态。
 const props = defineProps<{ page: HashGamePageState }>()
@@ -509,7 +512,6 @@ const {
   chatVisible,
   currentCurrencyCode,
   currentCurrencyIcon,
-  currentBalanceText,
   recentBets,
   recentBetSummary,
   historyPopupOpen,
@@ -517,9 +519,17 @@ const {
   loadRecentBets,
   openRecords,
   selectBet,
+  betChips,
+  betTotals,
+  betBusy,
+  hasBetAmount,
+  canCancelBet,
+  canRepeatBet,
+  canConfirmBet,
   chooseChip,
-  cancelSelection,
-  repeatSelection,
+  cancelBet,
+  repeatBets,
+  confirmBets,
   openChipEditor,
   toggleQuickBetPopup,
   toggleQuickBet,
@@ -528,25 +538,6 @@ const {
   toggleMusic
 } = props.page
 
-const {
-  chipStackStep,
-  betTotals,
-  landedChips,
-  chipFlights,
-  hasBetAmount,
-  getChipStackOffset,
-  handleBetOptionClick,
-  finishChipFlight,
-  clearBetChips
-} = useBetChipAnimation({
-  selectedChip,
-  chipOptions,
-  soundEnabled: musicEnabled,
-  slotSize: 36,
-  selectBet
-})
-
-const chatDraft = ref('')
 const recentBetsOpen = ref(false)
 /** 打开弹窗时刷新当前玩法的近期投注。 */
 const openRecentBets = () => {
@@ -562,9 +553,17 @@ const { viewport: chipTrackRef, dragging: isDraggingChips } = useHorizontalScrol
 const { viewport: roadmapViewport, dragging: isDraggingRoadmap } = useHorizontalScroll({
   endOnChange: () => roadmap.value.columns
 })
-watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
+const betGridRef = ref<HTMLElement | null>(null)
+const { chipStackStep, landedChips, chipFlights, getChipStackOffset, finishChipFlight } =
+  useBetChipAnimation({
+    chips: betChips,
+    chipTrack: chipTrackRef,
+    betGrid: betGridRef,
+    soundEnabled: musicEnabled,
+    slotSize: 36
+  })
 const betDetailPopupOpen = ref(false)
-const selectedBetDetail = ref<HashGameBetDetail | null>(null)
+const selectedOrderNo = ref<string>()
 const rulesPopupOpen = ref(false)
 const quickBetPopupRef = ref<HTMLElement | null>(null)
 const quickBetTriggerRef = ref<HTMLElement | null>(null)
@@ -587,13 +586,8 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', handleQuickBet
 
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
 
-const handleCancelSelection = () => {
-  clearBetChips()
-  cancelSelection()
-}
-
-const openBetDetailPopup = (bet: HashGameBetDetail) => {
-  selectedBetDetail.value = bet
+const openBetDetailPopup = (orderNo: string) => {
+  selectedOrderNo.value = orderNo
   betDetailPopupOpen.value = true
 }
 </script>

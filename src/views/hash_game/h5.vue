@@ -51,7 +51,7 @@
               class="size-5 shrink-0 object-contain"
             />
             <span class="truncate text-[14px] font-[700] text-text-1">{{
-              currentBalanceText
+              currentCompactBalanceText
             }}</span>
           </button>
           <button
@@ -282,7 +282,8 @@
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full text-[11px] not-italic text-text-1"
                       :style="{ background: entry.color }"
-                      >{{ entry.label }}</i>{{ entry.count }}
+                      >{{ entry.label }}</i
+                    >{{ entry.count }}
                   </span>
                 </div>
                 <span class="ml-auto min-w-0 whitespace-nowrap text-[11px] text-secondary-8">{{
@@ -334,7 +335,7 @@
               >{{ t('hashGame.fairness') }}</span
             >
           </div>
-          <div class="grid gap-x-[5px]" :style="betGridStyle">
+          <div ref="betGridRef" class="grid gap-x-[5px]" :style="betGridStyle">
             <div
               v-for="option in betOptions"
               :key="option.key"
@@ -346,11 +347,12 @@
               "
               :style="{ '--bet-color': option.color }"
               :aria-pressed="hasBetAmount(option.key)"
-              @click="handleBetOptionClick($event, option.key)"
+              :disabled="betBusy"
+              @click="selectBet(option.key)"
             >
               <span
                 v-if="hasBetAmount(option.key)"
-                class="absolute right-[5px] z-[2] flex items-center justify-center rounded-[12px] bg-theme-primary px-[8px] text-[12px] font-[500] text-text-4"
+                class="absolute right-[4px] z-[2] flex items-center justify-center rounded-[12px] bg-theme-primary px-[8px] text-[12px] font-[500] text-text-4"
                 :style="{ top: `calc(48% - 14px - ${getChipStackOffset(option.key)}px)` }"
               >
                 {{ betTotals[option.key] }}
@@ -501,22 +503,26 @@
           <div class="flex w-full items-center gap-[7px]">
             <button
               type="button"
-              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
-              @click="handleCancelSelection"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 disabled:opacity-50"
+              :disabled="!canCancelBet"
+              @click="cancelBet"
             >
               <CancelIcon class="size-[14px] text-icon-2" />{{ t('hashGame.cancel') }}
             </button>
             <button
               type="button"
-              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1"
-              @click="repeatSelection"
+              class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 disabled:opacity-50"
+              :disabled="!canRepeatBet"
+              @click="repeatBets"
             >
               <RepeatIcon class="size-[14px] text-icon-2" />{{ t('hashGame.repeat') }}
             </button>
             <button
+              v-if="!quickBetEnabled"
               type="button"
-              disabled
+              :disabled="!canConfirmBet"
               class="flex h-[34px] flex-1 items-center justify-center gap-[5px] rounded-[8px] bg-bg-3 text-xs font-[500] text-text-1 disabled:opacity-50"
+              @click="confirmBets"
             >
               <ConfirmIcon class="size-[14px] text-icon-2" />{{ t('hashGame.confirmBet') }}
             </button>
@@ -569,8 +575,6 @@
       v-model:visible="recentBetsOpen"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
-      :balance-text="currentBalanceText"
-      :game-name="hashGameName"
       :bets="recentBets"
       :summary="recentBetSummary"
     />
@@ -589,8 +593,9 @@
     <HashChatComposerPopup
       :visible="chatComposerOpen"
       :config="chatConfig"
+      :busy="chatSendBusy"
       @close="chatComposerOpen = false"
-      @send="sendMockChatMessage"
+      @send="sendChatMessage"
       @bet="chatComposerOpen = false"
     />
 
@@ -613,48 +618,62 @@
 </template>
 
 <script setup lang="ts">
-import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
-import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
-import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
-import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
-import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
-import RecordsIcon from '@/static/svg/sift.svg?component'
-import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
-import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
-import ArrowDownIcon from '@/static/svg/hash_game/jiantou_xia.svg?component'
-import CollapseIcon from '@/static/svg/hash_game/jiantou_shang2.svg?component'
-import RefreshIcon from '@/static/svg/hash_game/shauxin.svg?component'
-import ResultArrowIcon from '@/static/svg/hash_game/zhixiang.svg?component'
-import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
-import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
-import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
-import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
-import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
-import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
-import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
-import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
-import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
-import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
-import chipImage from '@/static/svg/hash_game/chouma.svg?url'
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { sendHashChatMessage } from '@/api/modules/hash-game-chat'
 import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
+import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
+import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
+import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
+import chipImage from '@/static/svg/hash_game/chouma.svg?url'
+import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
+import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
+import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
+import CollapseIcon from '@/static/svg/hash_game/jiantou_shang2.svg?component'
+import ArrowDownIcon from '@/static/svg/hash_game/jiantou_xia.svg?component'
+import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
+import AmountIcon from '@/static/svg/hash_game/jine.svg?component'
+import ChatIcon from '@/static/svg/hash_game/liaotian.svg?component'
+import RecentIcon from '@/static/svg/hash_game/recent.svg?component'
+import PeopleIcon from '@/static/svg/hash_game/renshu.svg?component'
+import RepeatIcon from '@/static/svg/hash_game/repeat.svg?component'
+import RulesIcon from '@/static/svg/hash_game/rules.svg?component'
+import RefreshIcon from '@/static/svg/hash_game/shauxin.svg?component'
+import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
+import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
+import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
+import ResultArrowIcon from '@/static/svg/hash_game/zhixiang.svg?component'
+import RecordsIcon from '@/static/svg/sift.svg?component'
 import { navigateTo } from '@/utils/router'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
-import HashGameChat from './components/HashGameChat.vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import BetChip from './components/BetChip.vue'
+import ChipEditorPopup from './components/ChipEditorPopup.vue'
+import { formatChipAmount } from './components/chipMotion'
+import FlyingChip from './components/FlyingChip.vue'
 import HashChatComposerPopup from './components/HashChatComposerPopup.vue'
+import HashGameChat from './components/HashGameChat.vue'
 import HashSettlementPopup from './components/HashSettlementPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
-import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import QuickBetPopupContent from './components/QuickBetPopupContent.vue'
-import ChipEditorPopup from './components/ChipEditorPopup.vue'
-import FlyingChip from './components/FlyingChip.vue'
-import BetChip from './components/BetChip.vue'
-import { formatChipAmount } from './components/chipMotion'
+import RecentBetsPopup from './components/RecentBetsPopup.vue'
 import { useBetChipAnimation } from './components/useBetChipAnimation'
 import type { HashGamePageState } from './index'
 
 const props = defineProps<{ page: HashGamePageState }>()
 const chatComposerOpen = ref(false)
+const chatSendBusy = ref(false)
+const sendChatMessage = async (content: string, custom: boolean) => {
+  const gameCode = props.page.selectedHashGameCode.value
+  if (!gameCode || chatSendBusy.value) return
+  chatSendBusy.value = true
+  try {
+    await sendHashChatMessage({ gameCode, content, custom })
+  } catch {
+    // 请求层负责展示发送失败提示。
+  } finally {
+    chatSendBusy.value = false
+  }
+}
 const soundButtons = [{ type: 'background' as const }, { type: 'music' as const }]
 
 /** 点击聊天按钮时刷新当前游戏配置并打开 H5 输入弹窗。 */
@@ -672,7 +691,7 @@ const {
   t,
   currentCurrencyCode,
   currentCurrencyIcon,
-  currentBalanceText,
+  currentCompactBalanceText,
   currencyOptions,
   isRefreshingBalance,
   hashGames,
@@ -695,7 +714,6 @@ const {
   chatMessages,
   chatConfig,
   refreshChatConfig,
-  sendMockChatMessage,
   currentSettlement,
   dismissSettlement,
   round,
@@ -716,10 +734,18 @@ const {
   handleBack,
   openRecords,
   selectBet,
+  betChips,
+  betTotals,
+  betBusy,
+  hasBetAmount,
+  canCancelBet,
+  canRepeatBet,
+  canConfirmBet,
   toggleBackgroundMusic,
   toggleMusic,
-  cancelSelection,
-  repeatSelection,
+  cancelBet,
+  repeatBets,
+  confirmBets,
   chooseChip,
   toggleQuickBet,
   toggleQuickBetPopup,
@@ -729,34 +755,19 @@ const {
   handlePeriodOutsidePointerDown
 } = props.page
 
-const {
-  chipStackStep,
-  betTotals,
-  landedChips,
-  chipFlights,
-  hasBetAmount,
-  getChipStackOffset,
-  handleBetOptionClick,
-  finishChipFlight,
-  clearBetChips
-} = useBetChipAnimation({
-  selectedChip,
-  chipOptions,
-  soundEnabled: musicEnabled,
-  slotSize: 25,
-  selectBet
-})
-
 const { viewport: chipTrackRef } = useHorizontalScroll({ centerOnClick: true })
 const { viewport: roadmapViewport } = useHorizontalScroll({
   endOnChange: () => roadmap.value.columns
 })
-watch([selectedHashGameCode, currentCurrencyCode], clearBetChips)
-
-const handleCancelSelection = () => {
-  clearBetChips()
-  cancelSelection()
-}
+const betGridRef = ref<HTMLElement | null>(null)
+const { chipStackStep, landedChips, chipFlights, getChipStackOffset, finishChipFlight } =
+  useBetChipAnimation({
+    chips: betChips,
+    chipTrack: chipTrackRef,
+    betGrid: betGridRef,
+    soundEnabled: musicEnabled,
+    slotSize: 25
+  })
 
 /** 点击记录菜单和周期菜单外部时关闭对应浮层。 */
 const handleOutsidePointerDown = (event: PointerEvent) => {
@@ -807,6 +818,11 @@ const openRecentBets = () => {
 /** 跳转至游戏规则页并收起记录菜单。 */
 const openGameRules = () => {
   recordsMenuOpen.value = false
-  void navigateTo('/hash-game/rules')
+  void navigateTo('/hash-game/rules', {
+    query: {
+      gameCode: selectedHashGameCode.value || undefined,
+      currency: currentCurrencyCode.value || undefined
+    }
+  })
 }
 </script>

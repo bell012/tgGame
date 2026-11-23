@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, type Ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useLocaleStore } from '@/stores/locale'
 import { SITE_CONFIG_STORAGE_KEY, useSiteConfigStore, type SiteConfig } from '@/stores/siteConfig'
@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/user'
 import {
   getCurrencyImageByCode,
   getCurrentCurrency,
+  getCompactFormattedBalance,
   getFormattedBalance,
   formatBalance
 } from '@/utils/locale'
@@ -75,7 +76,7 @@ export const readDisplayCurrencyCodesFromSiteConfig = (
   }
 }
 
-export const useDisplayCurrency = () => {
+export const useDisplayCurrency = (currencyOverride?: Readonly<Ref<string | undefined>>) => {
   const localeStore = useLocaleStore()
   const siteConfigStore = useSiteConfigStore()
   const userStore = useUserStore()
@@ -83,6 +84,9 @@ export const useDisplayCurrency = () => {
   const { config } = storeToRefs(siteConfigStore)
 
   const currentCurrencyCode = computed(() => {
+    const override = normalizeDisplayCurrencyCode(currencyOverride?.value)
+    if (override && override !== 'NONE') return override
+
     const accountCurrency = normalizeDisplayCurrencyCode(
       acctInfo.value?.currency || userInfo.value?.currency
     )
@@ -153,6 +157,10 @@ export const useDisplayCurrency = () => {
   const currentBalanceText = computed(() =>
     getFormattedBalance(currentBalance.value, currentCurrencyCode.value, 2)
   )
+  // 顶部余额栏专用：1 百万起按 M / B / T 缩写，其他位置仍用 currentBalanceText 的完整金额。
+  const currentCompactBalanceText = computed(() =>
+    getCompactFormattedBalance(currentBalance.value, currentCurrencyCode.value)
+  )
   const currentCurrencyIcon = computed(() => getCurrencyImageByCode(currentCurrencyCode.value))
 
   const currencyOptions = computed<DisplayCurrencyOption[]>(() => {
@@ -194,6 +202,7 @@ export const useDisplayCurrency = () => {
     currentBalance,
     currentBalanceAmountText,
     currentBalanceText,
+    currentCompactBalanceText,
     currencyOptions,
     currencySelectOptions,
     setDisplayCurrency
