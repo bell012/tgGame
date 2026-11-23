@@ -50,6 +50,8 @@
     "confirmBet": "Xác nhận",
     "insufficientBalance": "Số dư khả dụng không đủ. Vui lòng nạp tiền.",
     "betAmountOutOfRange": "Số tiền nằm ngoài giới hạn cho mỗi lần cược.",
+    "minimumBetAmount": "Số tiền cược tối thiểu: {amount}",
+    "maximumBetAmount": "Số tiền cược tối đa: {amount}",
     "bettingUnavailable": "Hiện chưa thể đặt cược. Vui lòng thử lại sau.",
     "betResultUnknown": "Cược của bạn chưa được xác nhận. Hãy kiểm tra lịch sử cược trước khi đặt lại.",
     "betSuccess": "Đặt cược thành công",

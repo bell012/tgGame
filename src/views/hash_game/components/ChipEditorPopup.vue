@@ -57,28 +57,15 @@
               :key="chip.id"
               type="button"
               class="relative mx-auto min-w-0 p-[8px] transition-opacity"
-              :aria-label="formatChipAmount(Number(chip.value))"
+              :aria-label="String(chip.value)"
               :aria-pressed="chip.enabled"
               @click="togglePresetChip(chip.id)"
             >
-              <img
-                :src="chipImage"
-                alt=""
-                :class="
-                  variant === 'pc'
-                    ? 'h-[50px] w-[50px] object-contain'
-                    : 'h-[45px] w-[45px] object-contain'
-                "
-                :style="{ filter: 'hue-rotate(' + chip.hue + 'deg)' }"
+              <ChipFace
+                :color="chip.color"
+                :value="chip.value"
+                :class="variant === 'pc' ? 'size-[50px] text-[18px]' : 'size-[45px] text-[16px]'"
               />
-              <span
-                :class="
-                  variant === 'pc'
-                    ? 'absolute inset-0 grid place-items-center pb-[0px] text-[18px] font-bold text-[#eee]'
-                    : 'absolute inset-0 grid place-items-center pb-[0px] text-[14px] font-bold text-[#eee]'
-                "
-                >{{ formatChipAmount(Number(chip.value)) }}</span
-              >
               <span
                 v-if="chip.enabled"
                 :class="
@@ -95,29 +82,14 @@
               :key="`custom-${chip.id}`"
               type="button"
               class="relative mx-auto min-w-0 p-[8px] transition-opacity"
-              :aria-label="
-                chip.value ? formatChipAmount(Number(chip.value)) : t('hashGame.editChip')
-              "
+              :aria-label="chip.value === undefined ? t('hashGame.editChip') : String(chip.value)"
               @click="editCustomChip(chip)"
             >
-              <img
-                :src="chipEditorImage"
-                alt=""
-                :class="
-                  variant === 'pc'
-                    ? 'h-[50px] w-[50px] object-contain'
-                    : 'h-[45px] w-[45px] object-contain'
-                "
+              <ChipFace
+                :color="CUSTOM_CHIP_COLOR"
+                :value="chip.value ?? t('hashGame.edit')"
+                :class="variant === 'pc' ? 'size-[50px] text-[16px]' : 'size-[45px] text-[14px]'"
               />
-              <span
-                :class="
-                  variant === 'pc'
-                    ? 'absolute inset-0 grid place-items-center pb-[2px] text-[14px] font-bold text-[#eee]'
-                    : 'absolute inset-0 grid place-items-center pb-[2px] text-[11px] font-bold text-[#eee]'
-                "
-              >
-                {{ chip.value ? formatChipAmount(Number(chip.value)) : t('hashGame.edit') }}
-              </span>
               <span
                 :class="
                   variant === 'pc'
@@ -197,11 +169,7 @@
               <div
                 class="mb-[10px] grid h-[42px] place-items-center rounded-[8px] border border-theme-primary bg-input-1 text-[15px] text-text-3"
               >
-                {{
-                  keypadValue
-                    ? formatChipAmount(Number(keypadValue))
-                    : t('hashGame.amountPlaceholder')
-                }}
+                {{ keypadValue || t('hashGame.amountPlaceholder') }}
               </div>
               <div class="grid grid-cols-3 gap-[6px]">
                 <button
@@ -251,8 +219,8 @@ import type { HashGamePageState } from '../index'
 import CloseIcon from '@/static/svg/close.svg?component'
 import GouIcon from '@/static/svg/hash_game/gou.svg?component'
 import EditChipIcon from '@/static/svg/hash_game/bianji2.svg?component'
-import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
-import chipImage from '@/static/svg/hash_game/chouma.svg?url'
+import { CUSTOM_CHIP_COLOR } from '../chips'
+import ChipFace from './ChipFace.vue'
 
 const props = withDefaults(defineProps<{ page: HashGamePageState; variant?: 'h5' | 'pc' }>(), {
   variant: 'h5'
@@ -273,11 +241,4 @@ const {
   confirmKeypadValue
 } = props.page
 const variant = props.variant
-
-// 金额展示格式与底部筹码栏保持一致。
-const formatChipAmount = (amount: number) => {
-  if (amount >= 1000000) return `${Number((amount / 1000000).toFixed(1))}M`
-  if (amount >= 10000) return `${Number((amount / 1000).toFixed(1))}K`
-  return String(amount)
-}
 </script>

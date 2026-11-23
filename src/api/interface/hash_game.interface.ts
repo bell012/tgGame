@@ -48,8 +48,8 @@ export interface HashGameLotteryInfo extends HashGameLotteryGame {
   periodBlocks: number
   /** 通用赔率，或按投注项配置的赔率表。 */
   oddsConfig?: number | string | Record<string, unknown> | null
-  betAmountMin: number | string
-  betAmountMax: number | string
+  betAmountMin: number | string // 筹码最小投注金额
+  betAmountMax: number | string // 筹码最大投注金额
   nextAnchorBlockNum?: number
   sealed: boolean
   restrictOpposite?: number | boolean
