@@ -1,5 +1,5 @@
 import { useWebSocket } from '@/composables/useWebSocket'
-import { ref, shallowRef, watch, type Ref } from 'vue'
+import { onScopeDispose, ref, shallowRef, watch, type Ref } from 'vue'
 import type { HashWsDefaultEvent, HashWsErrorEvent, HashWsEvent, HashWsServerEvent } from './types'
 
 /** Hash 游戏匿名连接使用的站点标识；正式环境可由 VITE_SITE_CODE 覆盖。 */
@@ -116,6 +116,11 @@ export function useHashGameSockets(
     })
   }
 
+  /** 在聊天连接仍可发送时主动退出当前房间。 */
+  function unsubscribeCurrentRoom() {
+    chatSocket.sendJson({ type: 'UNSUBSCRIBE_ROOM' })
+  }
+
   /** 接收默认业务通道的协议消息并交给页面业务层。 */
   function handleDefaultMessage(event: HashWsServerEvent) {
     if (isErrorEvent(event)) {
@@ -138,6 +143,7 @@ export function useHashGameSockets(
   }
 
   const defaultSocket = useWebSocket<HashWsServerEvent>({
+    autoDisconnect: false,
     reconnect: { maxAttempts: Infinity, initialDelayMs: 1_000, maxDelayMs: 10_000 },
     heartbeat: {
       intervalMs: 20_000,
@@ -151,6 +157,7 @@ export function useHashGameSockets(
     }
   })
   const chatSocket = useWebSocket<HashWsServerEvent>({
+    autoDisconnect: false,
     reconnect: { maxAttempts: Infinity, initialDelayMs: 1_000, maxDelayMs: 10_000 },
     heartbeat: {
       intervalMs: 20_000,
@@ -174,6 +181,7 @@ export function useHashGameSockets(
 
   /** 建立 hashchat 通道，并在每次打开后订阅当前游戏房间。 */
   function connectChatSocket() {
+    unsubscribeCurrentRoom()
     chatSocket.connect({
       url: buildSocketUrl('hashchat'),
       onOpen: () => {
@@ -193,12 +201,14 @@ export function useHashGameSockets(
     connectChatSocket()
   }
 
-  /** 主动关闭两条 WS 连接，路由离开时 Vue scope 也会自动执行该释放。 */
+  /** 主动退出聊天室并关闭两条 WS 连接。 */
   function disconnect() {
+    unsubscribeCurrentRoom()
     defaultSocket.disconnect()
     chatSocket.disconnect()
   }
 
+  onScopeDispose(disconnect)
   watch(accessToken, reconnectWithLatestIdentity, { immediate: true })
   watch([gameCode, currency], subscribeCurrentRoom)
 
