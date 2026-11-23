@@ -783,6 +783,7 @@ const createHashGamePageState = () => {
     hashGameName,
     selectedHashGameCode,
     selectHashGame,
+    currentGameInfo,
     periodsOpen,
     historyPopupOpen,
     historyRecords,

@@ -53,6 +53,7 @@
     "minimumBetAmount": "Số tiền cược tối thiểu: {amount}",
     "maximumBetAmount": "Số tiền cược tối đa: {amount}",
     "bettingUnavailable": "Hiện chưa thể đặt cược. Vui lòng thử lại sau.",
+    "oppositeBetRestricted": "Không thể cược vào các lựa chọn đối lập trong cùng một kỳ.",
     "betResultUnknown": "Cược của bạn chưa được xác nhận. Hãy kiểm tra lịch sử cược trước khi đặt lại.",
     "betSuccess": "Đặt cược thành công",
     "cancelSuccess": "Hủy cược thành công",

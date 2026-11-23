@@ -421,6 +421,8 @@
       variant="pc"
       :games="hashGames"
       :initial-game-code="selectedHashGameCode"
+      :currency-code="currentCurrencyCode"
+      :game-info="currentGameInfo"
     />
     <!-- 飞筹码动画 -->
     <Teleport to="body">
@@ -485,6 +487,7 @@ const {
   hashGameName,
   selectedHashGameCode,
   selectHashGame,
+  currentGameInfo,
   roadmapMode,
   chipOptions,
   selectedChip,

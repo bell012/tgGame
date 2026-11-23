@@ -19,6 +19,17 @@ type Value<T> = Readonly<Ref<T>>
 
 const sumChips = (chips: readonly Stake[]) => chips.reduce((total, chip) => total + chip.amount, 0)
 
+const OPPOSITE_BETS: Partial<Record<BetKey, BetKey>> = {
+  big: 'small',
+  small: 'big',
+  odd: 'even',
+  even: 'odd',
+  banker: 'player',
+  player: 'banker',
+  win: 'lose',
+  lose: 'win'
+}
+
 export function useHashGameBetting(options: {
   account: Value<string>
   currency: Value<string>
@@ -138,6 +149,25 @@ export function useHashGameBetting(options: {
     return false
   }
 
+  const canBetOptions = (pending: Iterable<BetKey>) => {
+    const restricted = options.info.value?.restrictOpposite
+    if (restricted !== 1 && restricted !== true) return true
+
+    const pendingOptions = new Set(pending)
+    const chosen = new Set(pendingOptions)
+    for (const bet of activeBets.value) {
+      for (const chip of bet.chips) chosen.add(chip.option)
+    }
+    for (const option of pendingOptions) {
+      const opposite = OPPOSITE_BETS[option]
+      if (opposite && chosen.has(opposite)) {
+        options.notify('hashGame.oppositeBetRestricted')
+        return false
+      }
+    }
+    return true
+  }
+
   const withinLimits = (amounts: Iterable<number>) => {
     for (const amount of amounts) {
       const limitError = getBetAmountLimitError(options.info.value, amount)
@@ -179,6 +209,7 @@ export function useHashGameBetting(options: {
       }
       if (!sameRound(account, key) || !marketOpen.value) return
       if (
+        !canBetOptions(groups.keys()) ||
         !withinLimits(draft.value.map(chip => chip.amount)) ||
         !withinLimits([...groups.values()].map(sumChips)) ||
         !hasBalance(sumChips(draft.value))
@@ -186,6 +217,7 @@ export function useHashGameBetting(options: {
         return
       for (const [option, entries] of groups) {
         if (!sameRound(account, key) || !marketOpen.value) break
+        if (!canBetOptions([option])) break
         const betOption = options.markets.value.find(market => BET_KEYS[market] === option)
         if (!betOption) continue
         const request = {
@@ -255,6 +287,7 @@ export function useHashGameBetting(options: {
     const totals = new Map<BetKey, number>()
     for (const { option, amount } of next) totals.set(option, (totals.get(option) ?? 0) + amount)
     if (
+      !canBetOptions(totals.keys()) ||
       !withinLimits(stakes.map(stake => stake.amount)) ||
       !withinLimits(totals.values()) ||
       !hasBalance(sumChips(next))

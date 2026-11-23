@@ -29,6 +29,8 @@ export interface HashGameLotteryGame {
   description?: string | null
   currencies?: readonly string[] // 该玩法支持的投注币种，空数组表示不限制
   introImageUrl?: string | null // 游戏规则中玩法说明图片
+  introImageDarkUrl?: string | null // 深色主题玩法介绍图片
+  introImageLightUrl?: string | null // 浅色主题玩法介绍图片
   allowMultipleBets?: boolean
   multiBet?: boolean
   multipleBet?: boolean
@@ -52,7 +54,7 @@ export interface HashGameLotteryInfo extends HashGameLotteryGame {
   betAmountMax: number | string // 筹码最大投注金额
   nextAnchorBlockNum?: number
   sealed: boolean
-  restrictOpposite?: number | boolean
+  restrictOpposite?: number | boolean // 0/false 允许反向下注，1/true 限制反向下注
 }
 
 /** 游戏详情接口的请求参数。 */

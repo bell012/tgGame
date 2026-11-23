@@ -53,6 +53,7 @@
     "minimumBetAmount": "最小投注金额{amount}",
     "maximumBetAmount": "最大投注金额{amount}",
     "bettingUnavailable": "当前暂不可投注，请稍后再试",
+    "oppositeBetRestricted": "同一期不能同时投注相反选项",
     "betResultUnknown": "暂未收到投注结果，请先查看投注记录，避免重复下注",
     "betSuccess": "投注成功",
     "cancelSuccess": "取消成功",

@@ -456,7 +456,7 @@
           >
             <img :src="chipEditorImage" alt="" class="size-full object-contain" />
             <span
-              class="absolute inset-0 grid place-items-center pt-[1px] text-[9px] font-bold text-text-1"
+              class="absolute inset-0 grid place-items-center pt-[1px] text-[9px] font-bold text-[#eee]"
               >{{ t('hashGame.edit') }}</span
             >
           </button>
