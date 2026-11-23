@@ -1,6 +1,7 @@
 import type { GameQueryOptions } from '@/stores/game'
+import { HASH_CASINO_TAB_CODE } from '@/stores/hashGameCatalog'
 
-export type CasinoPageMode = 'lobby' | 'pageStyle2' | 'pageStyle3' | 'pageStyle4'
+export type CasinoPageMode = 'lobby' | 'pageStyle2' | 'pageStyle3' | 'pageStyle4' | 'hash'
 
 const pageStyle2TabCodes = new Set(['originals', 'hot_games', 'TG'])
 
@@ -13,6 +14,7 @@ export const getGameListTabCodeFromSlug = (slug: string) => {
 }
 
 export const getCasinoPageMode = (tabCode: string): CasinoPageMode => {
+  if (tabCode === HASH_CASINO_TAB_CODE) return 'hash'
   if (!tabCode) {
     return 'lobby'
   }
@@ -41,6 +43,7 @@ export const getCasinoQueryOptions = (
   switch (normalizedTabCode) {
     case '':
     case 'providers':
+    case HASH_CASINO_TAB_CODE:
       return undefined
     case 'hot_games':
       return {

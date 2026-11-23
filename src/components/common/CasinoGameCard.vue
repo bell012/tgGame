@@ -25,7 +25,10 @@
           :name="game.itemName ?? ''"
           :pc-scale-element="responsivePc ? cardElement : null"
         />
-        <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
+        <div
+          v-if="showPlatformLogo && platformLogoImg.src"
+          class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent"
+        >
           <gameRemoteImg
             :img="platformLogoImg"
             :alt="game.platformName || game.itemName"
@@ -34,6 +37,7 @@
         </div>
       </div>
       <div
+        v-if="playerCount !== null"
         class="absolute right-1 top-1 flex h-5 min-w-[33px] items-center justify-center rounded-[6px] bg-mask-20 px-1"
       >
         <div class="icon mr-0.5 h-[16px] w-[16px] text-white">
@@ -57,11 +61,11 @@
               ? 'text-[10px] font-medium lg:text-[11px] lg:font-bold'
               : 'text-[10px] sm:text-xs font-medium sm:font-semibold'
           "
-          >{{ initNum }}</span
+          >{{ playerCount ?? initNum }}</span
         >
       </div>
       <div
-        v-if="game.serviceStatus === 0"
+        v-if="!showMaintenance || game.serviceStatus === 0"
         class="absolute left-0 top-0 z-[2] flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1 opacity-0 sm:group-hover:opacity-100"
       >
         <div
@@ -85,7 +89,7 @@
         </div>
       </div>
       <div
-        v-if="game.serviceStatus === 1"
+        v-if="showMaintenance && game.serviceStatus === 1"
         class="absolute left-0 top-0 z-[2] flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1"
       >
         <underMaintenanceIcon class="h-9 w-9 text-common-100" />
@@ -110,18 +114,37 @@ import { resolveGameImageUrl } from '@/utils/image'
 
 const props = withDefaults(
   defineProps<{
-    game: GameDataItem
+    game: Partial<
+      Pick<
+        GameDataItem,
+        | 'itemName'
+        | 'platformName'
+        | 'platformCode'
+        | 'serviceStatus'
+        | 'icon1'
+        | 'icon2'
+        | 'icon3'
+        | 'conUrl'
+        | 'initScoreNum'
+        | 'initScoreStar'
+      >
+    >
     /** 收藏模块等场景：左上角收藏角标 */
     showFavoriteBadge?: boolean
     hoverLift?: boolean
     fadeCaptionOnHover?: boolean
     responsivePc?: boolean
+    showPlatformLogo?: boolean
+    showMaintenance?: boolean
+    playerCount?: number | null
   }>(),
   {
     showFavoriteBadge: false,
     hoverLift: true,
     fadeCaptionOnHover: false,
-    responsivePc: false
+    responsivePc: false,
+    showPlatformLogo: true,
+    showMaintenance: true
   }
 )
 
@@ -159,12 +182,15 @@ const platformLogoImg = reactive<{
 
 const resolvePlatformLogo = async () => {
   const platformCode = String(props.game.platformCode ?? '').trim()
-  if (!platformCode) {
+  if (!props.showPlatformLogo || !platformCode) {
     platformLogoImg.src = ''
     return
   }
 
-  platformLogoImg.src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
+  const src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
+  if (props.showPlatformLogo && String(props.game.platformCode ?? '').trim() === platformCode) {
+    platformLogoImg.src = src
+  }
 }
 
 /** | 游戏封面名称显示 | `0` 不显示，`1` 显示 | */
@@ -186,16 +212,13 @@ const gameCovernameShow = computed(() => {
 })
 
 const doClick = () => {
-  if (props.game.serviceStatus === 1) return
+  if (props.showMaintenance && props.game.serviceStatus === 1) return
   emit('click')
 }
 
-watch(
-  () => props.game.platformCode,
-  () => {
-    void resolvePlatformLogo()
-  }
-)
+watch([() => props.game.platformCode, () => props.showPlatformLogo], () => {
+  void resolvePlatformLogo()
+})
 
 onMounted(() => {
   void resolvePlatformLogo()

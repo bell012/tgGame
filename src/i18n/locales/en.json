@@ -360,6 +360,10 @@
     "RecordTime": "Record Time"
   },
   "common": {
+    "retry": "Retry",
+    "previous": "Previous page",
+    "next": "Next page",
+    "loadFailed": "Failed to load. Please try again.",
     "loading": "Loading...",
     "loadingMore": "Loading more...",
     "noMoreData": "No more data",

@@ -344,7 +344,8 @@ import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
 import { homePopVisitState } from '@/utils/homePopVisit'
 import { getPopupContext } from '@/utils/popupContext'
 import { storeToRefs } from 'pinia'
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onActivated, onMounted, ref, watch } from 'vue'
+import { HASH_CASINO_TAB_CODE, useHashGameCatalogStore } from '@/stores/hashGameCatalog'
 import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import LazySection from './components/LazySection.vue'
@@ -434,6 +435,7 @@ interface HomeGameSection {
 const userStore = useUserStore()
 const gameStore = useGameStore()
 const casinoTabsStore = useCasinoTabsStore()
+const hashCatalog = useHashGameCatalogStore()
 const AsyncEventList = defineAsyncComponent(() => import('./components/eventList.vue'))
 const AsyncNewEvent = defineAsyncComponent(() => import('./components/newEvent.vue'))
 const { userInfo, acctInfo } = storeToRefs(userStore)
@@ -579,7 +581,7 @@ const listImg = computed(() => [
     xlIcon: lotteryIcon,
     h5Img: lotteryCardH5Img,
     icon: lotteryIcon,
-    path: '/casino/HX'
+    path: `/casino/${HASH_CASINO_TAB_CODE}`
   }
 ])
 
@@ -703,7 +705,12 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
+  void hashCatalog.load(true)
   await Promise.allSettled([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
+})
+
+onActivated(() => {
+  void hashCatalog.load(true)
 })
 
 watch(

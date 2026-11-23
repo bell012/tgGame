@@ -267,6 +267,8 @@ import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
 import pageStyle3 from './components/pageStyle3.vue'
 import pageStyle4 from './components/pageStyle4.vue'
+import pageStyleHash from './components/pageStyleHash.vue'
+import { HASH_CASINO_TAB_CODE, useHashGameCatalogStore } from '@/stores/hashGameCatalog'
 
 interface Props {
   tabKey?: string | undefined
@@ -300,6 +302,7 @@ const suggestedArr = ref<string[]>([])
 const querySlideshowList = ref<QuerySlideshowItem[]>([])
 const isSlideshowLoading = ref(false)
 const gameStore = useGameStore()
+const hashCatalog = useHashGameCatalogStore()
 const userStore = useUserStore()
 const { searchHistory } = storeToRefs(gameStore)
 const { userInfo } = storeToRefs(userStore)
@@ -308,15 +311,21 @@ const getCurrentTab = computed(() => {
   const key = props.tabKey ?? ''
   return tabButtons.value.find(tab => tab.sysGameTypeCode === key)
 })
-const currentTabCode = computed(() => getCurrentTab.value?.sysGameTypeCode)
+const currentTabCode = computed(() =>
+  props.tabKey === HASH_CASINO_TAB_CODE
+    ? HASH_CASINO_TAB_CODE
+    : getCurrentTab.value?.sysGameTypeCode
+)
 const tabSlideKey = computed(() => props.tabKey ?? '')
 const slideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
 const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
 const basePageStyle = computed(() => {
-  const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
+  const currentCode = currentTabCode.value ?? ''
   const pageMode = getCasinoPageMode(currentCode)
 
   switch (pageMode) {
+    case 'hash':
+      return pageStyleHash
     case 'lobby':
       return pageStyle1
     case 'pageStyle2':
@@ -361,6 +370,8 @@ const currentQueryOptions = computed(() => {
 })
 const currentPageProps = computed(() => {
   switch (getPageStyle.value) {
+    case pageStyleHash:
+      return { keyword: trimmedSearchKeyword.value }
     case pageStyle1:
       return {
         modules: lobbyButtons.value,
@@ -653,6 +664,7 @@ watch(
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
+  void hashCatalog.load(true)
   gameStore.loadSearchHistory()
   getGameData()
   void getQuerySlideshow()
@@ -670,6 +682,7 @@ onMounted(() => {
 })
 
 onActivated(() => {
+  void hashCatalog.load(true)
   nextTick(() => {
     const el = tabScrollRef.value
     if (!el) return

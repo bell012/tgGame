@@ -348,6 +348,10 @@
     "RecordTime": "记录时间"
   },
   "common": {
+    "retry": "重试",
+    "previous": "上一页",
+    "next": "下一页",
+    "loadFailed": "加载失败，请重试。",
     "loading": "加载中...",
     "loadingMore": "加载更多...",
     "noMoreData": "没有更多了",
