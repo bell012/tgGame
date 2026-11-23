@@ -12,7 +12,7 @@
       fontSize: `${size * 0.34}px`
     }"
   >
-    <BetChip :amount="origin.amount" :filter="origin.filter" />
+    <BetChip :amount="origin.amount" :color="origin.color" />
   </span>
 </template>
 <script setup lang="ts">

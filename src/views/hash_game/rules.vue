@@ -86,7 +86,10 @@
                 :alt="selectedGame.gameName"
                 class="block h-auto w-full rounded-[8px] object-contain"
               />
-              <p v-else class="py-[20px] text-center text-[14px] text-text-2">
+              <p
+                v-else-if="!rulesImageLoading"
+                class="py-[20px] text-center text-[14px] text-text-2"
+              >
                 {{ t('hashGame.rulesImageNotConfigured') }}
               </p>
             </div>
@@ -100,12 +103,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { HashGameLotteryGame } from '@/api/interface/hash_game.interface'
+import type { HashGameLotteryGame, HashGameLotteryInfo } from '@/api/interface/hash_game.interface'
+import { getHashGameInfo } from '@/api/modules/hash_game'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { resolveGameImageUrl } from '@/utils/image'
 import { requestHashGames } from './gameList'
@@ -116,11 +121,13 @@ const props = withDefaults(
     games?: readonly HashGameLotteryGame[]
     initialGameCode?: string
     currencyCode?: string
+    gameInfo?: HashGameLotteryInfo | null
   }>(),
   { variant: 'h5' }
 )
 const visible = defineModel<boolean>('visible', { default: false })
 const { t, locale } = useI18n()
+const { currentCurrencyCode } = useDisplayCurrency(toRef(props, 'currencyCode'))
 const routeGames = shallowRef<HashGameLotteryGame[]>([])
 const {
   viewport: tabsViewport,
@@ -130,7 +137,6 @@ const {
 
 if (props.variant === 'h5') {
   useUserStore().syncStoredUserData()
-  const { currentCurrencyCode } = useDisplayCurrency(toRef(props, 'currencyCode'))
   watch(
     [currentCurrencyCode, locale],
     async ([currency, language], _, onCleanup) => {
@@ -170,10 +176,47 @@ watch(
 )
 
 const siteConfig = useSiteConfigStore()
+const themeStore = useThemeStore()
+const rulesInfo = shallowRef<HashGameLotteryInfo | null>(null)
+const rulesImageLoading = ref(false)
 const rulesImageUrl = ref('')
 
 watch(
-  [() => selectedGame.value?.introImageUrl, () => siteConfig.config],
+  [selectedGame, currentCurrencyCode, visible, () => props.gameInfo],
+  async ([game, currency, isVisible, pageInfo], _, onCleanup) => {
+    rulesInfo.value = null
+    rulesImageLoading.value = false
+    if (!game || !currency || (props.variant === 'pc' && !isVisible)) return
+    if (pageInfo?.gameCode === game.gameCode) {
+      rulesInfo.value = pageInfo
+      return
+    }
+    if (game.introImageDarkUrl?.trim() && game.introImageLightUrl?.trim()) return
+
+    let current = true
+    onCleanup(() => {
+      current = false
+    })
+    rulesImageLoading.value = true
+    try {
+      const { result } = await getHashGameInfo({ gameCode: game.gameCode, currency })
+      if (current && result?.gameCode === game.gameCode) rulesInfo.value = result
+    } catch (error) {
+      if (current) console.error(error)
+    } finally {
+      if (current) rulesImageLoading.value = false
+    }
+  },
+  { immediate: true }
+)
+
+const rulesImagePath = computed(() => {
+  const key = themeStore.theme === 'dark' ? 'introImageDarkUrl' : 'introImageLightUrl'
+  return rulesInfo.value?.[key]?.trim() || selectedGame.value?.[key]
+})
+
+watch(
+  [rulesImagePath, () => siteConfig.config],
   ([imagePath]) => {
     rulesImageUrl.value = resolveGameImageUrl(imagePath)
   },
