@@ -2693,10 +2693,11 @@
     "claimedSummary": "Đã nhận {claimedCount}, {claimedAmount} {currency}",
     "wonTitle": "Bạn nhận {amount} {currency}",
     "allGoneTitle": "Đã nhận hết",
+    "pendingTitle": "Lì xì chờ nhận",
     "comeBackTomorrow": "Mai quay lại nhé!",
     "noRecords": "Chưa có lượt nhận",
-    "allType": "Tất cả loại",
-    "allTime": "Mọi thời gian",
+    "filterDate": "Chọn ngày",
+    "filterType": "Lọc theo loại",
     "type": {
       "1": "Lì xì hằng ngày",
       "2": "Lì xì nạp tiền",
@@ -2710,7 +2711,7 @@
       "4": "Mở thưởng may mắn"
     },
     "period": {
-      "all": "Mọi thời gian",
+      "all": "Tất cả",
       "today": "Hôm nay",
       "yesterday": "Hôm qua",
       "last7Days": "7 ngày qua",

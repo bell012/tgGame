@@ -2687,10 +2687,11 @@
     "claimedSummary": "已领{claimedCount}份，共{claimedAmount}{currency}",
     "wonTitle": "恭喜获得{amount}{currency}",
     "allGoneTitle": "红包已领完",
+    "pendingTitle": "红包待领取",
     "comeBackTomorrow": "明天再来领红包！",
     "noRecords": "暂无领取记录",
-    "allType": "全部类型",
-    "allTime": "全部时间",
+    "filterDate": "日期选择",
+    "filterType": "按类型筛选",
     "type": {
       "1": "每日红包",
       "2": "充值加赠红包",
@@ -2704,7 +2705,7 @@
       "4": "开启幸运额度"
     },
     "period": {
-      "all": "全部时间",
+      "all": "全部",
       "today": "今日",
       "yesterday": "昨日",
       "last7Days": "近7日",

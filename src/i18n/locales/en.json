@@ -2707,10 +2707,11 @@
     "claimedSummary": "Claimed {claimedCount}, {claimedAmount} {currency}",
     "wonTitle": "You got {amount} {currency}",
     "allGoneTitle": "All claimed",
+    "pendingTitle": "Bonus pending",
     "comeBackTomorrow": "More bonuses tomorrow!",
     "noRecords": "No claims yet",
-    "allType": "All types",
-    "allTime": "All time",
+    "filterDate": "Date Selection",
+    "filterType": "Filter by Type",
     "type": {
       "1": "Daily Red Packet",
       "2": "Deposit Red Packet",
@@ -2724,7 +2725,7 @@
       "4": "Unlock lucky bonus"
     },
     "period": {
-      "all": "All time",
+      "all": "All",
       "today": "Today",
       "yesterday": "Yesterday",
       "last7Days": "Last 7 days",

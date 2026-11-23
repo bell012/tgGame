@@ -1,12 +1,25 @@
 ﻿<template>
   <!-- 公共筛选组件 -->
-  <Teleport to="body">
+  <Teleport to="body" :disabled="contained">
     <transition name="popup-fade">
-      <div v-show="visible" class="sheet-safe-mask z-[9999] bg-mask-60-1" @click="close" />
+      <div
+        v-show="visible"
+        :class="
+          contained ? 'absolute inset-0 z-20 bg-mask-60-1' : 'sheet-safe-mask z-[9999] bg-mask-60-1'
+        "
+        @click="close"
+      />
     </transition>
 
     <transition name="up-down">
-      <div v-show="visible" class="fixed z-[9999] left-0 bottom-0 w-full">
+      <div
+        v-show="visible"
+        :class="
+          contained
+            ? 'absolute bottom-0 left-0 z-20 w-full'
+            : 'fixed z-[9999] left-0 bottom-0 w-full'
+        "
+      >
         <div class="filter-panel bg-bg-1 rounded-t-xl p-3.5 pb-5">
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex-1 text-center text-base font-[700] text-text-1">
@@ -82,11 +95,14 @@ interface Props {
   titleText?: string
   applyText?: string
   liveUpdate?: boolean
+  /** 为 true 时不挂到 body，绝对定位在父级里，供弹窗内使用。 */
+  contained?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => ({}),
-  liveUpdate: false
+  liveUpdate: false,
+  contained: false
 })
 
 const emit = defineEmits<{
