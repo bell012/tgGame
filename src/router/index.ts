@@ -481,11 +481,13 @@ const baseRoutes: RouteRecordRaw[] = [
     path: 'game/:rowId',
     name: 'gameDetail',
     component: () => import('@/views/game/detail/index.vue'),
+    props: route => ({ rowId: route.params.rowId }),
     meta: {
       title: '游戏详情',
       description: '游戏详情',
       // requiresAuth: true,
       mobile: {
+        transition: 'page-scale',
         hideBottomBar: true,
         hideTopNav: true
       }

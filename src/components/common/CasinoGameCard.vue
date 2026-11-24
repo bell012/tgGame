@@ -149,7 +149,7 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  click: []
+  click: [event: MouseEvent]
 }>()
 
 const siteConfigStore = useSiteConfigStore()
@@ -211,9 +211,9 @@ const gameCovernameShow = computed(() => {
   return Number.isFinite(value) && value > 0
 })
 
-const doClick = () => {
+const doClick = (event: MouseEvent) => {
   if (props.showMaintenance && props.game.serviceStatus === 1) return
-  emit('click')
+  emit('click', event)
 }
 
 watch([() => props.game.platformCode, () => props.showPlatformLogo], () => {

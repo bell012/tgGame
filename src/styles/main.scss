@@ -25,6 +25,41 @@
 .drawer-slide-leave-from {
   transform: translateX(0);
 }
+/* H5中首页和娱乐城点击游戏卡片进入游戏详情放大和缩小动画 */
+/* 由触发元素的坐标和尺寸确定页面展开与收缩的位置。 */
+.page-scale-enter-active,
+.page-scale-leave-active {
+  transform-origin: top left;
+  will-change: transform, opacity;
+}
+
+.page-scale-enter-active {
+  animation: page-scale-in 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes page-scale-in {
+  from {
+    opacity: 0.3;
+    transform: var(--page-scale-from, none);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.page-scale-leave-active {
+  transition:
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.page-scale-leave-to {
+  opacity: 0;
+  transform: var(--page-scale-from, none);
+}
 
 /* H5 底部 Tab 切换时，当前页轻微缩小并淡出，新页面淡入。 */
 .bottom-tab-enter-active,
@@ -200,8 +235,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .page-scale-enter-active {
+    animation-duration: 0.01ms;
+  }
+
   .drawer-slide-enter-active,
   .drawer-slide-leave-active,
+  .page-scale-leave-active,
   .bottom-tab-enter-active,
   .bottom-tab-leave-active,
   .fade-accordion-enter-active,
