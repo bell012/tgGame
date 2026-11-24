@@ -61,7 +61,7 @@ const EMPTY_BET_SUMMARY: RecentBetSummary = {
 }
 
 /** 组合哈希游戏页面的投注、走势和聊天室状态。 */
-const createHashGamePageState = () => {
+const createHashGamePageState = (requestedGameCode: () => string | undefined) => {
   const { t, locale } = useI18n()
   const isMobile = useIsMobile()
   const router = useRouter()
@@ -78,6 +78,7 @@ const createHashGamePageState = () => {
   const currency = useDisplayCurrency(currencyOverride)
   const hashGames = ref<HashGameLotteryGame[]>([])
   const selectedHashGameCode = ref('')
+  let preferredGameCode = requestedGameCode()
   const hashGameInfo = ref<HashGameLotteryInfo | null>(null)
   const hashGameInfoCurrency = ref('')
   const roadmapIssues = ref<HashGameLotteryIssue[]>([])
@@ -172,10 +173,9 @@ const createHashGamePageState = () => {
     }
   }
 
-  /** 首次进入时选中列表第一项，刷新列表时优先保留仍可用的玩法。 */
+  /** 优先选择链接指定的玩法或上次选中的玩法。 */
   const loadHashGameList = async () => {
     const requestId = ++gameListRequestId
-    const previousCode = selectedHashGameCode.value
     gameInfoRequestId++
     clearHashGameDisplay()
     hashGames.value = []
@@ -185,9 +185,9 @@ const createHashGamePageState = () => {
       const games = await requestHashGames(requestedCurrency, locale.value, { refresh: true })
       if (requestId !== gameListRequestId) return
       hashGames.value = games
-      const game =
-        hashGames.value.find(item => item.gameCode === previousCode) ?? hashGames.value[0]
+      const game = games.find(item => item.gameCode === preferredGameCode) ?? games[0]
       if (!game) return
+      preferredGameCode = game.gameCode
       selectedHashGameCode.value = game.gameCode
       await loadHashGameInfo(game.gameCode, requestedCurrency)
     } catch (error) {
@@ -199,6 +199,7 @@ const createHashGamePageState = () => {
   const selectHashGame = async (gameCode: string) => {
     periodsOpen.value = false
     if (!hashGames.value.some(game => game.gameCode === gameCode)) return
+    preferredGameCode = gameCode
     if (gameCode === selectedHashGameCode.value && hashGameInfo.value) {
       if (roadmapStatus.value === 'error') {
         await loadHashGameRoadmap(gameCode, gameInfoRequestId)
@@ -209,6 +210,11 @@ const createHashGamePageState = () => {
     clearHashGameDisplay()
     await loadHashGameInfo(gameCode, currency.currentCurrencyCode.value)
   }
+
+  watch(requestedGameCode, gameCode => {
+    if (!hashGames.value.length) preferredGameCode = gameCode
+    else if (gameCode && gameCode !== selectedHashGameCode.value) void selectHashGame(gameCode)
+  })
 
   /** 打开近期投注时，读取当前玩法与币种的真实记录和汇总。 */
   const loadRecentBets = async () => {
@@ -862,4 +868,5 @@ const createHashGamePageState = () => {
 
 // 先从内部工厂推导共享状态类型，再导出 composable，避免组件类型引用形成循环推断。
 export type HashGamePageState = ReturnType<typeof createHashGamePageState>
-export const useHashGamePage: () => HashGamePageState = createHashGamePageState
+export const useHashGamePage: (requestedGameCode: () => string | undefined) => HashGamePageState =
+  createHashGamePageState
