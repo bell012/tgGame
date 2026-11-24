@@ -19,8 +19,12 @@
       >
         <div
           ref="panelRef"
-          class="tp-panel rounded-t-xl pt-2.5 px-3.5"
-          :class="desktop ? 'tp-panel-desktop tg-glass-tokens relative' : 'bg-bg-2'"
+          class="tp-panel rounded-t-xl"
+          :class="
+            desktop
+              ? 'tp-panel-desktop tg-glass-tokens relative p-2'
+              : 'bg-bg-2 pt-2.5 px-3.5 pb-[env(safe-area-inset-bottom)]'
+          "
         >
           <LiquidGlass v-if="desktop" />
           <div class="tp-header flex items-center justify-between mb-[20px]" v-if="!desktop">
@@ -44,7 +48,7 @@
             :list-class="desktopListClass"
             :item-class="
               'tp-item mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left cursor-pointer' +
-              (desktop ? ' hover:bg-opacity-6' : '')
+              (desktop ? ' last:mb-0 hover:bg-opacity-6' : '')
             "
             :selected-item-class="
               desktop
@@ -104,7 +108,7 @@ const listOptions = computed(() => {
 
 const desktopListClass = computed(() => {
   if (props.desktop) {
-    return 'tp-desktop-list max-h-[236px] overflow-y-auto pr-1 pb-2'
+    return 'tp-desktop-list max-h-[236px] overflow-y-auto'
   }
   return 'max-h-[368px] overflow-y-auto'
 })
@@ -157,7 +161,6 @@ onBeforeUnmount(() => {
 @use '@/styles/mixins' as *;
 /* 面板 */
 .tp-panel {
-  padding-bottom: env(safe-area-inset-bottom);
   overflow: hidden;
   border-radius: 10px;
   border: 1px solid transparent;
@@ -169,13 +172,8 @@ onBeforeUnmount(() => {
 }
 
 .tp-panel-desktop {
-  padding: 10px;
   border-radius: 12px;
   box-shadow: var(--glass-shadow);
-}
-
-.tp-desktop-list {
-  scrollbar-gutter: stable;
 }
 
 .tp-desktop-list::-webkit-scrollbar {
