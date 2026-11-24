@@ -6,8 +6,14 @@ import { useUserStore } from '@/stores/user'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { savePlayedGameRowId } from '@/utils/played-games-cache'
 import { navigateTo } from '@/utils/router'
+import { stripLocalePrefix } from '@/utils/locale'
 import { computed, inject, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
+import {
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  useRoute,
+  type RouteLocationNormalized
+} from 'vue-router'
 
 type GameSession = {
   key: string
@@ -69,6 +75,8 @@ export function useEmbeddedGame() {
     () => Boolean(failedTargetKey.value) && failedTargetKey.value === target.value?.key
   )
   const showExitDialog = ref(false)
+  const isDepositExit = ref(false)
+  const canCollapseOnExit = computed(() => fullscreen.value && !isDepositExit.value)
   const leaving = ref(false)
   let active = true
   let operation: Promise<boolean> | null = null
@@ -220,12 +228,13 @@ export function useEmbeddedGame() {
 
   const finishExit = (action: ExitAction) => {
     showExitDialog.value = false
+    isDepositExit.value = false
     resolveExit?.(action)
     resolveExit = undefined
   }
   const answerExit = async (action: ExitAction) => {
     if (!resolveExit || busy.value) return
-    if (action === 'collapse' && !fullscreen.value) return
+    if (action === 'collapse' && !canCollapseOnExit.value) return
     if (action === 'exit') {
       const currentResolve = resolveExit
       const stopped = await run(stopSession)
@@ -255,7 +264,8 @@ export function useEmbeddedGame() {
       if (!allowed && active && originalKey !== target.value?.key) void start()
     }
   }
-  const beforeLeave = () => {
+  const beforeLeave = (to: RouteLocationNormalized) => {
+    isDepositExit.value = stripLocalePrefix(to.path).replace(/\/$/, '') === '/deposit'
     if (!leaveOperation) {
       leaveOperation = confirmLeave().finally(() => {
         leaveOperation = null
@@ -268,9 +278,13 @@ export function useEmbeddedGame() {
     // 与原游戏页使用同一返回规则，由离页守卫统一确认收起或退出。
     return navigateTo(resolveGameSelectionPath(), { replace: true })
   }
+  const collapseGame = () => {
+    if (busy.value || leaving.value) return
+    fullscreen.value = false
+  }
   onBeforeRouteLeave(beforeLeave)
   // 详情页按 fullPath 挂载，查询参数变化也会重建页面，需要先结束旧会话。
-  onBeforeRouteUpdate((to, from) => (to.fullPath === from.fullPath ? true : beforeLeave()))
+  onBeforeRouteUpdate((to, from) => (to.fullPath === from.fullPath ? true : beforeLeave(to)))
 
   watch(
     account,
@@ -303,6 +317,8 @@ export function useEmbeddedGame() {
     frameLoading,
     loadError,
     showExitDialog,
+    isDepositExit,
+    canCollapseOnExit,
     leaving,
     start,
     enterFullscreen,
@@ -311,6 +327,7 @@ export function useEmbeddedGame() {
     finishFrameLoad,
     failFrameLoad,
     answerExit,
+    collapseGame,
     requestExit
   }
 }

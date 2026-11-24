@@ -656,6 +656,7 @@
     "shareLinkCopySuccess": "分享链接复制成功",
     "copyFailedRetry": "复制失败，请重试",
     "exitGameConfirm": "确定要退出游戏吗？",
+    "exitGameForDepositConfirm": "前往充值需要退出当前游戏，是否继续？",
     "invalidGameUrl": "游戏链接无效",
     "collapseGame": "收起游戏",
     "exitGame": "退出游戏",

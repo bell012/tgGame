@@ -42,12 +42,27 @@
               >{{ displayProviderName }}</span
             >
           </div>
-          <GameDetailActions mobile />
+          <GameDetailActions
+            mobile
+            :count="collectionsCount"
+            :is-favorite="isFavorite"
+            :is-updating="isUpdating"
+            @toggle-favorite="toggleFavorite"
+          />
         </div>
-        <GameDetailStats mobile />
+        <GameDetailStats
+          mobile
+          :rtp="rtp"
+          :volatility="currentGameDetail?.volatility"
+          :max-multiple="currentGameDetail?.maxMultiple"
+        />
       </div>
     </div>
-    <GamePlayer @fullscreen-change="emit('fullscreenChange', $event)" />
+    <GamePlayer
+      :preview-name="currentGameDetail?.itemName"
+      :preview-image="currentGameDetail?.icon2 ?? currentGameDetail?.conUrl"
+      @fullscreen-change="emit('fullscreenChange', $event)"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -59,7 +74,8 @@ import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
 import GameDetailActions from '../../common/GameDetailActions.vue'
 import GameDetailStats from '../../common/GameDetailStats.vue'
 import GamePlayer from '../GamePlayer.vue'
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, inject, onMounted, reactive, ref, watch, type Ref } from 'vue'
+import { useGameFavorite } from '@/composables/useGameFavorite'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 import { useGameStore } from '@/stores/game'
 import { useSiteConfigStore } from '@/stores/siteConfig'
@@ -70,6 +86,9 @@ import { storeToRefs } from 'pinia'
 
 const emit = defineEmits<{ fullscreenChange: [value: boolean] }>()
 const { currentGameDetail } = useGamePlatformPlay()
+const { isFavorite, isUpdating, toggleFavorite } = useGameFavorite()
+const collectionsCount = inject<Ref<number | null>>('game-detail-collections-count', ref(null))
+const rtp = inject<Ref<number | null>>('game-detail-rtp', ref(null))
 const gameStore = useGameStore()
 const siteConfigStore = useSiteConfigStore()
 const themeStore = useThemeStore()

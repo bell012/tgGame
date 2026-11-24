@@ -1,10 +1,16 @@
 <template>
   <div
-    class="currency-select-trigger relative flex h-[35px] items-center gap-2 rounded-lg bg-opacity-6 px-2"
+    class="currency-select-trigger relative flex items-center gap-2"
+    :class="
+      floating
+        ? 'h-[34px] rounded-[10px] border border-[var(--game-floating-border)] bg-[var(--game-floating-bg)] px-[7px]'
+        : 'h-[35px] rounded-lg bg-opacity-6 px-2'
+    "
   >
     <button
       type="button"
-      class="flex min-w-0 flex-1 items-center gap-[5px] text-[13px] font-semibold text-text-1"
+      class="flex min-w-0 flex-1 items-center gap-[5px] text-[13px]"
+      :class="floating ? 'font-medium text-common-100' : 'font-semibold text-text-1'"
       :aria-label="t('gameDetail.selectedCurrency')"
       :disabled="disabled"
       @click="visible = true"
@@ -13,12 +19,15 @@
         v-if="selectedData"
         :src="selectedData.icon"
         alt=""
-        class="size-5 shrink-0 object-contain"
+        class="shrink-0 object-contain"
+        :class="floating ? 'size-[15px]' : 'size-5'"
       />
       <span class="min-w-0 truncate" :title="selectedBalanceText">{{ selectedBalanceText }}</span>
+      <DropdownIcon v-if="floating" class="size-2.5 shrink-0 text-icon-2" aria-hidden="true" />
     </button>
     <div class="flex h-full shrink-0 items-center gap-2">
       <button
+        v-if="!floating"
         type="button"
         class="flex h-full shrink-0 items-center text-text-1 disabled:opacity-50"
         :aria-label="t('gameDetail.refreshBalance')"
@@ -33,6 +42,7 @@
         />
       </button>
       <button
+        v-if="!floating"
         type="button"
         class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-opacity-10 text-icon-2"
         :aria-label="t('gameDetail.selectCurrencyTitle')"
@@ -43,15 +53,21 @@
       </button>
       <button
         type="button"
-        class="flex size-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
+        class="flex size-5 shrink-0 items-center justify-center bg-theme-primary text-text-4"
+        :class="floating ? 'rounded-[5px]' : 'rounded'"
         :aria-label="t('deposit.title')"
         @click="navigateTo('/deposit')"
       >
-        <DepositPlusIcon class="size-3" aria-hidden="true" />
+        <DepositPlusIcon :class="floating ? 'size-2.5' : 'size-3'" aria-hidden="true" />
       </button>
     </div>
-    <Teleport to="body" v-if="isMobile">
-      <popup v-model:visible="visible" :change-currency="changeCurrency" :disabled="disabled" />
+    <Teleport to="body" v-if="isMobile || floating">
+      <popup
+        v-model:visible="visible"
+        :fullscreen="floating"
+        :change-currency="changeCurrency"
+        :disabled="disabled"
+      />
     </Teleport>
     <popup
       v-else
@@ -79,6 +95,7 @@ import type { CurrencyOptionItem } from '@/components/common/currency-selector/c
 
 const { t } = useI18n()
 defineProps<{
+  floating?: boolean
   changeCurrency: (value: string) => Promise<boolean>
   disabled: boolean
 }>()

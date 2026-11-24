@@ -1,6 +1,10 @@
 <template>
   <div>
-    <GameDetailPreview class="aspect-[1336/680] rounded-t-xl">
+    <GameDetailPreview
+      class="aspect-[1336/680] rounded-t-xl"
+      :name="currentGameDetail?.itemName"
+      :image="currentGameDetail?.icon2 ?? currentGameDetail?.conUrl"
+    >
       <div
         class="absolute left-1/2 top-1/2 z-[2] w-[480px] max-w-[calc(100%-32px)] -translate-x-1/2 -translate-y-1/2 rounded-xl bg-bg-5 p-4 lg:p-8"
       >

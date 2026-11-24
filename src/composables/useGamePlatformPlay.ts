@@ -1,4 +1,5 @@
 import Api from '@/api'
+import type { GameDataItem } from '@/api/interface/game'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useUserStore } from '@/stores/user'
 import { resolveGameSelectionPath } from '@/composables/useGameSelectionReturn'
@@ -13,6 +14,8 @@ export type GameDetailForPlatformPlay = {
   pgType?: string
   itemName?: string
   platformName?: string
+  volatility?: GameDataItem['volatility']
+  maxMultiple?: GameDataItem['maxMultiple']
   icon2?: string
   conUrl?: string
   gameItemHotVo?: {

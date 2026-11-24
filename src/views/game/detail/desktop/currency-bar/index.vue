@@ -14,18 +14,32 @@
           {{ providerName }}
         </button>
       </div>
-      <GameDetailActions />
+      <GameDetailActions
+        :count="collectionsCount"
+        :is-favorite="isFavorite"
+        :is-updating="isUpdating"
+        @toggle-favorite="toggleFavorite"
+      />
     </div>
-    <GameDetailStats class="mt-4" />
+    <GameDetailStats
+      class="mt-4"
+      :rtp="rtp"
+      :volatility="detail?.volatility"
+      :max-multiple="detail?.maxMultiple"
+    />
   </div>
 </template>
 <script setup lang="ts">
-import { computed, inject, type ComputedRef } from 'vue'
+import { computed, inject, ref, type ComputedRef, type Ref } from 'vue'
+import { useGameFavorite } from '@/composables/useGameFavorite'
 import type { GameDetailForPlatformPlay } from '@/composables/useGamePlatformPlay'
 import { navigateToName } from '@/utils/router'
 import GameDetailActions from '../../common/GameDetailActions.vue'
 import GameDetailStats from '../../common/GameDetailStats.vue'
 
+const { isFavorite, isUpdating, toggleFavorite } = useGameFavorite()
+const collectionsCount = inject<Ref<number | null>>('game-detail-collections-count', ref(null))
+const rtp = inject<Ref<number | null>>('game-detail-rtp', ref(null))
 const detail = inject<ComputedRef<GameDetailForPlatformPlay>>(
   'game-detail-current-game',
   computed(() => null)

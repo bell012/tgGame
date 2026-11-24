@@ -7,7 +7,7 @@
           fullscreen ? 'fixed inset-0 z-[10000] h-dvh w-full' : 'absolute inset-0 rounded-t-[10px]'
         "
       >
-        <GameDetailPreview class="size-full" />
+        <GameDetailPreview class="size-full" :name="previewName" :image="previewImage" />
         <iframe
           v-if="session"
           :key="session.key"
@@ -24,17 +24,22 @@
           @load="finishFrameLoad"
           @error="failFrameLoad"
         />
-        <div v-if="session && !fullscreen" class="absolute inset-0 size-full" aria-hidden="true" />
         <button
-          v-if="fullscreen"
+          v-if="!fullscreen"
           type="button"
-          class="absolute top-[max(12px,env(safe-area-inset-top))] z-[1] size-[50px] rounded-full bg-mask-60-1"
-          :class="session?.horizontal ? 'right-3' : 'left-3'"
-          :aria-label="t('gameDetail.exitGame')"
-          @click="requestExit"
-        >
-          <img :src="closeIcon" alt="" class="size-full" />
-        </button>
+          class="absolute inset-0 size-full disabled:cursor-not-allowed"
+          :aria-label="t(isLogin ? 'gameDetail.playNow' : 'gameDetail.guestCtaH5')"
+          :disabled="isLogin && (busy || frameLoading || leaving)"
+          @click="handlePreviewClick"
+        />
+        <GameFloatingControls
+          :active="fullscreen"
+          :disabled="busy || leaving"
+          :frame-loading="frameLoading"
+          :change-currency="changeCurrency"
+          @exit="requestExit"
+          @collapse="collapseGame"
+        />
       </div>
     </div>
     <CurrencyBar
@@ -66,11 +71,19 @@
           <div class="pr-10 text-base font-bold leading-[22px]">
             {{ t('withdraw.kind_reminder_title') }}
           </div>
-          <div class="mb-[30px] mt-3.5 text-[15px] leading-5 text-text-2">
-            {{ t(fullscreen ? 'gameDetail.collapseOrExitGame' : 'gameDetail.exitGameConfirm') }}
+          <div class="mb-[30px] mt-3.5 text-sm leading-5 text-text-2">
+            {{
+              t(
+                isDepositExit
+                  ? 'gameDetail.exitGameForDepositConfirm'
+                  : canCollapseOnExit
+                    ? 'gameDetail.collapseOrExitGame'
+                    : 'gameDetail.exitGameConfirm'
+              )
+            }}
           </div>
           <button
-            v-if="fullscreen"
+            v-if="canCollapseOnExit"
             type="button"
             class="h-10 w-full rounded-lg bg-theme-primary text-sm font-bold text-text-4 disabled:opacity-70"
             :disabled="busy"
@@ -80,16 +93,28 @@
           </button>
           <button
             type="button"
-            class="h-10 w-full rounded-lg text-sm font-bold disabled:opacity-70"
-            :class="fullscreen ? 'mt-[13px] bg-bg-3 text-text-2' : 'bg-theme-primary text-text-4'"
+            class="h-10 w-full rounded-lg text-sm disabled:opacity-70"
+            :class="
+              canCollapseOnExit
+                ? 'mt-[13px] bg-opacity-10 font-normal text-text-2'
+                : 'bg-theme-primary font-bold text-text-4'
+            "
             :disabled="busy"
             @click="answerExit('exit')"
           >
-            {{ t(busy ? 'common.loading' : fullscreen ? 'gameDetail.exitGame' : 'common.confirm') }}
+            {{
+              t(
+                busy
+                  ? 'common.loading'
+                  : canCollapseOnExit
+                    ? 'gameDetail.exitGame'
+                    : 'common.confirm'
+              )
+            }}
           </button>
           <button
             type="button"
-            class="mt-[13px] h-10 w-full rounded-lg bg-bg-3 text-sm font-bold text-text-2 disabled:opacity-70"
+            class="mt-[13px] h-10 w-full rounded-lg bg-opacity-10 text-sm font-normal text-text-2 disabled:opacity-70"
             :disabled="busy"
             @click="answerExit('cancel')"
           >
@@ -104,13 +129,19 @@
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
-import closeIcon from '@/static/svg/game/detail/close.svg?url'
+import { useUserStore } from '@/stores/user'
+import { useAuthModalStore } from '@/stores/authModal'
 import CloseIcon from '@/static/svg/close.svg?component'
 import GameDetailPreview from '../common/GameDetailPreview.vue'
 import CurrencyBar from './currency-bar/index.vue'
+import GameFloatingControls from './GameFloatingControls.vue'
 import { useEmbeddedGame } from './useEmbeddedGame'
 
+defineProps<{ previewName?: string; previewImage?: string }>()
 const { t } = useI18n()
+const userStore = useUserStore()
+const authModalStore = useAuthModalStore()
+const isLogin = computed(() => Boolean(userStore.userInfo?.tradeToken))
 const emit = defineEmits<{ fullscreenChange: [value: boolean] }>()
 const {
   session,
@@ -119,14 +150,24 @@ const {
   frameLoading,
   loadError,
   showExitDialog,
+  isDepositExit,
+  canCollapseOnExit,
   leaving,
   playGame,
   changeCurrency,
   finishFrameLoad,
   failFrameLoad,
   answerExit,
+  collapseGame,
   requestExit
 } = useEmbeddedGame()
+const handlePreviewClick = () => {
+  if (!isLogin.value) {
+    authModalStore.openLoginModal()
+    return
+  }
+  playGame()
+}
 watch(fullscreen, value => emit('fullscreenChange', value), { flush: 'sync' })
 usePageScrollLock(computed(() => fullscreen.value || showExitDialog.value))
 </script>

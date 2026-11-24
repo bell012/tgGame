@@ -15,7 +15,7 @@
       >
         {{ stat.value }}
         <TrendIcon
-          v-if="stat.key === 'liveRtp' && rtp !== null"
+          v-if="stat.key === 'liveRtp' && rtp != null"
           class="shrink-0 text-secondary-2"
           :class="mobile ? 'size-[10px]' : 'size-4'"
           aria-hidden="true"
@@ -37,18 +37,28 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, inject, ref, type Ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { GameDataItem } from '@/api/interface/game'
 import TrendIcon from '@/static/svg/game/detail/top/rtp-trend-down.svg?component'
 import LiveIcon from '@/static/svg/game/detail/top/live-status.svg?component'
 
-defineProps<{ mobile?: boolean }>()
+const props = defineProps<{
+  mobile?: boolean
+  rtp?: number | null
+  volatility?: GameDataItem['volatility']
+  maxMultiple?: GameDataItem['maxMultiple']
+}>()
 const { t } = useI18n()
-const rtp = inject<Ref<number | null>>('game-detail-rtp', ref(null))
-const stats = computed(() => [
-  { key: 'liveRtp', value: rtp.value === null ? '-' : (100 - rtp.value).toFixed(2) + '%' },
-  { key: 'realRtp', value: rtp.value === null ? '-' : rtp.value.toFixed(2) + '%' },
-  { key: 'volatility', value: 'Neutral' },
-  { key: 'maxBonus', value: '1000X' }
-])
+const stats = computed(() => {
+  const rtp = props.rtp ?? null
+  const volatility = String(props.volatility ?? '').trim()
+  const maxMultiple = String(props.maxMultiple ?? '').trim()
+  return [
+    { key: 'liveRtp', value: rtp === null ? '-' : (100 - rtp).toFixed(2) + '%' },
+    { key: 'realRtp', value: rtp === null ? '-' : rtp.toFixed(2) + '%' },
+    { key: 'volatility', value: volatility || '-' },
+    { key: 'maxBonus', value: maxMultiple ? `${maxMultiple}X` : '-' }
+  ]
+})
 </script>
