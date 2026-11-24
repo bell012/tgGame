@@ -54,7 +54,6 @@ import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
 import BetsList from './common/bets-list/index.vue'
 import GameList from './common/game-list/index.vue'
 import RecentGames from './common/recent-games/index.vue'
@@ -112,7 +111,7 @@ const API_REQUEST_OPTIONS = {
 
 // ===== 组合式依赖 =====
 const { t } = useI18n()
-const route = useRoute()
+const props = defineProps<{ rowId: string }>()
 const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
 const userStore = useUserStore()
@@ -171,39 +170,6 @@ const hideParentScrollbar = () => {
   }
 }
 
-const resetScrollToTop = () => {
-  if (!isBrowserEnv) {
-    // iOS / WebView fallback
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    return
-  }
-
-  if (isMobile.value && detailPageRef.value) {
-    detailPageRef.value.scrollTop = 0
-    return
-  }
-
-  let currentParent = detailPageRef.value?.parentElement ?? null
-  while (currentParent) {
-    const { overflowY } = window.getComputedStyle(currentParent)
-    const isScrollable =
-      (overflowY === 'auto' || overflowY === 'scroll') &&
-      currentParent.scrollHeight > currentParent.clientHeight
-    if (isScrollable) {
-      if (typeof currentParent.scrollTo === 'function') {
-        currentParent.scrollTo({ top: 0, behavior: 'smooth' })
-      } else {
-        currentParent.scrollTop = 0
-      }
-      return
-    }
-    currentParent = currentParent.parentElement
-  }
-
-  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-}
-
 // ===== 工具函数 =====
 const isGameTypeCodeMatched = (targetGameTypeCode: unknown, candidateGameTypeCode: unknown) => {
   const targetCodeList = splitGameTypeCodes(targetGameTypeCode)
@@ -225,7 +191,7 @@ const buildRecommendedPageQuery = (pageTitle: string) => {
 }
 
 // ===== 派生状态 =====
-const rowId = computed(() => normalizeGameDetailValue(route.params.rowId))
+const rowId = computed(() => normalizeGameDetailValue(props.rowId))
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
 const currentGameRowId = computed(() =>
   normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
@@ -252,6 +218,7 @@ const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
 const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.value.length > 0)
 
 provide('game-detail-current-game', currentGameDetail)
+provide('game-detail-row-id', rowId)
 
 // ===== 数据同步 =====
 const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
@@ -321,7 +288,7 @@ const fetchCurrentGameDetail = async () => {
   } finally {
     await nextTick()
     hideParentScrollbar()
-    resetScrollToTop()
+    if (isMobile.value && detailPageRef.value) detailPageRef.value.scrollTop = 0
     if (targetRowId) {
       void syncFavoriteFromCommentSubject(targetRowId)
     }

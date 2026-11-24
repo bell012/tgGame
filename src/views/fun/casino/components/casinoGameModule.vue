@@ -153,7 +153,7 @@
               responsive-pc
               :game="resolveModuleGame(game)"
               :show-favorite-badge="resolveFavoriteBadge(game)"
-              @click="handleClick(resolveModuleGame(game).rowId)"
+              @click="handleClick(resolveModuleGame(game).rowId, $event)"
             />
           </div>
           <button
@@ -184,6 +184,7 @@ import { computed, inject, nextTick, onUnmounted, ref, watch, type Ref } from 'v
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
+import { openGameFromCard } from '@/utils/gameCardTransition'
 import { navigateTo, navigateToName } from '@/utils/router'
 import { casinoIcons } from '@/static/svg/casino'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
@@ -310,10 +311,10 @@ const getBrandImg = (item: GameBrandItem) => {
   }
 }
 
-const handleClick = (rowId?: string | number) => {
+const handleClick = (rowId: string | number | undefined, event: MouseEvent) => {
   if (!rowId) return
   closeDesktopModal()
-  navigateToName('gameDetail', { params: { rowId } })
+  void openGameFromCard(rowId, event)
 }
 
 const handleBrandClick = (brand: GameBrandItem) => {

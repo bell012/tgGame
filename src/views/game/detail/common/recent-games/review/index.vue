@@ -98,7 +98,6 @@ import {
   type ComputedRef
 } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
 import CommentPopup from './comment-popup.vue'
 import ReviewCommentEntry from './review-comment-entry.vue'
 import ReviewCommentFeed from './review-comment-feed.vue'
@@ -125,8 +124,10 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   computed(() => null)
 )
 
-const route = useRoute()
-const currentGameId = computed(() => normalizeQueryValue(route.params.rowId))
+const currentGameId = inject<ComputedRef<string>>(
+  'game-detail-row-id',
+  computed(() => '')
+)
 const { t } = useI18n()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
