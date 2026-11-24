@@ -101,7 +101,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import closeIcon from '@/static/svg/game/detail/close.svg?url'
@@ -111,6 +111,7 @@ import CurrencyBar from './currency-bar/index.vue'
 import { useEmbeddedGame } from './useEmbeddedGame'
 
 const { t } = useI18n()
+const emit = defineEmits<{ fullscreenChange: [value: boolean] }>()
 const {
   session,
   fullscreen,
@@ -126,5 +127,6 @@ const {
   answerExit,
   requestExit
 } = useEmbeddedGame()
+watch(fullscreen, value => emit('fullscreenChange', value), { flush: 'sync' })
 usePageScrollLock(computed(() => fullscreen.value || showExitDialog.value))
 </script>

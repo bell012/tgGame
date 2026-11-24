@@ -47,7 +47,7 @@
         <GameDetailStats mobile />
       </div>
     </div>
-    <GamePlayer />
+    <GamePlayer @fullscreen-change="emit('fullscreenChange', $event)" />
   </div>
 </template>
 <script setup lang="ts">
@@ -68,6 +68,7 @@ import { useUserStore } from '@/stores/user'
 import { resolveGameImageUrl } from '@/utils/image'
 import { storeToRefs } from 'pinia'
 
+const emit = defineEmits<{ fullscreenChange: [value: boolean] }>()
 const { currentGameDetail } = useGamePlatformPlay()
 const gameStore = useGameStore()
 const siteConfigStore = useSiteConfigStore()
