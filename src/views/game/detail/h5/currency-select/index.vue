@@ -1,6 +1,6 @@
 <template>
   <div
-    class="currency-select-trigger relative flex h-[35px] items-center gap-[5px] rounded-lg bg-opacity-6 px-2"
+    class="currency-select-trigger relative flex h-[35px] items-center gap-2 rounded-lg bg-opacity-6 px-2"
   >
     <button
       type="button"
@@ -17,33 +17,39 @@
       />
       <span class="min-w-0 truncate" :title="selectedBalanceText">{{ selectedBalanceText }}</span>
     </button>
-    <button
-      type="button"
-      class="flex h-full shrink-0 items-center text-text-1 disabled:opacity-50"
-      :aria-label="t('gameDetail.refreshBalance')"
-      :aria-busy="isRefreshBusy"
-      :disabled="isRefreshBusy"
-      @click="refreshBalance"
-    >
-      <RefreshIcon
-        class="size-[15px] motion-reduce:animate-none"
-        :class="{ 'animate-[spin_2s_linear_infinite]': isRefreshBusy }"
-        aria-hidden="true"
-      />
-    </button>
-    <button
-      type="button"
-      class="ml-auto flex h-full shrink-0 items-center pl-1 text-icon-2"
-      :aria-label="t('gameDetail.selectCurrencyTitle')"
-      :disabled="disabled"
-      @click="visible = true"
-    >
-      <component
-        :is="casinoIcons.dropdown_chevron"
-        class="size-[10px] fill-current [&_path]:fill-current"
-        aria-hidden="true"
-      />
-    </button>
+    <div class="flex h-full shrink-0 items-center gap-2">
+      <button
+        type="button"
+        class="flex h-full shrink-0 items-center text-text-1 disabled:opacity-50"
+        :aria-label="t('gameDetail.refreshBalance')"
+        :aria-busy="isRefreshBusy"
+        :disabled="isRefreshBusy"
+        @click="refreshBalance"
+      >
+        <RefreshIcon
+          class="size-[15px] motion-reduce:animate-none"
+          :class="{ 'animate-[spin_2s_linear_infinite]': isRefreshBusy }"
+          aria-hidden="true"
+        />
+      </button>
+      <button
+        type="button"
+        class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-opacity-10 text-icon-2"
+        :aria-label="t('gameDetail.selectCurrencyTitle')"
+        :disabled="disabled"
+        @click="visible = true"
+      >
+        <DropdownIcon class="size-[10px]" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        class="flex size-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
+        :aria-label="t('deposit.title')"
+        @click="navigateTo('/deposit')"
+      >
+        <DepositPlusIcon class="size-3" aria-hidden="true" />
+      </button>
+    </div>
     <Teleport to="body" v-if="isMobile">
       <popup v-model:visible="visible" :change-currency="changeCurrency" :disabled="disabled" />
     </Teleport>
@@ -61,7 +67,9 @@
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import RefreshIcon from '@/static/svg/game/detail/top/refresh.svg?component'
-import { casinoIcons } from '@/static/svg/casino'
+import DropdownIcon from '@/static/svg/game/detail/top/currency-dropdown.svg?component'
+import DepositPlusIcon from '@/static/svg/game/detail/top/deposit-plus.svg?component'
+import { navigateTo } from '@/utils/router'
 import { computed, onBeforeUnmount, onDeactivated, provide, ref, watch } from 'vue'
 import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -101,7 +109,7 @@ const emit = defineEmits<{
   change: [value: CurrencyOptionItem | undefined]
 }>()
 const {
-  currentBalanceAmountText,
+  currentCompactBalanceText,
   currentCurrencyCode,
   currentCurrencyOption,
   currencyOptions,
@@ -121,7 +129,7 @@ const selectedData = computed(() => {
 })
 
 const selectedBalanceText = computed(() => {
-  return currentBalanceAmountText.value
+  return currentCompactBalanceText.value
 })
 
 const handleSelect = (item: CurrencyOptionItem) => {
