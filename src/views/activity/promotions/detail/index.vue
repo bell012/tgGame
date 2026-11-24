@@ -35,6 +35,7 @@ import PromotionDetailContent from '../components/PromotionDetailContent.vue'
 import PromotionsLayout from '../layout.vue'
 import {
   getVisiblePromotionGroups,
+  PROMOTION_COMPREHENSIVE_GROUP_CODE,
   resolveActivityById,
   resolveActivityListGroupCode,
   sortActivityList
@@ -128,10 +129,9 @@ onMounted(async () => {
   await promotionsStore.loadGroups()
 
   const codeFromRoute = groupCode.value
-  const defaultCode = promotionsStore.getDefaultGroupCode()
 
-  if (!codeFromRoute && defaultCode) {
-    navigateTo(`/promotions/${defaultCode}`, { replace: true })
+  if (!codeFromRoute) {
+    navigateTo(`/promotions/${PROMOTION_COMPREHENSIVE_GROUP_CODE}`, { replace: true })
     return
   }
 

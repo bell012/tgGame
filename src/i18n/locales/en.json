@@ -2079,6 +2079,7 @@
   "activityPromotions": {
     "title": "Promotions",
     "detailTitle": "Promotion Details",
+    "comprehensive": "Comprehensive",
     "empty": "No data available at the moment.",
     "notFound": "Promotion not found"
   },

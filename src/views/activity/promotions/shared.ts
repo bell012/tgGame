@@ -74,6 +74,12 @@ export const resolveActivityById = (
   return null
 }
 
+/** 活动列表固定的「综合」分组，不来自分组接口。 */
+export const PROMOTION_COMPREHENSIVE_GROUP_CODE = 'comprehensive'
+
+export const isPromotionComprehensiveActive = (routeKey?: string) =>
+  String(routeKey ?? '').trim() === PROMOTION_COMPREHENSIVE_GROUP_CODE
+
 /** 活动菜单不展示加密货币分组。 */
 export const getVisiblePromotionGroups = (groups: ActivityGroupItem[]) =>
   groups.filter(group => {
@@ -155,15 +161,40 @@ export const getPromotionGroupIcon = (group: ActivityGroupItem, activeRouteKey?:
   return toPromotionGroupIconUrl(group.defaultIcon)
 }
 
+/** 统一活动文案语言码，兼容 en / en-US / eng、zh-CN、vi / vn。 */
+export const normalizePromotionLanguageCode = (languageCode?: string) => {
+  const normalized = String(languageCode ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, '-')
+
+  if (normalized.startsWith('zh')) {
+    return 'zh'
+  }
+
+  if (normalized === 'eng' || normalized === 'en' || normalized.startsWith('en-')) {
+    return 'eng'
+  }
+
+  if (normalized === 'vi' || normalized === 'vn' || normalized.startsWith('vi-')) {
+    return 'vn'
+  }
+
+  return normalized
+}
+
+export const isSamePromotionLanguage = (itemCode?: string, currentCode?: string) =>
+  normalizePromotionLanguageCode(itemCode) ===
+  normalizePromotionLanguageCode(currentCode || getLanguageCode())
+
 /** 从多语言数组里取当前语言文案（zh / eng / vn，与请求头 languageCode 一致） */
 export const getLanguageName = (items?: ActivityLanguageTextItem[]) => {
   if (!items || items.length === 0) {
     return ''
   }
 
-  const languageCode = getLanguageCode()
-  const matched = items.find(item => item.languageCode === languageCode && item.name)
-  return matched?.name || items[0]?.name || ''
+  const matched = items.find(item => isSamePromotionLanguage(item.languageCode) && item.name)
+  return matched?.name || ''
 }
 
 /** 活动列表按 sortNo 升序，置顶优先 */
