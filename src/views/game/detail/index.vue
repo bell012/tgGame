@@ -170,39 +170,6 @@ const hideParentScrollbar = () => {
   }
 }
 
-const resetScrollToTop = () => {
-  if (!isBrowserEnv) {
-    // iOS / WebView fallback
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    return
-  }
-
-  if (isMobile.value && detailPageRef.value) {
-    detailPageRef.value.scrollTop = 0
-    return
-  }
-
-  let currentParent = detailPageRef.value?.parentElement ?? null
-  while (currentParent) {
-    const { overflowY } = window.getComputedStyle(currentParent)
-    const isScrollable =
-      (overflowY === 'auto' || overflowY === 'scroll') &&
-      currentParent.scrollHeight > currentParent.clientHeight
-    if (isScrollable) {
-      if (typeof currentParent.scrollTo === 'function') {
-        currentParent.scrollTo({ top: 0, behavior: 'smooth' })
-      } else {
-        currentParent.scrollTop = 0
-      }
-      return
-    }
-    currentParent = currentParent.parentElement
-  }
-
-  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-}
-
 // ===== 工具函数 =====
 const isGameTypeCodeMatched = (targetGameTypeCode: unknown, candidateGameTypeCode: unknown) => {
   const targetCodeList = splitGameTypeCodes(targetGameTypeCode)
@@ -321,7 +288,7 @@ const fetchCurrentGameDetail = async () => {
   } finally {
     await nextTick()
     hideParentScrollbar()
-    resetScrollToTop()
+    if (isMobile.value && detailPageRef.value) detailPageRef.value.scrollTop = 0
     if (targetRowId) {
       void syncFavoriteFromCommentSubject(targetRowId)
     }
