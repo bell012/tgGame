@@ -59,6 +59,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
   const placedOrders = new Map<string, { gameCode: string; anchorBlockNum: number }>()
   const settledRounds = new Set<string>()
   let roomGeneration = 0
+  let welcomeText = ''
 
   /** 将历史接口记录转换为聊天室已支持的展示消息。 */
   function normalizeHistoryMessage(item: HashChatHistoryItem): HashChatMessage | null {
@@ -255,13 +256,19 @@ export function useHashGameChat(gameCode: Ref<string>) {
   /** 将聊天配置中的欢迎语作为本次房间公告展示一次。 */
   function acceptWelcomeText(content: string) {
     if (!activeRoom.value || !content.trim()) return false
-    return feed.append({
+    welcomeText = content.trim()
+    const notice: HashChatMessage = {
       id: `notice:${gameCode.value}`,
       kind: 'NOTICE',
       source: 'local',
       time: Date.now(),
-      content: content.trim()
-    })
+      content: welcomeText
+    }
+    feed.messages.value = [
+      notice,
+      ...feed.messages.value.filter(message => message.id !== notice.id)
+    ]
+    return true
   }
 
   /** 将 HTTP 开奖结果插入一次；真正的 HTTP 请求与开奖触发后续接入。 */
@@ -373,6 +380,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
   function openRoom(code: string) {
     const generation = ++roomGeneration
     feed.clear()
+    welcomeText = ''
     placedOrders.clear()
     settledRounds.clear()
     settlementQueue.value = []
@@ -389,6 +397,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
 
     const generation = ++roomGeneration
     feed.clear()
+    if (welcomeText) acceptWelcomeText(welcomeText)
     betStats.value = new Map()
     void loadHistory(code, generation)
   }
@@ -398,6 +407,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     roomGeneration += 1
     activeRoom.value = ''
     feed.clear()
+    welcomeText = ''
     placedOrders.clear()
     settledRounds.clear()
     settlementQueue.value = []
