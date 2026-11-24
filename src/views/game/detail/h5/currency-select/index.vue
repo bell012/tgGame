@@ -6,6 +6,7 @@
       type="button"
       class="flex min-w-0 flex-1 items-center gap-[5px] text-[13px] font-semibold text-text-1"
       :aria-label="t('gameDetail.selectedCurrency')"
+      :disabled="disabled"
       @click="visible = true"
     >
       <SmartImage
@@ -34,6 +35,7 @@
       type="button"
       class="ml-auto flex h-full shrink-0 items-center pl-1 text-icon-2"
       :aria-label="t('gameDetail.selectCurrencyTitle')"
+      :disabled="disabled"
       @click="visible = true"
     >
       <component
@@ -43,13 +45,15 @@
       />
     </button>
     <Teleport to="body" v-if="isMobile">
-      <popup v-model:visible="visible" />
+      <popup v-model:visible="visible" :change-currency="changeCurrency" :disabled="disabled" />
     </Teleport>
     <popup
       v-else
       class="absolute left-0 top-[calc(100%+10px)] w-full"
       v-model:visible="visible"
       desktop
+      :change-currency="changeCurrency"
+      :disabled="disabled"
     />
   </div>
 </template>
@@ -66,6 +70,10 @@ import SmartImage from '@/components/common/SmartImage.vue'
 import type { CurrencyOptionItem } from '@/components/common/currency-selector/currency-select-options'
 
 const { t } = useI18n()
+defineProps<{
+  changeCurrency: (value: string) => Promise<boolean>
+  disabled: boolean
+}>()
 const userStore = useUserStore()
 const refreshFeedbackActive = ref(false)
 const isRefreshBusy = computed(() => userStore.isRefreshingBalance || refreshFeedbackActive.value)

@@ -33,6 +33,8 @@
             selected-item-class="bg-opacity-10 tp-item-selected"
             label-class="text-sm font-[700] text-text-1"
             trailing-class="text-xs font-[700] text-text-1"
+            :change-currency="changeCurrency"
+            :disabled="disabled"
             @select="confirmByValue"
           />
         </div>
@@ -55,6 +57,8 @@ type BalanceOptionItem = { code: string; icon: string; balanceText: string }
 const props = defineProps<{
   visible: boolean
   desktop?: boolean
+  changeCurrency: (value: string) => Promise<boolean>
+  disabled: boolean
 }>()
 
 const emit = defineEmits<{

@@ -656,7 +656,10 @@
     "shareLinkCopySuccess": "分享链接复制成功",
     "copyFailedRetry": "复制失败，请重试",
     "exitGameConfirm": "确定要退出游戏吗？",
-    "invalidGameUrl": "游戏链接无效"
+    "invalidGameUrl": "游戏链接无效",
+    "collapseGame": "收起游戏",
+    "exitGame": "退出游戏",
+    "collapseOrExitGame": "收起可保留当前游戏，退出将结束游戏会话。"
   },
   "common_footer": {
     "top": {

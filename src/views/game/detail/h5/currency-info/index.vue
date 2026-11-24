@@ -47,8 +47,7 @@
         <GameDetailStats mobile />
       </div>
     </div>
-    <GameDetailPreview class="mt-[10px] aspect-[1041/592] rounded-t-[10px]" />
-    <CurrencyBar />
+    <GamePlayer />
   </div>
 </template>
 <script setup lang="ts">
@@ -59,8 +58,7 @@ import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
 import GameDetailActions from '../../common/GameDetailActions.vue'
 import GameDetailStats from '../../common/GameDetailStats.vue'
-import GameDetailPreview from '../../common/GameDetailPreview.vue'
-import CurrencyBar from '../currency-bar/index.vue'
+import GamePlayer from '../GamePlayer.vue'
 import { computed, onMounted, reactive, watch } from 'vue'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 import { useGameStore } from '@/stores/game'
