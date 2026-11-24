@@ -5,11 +5,14 @@
         <h1 class="min-w-0 break-words text-base font-bold leading-5 text-text-1">
           {{ displayName }}
         </h1>
-        <span
+        <button
+          type="button"
           class="max-w-full truncate rounded bg-bg-2 p-1 text-xs font-normal leading-[15px] text-text-2"
           :title="providerName"
-          >{{ providerName }}</span
+          @click="openProviderGames"
         >
+          {{ providerName }}
+        </button>
       </div>
       <GameDetailActions />
     </div>
@@ -19,6 +22,7 @@
 <script setup lang="ts">
 import { computed, inject, type ComputedRef } from 'vue'
 import type { GameDetailForPlatformPlay } from '@/composables/useGamePlatformPlay'
+import { navigateToName } from '@/utils/router'
 import GameDetailActions from '../../common/GameDetailActions.vue'
 import GameDetailStats from '../../common/GameDetailStats.vue'
 
@@ -32,4 +36,20 @@ const displayName = computed(
 const providerName = computed(
   () => String(detail.value?.platformName ?? detail.value?.sysGameTypeName ?? '').trim() || '--'
 )
+
+const openProviderGames = () => {
+  const brandCode =
+    String(detail.value?.brandCode ?? '').trim() ||
+    String(detail.value?.platformCode ?? '')
+      .trim()
+      .split('_')[0]
+      ?.trim()
+  if (!brandCode) return
+
+  const brandName = String(detail.value?.brandName ?? '').trim() || `${brandCode} games`
+  navigateToName('brandGameList', {
+    params: { brandCode },
+    query: { brandName }
+  })
+}
 </script>
