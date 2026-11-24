@@ -127,8 +127,11 @@
       <!-- 渲染所有滑动路由栈 -->
       <template v-for="(item, index) in slideRouteStack" :key="item.path">
         <transition
-          name="drawer-slide"
+          :name="item.transition"
           :css="item.animate"
+          :appear="item.animate && item.transition === 'page-scale'"
+          @before-enter="setPageScaleTransform($event, item.gameCard?.bounds)"
+          @before-leave="setPageScaleTransform($event, getReturnCardBounds(item.gameCard))"
           @after-leave="removeClosedDrawer(item.path)"
         >
           <div
@@ -169,6 +172,11 @@ import { useLayoutStore } from '@/stores/layout'
 import { usePromotionsStore } from '@/stores/promotions'
 import { useRedPacketPanelStore } from '@/stores/redPacketPanel'
 import { useUserStore } from '@/stores/user'
+import {
+  setPageScaleTransform,
+  takeGameCardAnchor,
+  type GameCardAnchor
+} from '@/utils/gameCardTransition'
 import {
   DEFAULT_LOCALE,
   getLocaleFromRouteParam,
@@ -265,6 +273,8 @@ interface SlideRouteItem {
   route: RouteLocationNormalizedLoaded
   showDrawer: boolean
   animate: boolean
+  transition: 'drawer-slide' | 'page-scale'
+  gameCard?: GameCardAnchor
 }
 
 interface NotificationPanelDetail {
@@ -279,6 +289,12 @@ interface NotificationPanelDetail {
 
 // 滑动路由栈
 const slideRouteStack = ref<SlideRouteItem[]>([])
+
+const getReturnCardBounds = (anchor?: GameCardAnchor) => {
+  if (!anchor || anchor.fromPath !== route.fullPath) return
+  const bounds = anchor.element.isConnected ? anchor.element.getBoundingClientRect() : undefined
+  return bounds?.width && bounds.height ? bounds : anchor.bounds
+}
 
 // 以真实退场结束事件清理，仅删除仍处于关闭状态的项，快速返回时保留已重新打开的抽屉。
 const removeClosedDrawer = (path: string) => {
@@ -303,10 +319,17 @@ const isMobileMenuRoute = (currentRoute: RouteLocationNormalizedLoaded) =>
 const shouldCacheMobileRoute = (currentRoute: RouteLocationNormalizedLoaded) =>
   isBottomTabRoute(currentRoute) || currentRoute.meta?.keepAlive === true
 
-// 判断是否应该使用滑动过渡动画
-const shouldUseSlideTransition = (currentRoute: RouteLocationNormalizedLoaded) => {
-  // 尊重路由配置，chat-public 与其他 slideTransition 页面使用同一套抽屉动画。
-  return currentRoute.meta?.slideTransition === true
+const isGameListBackground = (currentRoute: RouteLocationNormalizedLoaded | null) => {
+  const name = String(currentRoute?.name || '').replace(/^Locale/, '')
+  return name === 'Home' || name === 'casino' || name === 'casinoTabKey'
+}
+
+const getDrawerTransition = (currentRoute: RouteLocationNormalizedLoaded) => {
+  const mobile = currentRoute.meta?.mobile as MobileRouteMeta | undefined
+  if (mobile?.transition === 'page-scale' && isGameListBackground(backgroundRouteSnapshot.value)) {
+    return mobile.transition
+  }
+  return currentRoute.meta?.slideTransition === true ? 'drawer-slide' : undefined
 }
 
 const shouldRenderCurrentRouteInMain = (currentRoute: RouteLocationNormalizedLoaded) => {
@@ -314,7 +337,7 @@ const shouldRenderCurrentRouteInMain = (currentRoute: RouteLocationNormalizedLoa
     return false
   }
 
-  if (!shouldUseSlideTransition(currentRoute)) {
+  if (!getDrawerTransition(currentRoute)) {
     return true
   }
 
@@ -334,7 +357,7 @@ const shouldRenderBackgroundRouteInMain = (currentRoute: RouteLocationNormalized
     return !!backgroundRouteSnapshot.value
   }
 
-  return isMobile.value && shouldUseSlideTransition(currentRoute) && !!backgroundRouteSnapshot.value
+  return isMobile.value && !!getDrawerTransition(currentRoute) && !!backgroundRouteSnapshot.value
 }
 
 const mainAreaRoute = computed(() => {
@@ -497,7 +520,7 @@ watch(
     const previousRouteSnapshot = previousValue?.fullPath
       ? resolveRouteSnapshot(String(previousValue.fullPath))
       : null
-    const shouldSlide = shouldUseSlideTransition(currentRouteSnapshot)
+    const transition = getDrawerTransition(currentRouteSnapshot)
 
     // PC 打开客服时保留进入前页面；直接访问客服页时在左侧显示首页。
     if (!isMobileDevice && currentRouteSnapshot.meta?.desktopOverlay === true) {
@@ -515,7 +538,7 @@ watch(
       return
     }
 
-    if (!shouldSlide || !isMobileDevice) {
+    if (!transition || !isMobileDevice) {
       backgroundRouteSnapshot.value = currentRouteSnapshot
 
       if (!animateDrawer) {
@@ -529,7 +552,8 @@ watch(
       }
 
       for (const item of slideRouteStack.value) {
-        item.animate = animateDrawer
+        item.animate =
+          item.transition !== 'page-scale' || isGameListBackground(currentRouteSnapshot)
         item.showDrawer = false
       }
 
@@ -587,7 +611,13 @@ watch(
       // 目标不在当前栈时直接以打开状态挂载，不再先隐藏、nextTick 后再触发入场。
       if (existingIndex === -1) {
         slideRouteStack.value = [
-          { path: newPath, route: currentRouteSnapshot, showDrawer: true, animate: false }
+          {
+            path: newPath,
+            route: currentRouteSnapshot,
+            showDrawer: true,
+            animate: false,
+            transition
+          }
         ]
       } else {
         const targetItem = slideRouteStack.value[existingIndex]
@@ -599,12 +629,19 @@ watch(
       return
     }
 
+    const gameCard =
+      transition === 'page-scale' && previousRouteSnapshot
+        ? takeGameCardAnchor(previousRouteSnapshot.fullPath, currentRouteSnapshot.params.rowId)
+        : undefined
+
     if (existingIndex === -1) {
       const newItem: SlideRouteItem = {
         path: newPath,
         route: currentRouteSnapshot,
         showDrawer: false,
-        animate: animateDrawer
+        animate: animateDrawer,
+        transition,
+        gameCard
       }
 
       slideRouteStack.value.push(newItem)
@@ -621,6 +658,7 @@ watch(
     } else {
       slideRouteStack.value[existingIndex].route = currentRouteSnapshot
       slideRouteStack.value[existingIndex].animate = animateDrawer
+      if (gameCard) slideRouteStack.value[existingIndex].gameCard = gameCard
       slideRouteStack.value[existingIndex].showDrawer = true
 
       const itemsToRemove = slideRouteStack.value.slice(existingIndex + 1)
@@ -714,6 +752,7 @@ const openLanguageModal = () => {
 interface MobileRouteMeta {
   hideBottomBar?: boolean
   hideTopNav?: boolean
+  transition?: 'page-scale'
 }
 
 const isFullscreenRoute = computed(() => route.meta?.fullScreen === true)
