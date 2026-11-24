@@ -6,6 +6,8 @@ import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { casinoIcons } from '@/static/svg/casino'
 import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
+import { HASH_CASINO_TAB_CODE, useHashGameCatalogStore } from '@/stores/hashGameCatalog'
+import newSideIcons from '@/static/svg/side/newIcon'
 
 export interface CasinoTabButtonItem {
   sysGameTypeCode: string
@@ -73,6 +75,7 @@ const GAME_BRAND_PAGE_FALLBACK: GameBrandPageFallback = {
 
 export const useCasinoTabsStore = defineStore('casinoTabs', () => {
   const gameStore = useGameStore()
+  const hashCatalog = useHashGameCatalogStore()
   const gameTypeList = ref<GameTypeItem[]>([])
   const lobbyGameMap = ref<Record<string, GameDataItem[]>>({})
   const lobbyBrandMap = ref<Record<string, GameBrandItem[]>>({})
@@ -140,7 +143,18 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
     }))
   })
 
-  const tabButtons = computed<CasinoTabButtonItem[]>(() => [...lobbyButtons.value])
+  const tabButtons = computed<CasinoTabButtonItem[]>(() => {
+    const buttons = [...lobbyButtons.value]
+    if (hashCatalog.available) {
+      buttons.splice(buttons.length - 1, 0, {
+        sysGameTypeCode: HASH_CASINO_TAB_CODE,
+        sysGameTypeName: i18n.global.t('menu.hashGame'),
+        icon: newSideIcons.hashGame,
+        iconSelect: newSideIcons.hashGame
+      })
+    }
+    return buttons
+  })
 
   const loadCasinoTabButtons = async (forceRefresh = false) => {
     const requestLanguageCode = currentLanguageCode.value

@@ -1,21 +1,21 @@
 <template>
-  <div class="currency-info-container">
-    <div class="play-form">
-      <div class="form-row">
-        <div class="form-label">{{ t('gameDetail.selectedCurrency') }}</div>
-        <div class="form-control">
-          <currency-select class="w-full"></currency-select>
-        </div>
+  <div class="w-full">
+    <div class="flex items-center gap-2">
+      <div class="shrink-0 text-[13px] font-bold leading-5 text-text-1">
+        {{ t('gameDetail.selectedCurrency') }}
       </div>
+      <CurrencySelect class="min-w-0 flex-1" />
     </div>
-    <div class="play-now-hint text-center text-[12px] mt-[14px]">
+    <div class="mt-4 text-center text-[11px] font-bold leading-4 text-text-2">
       {{ t('gameDetail.playNowHint') }}
     </div>
-    <button type="button" class="play-btn w-full mt-[14px] cursor-pointer" @click="gamePlay">
-      <img :src="playIcon" alt="" class="h-[16px] w-[13px] object-contain" />
-      <div class="text-[15px] font-bold text-[var(--color-text-level-4)]">
-        {{ t('gameDetail.playNow') }}
-      </div>
+    <button
+      type="button"
+      class="mt-4 flex min-h-10 w-full items-center justify-center gap-1 rounded-lg bg-theme-primary px-2 py-1 text-sm font-bold text-text-4"
+      @click="gamePlay"
+    >
+      <img :src="playIcon" alt="" class="size-4 shrink-0 object-contain" />
+      {{ t('gameDetail.playNow') }}
     </button>
   </div>
 </template>
@@ -28,224 +28,3 @@ import { useI18n } from 'vue-i18n'
 const { gamePlay } = useGamePlatformPlay()
 const { t } = useI18n()
 </script>
-<style scoped lang="scss">
-.currency-info-container {
-  width: 408px;
-}
-
-.desc-text {
-  line-height: 16px;
-}
-
-.play-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.form-label {
-  flex: 0 0 auto;
-  white-space: nowrap;
-  color: var(--color-text-level-1);
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 20px;
-}
-
-.form-control {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-}
-
-.form-control :deep(.currency-select-trigger) {
-  width: 100%;
-  border-radius: 8px;
-  background: var(--color-background-level-3);
-  box-shadow: none;
-}
-
-.currency-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.currency-dot {
-  --color-currency-dot: radial-gradient(circle at 30% 30%, #49f7a5, #0fd46d 70%);
-  --color-currency-dot-glow: 0 0 6px rgba(35, 238, 136, 0.4);
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--color-currency-dot);
-  box-shadow: var(--color-currency-dot-glow);
-}
-
-.small-btn {
-  height: 26px;
-  border-radius: 4px;
-  border: 1px solid var(--color-theme-level-1);
-  color: var(--color-theme-level-1);
-  font-size: 14px;
-  line-height: 1;
-  background: transparent;
-  padding: 0 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.plus-icon {
-  font-size: 16px;
-  line-height: 1;
-}
-
-.amount-control {
-  padding: 0 8px 0 10px;
-}
-
-.amount-value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.amount-icon {
-  --color-currency-amount-icon: rgba(35, 238, 136, 0.18);
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--color-currency-amount-icon);
-  color: var(--color-theme-level-1);
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.amount-actions {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  border-left: 1px solid var(--color-opacity-15);
-  padding-left: 8px;
-  gap: 2px;
-}
-
-.amount-action {
-  min-width: 36px;
-  height: 24px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--color-text-level-1);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.arrow-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.slider-panel {
-  flex: 1;
-  height: 46px;
-  border-radius: 8px;
-  background: var(--color-background-level-2);
-  padding: 6px 10px 8px;
-  display: flex;
-  align-items: center;
-}
-
-.slider-head {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.slider-limit {
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 600;
-  color: var(--color-text-level-1);
-}
-
-.slider-center-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid var(--color-theme-level-1);
-}
-
-.amount-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    var(--color-theme-level-1) 0%,
-    var(--color-theme-level-1) var(--slider-percent, 35%),
-    var(--color-opacity-15) var(--slider-percent, 35%),
-    var(--color-opacity-15) 100%
-  );
-  outline: none;
-}
-
-.amount-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid var(--color-theme-level-1);
-  background: var(--color-background-level-1);
-  cursor: pointer;
-}
-
-.amount-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid var(--color-theme-level-1);
-  background: var(--color-background-level-1);
-  cursor: pointer;
-}
-
-.amount-slider::-moz-range-track {
-  height: 4px;
-  border-radius: 999px;
-  background: var(--color-opacity-15);
-}
-
-.play-btn {
-  border-radius: 8px;
-  background: var(--color-theme-level-1);
-  color: var(--color-text-level-4);
-  height: 36px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-  border: none;
-}
-
-.play-now-hint {
-  color: var(--color-text-level-2);
-  line-height: 16px;
-}
-</style>

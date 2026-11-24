@@ -11,6 +11,7 @@ import HashGameH5 from './h5.vue'
 import HashGamePc from './pc.vue'
 import { useHashGamePage } from './index'
 
-const page = useHashGamePage()
+const props = defineProps<{ gameCode?: string }>()
+const page = useHashGamePage(() => props.gameCode)
 const isMobile = useIsMobile()
 </script>

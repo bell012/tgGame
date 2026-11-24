@@ -10,10 +10,15 @@
     <RedPacketHistory
       v-if="view === 'history' && historyItem"
       :item="historyItem"
+      :show-state="historyState ?? undefined"
       @back="setView('list')"
       @open-mine="setView('mine')"
     />
-    <MyRedemptions v-else-if="view === 'mine'" @back="setView('history')" />
+    <MyRedemptions
+      v-else-if="view === 'mine'"
+      :display-mode="props.displayMode"
+      @back="setView('history')"
+    />
 
     <div v-show="view === 'list'" class="relative flex min-h-0 flex-1 flex-col">
       <!-- PC 头部；H5 由页面使用公共头部 -->
@@ -55,12 +60,10 @@
               <span>{{ t('redPacketPanel.emptySender') }}</span>
               <span>{{ t('redPacketPanel.emptyTime') }}</span>
             </div>
-            <div class="flex items-start">
-              <span class="flex h-[32px] shrink-0 items-center">
-                <EmptyBubbleEar class="h-[13px] w-[9px]" />
-              </span>
+            <div class="relative">
+              <EmptyBubbleEar class="absolute left-0 top-[9.5px] h-[13px] w-[9px]" />
               <p
-                class="w-[232px] rounded-[6px] bg-bg-3 px-[10px] py-[6px] text-[14px] leading-[20px] text-text-1"
+                class="ml-[8px] w-[232px] rounded-[6px] bg-bg-3 px-[10px] py-[6px] text-[14px] leading-[20px] text-text-1"
               >
                 {{ t('redPacketPanel.emptyMessage') }}
               </p>
@@ -110,7 +113,11 @@ import '../red-packet.css'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import type { RedEnvelopeItem, RedEnvelopeSchedule } from '@/api/interface/red-envelope'
+import type {
+  RedEnvelopeItem,
+  RedEnvelopeSchedule,
+  RedEnvelopeShowState
+} from '@/api/interface/red-envelope'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import CloseIcon from '@/static/svg/red-packet/close.svg?component'
 import EmptyBubbleEar from '@/static/svg/red-packet/empty-bubble-ear.svg?component'
@@ -216,6 +223,7 @@ const handleClaimed = (schedule: RedEnvelopeSchedule) => {
 
 const view = ref<RedPacketPanelView>('list')
 const historyItem = shallowRef<RedEnvelopeItem | null>(null)
+const historyState = ref<RedEnvelopeShowState | null>(null)
 
 const setView = (nextView: RedPacketPanelView) => {
   view.value = nextView
@@ -226,12 +234,14 @@ watch(currentCurrencyCode, (value, oldValue) => {
   if (!value || value === oldValue) return
   popupState.value = null
   historyItem.value = null
+  historyState.value = null
   if (view.value !== 'list') setView('list')
 })
 
-const openHistory = () => {
+const openHistory = (state: RedEnvelopeShowState) => {
   if (!popupState.value) return
   historyItem.value = popupState.value.item
+  historyState.value = state
   popupState.value = null
   setView('history')
 }

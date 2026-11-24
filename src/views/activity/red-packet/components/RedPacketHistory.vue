@@ -23,18 +23,14 @@
           </div>
           <span class="text-[16px] font-[700] leading-[19px] text-text-1">{{ userName }}</span>
           <span class="text-[14px] leading-[20px] text-text-2">
-            {{ claimedRecord ? packetDesc : t('redPacketPanel.comeBackTomorrow') }}
+            {{ headerSubtitle }}
           </span>
         </div>
         <p
-          v-if="!loading || list.length"
+          v-if="headerTitle"
           class="text-center text-[24px] font-[700] leading-[29px] text-secondary-9"
         >
-          {{
-            claimedRecord
-              ? t('redPacketPanel.wonTitle', { amount: wonAmountText, currency: wonCurrency })
-              : t('redPacketPanel.allGoneTitle')
-          }}
+          {{ headerTitle }}
         </p>
       </div>
 
@@ -97,7 +93,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { RedEnvelopeItem } from '@/api/interface/red-envelope'
+import {
+  SHOW_STATE,
+  type RedEnvelopeItem,
+  type RedEnvelopeShowState
+} from '@/api/interface/red-envelope'
 import MyRecordsIcon from '@/static/svg/red-packet/my-records.svg?component'
 import recordAvatar from '@/static/svg/red-packet/record-avatar.png'
 import { useUserStore } from '@/stores/user'
@@ -108,7 +108,7 @@ import { useMemberRecords } from '../useMemberRecords'
 import RedPacketListStatus from './RedPacketListStatus.vue'
 import RedPacketSubHeader from './RedPacketSubHeader.vue'
 
-const props = defineProps<{ item: RedEnvelopeItem }>()
+const props = defineProps<{ item: RedEnvelopeItem; showState?: RedEnvelopeShowState }>()
 
 const emit = defineEmits<{ back: []; openMine: [] }>()
 
@@ -144,4 +144,23 @@ const wonAmountText = computed(() => {
 })
 
 const wonCurrency = computed(() => claimedRecord.value?.currency ?? props.item.currency ?? '')
+
+const headerTitle = computed(() => {
+  if (claimedRecord.value) {
+    return t('redPacketPanel.wonTitle', {
+      amount: wonAmountText.value,
+      currency: wonCurrency.value
+    })
+  }
+  if (props.showState === SHOW_STATE.soldOut) return t('redPacketPanel.allGoneTitle')
+  if (props.showState === SHOW_STATE.expired) return t('redPacketPanel.expiredTitle')
+  if (props.showState === SHOW_STATE.claimed) return ''
+  return t('redPacketPanel.pendingTitle')
+})
+
+const headerSubtitle = computed(() =>
+  props.showState === SHOW_STATE.soldOut && !claimedRecord.value
+    ? t('redPacketPanel.comeBackTomorrow')
+    : packetDesc.value
+)
 </script>

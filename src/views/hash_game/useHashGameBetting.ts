@@ -6,9 +6,11 @@ import type {
   HashGamePlaceBetParams,
   HashGamePlaceBetResult
 } from '@/api/interface/hash_game.interface'
+import { getBetAmountLimitError } from './betAmountLimits'
+import type { ChipColor } from './chips'
 import { BET_KEYS, timestampMillis, type BetKey } from './lotteryDisplay'
 
-type Stake = { option: BetKey; amount: number; hue: number }
+type Stake = { option: BetKey; amount: number; color: ChipColor }
 export type HashGameBetChip = Stake & { id: number }
 
 type Round = Pick<HashGamePlaceBetParams, 'gameCode' | 'currency' | 'anchorBlockNum'>
@@ -16,6 +18,17 @@ type PlacedBet = Round & { orderNo?: string; chips: HashGameBetChip[] }
 type Value<T> = Readonly<Ref<T>>
 
 const sumChips = (chips: readonly Stake[]) => chips.reduce((total, chip) => total + chip.amount, 0)
+
+const OPPOSITE_BETS: Partial<Record<BetKey, BetKey>> = {
+  big: 'small',
+  small: 'big',
+  odd: 'even',
+  even: 'odd',
+  banker: 'player',
+  player: 'banker',
+  win: 'lose',
+  lose: 'win'
+}
 
 export function useHashGameBetting(options: {
   account: Value<string>
@@ -28,7 +41,7 @@ export function useHashGameBetting(options: {
   quickBet: Value<boolean>
   openLogin: () => void
   refreshBalance: () => Promise<boolean>
-  notify: (key: string, type?: 'success' | 'fail') => void
+  notify: (key: string, type?: 'success' | 'fail', params?: { amount: number }) => void
   onPlaced: (request: HashGamePlaceBetParams, result: HashGamePlaceBetResult) => void
 }) {
   const draft = ref<HashGameBetChip[]>([])
@@ -136,20 +149,36 @@ export function useHashGameBetting(options: {
     return false
   }
 
-  const withinLimits = (amounts: Iterable<number>, checkMinimum: boolean) => {
-    const info = options.info.value
-    const minimum = Number(info?.betAmountMin)
-    const maximum = Number(info?.betAmountMax)
+  const canBetOptions = (pending: Iterable<BetKey>) => {
+    const restricted = options.info.value?.restrictOpposite
+    if (restricted !== 1 && restricted !== true) return true
+
+    const pendingOptions = new Set(pending)
+    const chosen = new Set(pendingOptions)
+    for (const bet of activeBets.value) {
+      for (const chip of bet.chips) chosen.add(chip.option)
+    }
+    for (const option of pendingOptions) {
+      const opposite = OPPOSITE_BETS[option]
+      if (opposite && chosen.has(opposite)) {
+        options.notify('hashGame.oppositeBetRestricted')
+        return false
+      }
+    }
+    return true
+  }
+
+  const withinLimits = (amounts: Iterable<number>) => {
     for (const amount of amounts) {
-      if (
-        Number.isSafeInteger(amount) &&
-        amount > 0 &&
-        (!checkMinimum || !Number.isFinite(minimum) || amount >= minimum) &&
-        (!Number.isFinite(maximum) || maximum <= 0 || amount <= maximum)
-      )
-        continue
-      options.notify('hashGame.betAmountOutOfRange')
-      return false
+      const limitError = getBetAmountLimitError(options.info.value, amount)
+      if (limitError) {
+        options.notify(limitError.key, 'fail', limitError.params)
+        return false
+      }
+      if (!Number.isSafeInteger(amount) || amount <= 0) {
+        options.notify('hashGame.betAmountOutOfRange')
+        return false
+      }
     }
     return true
   }
@@ -180,12 +209,15 @@ export function useHashGameBetting(options: {
       }
       if (!sameRound(account, key) || !marketOpen.value) return
       if (
-        !hasBalance(sumChips(draft.value)) ||
-        !withinLimits([...groups.values()].map(sumChips), true)
+        !canBetOptions(groups.keys()) ||
+        !withinLimits(draft.value.map(chip => chip.amount)) ||
+        !withinLimits([...groups.values()].map(sumChips)) ||
+        !hasBalance(sumChips(draft.value))
       )
         return
       for (const [option, entries] of groups) {
         if (!sameRound(account, key) || !marketOpen.value) break
+        if (!canBetOptions([option])) break
         const betOption = options.markets.value.find(market => BET_KEYS[market] === option)
         if (!betOption) continue
         const request = {
@@ -252,10 +284,15 @@ export function useHashGameBetting(options: {
       if (!sameRound(account, key) || !marketOpen.value) return
     }
     const next = [...draft.value, ...stakes]
-    if (!hasBalance(sumChips(next))) return
     const totals = new Map<BetKey, number>()
     for (const { option, amount } of next) totals.set(option, (totals.get(option) ?? 0) + amount)
-    if (!withinLimits(totals.values(), options.quickBet.value)) return
+    if (
+      !canBetOptions(totals.keys()) ||
+      !withinLimits(stakes.map(stake => stake.amount)) ||
+      !withinLimits(totals.values()) ||
+      !hasBalance(sumChips(next))
+    )
+      return
     draft.value = [...draft.value, ...stakes.map(stake => ({ ...stake, id: ++nextChipId }))]
     if (options.quickBet.value) await submitDraft()
   }
@@ -267,7 +304,7 @@ export function useHashGameBetting(options: {
       stakes.set(chip.option, {
         option: chip.option,
         amount: (stakes.get(chip.option)?.amount ?? 0) + chip.amount,
-        hue: chip.hue
+        color: chip.color
       })
     }
     return addChips([...stakes.values()])

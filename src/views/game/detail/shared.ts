@@ -2,6 +2,28 @@ import Api from '@/api'
 import type { QueryGameItemPageParams } from '@/api/interface/game'
 import { getLanguageCode } from '@/utils/request'
 
+export const parseCollectionsCount = (value: unknown): number | null => {
+  if (typeof value !== 'number' && typeof value !== 'string') return null
+  if (typeof value === 'string' && !value.trim()) return null
+  const count = Number(value)
+  return Number.isSafeInteger(count) && count >= 0 ? count : null
+}
+
+/** 沿用原详情 RTP 的上下限取值，顶部和下方信息共享同一结果。 */
+export const calculateGameDetailRtp = (
+  minimum: unknown,
+  maximum: unknown,
+  random: () => number = Math.random
+): number | null => {
+  if (minimum == null || minimum === '' || maximum == null || maximum === '') return null
+  const first = Number(minimum)
+  const second = Number(maximum)
+  if (!Number.isFinite(first) || !Number.isFinite(second)) return null
+  const min = Math.min(first, second)
+  const max = Math.max(first, second)
+  return random() * (max - min) + min
+}
+
 export interface GameDetailHotItem {
   rowId?: string | number
   itemCode?: string | number

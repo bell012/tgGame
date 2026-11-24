@@ -50,7 +50,10 @@
     "confirmBet": "Xác nhận",
     "insufficientBalance": "Số dư khả dụng không đủ. Vui lòng nạp tiền.",
     "betAmountOutOfRange": "Số tiền nằm ngoài giới hạn cho mỗi lần cược.",
+    "minimumBetAmount": "Số tiền cược tối thiểu: {amount}",
+    "maximumBetAmount": "Số tiền cược tối đa: {amount}",
     "bettingUnavailable": "Hiện chưa thể đặt cược. Vui lòng thử lại sau.",
+    "oppositeBetRestricted": "Không thể cược vào các lựa chọn đối lập trong cùng một kỳ.",
     "betResultUnknown": "Cược của bạn chưa được xác nhận. Hãy kiểm tra lịch sử cược trước khi đặt lại.",
     "betSuccess": "Đặt cược thành công",
     "cancelSuccess": "Hủy cược thành công",
@@ -347,6 +350,10 @@
     "RecordTime": "Thời gian ghi nhận"
   },
   "common": {
+    "retry": "Thử lại",
+    "previous": "Trang trước",
+    "next": "Trang tiếp theo",
+    "loadFailed": "Không tải được. Vui lòng thử lại.",
     "loading": "Đang tải...",
     "loadingMore": "Đang tải thêm...",
     "noMoreData": "Hết dữ liệu",
@@ -571,6 +578,12 @@
     "view_all": "Xem tất cả"
   },
   "gameDetail": {
+    "liveRtp": "Live RTP",
+    "realRtp": "Real RTP",
+    "volatility": "Biến động",
+    "maxBonus": "Thưởng max",
+    "demo": "Demo",
+    "refreshBalance": "Làm mới số dư",
     "playWithSelectedCurrency": "Chơi bằng tiền tệ đã chọn",
     "selectedCurrency": "Tiền tệ đã chọn",
     "selectCurrencyTitle": "Chọn tiền tệ",
@@ -2053,6 +2066,7 @@
   "activityPromotions": {
     "title": "Trung tâm sự kiện",
     "detailTitle": "Chi tiết hoạt động",
+    "comprehensive": "Tổng hợp",
     "empty": "Hiện chưa có dữ liệu",
     "notFound": "Không tìm thấy sự kiện"
   },
@@ -2710,10 +2724,11 @@
     "claimedSummary": "Đã nhận {claimedCount}, {claimedAmount} {currency}",
     "wonTitle": "Bạn nhận {amount} {currency}",
     "allGoneTitle": "Đã nhận hết",
+    "pendingTitle": "Lì xì chờ nhận",
     "comeBackTomorrow": "Mai quay lại nhé!",
     "noRecords": "Chưa có lượt nhận",
-    "allType": "Tất cả loại",
-    "allTime": "Mọi thời gian",
+    "filterDate": "Chọn ngày",
+    "filterType": "Lọc theo loại",
     "type": {
       "1": "Lì xì hằng ngày",
       "2": "Lì xì nạp tiền",
@@ -2727,7 +2742,7 @@
       "4": "Mở thưởng may mắn"
     },
     "period": {
-      "all": "Mọi thời gian",
+      "all": "Tất cả",
       "today": "Hôm nay",
       "yesterday": "Hôm qua",
       "last7Days": "7 ngày qua",

@@ -513,7 +513,7 @@ import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from
 import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
 import { navigateTo } from '@/utils/router'
-import { getPromotionGroupRouteKey } from '@/views/activity/promotions/shared'
+import { PROMOTION_COMPREHENSIVE_GROUP_CODE } from '@/views/activity/promotions/shared'
 import type { TicketGameId } from '@/views/activity/ticket/shared/types'
 import {
   clearUserTicketInventory,
@@ -524,7 +524,6 @@ import {
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
-import { storeToRefs } from 'pinia'
 import type { Component } from 'vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -564,7 +563,6 @@ const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
 const promotionsStore = usePromotionsStore()
 const redPacketPanelStore = useRedPacketPanelStore()
-const { groups: promotionGroups } = storeToRefs(promotionsStore)
 const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
 
 const { side } = sideIcons
@@ -988,12 +986,8 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       icon: newSideIcons.promotionCenterIcon,
       groupKey: 'promotions',
       handler: () => {
-        const defaultGroupCode =
-          getPromotionGroupRouteKey(promotionGroups.value[0] ?? {}) ||
-          promotionsStore.getDefaultGroupCode()
-        if (defaultGroupCode) {
-          return navigateTo(`/promotions/${defaultGroupCode}`)
-        }
+        promotionsStore.setH5ListGroupCode(PROMOTION_COMPREHENSIVE_GROUP_CODE)
+        return navigateTo(`/promotions/${PROMOTION_COMPREHENSIVE_GROUP_CODE}`)
       }
     },
     {

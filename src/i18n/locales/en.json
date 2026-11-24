@@ -50,7 +50,10 @@
     "confirmBet": "Confirm",
     "insufficientBalance": "Insufficient available balance. Please deposit funds.",
     "betAmountOutOfRange": "The amount is outside the limits for a single bet.",
+    "minimumBetAmount": "Minimum bet amount: {amount}",
+    "maximumBetAmount": "Maximum bet amount: {amount}",
     "bettingUnavailable": "Betting is currently unavailable. Please try again shortly.",
+    "oppositeBetRestricted": "You cannot bet on opposing options in the same round.",
     "betResultUnknown": "Your bet has not been confirmed yet. Check your bet history before placing it again.",
     "betSuccess": "Bet placed successfully",
     "cancelSuccess": "Bet canceled successfully",
@@ -357,6 +360,10 @@
     "RecordTime": "Record Time"
   },
   "common": {
+    "retry": "Retry",
+    "previous": "Previous page",
+    "next": "Next page",
+    "loadFailed": "Failed to load. Please try again.",
     "loading": "Loading...",
     "loadingMore": "Loading more...",
     "noMoreData": "No more data",
@@ -1173,6 +1180,12 @@
     "view_all": "View All"
   },
   "gameDetail": {
+    "liveRtp": "Live RTP",
+    "realRtp": "Real RTP",
+    "volatility": "Volatility",
+    "maxBonus": "Max Bonus",
+    "demo": "Demo",
+    "refreshBalance": "Refresh balance",
     "playWithSelectedCurrency": "Play with selected currency",
     "selectedCurrency": "Selected Currency",
     "selectCurrencyTitle": "Select Currency",
@@ -2066,6 +2079,7 @@
   "activityPromotions": {
     "title": "Promotions",
     "detailTitle": "Promotion Details",
+    "comprehensive": "Comprehensive",
     "empty": "No data available at the moment.",
     "notFound": "Promotion not found"
   },
@@ -2724,10 +2738,11 @@
     "claimedSummary": "Claimed {claimedCount}, {claimedAmount} {currency}",
     "wonTitle": "You got {amount} {currency}",
     "allGoneTitle": "All claimed",
+    "pendingTitle": "Bonus pending",
     "comeBackTomorrow": "More bonuses tomorrow!",
     "noRecords": "No claims yet",
-    "allType": "All types",
-    "allTime": "All time",
+    "filterDate": "Date Selection",
+    "filterType": "Filter by Type",
     "type": {
       "1": "Daily Red Packet",
       "2": "Deposit Red Packet",
@@ -2741,7 +2756,7 @@
       "4": "Unlock lucky bonus"
     },
     "period": {
-      "all": "All time",
+      "all": "All",
       "today": "Today",
       "yesterday": "Yesterday",
       "last7Days": "Last 7 days",

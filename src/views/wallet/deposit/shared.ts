@@ -102,6 +102,12 @@ interface DepositFlowOptions {
 const resolveFlowBoolean = (value: Ref<boolean> | boolean) =>
   typeof value === 'boolean' ? value : value.value
 
+// 数字币充值只展示这几种渠道：5/44 是 USDT，64 USDC，65 BTC，66 ETH。
+const CRYPTO_DEPOSIT_CHANNEL_CODES = ['5', '44', '64', '65', '66']
+
+const resolveColumnPayChannelCode = (item?: QueryPayColumnItem | null) =>
+  String(item?.payChannelCode ?? '').trim() || resolvePayChannelTabKey(item?.columnName)
+
 export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
   const { t, locale } = useI18n()
   const userStore = useUserStore()
@@ -145,10 +151,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
   const showWageringSection = computed(() => wageringOptions.value.length > 1)
   const showChannelSection = computed(() => paySubColumns.value.length > 1)
   const isManualAmountAllowed = computed(() => selectedSubColumn.value?.manualAmountIn !== 0)
-  const selectedPayChannelCode = computed(() => {
-    const ownCode = String(selectedMethod.value?.payChannelCode ?? '').trim()
-    return ownCode || resolvePayChannelTabKey(selectedMethod.value?.columnName)
-  })
+  const selectedPayChannelCode = computed(() => resolveColumnPayChannelCode(selectedMethod.value))
   const amountPlaceholder = computed(() =>
     isManualAmountAllowed.value
       ? t('deposit.deposit_amount_input_placeholder')
@@ -310,7 +313,9 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
 
       ensureApiBusinessSuccess(response)
       const result = Array.isArray(response.result) ? response.result : []
-      payMethods.value = result
+      payMethods.value = result.filter(item =>
+        CRYPTO_DEPOSIT_CHANNEL_CODES.includes(resolveColumnPayChannelCode(item))
+      )
 
       // 任务中心传入方式编码时优先精确选中，未匹配则保留充值页原有默认方式。
       const initialMethodCode = String(options.initialMethodCode ?? '').trim()

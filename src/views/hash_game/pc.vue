@@ -269,7 +269,7 @@
                     zIndex: layer + 1
                   }"
                 >
-                  <BetChip :amount="chip.amount" :filter="chip.filter" />
+                  <BetChip :amount="chip.amount" :color="chip.color" />
                 </span>
               </span>
               <span
@@ -336,19 +336,11 @@
             data-scroll-center
             type="button"
             class="relative size-[50px] shrink-0 rounded-full brightness-[0.7] transition-[filter] duration-[180ms] aria-pressed:brightness-100 motion-reduce:transition-none"
+            :aria-label="String(chip.value)"
             :aria-pressed="selectedChip === chip.value"
-            @click="chooseChip(chip.value)"
+            @click="chooseChip(chip.id)"
           >
-            <img
-              :src="chipImage"
-              alt=""
-              class="size-full object-contain"
-              :style="{ filter: 'hue-rotate(' + chip.hue + 'deg)' }"
-            />
-            <span
-              class="absolute inset-0 grid place-items-center text-[18px] font-bold text-[#eee]"
-              >{{ formatChipAmount(chip.value) }}</span
-            >
+            <ChipFace :color="chip.color" :value="chip.value" class="size-full text-[18px]" />
           </button>
         </section>
 
@@ -429,6 +421,8 @@
       variant="pc"
       :games="hashGames"
       :initial-game-code="selectedHashGameCode"
+      :currency-code="currentCurrencyCode"
+      :game-info="currentGameInfo"
     />
     <!-- 飞筹码动画 -->
     <Teleport to="body">
@@ -457,7 +451,6 @@ import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
 import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
 import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
 import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
-import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
 import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
 import HistoryArrowIcon from '@/static/svg/hash_game/jiantou_you.svg?component'
@@ -470,11 +463,11 @@ import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
 import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
 import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
 import ResultArrowIcon2 from '@/static/svg/hash_game/zhixiang2.svg?component'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import HashGameBetDetailPopup from './bet-detail.vue'
 import BetChip from './components/BetChip.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
-import { formatChipAmount } from './components/chipMotion'
+import ChipFace from './components/ChipFace.vue'
 import FlyingChip from './components/FlyingChip.vue'
 import HashGameChat from './components/HashGameChat.vue'
 import HashPcChatComposer from './components/HashPcChatComposer.vue'
@@ -494,6 +487,7 @@ const {
   hashGameName,
   selectedHashGameCode,
   selectHashGame,
+  currentGameInfo,
   roadmapMode,
   chipOptions,
   selectedChip,
@@ -544,9 +538,21 @@ const openRecentBets = () => {
   recentBetsOpen.value = true
   void loadRecentBets()
 }
-const { viewport: gameTabsRef, dragging: isDraggingGameTabs } = useHorizontalScroll({
+const {
+  viewport: gameTabsRef,
+  dragging: isDraggingGameTabs,
+  centerItem: centerGameTab
+} = useHorizontalScroll({
   centerOnClick: true
 })
+watch(
+  [gameTabsRef, selectedHashGameCode],
+  ([viewport]) => {
+    const activeTab = viewport?.querySelector<HTMLElement>('[aria-pressed="true"]')
+    if (activeTab) void centerGameTab(activeTab)
+  },
+  { flush: 'post' }
+)
 const { viewport: chipTrackRef, dragging: isDraggingChips } = useHorizontalScroll({
   centerOnClick: true
 })

@@ -6,6 +6,17 @@
         <div class="bg-bg-2 rounded-xl p-4">
           <nav class="space-y-2">
             <div
+              :class="getPromotionGroupDesktopTabClass(isComprehensiveActive)"
+              @click="goGroup(PROMOTION_COMPREHENSIVE_GROUP_CODE)"
+            >
+              <PromotionGroupIcon
+                :src="comprehensiveIcon"
+                :active="isComprehensiveActive"
+                class="h-6 w-6"
+              />
+              <span class="text-base">{{ $t('activityPromotions.comprehensive') }}</span>
+            </div>
+            <div
               v-for="group in groups"
               :key="group.rowId"
               :class="
@@ -36,9 +47,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ActivityGroupItem } from '@/api/interface/activity'
 import CommonFooter from '@/components/commonFooter.vue'
+import comprehensiveIcon from '@/static/img/explore/comprehensive.svg?url'
 import PromotionGroupIcon from './components/PromotionGroupIcon.vue'
 import { navigateTo } from '@/utils/router'
 import {
@@ -46,7 +59,9 @@ import {
   getPromotionGroupDesktopTabClass,
   getPromotionGroupIcon,
   getPromotionGroupRouteKey,
-  isPromotionGroupActive
+  isPromotionComprehensiveActive,
+  isPromotionGroupActive,
+  PROMOTION_COMPREHENSIVE_GROUP_CODE
 } from './shared'
 
 const props = defineProps<{
@@ -55,6 +70,7 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
+const isComprehensiveActive = computed(() => isPromotionComprehensiveActive(props.activeGroupCode))
 
 const isPromotionsDetailRoute = () => {
   const routeName = String(route.name || '').replace(/^Locale/, '')

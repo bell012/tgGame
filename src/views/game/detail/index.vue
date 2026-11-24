@@ -50,10 +50,10 @@ import { useGameStore } from '@/stores/game'
 import { useLocaleStore } from '@/stores/locale'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
 import BetsList from './common/bets-list/index.vue'
 import GameList from './common/game-list/index.vue'
 import RecentGames from './common/recent-games/index.vue'
@@ -61,6 +61,8 @@ import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
 import H5Header from './h5/header.vue'
 import {
+  calculateGameDetailRtp,
+  parseCollectionsCount,
   findGameDetailItemByIdentity,
   isValidGameDetailResult,
   normalizeGameDetailRecord,
@@ -109,7 +111,7 @@ const API_REQUEST_OPTIONS = {
 
 // ===== 组合式依赖 =====
 const { t } = useI18n()
-const route = useRoute()
+const props = defineProps<{ rowId: string }>()
 const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
 const userStore = useUserStore()
@@ -124,10 +126,15 @@ const currentGameDetailState = ref<CurrentGameDetail>(null)
 
 /** 与 getCommentSubject.result.isCollections 同步，供收藏星标 inject */
 const gameDetailSubjectIsCollections = ref<boolean | null>(null)
+const gameDetailCollectionsCount = ref<number | null>(null)
+const gameDetailRtp = ref<number | null>(null)
+let favoriteRequestVersion = 0
 
 // ===== provide =====
 provide('game-detail-game-data', gameData)
 provide('game-detail-subject-is-collections', gameDetailSubjectIsCollections)
+provide('game-detail-collections-count', gameDetailCollectionsCount)
+provide('game-detail-rtp', gameDetailRtp)
 
 // ===== 滚动条状态 =====
 const isBrowserEnv = typeof window !== 'undefined' && typeof document !== 'undefined'
@@ -163,39 +170,6 @@ const hideParentScrollbar = () => {
   }
 }
 
-const resetScrollToTop = () => {
-  if (!isBrowserEnv) {
-    // iOS / WebView fallback
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    return
-  }
-
-  if (isMobile.value && detailPageRef.value) {
-    detailPageRef.value.scrollTop = 0
-    return
-  }
-
-  let currentParent = detailPageRef.value?.parentElement ?? null
-  while (currentParent) {
-    const { overflowY } = window.getComputedStyle(currentParent)
-    const isScrollable =
-      (overflowY === 'auto' || overflowY === 'scroll') &&
-      currentParent.scrollHeight > currentParent.clientHeight
-    if (isScrollable) {
-      if (typeof currentParent.scrollTo === 'function') {
-        currentParent.scrollTo({ top: 0, behavior: 'smooth' })
-      } else {
-        currentParent.scrollTop = 0
-      }
-      return
-    }
-    currentParent = currentParent.parentElement
-  }
-
-  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-}
-
 // ===== 工具函数 =====
 const isGameTypeCodeMatched = (targetGameTypeCode: unknown, candidateGameTypeCode: unknown) => {
   const targetCodeList = splitGameTypeCodes(targetGameTypeCode)
@@ -217,7 +191,7 @@ const buildRecommendedPageQuery = (pageTitle: string) => {
 }
 
 // ===== 派生状态 =====
-const rowId = computed(() => normalizeGameDetailValue(route.params.rowId))
+const rowId = computed(() => normalizeGameDetailValue(props.rowId))
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
 const currentGameRowId = computed(() =>
   normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
@@ -244,16 +218,23 @@ const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
 const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.value.length > 0)
 
 provide('game-detail-current-game', currentGameDetail)
+provide('game-detail-row-id', rowId)
 
 // ===== 数据同步 =====
 const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
-  gameDetailSubjectIsCollections.value = null
-  if (!gameIdRaw) {
+  if (!gameIdRaw || gameIdRaw !== rowId.value) {
     return
   }
 
   userStore.syncStoredUserData()
+  const version = ++favoriteRequestVersion
+  const session = userStore.userInfo?.tradeToken
   const memberRowIdNum = Number(userStore.acctInfo?.memberRowId)
+  const isCurrent = () =>
+    version === favoriteRequestVersion &&
+    gameIdRaw === rowId.value &&
+    session === userStore.userInfo?.tradeToken &&
+    Object.is(memberRowIdNum, Number(userStore.acctInfo?.memberRowId))
 
   try {
     const res = await Api.game.getCommentSubject(
@@ -269,17 +250,22 @@ const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
         showErrorToast: false
       }
     )
-    const raw = (res?.result as { isCollections?: unknown } | null | undefined)?.isCollections
-    gameDetailSubjectIsCollections.value = readIsCollections(raw)
+    if (!isCurrent()) return
+    ensureApiBusinessSuccess(res)
+    gameDetailSubjectIsCollections.value = readIsCollections(res.result?.isCollections)
+    gameDetailCollectionsCount.value = parseCollectionsCount(res.result?.collectionsCount)
   } catch {
-    gameDetailSubjectIsCollections.value = null
+    if (isCurrent()) gameDetailCollectionsCount.value = null
   }
 }
+provide('game-detail-refresh-favorite', () => syncFavoriteFromCommentSubject(rowId.value))
 
 // ===== 数据请求 =====
 const fetchCurrentGameDetail = async () => {
   const targetRowId = rowId.value
+  favoriteRequestVersion += 1
   gameDetailSubjectIsCollections.value = null
+  gameDetailCollectionsCount.value = null
 
   try {
     const res = await Api.game.queryGameDetails({ rowId: targetRowId }, API_REQUEST_OPTIONS)
@@ -302,7 +288,7 @@ const fetchCurrentGameDetail = async () => {
   } finally {
     await nextTick()
     hideParentScrollbar()
-    resetScrollToTop()
+    if (isMobile.value && detailPageRef.value) detailPageRef.value.scrollTop = 0
     if (targetRowId) {
       void syncFavoriteFromCommentSubject(targetRowId)
     }
@@ -332,6 +318,20 @@ const openCurrentCategoryAllGamesPage = () => {
 
 // ===== 监听 =====
 watch(
+  () => [currentGameDetail.value?.rtpMin, currentGameDetail.value?.rtpMax] as const,
+  ([min, max]) => {
+    gameDetailRtp.value = calculateGameDetailRtp(min, max)
+  },
+  { immediate: true }
+)
+
+watch([() => userStore.userInfo?.tradeToken, () => userStore.acctInfo?.memberRowId], () => {
+  gameDetailSubjectIsCollections.value = null
+  gameDetailCollectionsCount.value = null
+  void syncFavoriteFromCommentSubject(rowId.value)
+})
+
+watch(
   [rowId],
   () => {
     void fetchCurrentGameDetail()
@@ -357,6 +357,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  favoriteRequestVersion += 1
   clearParentScrollbarHidden()
 })
 </script>

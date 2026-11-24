@@ -57,6 +57,8 @@ import {
 import pageStyle2 from '../components/pageStyle2.vue'
 import pageStyle3 from '../components/pageStyle3.vue'
 import pageStyle4 from '../components/pageStyle4.vue'
+import pageStyleHash from '../components/pageStyleHash.vue'
+import { HASH_CASINO_TAB_CODE } from '@/stores/hashGameCatalog'
 import CommonFooter from '@/components/commonFooter.vue'
 
 interface Props {
@@ -80,6 +82,8 @@ const currentTabCode = computed(() => getGameListTabCodeFromSlug(props.tabKey))
 const currentPageMode = computed(() => getCasinoPageMode(currentTabCode.value))
 const currentPageComponent = computed(() => {
   switch (currentPageMode.value) {
+    case 'hash':
+      return pageStyleHash
     case 'pageStyle2':
       return pageStyle2
     case 'pageStyle4':
@@ -106,6 +110,7 @@ const normalizedProviderCodes = computed(() => {
     .filter(Boolean)
 })
 const currentPageProps = computed(() => {
+  if (currentPageMode.value === 'hash') return {}
   const queryOptions = getCasinoQueryOptions(currentTabCode.value, {
     isMobile: isMobile.value
   })
@@ -140,6 +145,8 @@ const pageTitle = computed(() => {
   }
 
   switch (currentTabCode.value) {
+    case HASH_CASINO_TAB_CODE:
+      return t('menu.hashGame')
     case 'originals':
       return t('casino.tg_originals')
     case 'hot_games':

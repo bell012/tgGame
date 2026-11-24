@@ -1,8 +1,19 @@
 <template>
-  <div class="flex min-h-0 flex-1 flex-col bg-bg-5">
-    <RedPacketSubHeader :title="t('redPacketPanel.myRedemptions')" @back="emit('back')" />
+  <div class="relative flex min-h-0 flex-1 flex-col bg-bg-5">
+    <RedPacketSubHeader :title="t('redPacketPanel.myRedemptions')" @back="emit('back')">
+      <template #right>
+        <button
+          type="button"
+          aria-label="filter"
+          class="flex size-[30px] items-center justify-center rounded-[8px] bg-opacity-5"
+          @click="showFilter = true"
+        >
+          <SiftIcon class="size-[14px] text-text-1" />
+        </button>
+      </template>
+    </RedPacketSubHeader>
 
-    <div class="relative flex shrink-0 flex-col gap-[16px] px-[16px] pt-[16px]">
+    <div class="relative flex shrink-0 px-[16px] pt-[16px]">
       <div class="flex items-center gap-[8px]">
         <span class="text-[14px] font-[700] leading-[17px] text-text-1">
           {{ t('redPacketPanel.totalRedeemed') }}
@@ -11,43 +22,6 @@
           {{ totalMoney.toFixed(2) }}
         </span>
       </div>
-
-      <div class="flex items-center gap-[16px]">
-        <button
-          v-for="dropdown in dropdowns"
-          :key="dropdown.key"
-          type="button"
-          class="flex h-[38px] min-w-0 flex-1 items-center justify-between gap-[8px] rounded-[8px] border border-opacity-10 bg-mask-20 px-[12px]"
-          @click="toggleDropdown(dropdown.key)"
-        >
-          <span class="truncate text-[14px] leading-[20px] text-text-1">{{ dropdown.label }}</span>
-          <DropdownArrow
-            class="size-[24px] shrink-0 transition-transform"
-            :class="openDropdown === dropdown.key ? 'rotate-180' : ''"
-          />
-        </button>
-      </div>
-
-      <template v-if="activeDropdown">
-        <div class="fixed inset-0 z-10" @click="openDropdown = null" />
-        <ul
-          class="absolute top-[calc(100%+9px)] z-20 flex w-[240px] flex-col rounded-[8px] border border-opacity-5 bg-bg-5 p-[12px]"
-          :class="activeDropdown.key === 'type' ? 'left-[16px]' : 'right-[16px]'"
-        >
-          <li v-for="option in activeDropdown.options" :key="option.value">
-            <button
-              type="button"
-              class="flex w-full items-center justify-between rounded-[8px] p-[12px] text-[14px] leading-[20px] text-text-1"
-              :class="option.selected ? 'bg-bg-3 font-[700]' : ''"
-              @click="activeDropdown.select(option.value)"
-            >
-              <span>{{ option.label }}</span>
-              <CheckOnIcon v-if="option.selected" class="size-[16px]" />
-              <CheckOffIcon v-else class="size-[16px]" />
-            </button>
-          </li>
-        </ul>
-      </template>
     </div>
 
     <div
@@ -82,6 +56,14 @@
 
       <div ref="sentinelRef" class="h-px shrink-0" />
     </div>
+
+    <FilterPopup
+      v-model:visible="showFilter"
+      v-model="filterValues"
+      :contained="props.displayMode === 'pc'"
+      :filter-groups="filterGroups"
+      @apply="handleFilterApply"
+    />
   </div>
 </template>
 
@@ -89,11 +71,11 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RedEnvelopeItem, RedEnvelopeType } from '@/api/interface/red-envelope'
-import CheckOffIcon from '@/static/svg/red-packet/check-off.svg?component'
-import CheckOnIcon from '@/static/svg/red-packet/check-on.svg?component'
-import DropdownArrow from '@/static/svg/red-packet/dropdown-arrow.svg?component'
+import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
+import SiftIcon from '@/static/svg/sift.svg?component'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { formatFullDateTime, resolveRedPacketName } from '../format'
+import { type RedPacketDisplayMode } from '../useRedPacketList'
 import {
   MEMBER_RECORD_PERIODS,
   RED_ENVELOPE_TYPES,
@@ -103,7 +85,9 @@ import {
 import RedPacketListStatus from './RedPacketListStatus.vue'
 import RedPacketSubHeader from './RedPacketSubHeader.vue'
 
-type DropdownKey = 'type' | 'period'
+const props = withDefaults(defineProps<{ displayMode?: RedPacketDisplayMode }>(), {
+  displayMode: 'h5'
+})
 
 const emit = defineEmits<{ back: [] }>()
 
@@ -112,80 +96,62 @@ const { t, locale } = useI18n()
 const listRef = ref<HTMLElement | null>(null)
 const sentinelRef = ref<HTMLElement | null>(null)
 
-const selectedType = ref<RedEnvelopeType | null>(null)
+const selectedType = ref<RedEnvelopeType>(1)
 const selectedPeriod = ref<MemberRecordPeriod>('all')
-const openDropdown = ref<DropdownKey | null>(null)
+const showFilter = ref(false)
+
+const filterValues = ref<Record<string, string>>({
+  period: 'all',
+  type: '1'
+})
 
 const { list, totalMoney, loading, error, retry } = useMemberRecords({
   filters: () => ({
-    redEnvelopeType: selectedType.value ?? undefined,
+    redEnvelopeType: selectedType.value,
     period: selectedPeriod.value
   }),
   sentinel: sentinelRef,
   root: listRef
 })
 
-const languageCode = computed(() => getStorageLanguageCode(String(locale.value)))
+const filterGroups = computed<FilterGroup[]>(() => [
+  {
+    key: 'period',
+    title: t('redPacketPanel.filterDate'),
+    columns: 3,
+    options: MEMBER_RECORD_PERIODS.map(period => ({
+      value: period,
+      label: t(`redPacketPanel.period.${period}`)
+    }))
+  },
+  {
+    key: 'type',
+    title: t('redPacketPanel.filterType'),
+    columns: 2,
+    options: RED_ENVELOPE_TYPES.map(type => ({
+      value: String(type),
+      label: t(`redPacketPanel.type.${type}`)
+    }))
+  }
+])
 
-const typeLabel = (type: RedEnvelopeType | null) =>
-  type === null ? t('redPacketPanel.allType') : t(`redPacketPanel.type.${type}`)
+const languageCode = computed(() => getStorageLanguageCode(String(locale.value)))
 
 const getTypeLabel = (record: RedEnvelopeItem) =>
   resolveRedPacketName(record, languageCode.value, t)
 
-interface DropdownOption {
-  value: string
-  label: string
-  selected: boolean
-}
-
-const dropdownConfig = computed(() => ({
-  type: {
-    label: typeLabel(selectedType.value),
-    options: [null, ...RED_ENVELOPE_TYPES].map(type => ({
-      value: String(type ?? ''),
-      label: typeLabel(type),
-      selected: selectedType.value === type
-    })),
-    select: (value: string) => {
-      selectedType.value = value ? (Number(value) as RedEnvelopeType) : null
-    }
-  },
-  period: {
-    label:
-      selectedPeriod.value === 'all'
-        ? t('redPacketPanel.allTime')
-        : t(`redPacketPanel.period.${selectedPeriod.value}`),
-    options: MEMBER_RECORD_PERIODS.map(period => ({
-      value: period,
-      label: t(`redPacketPanel.period.${period}`),
-      selected: selectedPeriod.value === period
-    })),
-    select: (value: string) => {
-      selectedPeriod.value = value as MemberRecordPeriod
-    }
+const handleFilterApply = (values: Record<string, string | string[]>) => {
+  const period = values.period
+  const type = values.type
+  if (typeof period === 'string') {
+    selectedPeriod.value = period as MemberRecordPeriod
   }
-}))
-
-const dropdowns = computed(() =>
-  (['type', 'period'] as const).map(key => ({ key, label: dropdownConfig.value[key].label }))
-)
-
-const activeDropdown = computed(() => {
-  const key = openDropdown.value
-  if (!key) return null
-  const config = dropdownConfig.value[key]
-  return {
-    key,
-    options: config.options as DropdownOption[],
-    select: (value: string) => {
-      config.select(value)
-      openDropdown.value = null
-    }
+  if (typeof type === 'string') {
+    selectedType.value = Number(type) as RedEnvelopeType
   }
-})
-
-const toggleDropdown = (key: DropdownKey) => {
-  openDropdown.value = openDropdown.value === key ? null : key
+  filterValues.value = {
+    period: typeof period === 'string' ? period : filterValues.value.period,
+    type: typeof type === 'string' ? type : filterValues.value.type
+  }
 }
 </script>

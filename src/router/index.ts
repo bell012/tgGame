@@ -147,6 +147,9 @@ const baseRoutes: RouteRecordRaw[] = [
     path: 'hash-game',
     name: 'hashGame',
     component: () => import('@/views/hash_game/index.vue'),
+    props: route => ({
+      gameCode: typeof route.query.gameCode === 'string' ? route.query.gameCode : undefined
+    }),
     meta: {
       title: 'Hash Games',
       slideTransition: true, // 启用滑动动画
@@ -478,11 +481,13 @@ const baseRoutes: RouteRecordRaw[] = [
     path: 'game/:rowId',
     name: 'gameDetail',
     component: () => import('@/views/game/detail/index.vue'),
+    props: route => ({ rowId: route.params.rowId }),
     meta: {
       title: '游戏详情',
       description: '游戏详情',
       // requiresAuth: true,
       mobile: {
+        transition: 'page-scale',
         hideBottomBar: true,
         hideTopNav: true
       }

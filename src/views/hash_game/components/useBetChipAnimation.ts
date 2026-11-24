@@ -3,7 +3,6 @@ import chipSoundUrl from '@/static/mp3/hash/chouma.mp3?url'
 import type { HashGameBetChip } from '../useHashGameBetting'
 import type { ChipOrigin } from './chipMotion'
 
-type LandedChip = { id: number; amount: number; filter: string }
 type ChipFlight = {
   id: number
   origin: ChipOrigin
@@ -24,14 +23,13 @@ export function useBetChipAnimation(options: {
   const chipStackStep = (8 / 60) * options.slotSize
   const chipFlights = ref<ChipFlight[]>([])
   let latestChipId = Math.max(0, ...options.chips.value.map(chip => chip.id))
-  const chipFilter = (hue: number) => `hue-rotate(${hue}deg)`
   const landedChips = computed(() => {
     const flyingIds = new Set(chipFlights.value.map(flight => flight.id))
-    const stacks: Record<string, LandedChip[]> = {}
+    const stacks: Record<string, HashGameBetChip[]> = {}
     for (const chip of options.chips.value) {
       if (flyingIds.has(chip.id)) continue
       const stack = stacks[chip.option] ?? []
-      stack.push({ id: chip.id, amount: chip.amount, filter: chipFilter(chip.hue) })
+      stack.push(chip)
       stacks[chip.option] = stack.slice(-maxVisibleChips)
     }
     return stacks
@@ -68,7 +66,7 @@ export function useBetChipAnimation(options: {
         x: sourceRect.left + sourceRect.width / 2,
         y: sourceRect.top + sourceRect.height / 2,
         size: Math.min(sourceRect.width, sourceRect.height),
-        filter: chipFilter(chip.hue)
+        color: chip.color
       },
       x: stackRect.left + stackRect.width / 2,
       y:

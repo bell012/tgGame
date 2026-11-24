@@ -2,6 +2,7 @@ import Api from '@/api'
 import type { CollectionsSubjectForm } from '@/api/interface/game'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { useUserStore } from '@/stores/user'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { computed, inject, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -36,6 +37,8 @@ export const useGameFavorite = () => {
   )
 
   const isFavorite = ref(false)
+  const isUpdating = ref(false)
+  const refreshFavorite = inject<(() => Promise<void>) | null>('game-detail-refresh-favorite', null)
 
   const subjectIsCollectionsRef = inject<Ref<boolean | null> | null>(
     'game-detail-subject-is-collections',
@@ -59,6 +62,7 @@ export const useGameFavorite = () => {
   )
 
   const toggleFavorite = async () => {
+    if (isUpdating.value) return isFavorite.value
     if (!requireLogin()) {
       return false
     }
@@ -76,26 +80,47 @@ export const useGameFavorite = () => {
     }
 
     const nextValue = !isFavorite.value
+    const session = userStore.userInfo?.tradeToken
     const payload: CollectionsSubjectForm = {
       memberRowId,
       status: nextValue ? 0 : 1,
       gameId
     }
 
+    isUpdating.value = true
     try {
-      await Api.game.collectionsSubject(payload)
+      const response = await Api.game.collectionsSubject(payload)
+      if (!response || typeof response !== 'object') return isFavorite.value
+      ensureApiBusinessSuccess({
+        code:
+          'code' in response &&
+          (typeof response.code === 'string' || typeof response.code === 'number')
+            ? response.code
+            : undefined,
+        success: 'success' in response && response.success === true
+      })
+      if (
+        gameId !== resolveNumericGameId(route.params.rowId, currentGameDetail.value) ||
+        session !== userStore.userInfo?.tradeToken ||
+        memberRowId !== Number(userStore.acctInfo?.memberRowId)
+      )
+        return isFavorite.value
       isFavorite.value = nextValue
       if (subjectIsCollectionsRef) {
         subjectIsCollectionsRef.value = nextValue
       }
+      await refreshFavorite?.()
       return nextValue
     } catch {
       return isFavorite.value
+    } finally {
+      isUpdating.value = false
     }
   }
 
   return {
     isFavorite,
+    isUpdating,
     toggleFavorite
   }
 }

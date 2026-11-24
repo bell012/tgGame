@@ -1,108 +1,36 @@
 <template>
-  <div class="currency-toolbar p-[12px] rounded-b-[10px] relative">
-    <div class="flex justify-between items-center">
-      <button type="button" class="icon-trigger" @click="liveStateVisibleClick">
-        <LineIcon class="toolbar-icon" />
-      </button>
-      <div class="flex justify-end items-center gap-[14px] cursor-pointer">
-        <button type="button" class="icon-trigger" @click="toggleStar">
-          <SmartImage v-if="starActived" alt="" class="size-[16px]" :src="StarActiveIcon" />
-          <StarIcon v-else class="toolbar-icon" />
-        </button>
-        <button type="button" class="icon-trigger" @click="toggleLove">
-          <SmartImage v-if="loveActived" alt="" class="size-[16px]" :src="LoveActiveIcon" />
-          <LoveIcon v-else class="toolbar-icon" />
-        </button>
-        <button type="button" class="icon-trigger" @click="shareVisibleClick">
-          <TgIcon class="toolbar-icon" />
-        </button>
-      </div>
-    </div>
-    <Teleport to="body" v-if="isMobile">
-      <live-state-popup v-model:visible="liveStateVisible" />
-    </Teleport>
-    <live-state-popup v-else class="desktop-popup" v-model:visible="liveStateVisible" desktop />
-
-    <Teleport to="body" v-if="isMobile">
-      <share-popup v-model:visible="shareVisible" />
-    </Teleport>
-    <share-popup v-else class="desktop-popup" v-model:visible="shareVisible" desktop />
+  <div class="flex items-center gap-[10px] rounded-b-[10px] bg-bg-2 p-3">
+    <CurrencySelect v-if="isLogin" class="min-w-0 flex-[190]" />
+    <button
+      type="button"
+      class="flex min-h-[35px] min-w-0 items-center justify-center gap-1 rounded-lg bg-[image:var(--color-play-gradient)] px-2 py-1 text-[13px] font-semibold leading-4 text-text-4 shadow-[var(--color-play-shadow)]"
+      :class="isLogin ? 'flex-[123]' : 'w-full'"
+      @click="handlePlayAction"
+    >
+      <img :src="playIcon" alt="" class="size-4 shrink-0 object-contain" />
+      {{ isLogin ? t('gameDetail.playNow') : t('gameDetail.guestCtaH5') }}
+    </button>
   </div>
 </template>
 <script setup lang="ts">
-import LineIcon from '@/static/svg/game/detail/lines.svg?component'
-import StarIcon from '@/static/svg/game/detail/star.svg?component'
-import LoveIcon from '@/static/svg/game/detail/love.svg?component'
-import TgIcon from '@/static/svg/game/detail/tg.svg?component'
-import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?url'
-import LoveActiveIcon from '@/static/svg/game/detail/love_active.svg?url'
-import { useGameFavorite } from '@/composables/useGameFavorite'
-import { useGameLike } from '@/composables/useGameLike'
-import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
-import { ref } from 'vue'
-import LiveStatePopup from './live-state-popup.vue'
-import SharePopup from './share-popup.vue'
-import { useIsMobile } from '@/composables/useMediaQuery'
-import SmartImage from '@/components/common/SmartImage.vue'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import playIcon from '@/static/img/game/detail/play.png'
+import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
+import { useUserStore } from '@/stores/user'
+import { useAuthModalStore } from '@/stores/authModal'
+import CurrencySelect from '../currency-select/index.vue'
 
-const isMobile = useIsMobile()
-const { requireLogin } = useRequireLoginAction()
-
-const { isFavorite: starActived, toggleFavorite: toggleStar } = useGameFavorite()
-const { isLiked: loveActived, toggleLike: toggleLove } = useGameLike()
-
-const liveStateVisible = ref(false)
-const shareVisible = ref(false)
-
-const liveStateVisibleClick = () => {
-  if (!requireLogin()) {
+const { t } = useI18n()
+const { gamePlay } = useGamePlatformPlay()
+const userStore = useUserStore()
+const authModalStore = useAuthModalStore()
+const isLogin = computed(() => Boolean(userStore.userInfo?.tradeToken))
+const handlePlayAction = () => {
+  if (!isLogin.value) {
+    authModalStore.openLoginModal()
     return
   }
-  liveStateVisible.value = true
-}
-
-const shareVisibleClick = () => {
-  if (!requireLogin()) {
-    return
-  }
-  shareVisible.value = true
+  void gamePlay()
 }
 </script>
-<style lang="scss" scoped>
-.currency-toolbar {
-  background: var(--color-mask-20);
-  border-top: 0.33px solid var(--color-opacity-10);
-}
-
-.icon-trigger {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.toolbar-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--color-icon-level-2);
-  fill: currentColor;
-  stroke: currentColor;
-}
-
-.toolbar-icon :deep(path),
-.toolbar-icon :deep(circle),
-.toolbar-icon :deep(rect) {
-  fill: currentColor;
-  stroke: currentColor;
-}
-
-.desktop-popup {
-  top: calc(100% + 10px);
-  position: absolute;
-  left: 0;
-  width: 100%;
-}
-</style>

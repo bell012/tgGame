@@ -50,7 +50,10 @@
     "confirmBet": "确认",
     "insufficientBalance": "可用余额不足，请充值",
     "betAmountOutOfRange": "投注金额超出单注限额",
+    "minimumBetAmount": "最小投注金额{amount}",
+    "maximumBetAmount": "最大投注金额{amount}",
     "bettingUnavailable": "当前暂不可投注，请稍后再试",
+    "oppositeBetRestricted": "同一期不能同时投注相反选项",
     "betResultUnknown": "暂未收到投注结果，请先查看投注记录，避免重复下注",
     "betSuccess": "投注成功",
     "cancelSuccess": "取消成功",
@@ -345,6 +348,10 @@
     "RecordTime": "记录时间"
   },
   "common": {
+    "retry": "重试",
+    "previous": "上一页",
+    "next": "下一页",
+    "loadFailed": "加载失败，请重试。",
     "loading": "加载中...",
     "loadingMore": "加载更多...",
     "noMoreData": "没有更多了",
@@ -569,6 +576,12 @@
     "view_all": "查看全部"
   },
   "gameDetail": {
+    "liveRtp": "实时 RTP",
+    "realRtp": "实际 RTP",
+    "volatility": "波动性",
+    "maxBonus": "最高奖励",
+    "demo": "Demo",
+    "refreshBalance": "刷新余额",
     "playWithSelectedCurrency": "使用所选币种游玩",
     "selectedCurrency": "所选币种",
     "selectCurrencyTitle": "选择币种",
@@ -2047,6 +2060,7 @@
   "activityPromotions": {
     "title": "活动中心",
     "detailTitle": "活动详情",
+    "comprehensive": "综合",
     "empty": "当前暂无数据",
     "notFound": "未找到该活动"
   },
@@ -2704,10 +2718,11 @@
     "claimedSummary": "已领{claimedCount}份，共{claimedAmount}{currency}",
     "wonTitle": "恭喜获得{amount}{currency}",
     "allGoneTitle": "红包已领完",
+    "pendingTitle": "红包待领取",
     "comeBackTomorrow": "明天再来领红包！",
     "noRecords": "暂无领取记录",
-    "allType": "全部类型",
-    "allTime": "全部时间",
+    "filterDate": "日期选择",
+    "filterType": "按类型筛选",
     "type": {
       "1": "每日红包",
       "2": "充值加赠红包",
@@ -2721,7 +2736,7 @@
       "4": "开启幸运额度"
     },
     "period": {
-      "all": "全部时间",
+      "all": "全部",
       "today": "今日",
       "yesterday": "昨日",
       "last7Days": "近7日",

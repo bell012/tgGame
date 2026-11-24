@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import '@/views/game/detail/styles/colors.css'
 import { resolveGameMaxWinValue } from '@/views/game/detail/shared'
-import { computed, inject, ref, watch, type ComputedRef } from 'vue'
+import { computed, inject, ref, type Ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 type CurrentGameDetail =
@@ -52,33 +52,7 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
 )
 const { t } = useI18n()
 
-const randomRtpValue = ref<number | null>(null)
-
-const parseRtpValue = (value: unknown) => {
-  if (value === null || value === undefined || value === '') {
-    return null
-  }
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-watch(
-  () => [currentGameDetail.value?.rtpMin, currentGameDetail.value?.rtpMax] as const,
-  ([rtpMinRaw, rtpMaxRaw]) => {
-    const rtpMin = parseRtpValue(rtpMinRaw)
-    const rtpMax = parseRtpValue(rtpMaxRaw)
-
-    if (rtpMin === null || rtpMax === null) {
-      randomRtpValue.value = null
-      return
-    }
-
-    const min = Math.min(rtpMin, rtpMax)
-    const max = Math.max(rtpMin, rtpMax)
-    randomRtpValue.value = Math.random() * (max - min) + min
-  },
-  { immediate: true }
-)
+const randomRtpValue = inject<Ref<number | null>>('game-detail-rtp', ref(null))
 
 const formatPercent = (value: number) => `${value.toFixed(2)}%`
 

@@ -83,7 +83,7 @@
         :key="event.image + '-' + index"
         class="col-item rounded-[12px]"
       >
-        <div class="h-full w-full cursor-pointer" @click="handleClick(event.rowId)">
+        <div class="h-full w-full cursor-pointer" @click="openGameFromCard(event.rowId, $event)">
           <div class="relative aspect-[2.12] overflow-hidden rounded-xl bg-layer4">
             <gameErrImg :img="{ src: event.image, maintain: false }" />
           </div>
@@ -95,7 +95,7 @@
 
 <script setup lang="ts">
 import gameErrImg from '@/components/common/gameErrImg.vue'
-import { navigateToName } from '@/utils/router'
+import { openGameFromCard } from '@/utils/gameCardTransition'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 interface EventItem {
@@ -107,9 +107,6 @@ interface Props {
   list?: EventItem[]
   loading?: boolean
 }
-// TODO：点击进入游戏详情页
-const handleClick = (rowId: number) => navigateToName('gameDetail', { params: { id: rowId } })
-
 const props = withDefaults(defineProps<Props>(), {
   list: () => [],
   loading: false

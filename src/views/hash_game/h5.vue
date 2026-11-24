@@ -371,7 +371,7 @@
                     zIndex: layer + 1
                   }"
                 >
-                  <BetChip :amount="chip.amount" :filter="chip.filter" />
+                  <BetChip :amount="chip.amount" :color="chip.color" />
                 </span>
               </span>
               <span class="flex items-baseline justify-center gap-[5px] whitespace-nowrap">
@@ -456,7 +456,7 @@
           >
             <img :src="chipEditorImage" alt="" class="size-full object-contain" />
             <span
-              class="absolute inset-0 grid place-items-center pt-[1px] text-[9px] font-bold text-text-1"
+              class="absolute inset-0 grid place-items-center pt-[1px] text-[9px] font-bold text-[#eee]"
               >{{ t('hashGame.edit') }}</span
             >
           </button>
@@ -473,20 +473,11 @@
               data-scroll-center
               type="button"
               class="relative size-[35px] shrink-0 brightness-[0.7] transition-[filter] duration-[180ms] aria-pressed:brightness-100 motion-reduce:transition-none"
+              :aria-label="String(chip.value)"
               :aria-pressed="selectedChip === chip.value"
-              @click="chooseChip(chip.value)"
+              @click="chooseChip(chip.id)"
             >
-              <img
-                :src="chipImage"
-                alt=""
-                class="block size-full object-contain"
-                :style="{ filter: 'hue-rotate(' + chip.hue + 'deg)' }"
-              />
-              <span
-                class="absolute inset-x-0 bottom-[3px] top-0 grid place-items-center text-text-1 font-[700]"
-                :class="chip.value >= 1000 ? 'text-[10px]' : 'text-[16px]'"
-                >{{ formatChipAmount(chip.value) }}</span
-              >
+              <ChipFace :color="chip.color" :value="chip.value" class="size-full text-[14px]" />
             </button>
           </div>
         </div>
@@ -624,7 +615,6 @@ import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
 import backgroundMusicOnIcon from '@/static/svg/hash_game/beijing_kai.svg?url'
 import CancelIcon from '@/static/svg/hash_game/cancel.svg?component'
-import chipImage from '@/static/svg/hash_game/chouma.svg?url'
 import chipEditorImage from '@/static/svg/hash_game/chouma_bianji.svg?url'
 import ConfirmIcon from '@/static/svg/hash_game/confirm.svg?component'
 import HideArrowIcon from '@/static/svg/hash_game/jiantou_shang.svg?component'
@@ -648,7 +638,7 @@ import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import BetChip from './components/BetChip.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
-import { formatChipAmount } from './components/chipMotion'
+import ChipFace from './components/ChipFace.vue'
 import FlyingChip from './components/FlyingChip.vue'
 import HashChatComposerPopup from './components/HashChatComposerPopup.vue'
 import HashGameChat from './components/HashGameChat.vue'

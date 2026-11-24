@@ -162,11 +162,11 @@
         </p>
 
         <button
-          v-if="isClaimed"
+          v-if="popupLayout.historyTop !== undefined"
           type="button"
           class="absolute left-1/2 flex -translate-x-1/2 items-center gap-[2px] whitespace-nowrap text-[12px] leading-[15px] text-secondary-9"
           :style="{ top: `${popupLayout.historyTop}px` }"
-          @click="emit('history')"
+          @click="emit('history', showState)"
         >
           {{ t('redPacketPanel.claimHistory') }}
           <svg viewBox="0 0 10 10" class="size-[10px]" fill="none" aria-hidden="true">
@@ -229,7 +229,7 @@ interface PopupLayout {
   height: number
   titleTop?: number
   amountTop: number
-  /** 每日红包隐藏金额时的金额区 top，仅进度中和可领取会用到。 */
+  /** 每日红包领取前显示星号时的金额区 top。 */
   hiddenAmountTop?: number
   coinTop: number
   coinLeft: number
@@ -267,7 +267,8 @@ const POPUP_LAYOUT: Record<PopupLayoutKey, PopupLayout> = {
     hiddenAmountTop: 83,
     coinTop: 192,
     coinLeft: 88,
-    buttonTop: 264
+    buttonTop: 264,
+    historyTop: 317
   },
   claimed: {
     height: 360,
@@ -282,6 +283,7 @@ const POPUP_LAYOUT: Record<PopupLayoutKey, PopupLayout> = {
   expired: {
     height: 360,
     amountTop: 38,
+    hiddenAmountTop: 52,
     coinTop: 143,
     coinLeft: 88,
     statusTop: 229,
@@ -290,9 +292,11 @@ const POPUP_LAYOUT: Record<PopupLayoutKey, PopupLayout> = {
   soldOut: {
     height: 360,
     amountTop: 50,
+    hiddenAmountTop: 64,
     coinTop: 143,
     coinLeft: 88,
-    statusTop: 229
+    statusTop: 229,
+    historyTop: 327
   }
 }
 
@@ -320,7 +324,7 @@ const emit = defineEmits<{
   close: []
   navigate: [path: string]
   claimed: [schedule: RedEnvelopeSchedule]
-  history: []
+  history: [showState: RedEnvelopeShowState]
 }>()
 
 const { t, locale } = useI18n()
@@ -345,6 +349,7 @@ const isSoldOut = computed(() => showState.value === SHOW_STATE.soldOut)
 const showTitle = computed(() => hasProgress.value || isClaimable.value || isClaimed.value)
 
 const isDaily = computed(() => isDailyRedEnvelope(props.item))
+// 每日红包（redEnvelopeType === 1）领取前不展示金额；领取后用进度接口或列表里的 amount
 const hideAmount = computed(() => isDaily.value && !isClaimed.value)
 
 const layoutKey = computed<PopupLayoutKey>(() => {
