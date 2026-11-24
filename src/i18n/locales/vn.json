@@ -2066,6 +2066,7 @@
   "activityPromotions": {
     "title": "Trung tâm sự kiện",
     "detailTitle": "Chi tiết hoạt động",
+    "comprehensive": "Tổng hợp",
     "empty": "Hiện chưa có dữ liệu",
     "notFound": "Không tìm thấy sự kiện"
   },

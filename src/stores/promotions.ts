@@ -4,6 +4,7 @@ import Api from '@/api'
 import type { ActivityGroupItem, ActivityListItem } from '@/api/interface/activity'
 import {
   getPromotionGroupRouteKey,
+  isSamePromotionLanguage,
   toPromotionGroupIconUrl
 } from '@/views/activity/promotions/shared'
 import { getLanguageCode } from '@/utils/locale'
@@ -43,7 +44,7 @@ const buildGroups = (list: ActivityGroupItem[], languageCode: string) => {
     }
 
     const groupName = (item.groupName ?? []).filter(
-      entry => entry.languageCode === languageCode && entry.name
+      entry => isSamePromotionLanguage(entry.languageCode, languageCode) && entry.name
     )
     if (!groupName.length) {
       continue

@@ -147,6 +147,9 @@ const baseRoutes: RouteRecordRaw[] = [
     path: 'hash-game',
     name: 'hashGame',
     component: () => import('@/views/hash_game/index.vue'),
+    props: route => ({
+      gameCode: typeof route.query.gameCode === 'string' ? route.query.gameCode : undefined
+    }),
     meta: {
       title: 'Hash Games',
       slideTransition: true, // 启用滑动动画

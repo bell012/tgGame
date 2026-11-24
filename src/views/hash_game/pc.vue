@@ -463,7 +463,7 @@ import SettingsIcon from '@/static/svg/hash_game/shezhi.svg?component'
 import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
 import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
 import ResultArrowIcon2 from '@/static/svg/hash_game/zhixiang2.svg?component'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import HashGameBetDetailPopup from './bet-detail.vue'
 import BetChip from './components/BetChip.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
@@ -538,9 +538,21 @@ const openRecentBets = () => {
   recentBetsOpen.value = true
   void loadRecentBets()
 }
-const { viewport: gameTabsRef, dragging: isDraggingGameTabs } = useHorizontalScroll({
+const {
+  viewport: gameTabsRef,
+  dragging: isDraggingGameTabs,
+  centerItem: centerGameTab
+} = useHorizontalScroll({
   centerOnClick: true
 })
+watch(
+  [gameTabsRef, selectedHashGameCode],
+  ([viewport]) => {
+    const activeTab = viewport?.querySelector<HTMLElement>('[aria-pressed="true"]')
+    if (activeTab) void centerGameTab(activeTab)
+  },
+  { flush: 'post' }
+)
 const { viewport: chipTrackRef, dragging: isDraggingChips } = useHorizontalScroll({
   centerOnClick: true
 })

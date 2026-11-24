@@ -10,33 +10,50 @@
         :right-icon="PromotionRecordIcon"
         @sort="handlePromotionRecordClick"
       />
-      <div
-        v-if="groups.length > 0"
-        ref="mobileTabScrollRef"
-        class="flex gap-2 overflow-x-auto px-[14px] py-3.5 no-scrollbar"
-      >
+      <div class="flex items-center gap-2 px-[14px] py-3.5">
         <button
-          v-for="group in groups"
-          :key="group.rowId"
           type="button"
-          :data-group-code="getPromotionGroupRouteKey(group)"
-          :class="getPromotionGroupMobileTabClass(isPromotionGroupActive(group, activeGroupCode))"
-          @click="switchGroup(getPromotionGroupRouteKey(group))"
+          data-group-code="comprehensive"
+          class="shrink-0"
+          :class="getPromotionGroupMobileTabClass(isComprehensiveActive)"
+          @click="switchGroup(PROMOTION_COMPREHENSIVE_GROUP_CODE)"
         >
           <PromotionGroupIcon
-            v-if="getPromotionGroupIcon(group, activeGroupCode)"
-            :src="getPromotionGroupIcon(group, activeGroupCode)"
-            :active="isPromotionGroupActive(group, activeGroupCode)"
+            :src="comprehensiveIcon"
+            :active="isComprehensiveActive"
             class="h-5 w-5"
           />
-          <span
-            :class="
-              getPromotionGroupMobileTabTextClass(isPromotionGroupActive(group, activeGroupCode))
-            "
-          >
-            {{ getLanguageName(group.groupName) }}
+          <span :class="getPromotionGroupMobileTabTextClass(isComprehensiveActive)">
+            {{ $t('activityPromotions.comprehensive') }}
           </span>
         </button>
+        <div
+          ref="mobileTabScrollRef"
+          class="flex min-w-0 flex-1 gap-2 overflow-x-auto no-scrollbar"
+        >
+          <button
+            v-for="group in groups"
+            :key="group.rowId"
+            type="button"
+            :data-group-code="getPromotionGroupRouteKey(group)"
+            :class="getPromotionGroupMobileTabClass(isPromotionGroupActive(group, activeGroupCode))"
+            @click="switchGroup(getPromotionGroupRouteKey(group))"
+          >
+            <PromotionGroupIcon
+              v-if="getPromotionGroupIcon(group, activeGroupCode)"
+              :src="getPromotionGroupIcon(group, activeGroupCode)"
+              :active="isPromotionGroupActive(group, activeGroupCode)"
+              class="h-5 w-5"
+            />
+            <span
+              :class="
+                getPromotionGroupMobileTabTextClass(isPromotionGroupActive(group, activeGroupCode))
+              "
+            >
+              {{ getLanguageName(group.groupName) }}
+            </span>
+          </button>
+        </div>
       </div>
 
       <div
@@ -143,6 +160,7 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { usePromotionsStore } from '@/stores/promotions'
+import comprehensiveIcon from '@/static/img/explore/comprehensive.svg?url'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import PromotionRecordIcon from '@/static/svg/deposit/record.svg?component'
@@ -158,7 +176,9 @@ import {
   getPromotionGroupMobileTabTextClass,
   getPromotionGroupRouteKey,
   getVisiblePromotionGroups,
+  isPromotionComprehensiveActive,
   isPromotionGroupActive,
+  PROMOTION_COMPREHENSIVE_GROUP_CODE,
   openActivityExternalJump,
   parsePromotionsPath,
   replacePromotionsListUrl,
@@ -191,13 +211,16 @@ const routeActiveGroupCode = computed(() => {
 // 切换语言后同一分组的 rowId 可能变化，选中态和列表请求都使用映射后的当前语言分组 key。
 const activeGroupCode = computed(() => {
   const code = routeActiveGroupCode.value
+  if (!code || isPromotionComprehensiveActive(code)) {
+    return PROMOTION_COMPREHENSIVE_GROUP_CODE
+  }
   const currentCode = promotionsStore.resolveCurrentGroupRouteKey(code) || code
   if (groups.value.some(group => getPromotionGroupRouteKey(group) === currentCode)) {
     return currentCode
   }
-  const firstGroup = groups.value[0]
-  return firstGroup ? getPromotionGroupRouteKey(firstGroup) : ''
+  return PROMOTION_COMPREHENSIVE_GROUP_CODE
 })
+const isComprehensiveActive = computed(() => isPromotionComprehensiveActive(activeGroupCode.value))
 
 const list = ref<ActivityListItem[]>([])
 const loading = ref(false)
@@ -210,6 +233,7 @@ const wasOnPromotionsDetail = ref(false)
 const justRestoredFromDetail = ref(false)
 
 let requestId = 0
+let skipNextRouteReload = false
 
 usePageScrollLock(() => isMobile.value)
 
@@ -245,8 +269,11 @@ const restoreMobileListGroupFromStore = () => {
 }
 
 const loadList = async (page: number, append: boolean) => {
-  const listGroupCode = resolveActivityListGroupCode(groups.value, activeGroupCode.value)
-  if (!listGroupCode) {
+  const isComprehensive = isPromotionComprehensiveActive(activeGroupCode.value)
+  const listGroupCode = isComprehensive
+    ? ''
+    : resolveActivityListGroupCode(groups.value, activeGroupCode.value)
+  if (!isComprehensive && !listGroupCode) {
     list.value = []
     return
   }
@@ -264,7 +291,7 @@ const loadList = async (page: number, append: boolean) => {
     const response = await Api.activity.queryActivityList({
       current: page,
       size: ACTIVITY_LIST_PAGE_SIZE,
-      groupCode: listGroupCode
+      ...(listGroupCode ? { groupCode: listGroupCode } : {})
     })
 
     if (currentRequestId !== requestId) {
@@ -321,7 +348,10 @@ const switchGroup = (groupCode?: string) => {
     replacePromotionsListUrl(groupCode)
     mobileScrollRef.value?.scrollTo({ top: 0 })
     currentPage.value = 1
-    loadList(1, false)
+    // 切到综合时由分组状态监听拉全量列表，避免和这里重复请求。
+    if (!isPromotionComprehensiveActive(groupCode)) {
+      loadList(1, false)
+    }
     return
   }
 
@@ -364,22 +394,28 @@ const openActivity = async (item: ActivityListItem) => {
     return
   }
 
-  const groupCode =
-    activeGroupCode.value ||
-    resolveActivityListGroupCode(groups.value, String(item.groupCode || ''))
-  if (!groupCode) {
+  const detailGroupCode = isComprehensiveActive.value
+    ? resolveActivityListGroupCode(groups.value, String(item.groupCode || '')) ||
+      (groups.value[0] ? getPromotionGroupRouteKey(groups.value[0]) : '')
+    : activeGroupCode.value ||
+      resolveActivityListGroupCode(groups.value, String(item.groupCode || ''))
+  if (!detailGroupCode) {
     return
   }
+
+  const listGroupCode = isComprehensiveActive.value
+    ? PROMOTION_COMPREHENSIVE_GROUP_CODE
+    : detailGroupCode
 
   if (isMobile.value) {
-    promotionsStore.setH5ListGroupCode(groupCode)
+    promotionsStore.setH5ListGroupCode(listGroupCode)
     // 先把列表历史记录同步到当前 tab，避免详情返回时 router 回到初次进入的分组
-    await navigateTo(`/promotions/${groupCode}`, { replace: true })
-    navigateTo(`/promotions/${groupCode}/${item.rowId}`)
+    await navigateTo(`/promotions/${listGroupCode}`, { replace: true })
+    navigateTo(`/promotions/${detailGroupCode}/${item.rowId}`)
     return
   }
 
-  navigateTo(`/promotions/${groupCode}/${item.rowId}`)
+  navigateTo(`/promotions/${detailGroupCode}/${item.rowId}`)
 }
 
 const handleMobileListRouteChange = () => {
@@ -439,6 +475,11 @@ watch(
       return
     }
 
+    if (skipNextRouteReload) {
+      skipNextRouteReload = false
+      return
+    }
+
     if (!isReady.value) {
       isReady.value = true
     }
@@ -455,6 +496,22 @@ watch(
   }
 )
 
+watch(
+  () => promotionsStore.h5ListGroupCode,
+  code => {
+    if (!isMobile.value || !isReady.value || !isPromotionsListRoute()) {
+      return
+    }
+    if (!isPromotionComprehensiveActive(code)) {
+      return
+    }
+
+    replacePromotionsListUrl(PROMOTION_COMPREHENSIVE_GROUP_CODE)
+    mobileScrollRef.value?.scrollTo({ top: 0 })
+    reloadList()
+  }
+)
+
 watch(locale, () => {
   promotionsStore.syncGroupsLanguage()
   if (isReady.value) {
@@ -463,29 +520,29 @@ watch(locale, () => {
 })
 
 onMounted(async () => {
+  const codeFromRoute = String(route.params.groupCode || '')
+  if (isMobile.value && (!codeFromRoute || isPromotionComprehensiveActive(codeFromRoute))) {
+    promotionsStore.setH5ListGroupCode(PROMOTION_COMPREHENSIVE_GROUP_CODE)
+  }
+
   await promotionsStore.loadGroups()
 
-  const codeFromRoute = String(route.params.groupCode || '')
-  const firstGroup = groups.value[0]
-  const defaultCode = firstGroup ? getPromotionGroupRouteKey(firstGroup) : ''
-  const currentCode = promotionsStore.resolveCurrentGroupRouteKey(codeFromRoute) || codeFromRoute
-  const isVisibleGroup = groups.value.some(
-    group => getPromotionGroupRouteKey(group) === currentCode
-  )
-
-  if (!isVisibleGroup && defaultCode) {
-    navigateTo(`/promotions/${defaultCode}`, { replace: true })
-    return
-  }
-
-  if (!codeFromRoute) {
-    return
-  }
+  const resolvedCode = isPromotionComprehensiveActive(codeFromRoute)
+    ? PROMOTION_COMPREHENSIVE_GROUP_CODE
+    : promotionsStore.resolveCurrentGroupRouteKey(codeFromRoute) || codeFromRoute
+  const isKnownGroup =
+    isPromotionComprehensiveActive(resolvedCode) ||
+    groups.value.some(group => getPromotionGroupRouteKey(group) === resolvedCode)
+  const initialCode =
+    !codeFromRoute || !isKnownGroup ? PROMOTION_COMPREHENSIVE_GROUP_CODE : resolvedCode
 
   if (isMobile.value) {
-    promotionsStore.setH5ListGroupCode(
-      promotionsStore.resolveCurrentGroupRouteKey(codeFromRoute) || codeFromRoute
-    )
+    promotionsStore.setH5ListGroupCode(initialCode)
+  }
+
+  if (initialCode !== codeFromRoute) {
+    skipNextRouteReload = true
+    navigateTo(`/promotions/${initialCode}`, { replace: true })
   }
 
   isReady.value = true
@@ -493,7 +550,7 @@ onMounted(async () => {
 
   if (isMobile.value) {
     void nextTick(() => {
-      scrollActiveTabIntoView(codeFromRoute)
+      scrollActiveTabIntoView(initialCode)
     })
   }
 })

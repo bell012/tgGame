@@ -199,7 +199,8 @@ const getPlayerCount = (game: HashGameLotteryGame) => {
   const count = game.onlineCount
   return typeof count === 'number' && Number.isFinite(count) && count >= 0 ? count : null
 }
+// 哈希游戏跳转进入目标游戏
 const handleGameClick = (game: HashGameLotteryGame) => {
-  console.log('Hash game selected', { gameCode: game.gameCode, gameName: game.gameName })
+  void navigateTo('/hash-game', { query: { gameCode: game.gameCode } })
 }
 </script>
