@@ -1,10 +1,13 @@
 <template>
   <div class="mt-[10px]">
-    <div class="relative aspect-[1041/592]">
+    <div ref="placeholderRef" class="relative aspect-[1041/592]">
       <div
+        ref="playerRef"
         class="overflow-hidden bg-bg-1"
         :class="
-          fullscreen ? 'fixed inset-0 z-[10000] h-dvh w-full' : 'absolute inset-0 rounded-t-[10px]'
+          displayFullscreen
+            ? 'fixed inset-0 z-[10000] h-dvh w-full'
+            : 'absolute inset-0 rounded-t-[10px]'
         "
       >
         <GameDetailPreview class="size-full" :name="previewName" :image="previewImage" />
@@ -37,7 +40,7 @@
           :disabled="busy || leaving"
           :frame-loading="frameLoading"
           :change-currency="changeCurrency"
-          @exit="requestExit"
+          @exit="openExitPrompt"
           @collapse="collapseGame"
         />
       </div>
@@ -126,7 +129,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useUserStore } from '@/stores/user'
@@ -136,6 +139,7 @@ import GameDetailPreview from '../common/GameDetailPreview.vue'
 import CurrencyBar from './currency-bar/index.vue'
 import GameFloatingControls from './GameFloatingControls.vue'
 import { useEmbeddedGame } from './useEmbeddedGame'
+import { useGameExpandAnimation } from './useGameExpandAnimation'
 
 defineProps<{ previewName?: string; previewImage?: string }>()
 const { t } = useI18n()
@@ -159,8 +163,16 @@ const {
   failFrameLoad,
   answerExit,
   collapseGame,
-  requestExit
+  openExitPrompt
 } = useEmbeddedGame()
+const placeholderRef = ref<HTMLElement | null>(null)
+const playerRef = ref<HTMLElement | null>(null)
+const { displayFullscreen } = useGameExpandAnimation({
+  fullscreen,
+  placeholder: placeholderRef,
+  player: playerRef,
+  onFullscreenChange: value => emit('fullscreenChange', value)
+})
 const handlePreviewClick = () => {
   if (!isLogin.value) {
     authModalStore.openLoginModal()
@@ -168,6 +180,5 @@ const handlePreviewClick = () => {
   }
   playGame()
 }
-watch(fullscreen, value => emit('fullscreenChange', value), { flush: 'sync' })
-usePageScrollLock(computed(() => fullscreen.value || showExitDialog.value))
+usePageScrollLock(computed(() => displayFullscreen.value || showExitDialog.value))
 </script>

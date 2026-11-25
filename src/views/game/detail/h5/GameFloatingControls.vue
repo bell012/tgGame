@@ -227,9 +227,13 @@ const toggleMenu = (event: MouseEvent) => {
   expanded.value = !expanded.value
 }
 const activate = (action: 'exit' | 'collapse') => {
+  if (action === 'exit') {
+    // 温馨提示打开时保留已展开的悬浮菜单，不要收成小球。
+    emit('exit')
+    return
+  }
   expanded.value = false
-  if (action === 'exit') emit('exit')
-  else emit('collapse')
+  emit('collapse')
 }
 watch(expanded, scheduleIdle)
 watch(
