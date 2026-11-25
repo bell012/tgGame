@@ -3,10 +3,10 @@
     class="recent-games-container w-full p-[12px] bg-[var(--color-background-level-2)] rounded-[10px] mt-[14px]"
   >
     <!-- 顶部开关 -->
-    <TopToggle />
-    <transition name="open-fade">
-      <div v-if="isOpen">
-        <div v-if="gameTypeTagList.length" class="recent-games-type-tags">
+    <TopToggle v-if="isMobile" />
+    <transition name="open-fade" :css="isMobile">
+      <div v-if="isContentVisible">
+        <div v-if="isMobile && gameTypeTagList.length" class="recent-games-type-tags">
           <div
             v-for="(typeName, index) in gameTypeTagList"
             :key="`${typeName}-${index}`"
@@ -16,13 +16,13 @@
           </div>
         </div>
         <!-- 面板信息 -->
-        <Rginfo />
+        <Rginfo v-if="isMobile" />
         <!-- Tab -->
         <div
-          class="recent-games-tabs flex h-[42px] justify-between items-center mb-[10px] mt-[20px] p-[4px] max-w-[500px]"
+          class="recent-games-tabs flex h-[42px] justify-between items-center mb-[10px] p-[4px] max-w-[500px]"
           :class="[
             { 'recent-games-tabs-light': isLightTheme, 'recent-games-tabs-mobile': isMobile },
-            isMobile ? 'rounded-[7px]' : PC_SEGMENTED_TABS_CLASS
+            isMobile ? 'rounded-[7px] mt-[20px]' : PC_SEGMENTED_TABS_CLASS
           ]"
         >
           <div
@@ -118,6 +118,7 @@ const tabValue = ref<TabValue>(TAB_HIGH_WIN)
 const TAB_ORDER: TabValue[] = [TAB_HIGH_WIN, TAB_LUCKY_WIN, TAB_REVIEW]
 const slideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
 const isOpen = ref(false)
+const isContentVisible = computed(() => !isMobile.value || isOpen.value)
 provide('isRgOpen', isOpen)
 
 // 排行榜数据状态（按 tab 类型缓存，切换时不展示 loading）
@@ -234,10 +235,10 @@ watch([currentItemCode, currentPlatformCode, currentRequestCurrency], () => {
 })
 
 watch(
-  [tabValue, isOpen, currentItemCode, currentPlatformCode, currentRequestCurrency],
+  [tabValue, isContentVisible, currentItemCode, currentPlatformCode, currentRequestCurrency],
   () => {
-    // 面板关闭时不触发排行榜请求
-    if (!isOpen.value) {
+    // H5 面板关闭时不触发排行榜请求，PC 始终显示。
+    if (!isContentVisible.value) {
       return
     }
     void fetchGameRanList()

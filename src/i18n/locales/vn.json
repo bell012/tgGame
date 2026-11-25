@@ -688,7 +688,11 @@
     "shareLinkCopySuccess": "Đã sao chép liên kết chia sẻ",
     "copyFailedRetry": "Sao chép thất bại，thử lại",
     "exitGameConfirm": "Bạn muốn thoát trò chơi？",
-    "invalidGameUrl": "Liên kết game không hợp lệ"
+    "exitGameForDepositConfirm": "Bạn cần thoát trò chơi hiện tại để nạp tiền. Tiếp tục?",
+    "invalidGameUrl": "Liên kết game không hợp lệ",
+    "collapseGame": "Thu nhỏ game",
+    "exitGame": "Thoát game",
+    "collapseOrExitGame": "Thu nhỏ để giữ game hiện tại. Thoát sẽ kết thúc phiên chơi."
   },
   "common_footer": {
     "top": {

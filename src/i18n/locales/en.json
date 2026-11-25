@@ -1290,7 +1290,11 @@
     "shareLinkCopySuccess": "Share link copied successfully",
     "copyFailedRetry": "Copy failed, please try again",
     "exitGameConfirm": "Are you sure you want to exit the game?",
-    "invalidGameUrl": "Invalid game url"
+    "exitGameForDepositConfirm": "You need to exit the current game to make a deposit. Continue?",
+    "invalidGameUrl": "Invalid game url",
+    "collapseGame": "Minimize game",
+    "exitGame": "Exit game",
+    "collapseOrExitGame": "Minimize to keep your current game. Exiting will end the game session."
   },
   "common_footer": {
     "top": {

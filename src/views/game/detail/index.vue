@@ -6,24 +6,27 @@
         : ''
     "
   >
-    <h5-header v-if="isMobile" class="shrink-0">
+    <h5-header v-if="isMobile" v-show="!isGameFullscreen" class="shrink-0">
       {{ currentGameDetail?.itemName ?? '' }}
     </h5-header>
     <div
       ref="detailPageRef"
       class="detail-page w-full max-w-[1248px] mx-auto pt-[14px] sm:pt-[20px] px-[12px] pb-[20px] sm:pb-[24px]"
-      :class="
-        isMobile
-          ? 'min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain'
-          : ''
-      "
+      :class="[
+        isMobile && 'min-h-0 min-w-0 flex-1',
+        isMobile &&
+          (isGameFullscreen
+            ? 'overflow-visible overscroll-none ![-webkit-overflow-scrolling:auto]'
+            : 'overflow-x-hidden overflow-y-auto overscroll-contain')
+      ]"
     >
       <!-- Loading -->
       <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
         <div class="detail-loading-spinner" />
       </div>
       <!-- Currency Info -->
-      <h5-currency-info v-if="isMobile" /> <desktop-currency-info v-else />
+      <h5-currency-info v-if="isMobile" @fullscreen-change="handleGameFullscreenChange" />
+      <desktop-currency-info v-else />
       <!-- Game Content -->
       <recent-games />
       <!-- 推荐游戏 -->
@@ -120,6 +123,18 @@ const { currentLanguage } = storeToRefs(localeStore)
 
 // ===== 基础状态 =====
 const detailPageRef = ref<HTMLElement | null>(null)
+const isGameFullscreen = ref(false)
+let detailScrollTopBeforeFullscreen = 0
+const handleGameFullscreenChange = async (fullscreen: boolean) => {
+  if (isGameFullscreen.value === fullscreen) return
+  if (fullscreen) detailScrollTopBeforeFullscreen = detailPageRef.value?.scrollTop ?? 0
+  isGameFullscreen.value = fullscreen
+  if (!fullscreen) {
+    await nextTick()
+    if (isMobile.value && !isGameFullscreen.value && detailPageRef.value)
+      detailPageRef.value.scrollTop = detailScrollTopBeforeFullscreen
+  }
+}
 const gameData = ref<GameDataItem[]>([])
 const isGameDataLoading = ref(false)
 const currentGameDetailState = ref<CurrentGameDetail>(null)

@@ -3,19 +3,30 @@
     <transition name="popup-fade">
       <div
         v-show="visible"
-        class="tp-mask fixed z-[9999] inset-0 bg-mask-60-1"
+        class="tp-mask fixed inset-0 bg-mask-60-1"
+        :class="fullscreen ? 'z-[10002]' : 'z-[9999]'"
         @click.self="close"
       />
     </transition>
     <transition :name="desktop ? 'desktop-up-down' : 'up-down'">
-      <div v-show="visible" class="fixed z-[9999] left-0 bottom-0 w-full lg:relative">
-        <div class="tp-panel rounded-t-xl bg-bg-1 px-3 pb-2.5 pt-2.5">
-          <div class="tp-header flex items-center justify-between mb-5" v-if="!desktop">
+      <div
+        v-show="visible"
+        class="fixed left-0 bottom-0 w-full"
+        :class="fullscreen ? 'z-[10002]' : 'z-[9999] lg:relative'"
+      >
+        <div class="tp-panel rounded-t-xl bg-bg-1" :class="fullscreen ? '' : 'px-3 pb-2.5 pt-2.5'">
+          <div
+            class="tp-header flex items-center justify-between"
+            :class="fullscreen ? 'h-12 bg-bg-2 px-3.5' : 'mb-5'"
+            v-if="!desktop"
+          >
             <div></div>
             <div class="text-base font-bold text-text-1">
               {{ t('gameDetail.selectCurrencyTitle') }}
             </div>
             <button
+              type="button"
+              :aria-label="t('common.cancel')"
               @click="close"
               class="flex h-7 w-7 items-center justify-center rounded-md bg-opacity-10"
             >
@@ -23,6 +34,7 @@
             </button>
           </div>
           <CurrencySelectorList
+            :class="fullscreen ? 'px-3.5 pb-2.5 pt-2.5' : ''"
             :visible="props.visible"
             :options="listOptions"
             :selected-value="selectedId"
@@ -32,7 +44,11 @@
             item-class="tp-item mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left"
             selected-item-class="bg-opacity-10 tp-item-selected"
             label-class="text-sm font-[700] text-text-1"
-            trailing-class="text-xs font-[700] text-text-1"
+            :trailing-class="
+              fullscreen ? 'text-xs font-medium text-text-1' : 'text-xs font-[700] text-text-1'
+            "
+            :change-currency="changeCurrency"
+            :disabled="disabled"
             @select="confirmByValue"
           />
         </div>
@@ -55,6 +71,9 @@ type BalanceOptionItem = { code: string; icon: string; balanceText: string }
 const props = defineProps<{
   visible: boolean
   desktop?: boolean
+  fullscreen?: boolean
+  changeCurrency: (value: string) => Promise<boolean>
+  disabled: boolean
 }>()
 
 const emit = defineEmits<{
