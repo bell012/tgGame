@@ -38,7 +38,11 @@
                 {{ t('hashGame.chatUnlockCustom') }}
               </p>
               <p class="m-0 mt-1 text-[12px] leading-[15px] text-text-2">
-                {{ t('hashGame.chatUnlockMessages') }}
+                {{
+                  config?.unlockMode === 'amount'
+                    ? t('hashGame.chatUnlockAmountHint', { amount: config.unlockAmount })
+                    : t('hashGame.chatUnlockHint')
+                }}
               </p>
             </div>
           </div>
@@ -109,9 +113,9 @@ import phrasesIcon from '@/static/svg/hash_game/liaotian.svg?url'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { globalShowToast } from '@/utils/toast'
-import { useI18n } from 'vue-i18n'
 import EmojiPanel from '@/views/chat/chat-public/components/emoji-panel.vue'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { HashChatConfig } from '../chat/config'
 
 const props = defineProps<{ gameCode: string; config: HashChatConfig | null }>()

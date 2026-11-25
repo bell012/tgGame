@@ -104,7 +104,13 @@
 
             <div class="min-w-0 flex-1 text-[12px] text-text-2">
               <p class="text-[13px] text-text-1">{{ t('hashGame.chatUnlockCustom') }}</p>
-              <p>{{ t('hashGame.chatUnlockHint') }}</p>
+              <p>
+                {{
+                  config?.unlockMode === 'amount'
+                    ? t('hashGame.chatUnlockAmountHint', { amount: config.unlockAmount })
+                    : t('hashGame.chatUnlockHint')
+                }}
+              </p>
             </div>
 
             <button

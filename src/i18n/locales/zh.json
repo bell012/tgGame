@@ -119,7 +119,7 @@
     "chatSend": "发送",
     "chatUnlockCustom": "下注后可发送自定义内容。",
     "chatUnlockHint": "任意金额下注即可解锁表情和常用语。",
-    "chatUnlockMessages": "下注后可解锁自定义消息。",
+    "chatUnlockAmountHint": "累计下注满 {amount} 即可解锁表情和常用语。",
     "chatBetNow": "去下注",
     "chatNoExpressions": "暂无常用语。",
     "chatTooFrequent": "发言过于频繁",

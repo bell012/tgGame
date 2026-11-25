@@ -119,7 +119,7 @@
     "chatSend": "Gửi",
     "chatUnlockCustom": "Đặt cược để gửi nội dung tùy chỉnh.",
     "chatUnlockHint": "Đặt cược bất kỳ số tiền nào để mở khóa biểu tượng cảm xúc và câu trả lời nhanh.",
-    "chatUnlockMessages": "Đặt cược để mở khóa tin nhắn tùy chỉnh.",
+    "chatUnlockAmountHint": "Đặt cược tích lũy {amount} để mở khóa biểu tượng cảm xúc và câu trả lời nhanh.",
     "chatBetNow": "Đặt cược ngay",
     "chatNoExpressions": "Chưa có câu trả lời nhanh.",
     "chatTooFrequent": "Bạn gửi tin nhắn quá thường xuyên.",

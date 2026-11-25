@@ -119,7 +119,7 @@
     "chatSend": "Send",
     "chatUnlockCustom": "Bet to send custom content.",
     "chatUnlockHint": "Bet any amount to unlock emojis and phrases.",
-    "chatUnlockMessages": "Bet to unlock custom messages.",
+    "chatUnlockAmountHint": "Bet a total of {amount} to unlock emojis and phrases.",
     "chatBetNow": "Bet now",
     "chatNoExpressions": "No expressions available.",
     "chatTooFrequent": "You're sending messages too frequently.",

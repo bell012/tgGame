@@ -288,10 +288,12 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   const chatConfig = ref<HashChatConfig | null>(null)
 
   /** 按当前游戏读取真实聊天配置及本人投注展示方式。 */
-  const refreshChatConfig = async () => {
+  const refreshChatConfig = async (preserveCurrent = false) => {
     const code = gameCode.value
-    chatConfig.value = null
-    chat.betBroadcastMode.value = 'INDIVIDUAL'
+    if (!preserveCurrent) {
+      chatConfig.value = null
+      chat.betBroadcastMode.value = 'INDIVIDUAL'
+    }
     if (!code) return
     try {
       const response = await queryHashChatConfig(code)
@@ -305,7 +307,7 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   }
 
   /** 进入游戏或切换游戏时读取当前房间的聊天配置。 */
-  watch(gameCode, refreshChatConfig, { immediate: true })
+  watch(gameCode, () => void refreshChatConfig(), { immediate: true })
   const periodsOpen = ref(false)
   const historyPopupOpen = ref(false)
   const periodTriggerRef = ref<HTMLElement | null>(null)
@@ -372,7 +374,12 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
     refreshBalance: async () => Boolean(await userStore.refreshBalance({ force: true })),
     notify: (key, type = 'fail', params) =>
       globalShowToast({ message: params ? t(key, params) : t(key), type }),
-    onPlaced: chat.acceptSuccessfulBet
+    onPlaced: chat.acceptSuccessfulBet,
+    onSuccessfulSubmit: () => {
+      if (!isMobile.value && chatConfig.value?.unlocked === false) {
+        void refreshChatConfig(true)
+      }
+    }
   })
   const selectBet = (option: BetKey) => {
     if (!marketOptions.value.some(market => BET_KEYS[market] === option)) return

@@ -582,7 +582,7 @@
     />
 
     <!-- H5 聊天输入弹窗由 ChatIcon 打开。 -->
-    <HashChatComposerPopup
+    <HashH5ChatComposerPopup
       :visible="chatComposerOpen"
       :config="chatConfig"
       :busy="chatSendBusy"
@@ -641,7 +641,7 @@ import BetChip from './components/BetChip.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import ChipFace from './components/ChipFace.vue'
 import FlyingChip from './components/FlyingChip.vue'
-import HashChatComposerPopup from './components/HashChatComposerPopup.vue'
+import HashH5ChatComposerPopup from './components/HashH5ChatComposerPopup.vue'
 import HashGameChat from './components/HashGameChat.vue'
 import HashSettlementPopup from './components/HashSettlementPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'
