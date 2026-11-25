@@ -8,7 +8,6 @@
         :class="isDesktop ? 'rounded-[24px]' : 'rounded-[10px]'"
       />
     </section>
-
     <template v-if="activity">
       <section
         class="flex items-center justify-center gap-3 text-theme-primary"
@@ -54,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import type { ActivityListItem } from '@/api/interface/activity'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import SectionOrnament from '@/static/svg/activity/promotion-detail-section-ornament.svg?component'
@@ -71,6 +70,14 @@ const props = withDefaults(
 )
 
 const isDesktop = computed(() => props.variant === 'desktop')
+
+watch(
+  () => props.activity,
+  activity => {
+    console.log('活动详情', activity)
+  },
+  { immediate: true }
+)
 const { currentCurrencyCode } = useDisplayCurrency()
 
 const coverUrl = computed(() => toPromotionImageUrl(props.activity?.preImage))

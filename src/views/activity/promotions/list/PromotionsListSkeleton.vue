@@ -10,15 +10,15 @@
     </div>
   </div>
 
-  <!-- PC：三列卡片 -->
+  <!-- PC：单列卡片 -->
   <div v-else>
-    <div class="grid grid-cols-3 gap-4">
+    <div class="flex flex-col gap-[10px]">
       <div
         v-for="index in desktopCount"
         :key="`promotions-skeleton-desktop-${index}`"
-        class="overflow-hidden rounded-lg bg-bg-2 animate-pulse"
+        class="overflow-hidden rounded-[20px] bg-bg-2 animate-pulse"
       >
-        <div class="aspect-[333/140] w-full bg-bg-3" />
+        <div class="aspect-[1032/250] w-full bg-bg-3" />
       </div>
     </div>
     <!-- 分页 -->
@@ -42,7 +42,7 @@ withDefaults(
   {
     variant: 'mobile',
     mobileCount: 6,
-    desktopCount: 15
+    desktopCount: 4
   }
 )
 </script>

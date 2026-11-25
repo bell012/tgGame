@@ -102,26 +102,26 @@
       :groups="groups"
       :active-group-code="activeGroupCode"
     >
-      <div class="bg-bg-2 rounded-xl p-4 min-h-[520px]">
+      <div class="min-h-[520px] overflow-hidden">
         <PromotionsListSkeleton v-if="loading && list.length === 0" variant="desktop" />
 
         <div v-else-if="list.length > 0">
-          <div class="grid grid-cols-3 gap-4">
+          <div class="flex flex-col gap-[10px]">
             <button
               v-for="item in list"
               :key="item.rowId"
               type="button"
-              class="overflow-hidden rounded-lg bg-bg-3 text-left cursor-pointer"
+              class="w-full cursor-pointer overflow-hidden rounded-[20px] bg-bg-3 text-left"
               @click="openActivity(item)"
             >
-              <div class="aspect-[333/140] w-full overflow-hidden">
-                <img
-                  v-if="toPromotionImageUrl(item.preImage)"
-                  :src="toPromotionImageUrl(item.preImage)"
-                  :alt="getActivityTitle(item)"
-                  class="h-full w-full object-cover"
-                />
-              </div>
+              <img
+                v-if="hasPromotionCover(item)"
+                :src="toPromotionImageUrl(item.preImage)"
+                :alt="getActivityTitle(item)"
+                class="block h-auto w-full"
+                @error="markPromotionImageFailed(item.rowId)"
+              />
+              <div v-else class="aspect-[1032/250] w-full" />
             </button>
           </div>
 
@@ -223,6 +223,7 @@ const activeGroupCode = computed(() => {
 const isComprehensiveActive = computed(() => isPromotionComprehensiveActive(activeGroupCode.value))
 
 const list = ref<ActivityListItem[]>([])
+const failedPromotionImageIds = ref<Record<string, true>>({})
 const loading = ref(false)
 const loadingMore = ref(false)
 const currentPage = ref(1)
@@ -236,6 +237,21 @@ let requestId = 0
 let skipNextRouteReload = false
 
 usePageScrollLock(() => isMobile.value)
+
+const hasPromotionCover = (item: ActivityListItem) => {
+  const imageId = String(item.rowId ?? '')
+  return Boolean(toPromotionImageUrl(item.preImage)) && !failedPromotionImageIds.value[imageId]
+}
+
+const markPromotionImageFailed = (rowId?: number) => {
+  if (rowId == null) {
+    return
+  }
+  failedPromotionImageIds.value = {
+    ...failedPromotionImageIds.value,
+    [String(rowId)]: true
+  }
+}
 
 const isPromotionsListRoute = () => {
   const routeName = String(route.name || '').replace(/^Locale/, '')
@@ -293,6 +309,8 @@ const loadList = async (page: number, append: boolean) => {
       size: ACTIVITY_LIST_PAGE_SIZE,
       ...(listGroupCode ? { groupCode: listGroupCode } : {})
     })
+
+    console.log('活动中心', response.result)
 
     if (currentRequestId !== requestId) {
       return
