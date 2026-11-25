@@ -35,7 +35,9 @@
       <div
         class="relative flex items-baseline justify-center gap-[5px] whitespace-nowrap pt-[8px] font-semibold leading-none"
       >
-        <span class="text-[20px] text-text-1">{{ notice.status === 'WIN' ? 'Win' : 'Lose' }}</span>
+        <span class="text-[20px] text-text-1">{{
+          t(notice.status === 'WIN' ? 'hashGame.win' : 'hashGame.lose')
+        }}</span>
         <span
           class="text-[35px]"
           :class="notice.status === 'WIN' ? 'text-secondary-4' : 'text-secondary-2'"
@@ -50,7 +52,8 @@
         v-if="notice.drawHash || notice.resultLabel"
         class="relative mt-[8px] whitespace-nowrap text-[13px] leading-normal text-text-2"
       >
-        Draw Hash: <span class="text-[14px] text-text-1">{{ notice.drawHash || '—' }}</span>
+        {{ t('hashGame.settlementDrawHash') }}:
+        <span class="text-[14px] text-text-1">{{ notice.drawHash || '—' }}</span>
         <span
           v-if="notice.resultLabel"
           class="text-[14px]"
@@ -64,7 +67,7 @@
       <button
         type="button"
         class="absolute inset-0 h-full w-full cursor-pointer"
-        :aria-label="'Close ' + notice.status.toLowerCase() + ' settlement notice'"
+        :aria-label="t('hashGame.settlementClose')"
         @click.stop="emit('dismiss')"
       />
     </section>
@@ -73,6 +76,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getCurrencySymbol } from '@/utils/locale'
 import type { HashSettlementNotice } from '../chat/types'
 import backgroundMask from '@/static/img/hash_game/settlement/background-mask.svg'
@@ -81,6 +85,7 @@ import confettiRight from '@/static/img/hash_game/settlement/confetti-right.png'
 import settlementSound from '@/static/mp3/hash/zhongjiang.mp3?url'
 
 const props = defineProps<{ notice: HashSettlementNotice | null; soundEnabled?: boolean }>()
+const { t } = useI18n()
 const playedRounds = new Set<number>()
 let audio: HTMLAudioElement | undefined
 watch(

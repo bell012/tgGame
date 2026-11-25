@@ -16,7 +16,7 @@
       >
         <span
           class="mr-[5px] inline-block rounded-[3px] bg-theme-3 px-[3px] py-0.5 text-theme-primary"
-          >Notice</span
+          >{{ t('hashGame.chatNotice') }}</span
         >
         <span>{{ message.content }}</span>
       </p>
@@ -33,7 +33,8 @@
       <!-- WS 用户进入或离开提示。 -->
       <p v-else-if="message.kind === 'BROADCAST_BET'" class="m-0">{{ message.content }}</p>
       <p v-else-if="message.kind === 'JOIN' || message.kind === 'LEAVE'" class="m-0 text-text-3">
-        {{ message.nickname }} {{ message.kind === 'JOIN' ? 'is coming.' : 'has left.' }}
+        {{ message.nickname }}
+        {{ t(message.kind === 'JOIN' ? 'hashGame.chatEntered' : 'hashGame.chatLeft') }}
       </p>
 
       <!-- 成功投注后由本地追加的消息。 -->
@@ -41,13 +42,13 @@
         v-else-if="message.kind === 'BET'"
         class="m-0 flex flex-wrap items-center gap-x-[5px] gap-y-0.5"
       >
-        <span class="text-theme-primary">Me：</span>
+        <span class="text-theme-primary">{{ t('hashGame.chatMe') }}：</span>
         <span
-          >Bet
+          >{{ t('hashGame.chatBet') }}
           <strong class="font-semibold">{{
             formatAmount(message.bet.amount, message.bet.currency)
           }}</strong>
-          on</span
+          {{ t('hashGame.chatOn') }}</span
         >
         <span
           class="inline-grid min-w-4 h-4 shrink-0 place-items-center rounded px-0.5 leading-none text-white"
@@ -68,11 +69,11 @@
       >
         <!-- 开奖局号与开奖结果。 -->
         <p class="m-0 flex flex-wrap items-center gap-[5px]">
-          Block
+          {{ t('hashGame.chatBlock') }}
           <em class="not-italic font-semibold text-secondary-7">{{
             message.draw.anchorBlockNum
           }}</em>
-          Result：
+          {{ t('hashGame.chatResult') }}：
           <strong class="text-base text-theme-primary">{{ resultValue(message.draw) }}</strong>
           <span
             v-for="option in resultBadges(message.draw)"
@@ -88,7 +89,7 @@
           class="m-0 flex flex-wrap items-center gap-[5px]"
         >
           <em class="not-italic font-semibold text-secondary-7">{{ message.draw.winners }}</em>
-          winners · Total payout:
+          {{ t('hashGame.chatWinnersPayout') }}
           <em class="not-italic font-semibold text-secondary-7">{{
             formatAmount(message.draw.totalPayout, message.draw.currency)
           }}</em>
@@ -100,9 +101,9 @@
         v-else-if="message.kind === 'SELF_WIN'"
         class="m-0 flex flex-wrap items-center gap-[5px] rounded-[5px] bg-hash-chat-win-frame px-2 py-1"
       >
-        <span>🎉</span><span class="text-theme-primary">Me</span>
+        <span>🎉</span><span class="text-theme-primary">{{ t('hashGame.chatMe') }}</span>
         <span
-          >Round payout:
+          >{{ t('hashGame.chatRoundPayout') }}：
           <strong class="font-semibold text-theme-primary">{{
             formatAmount(message.payoutAmount, message.currency)
           }}</strong></span
@@ -122,8 +123,9 @@
           class="size-[20px] rounded-full border border-white object-cover"
         />
         <span
-          >Welcome <strong class="text-yellow-300">{{ currentJoin.nickname }}</strong> to the
-          room</span
+          >{{ t('hashGame.chatWelcome') }}
+          <strong class="text-yellow-300">{{ currentJoin.nickname }}</strong>
+          {{ t('hashGame.chatToRoom') }}</span
         >
       </div>
       <!-- 顶部渐隐蒙层。 -->
@@ -138,7 +140,7 @@
       <button
         type="button"
         class="absolute bottom-[21px] right-0 grid size-[34px] place-items-center rounded-full bg-bg-4"
-        aria-label="Scroll to latest message"
+        :aria-label="t('hashGame.chatScrollLatest')"
         @click="scrollToBottom"
       >
         <img :src="scrollBottomIcon" alt="" class="size-[18px]" />
@@ -152,6 +154,7 @@ import GameChatList from '@/components/game-chat/GameChatList.vue'
 import joinAvatar from '@/static/img/hash_game/join-avatar.png'
 import scrollBottomIcon from '@/static/svg/hash_game/chat/scroll-bottom.svg?url'
 import topFadeIcon from '@/static/svg/hash_game/chat/top-fade.svg?url'
+import { useI18n } from 'vue-i18n'
 import { onBeforeUnmount, ref, watch } from 'vue'
 import type { HashChatMessage, HashHttpDraw } from '../chat/types'
 
@@ -163,6 +166,7 @@ const props = defineProps<{
   luckyOnly?: boolean
   variant?: 'pc' | 'h5'
 }>()
+const { t } = useI18n()
 type JoinMessage = Extract<HashChatMessage, { kind: 'JOIN' | 'LEAVE' }>
 const currentJoin = ref<JoinMessage | null>(null)
 const joinQueue: JoinMessage[] = []
@@ -220,7 +224,13 @@ function formatAmount(amount: number, currency?: string) {
 
 /** 将哈希游戏投注选项缩写为聊天里的标记。 */
 function optionShortLabel(option: string) {
-  return ({ ODD: 'O', EVEN: 'E', BIG: 'B', SMALL: 'S' } as Record<string, string>)[option] ?? option
+  const key = (
+    { ODD: 'oddMark', EVEN: 'evenMark', BIG: 'bigMark', SMALL: 'smallMark' } as Record<
+      string,
+      string
+    >
+  )[option]
+  return key ? t(`hashGame.${key}`) : option
 }
 
 /** 按当前投注选项选择大小或单双标记色。 */

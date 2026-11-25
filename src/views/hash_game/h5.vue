@@ -282,8 +282,7 @@
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full text-[11px] not-italic text-text-1"
                       :style="{ background: entry.color }"
-                      >{{ entry.label }}</i
-                    >{{ entry.count }}
+                      >{{ entry.label }}</i>{{ entry.count }}
                   </span>
                 </div>
                 <span class="ml-auto min-w-0 whitespace-nowrap text-[11px] text-secondary-8">{{
@@ -423,7 +422,9 @@
               :key="sound.type"
               type="button"
               class="grid size-[34px] place-items-center rounded-full bg-bg-4"
-              :aria-label="sound.type === 'background' ? 'Background music' : 'Music'"
+              :aria-label="
+                t(sound.type === 'background' ? 'hashGame.backgroundMusic' : 'hashGame.gameSound')
+              "
               :aria-pressed="sound.type === 'background' ? backgroundMusicEnabled : musicEnabled"
               @click="sound.type === 'background' ? toggleBackgroundMusic() : toggleMusic()"
             >
