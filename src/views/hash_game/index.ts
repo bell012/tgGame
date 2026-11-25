@@ -268,8 +268,10 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   useHashGameSockets(gameCode, currency.currentCurrencyCode, hashGameSocketToken, {
     onChatEvent: acceptWsEvent,
     onChatReconnect: chat.reloadChatMessages,
+    onChatSubscribed: chat.reloadChatMessages,
     onDefaultEvent: event => {
       if (event.code !== 0) return
+      if (event.type === 'CHAT_PRIVATE') chat.acceptPrivateEvent(event.data)
       if (event.type === 'BLOCK_RESULT') {
         const anchor = hashGameInfo.value?.anchorBlockNum
         const block = event.data?.blockNum

@@ -39,6 +39,10 @@ export type HashWsChatData =
       content: string
       time: number
       avatarUrl?: string
+      joinBatchId?: string
+      joinBatchCount?: number
+      joinBatchNickname?: string
+      joinBatchAvatarUrl?: string
       robot: boolean
     }
   | {
@@ -51,11 +55,20 @@ export type HashWsChatData =
       blockHash?: string
       explorerUrl?: string
     }
-  | { id?: number; gameCode: string; kind: 'BIG_WIN'; time: number }
   | {
       id?: number
       gameCode: string
-      kind: 'BET' | 'STREAK'
+      kind: 'BIG_WIN'
+      time: number
+      content?: string
+      nickname?: string
+      betOption?: string
+      betOptions?: string[]
+    }
+  | {
+      id?: number
+      gameCode: string
+      kind: 'BET' | 'STREAK' | 'PAYOUT'
       time: number
       [key: string]: unknown
     }
@@ -156,10 +169,11 @@ export type HashHttpDraw = {
 
 /** 聊天历史接口返回的房间消息。 */
 export type HashChatHistoryItem = {
-  id: number
+  id: number | string
   gameCode: string
-  kind: 'DRAW' | 'USER' | 'JOIN' | 'LEAVE' | 'BIG_WIN'
-  content: string
+  kind: 'DRAW' | 'USER' | 'JOIN' | 'LEAVE' | 'BIG_WIN' | 'BET' | 'STREAK' | 'PAYOUT'
+  content?: string
+  text?: string
   time: number
   nickname?: string
   robot?: boolean
@@ -168,7 +182,20 @@ export type HashChatHistoryItem = {
   blockHash?: string
   explorerUrl?: string
   result?: { digit: number; oddEven: string; bigSmall: string }
-  scope?: string
+  scope?: 'PUBLIC' | 'PRIVATE'
+  orderNo?: string
+  betOption?: string
+  amount?: number | string
+  betAmount?: number | string
+  currency?: string
+  mergeKey?: string
+  memberKey?: string
+  betCountDelta?: number
+  joinBatchId?: string
+  joinBatchCount?: number
+  joinBatchNickname?: string
+  joinBatchAvatarUrl?: string
+  betOptions?: string[]
 }
 
 export type HashChatHistoryResponse = {
@@ -212,16 +239,42 @@ export type HashChatMessage =
       time: number
       nickname: string
       avatarUrl?: string
+      joinBatchId?: string
+      joinBatchCount?: number
+      joinBatchNickname?: string
+      joinBatchAvatarUrl?: string
     }
   | { id: string; kind: 'DRAW'; source: 'http' | 'ws'; time: number; draw: HashHttpDraw }
-  | { id: string; kind: 'BROADCAST_BET'; source: 'ws'; time: number; content: string }
+  | { id: string; kind: 'BROADCAST_BET'; source: 'ws' | 'http'; time: number; content: string }
+  | {
+      id: string
+      kind: 'TEXT_NOTICE'
+      source: 'ws' | 'http'
+      time: number
+      content: string
+      noticeKind: 'STREAK' | 'BIG_WIN' | 'PAYOUT'
+      betOptions?: string[]
+    }
+  | {
+      id: string
+      kind: 'PRIVATE'
+      source: 'ws' | 'http'
+      time: number
+      content: string
+      privateKind: 'BET' | 'PAYOUT'
+      orderNo?: string
+    }
   | {
       id: string
       kind: 'BET'
-      source: 'local'
+      source: 'local' | 'ws' | 'http'
       time: number
-      nickname: 'Me'
+      nickname: string
       count?: number
+      mergeKey?: string
+      revision?: number
+      history?: boolean
+      privateText?: string
       bet: HashPlaceBetRequest & { orderNo: string }
     }
   | {

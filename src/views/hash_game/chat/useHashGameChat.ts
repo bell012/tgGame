@@ -58,11 +58,20 @@ export function useHashGameChat(gameCode: Ref<string>) {
   const currentSettlement = computed(() => settlementQueue.value[0] ?? null)
   const placedOrders = new Map<string, { gameCode: string; anchorBlockNum: number }>()
   const settledRounds = new Set<string>()
+  let rawChat: HashChatMessage[] = []
+  let historyLoading = false
+  let pendingChat: HashChatMessage[] = []
   let roomGeneration = 0
   let welcomeText = ''
 
-  /** 将历史接口记录转换为聊天室已支持的展示消息。 */
+  /** 历史与实时消息共用一套展示模型；个人 ID 保留为字符串。 */
   function normalizeHistoryMessage(item: HashChatHistoryItem): HashChatMessage | null {
+    const source = 'http' as const
+    const id = `${item.scope === 'PRIVATE' ? 'private' : 'public'}:${item.gameCode}:${item.id}`
+    if (item.scope === 'PRIVATE') {
+      if (item.kind !== 'BET' && item.kind !== 'PAYOUT') return null
+      return normalizePrivate({ ...item, kind: item.kind }, source)
+    }
     if (item.kind === 'DRAW' && item.anchorBlockNum !== undefined && item.result) {
       return {
         id: `draw:${item.gameCode}:${item.anchorBlockNum}`,
@@ -81,31 +90,210 @@ export function useHashGameChat(gameCode: Ref<string>) {
     }
     if (item.kind === 'USER') {
       return {
-        id: `ws:${item.gameCode}:${item.id}`,
+        id,
         kind: 'USER',
         source: 'http',
         time: item.time,
         nickname: item.nickname ?? '',
-        content: item.content,
+        content: item.content ?? '',
         robot: item.robot ?? false
       }
     }
     if (item.kind === 'JOIN' || item.kind === 'LEAVE') {
       return {
-        id: `ws:${item.gameCode}:${item.id}`,
+        id,
         kind: item.kind,
         source: 'http',
         time: item.time,
         nickname: item.nickname ?? '',
-        avatarUrl: item.avatarUrl
+        avatarUrl: item.avatarUrl,
+        joinBatchId: item.joinBatchId,
+        joinBatchCount: item.joinBatchCount,
+        joinBatchNickname: item.joinBatchNickname,
+        joinBatchAvatarUrl: item.joinBatchAvatarUrl
       }
     }
-    // BIG_WIN 继续遵循当前阶段忽略的约定。
+    if (item.kind === 'BET') return normalizePublicBet(item, id, source)
+    if (item.kind === 'STREAK' || item.kind === 'BIG_WIN' || item.kind === 'PAYOUT')
+      return {
+        id,
+        kind: 'TEXT_NOTICE',
+        source,
+        time: item.time,
+        content: item.content ?? '',
+        noticeKind: item.kind,
+        betOptions: item.betOptions
+      }
     return null
+  }
+
+  function normalizePrivate(
+    data: HashChatHistoryItem | Record<string, unknown>,
+    source: 'http' | 'ws'
+  ): HashChatMessage | null {
+    const kind = data.kind
+    if (kind !== 'BET' && kind !== 'PAYOUT') return null
+    const code = String(data.gameCode ?? '')
+    const orderNo = typeof data.orderNo === 'string' ? data.orderNo : undefined
+    const id = `private:${code}:${String(data.id ?? (orderNo ? `order:${orderNo}` : `${kind}:${data.time}:${data.text}`))}`
+    const content =
+      typeof data.text === 'string'
+        ? data.text
+        : typeof data.content === 'string'
+          ? data.content
+          : ''
+    const time = Number(data.time)
+    if (!content || !Number.isFinite(time)) return null
+    const amount = Number(data.amount)
+    const anchorBlockNum = Number(data.anchorBlockNum)
+    if (
+      kind === 'BET' &&
+      orderNo &&
+      typeof data.betOption === 'string' &&
+      typeof data.currency === 'string' &&
+      Number.isFinite(amount) &&
+      amount > 0 &&
+      Number.isSafeInteger(anchorBlockNum)
+    ) {
+      return {
+        id,
+        kind: 'BET',
+        source,
+        time,
+        nickname: 'Me',
+        history: source === 'http',
+        privateText: content,
+        bet: {
+          requestId: '',
+          gameCode: code,
+          anchorBlockNum,
+          betOption: data.betOption as HashPlaceBetRequest['betOption'],
+          currency: data.currency,
+          amount,
+          orderNo
+        }
+      }
+    }
+    return { id, kind: 'PRIVATE', source, time, content, privateKind: kind, orderNo }
+  }
+
+  function normalizePublicBet(
+    data: HashChatHistoryItem | Record<string, unknown>,
+    id: string,
+    source: 'http' | 'ws'
+  ): HashChatMessage {
+    const amount = Number(data.amount ?? data.betAmount)
+    const anchorBlockNum = Number(data.anchorBlockNum)
+    const mergeKey = data.mergeKey ?? data.memberKey
+    const betOption = data.betOption
+    const currency = data.currency
+    if (
+      typeof mergeKey === 'string' &&
+      mergeKey &&
+      typeof betOption === 'string' &&
+      typeof currency === 'string' &&
+      Number.isSafeInteger(anchorBlockNum) &&
+      Number.isFinite(amount) &&
+      amount > 0
+    ) {
+      return {
+        id,
+        kind: 'BET',
+        source,
+        time: Number(data.time),
+        nickname: typeof data.nickname === 'string' ? data.nickname : '',
+        count:
+          Number.isSafeInteger(Number(data.betCountDelta)) && Number(data.betCountDelta) > 0
+            ? Number(data.betCountDelta)
+            : 1,
+        bet: {
+          requestId: '',
+          gameCode: String(data.gameCode),
+          anchorBlockNum,
+          betOption: betOption as HashPlaceBetRequest['betOption'],
+          currency,
+          amount,
+          orderNo: ''
+        },
+        mergeKey
+      }
+    }
+    return {
+      id,
+      kind: 'BROADCAST_BET',
+      source,
+      time: Number(data.time),
+      content: typeof data.content === 'string' ? data.content : ''
+    }
+  }
+
+  /** 以原始消息生成展示行，合并模式按当前期、身份、方向、币种累计。 */
+  function publishChat() {
+    const notice = feed.messages.value.filter(message => message.kind === 'NOTICE')
+    const settlement = feed.messages.value.filter(message => message.kind === 'SELF_WIN')
+    const rows: HashChatMessage[] = []
+    const groups = new Map<string, string>()
+    for (const message of rawChat) {
+      if (message.kind !== 'BET' || betBroadcastMode.value !== 'MERGED') {
+        rows.push(message)
+        continue
+      }
+      const key = JSON.stringify([
+        message.bet.gameCode,
+        message.bet.anchorBlockNum,
+        message.mergeKey ? `public:${message.mergeKey}` : 'self',
+        message.bet.betOption,
+        message.bet.currency
+      ])
+      const groupId = groups.get(key)
+      if (groupId === undefined) {
+        groups.set(key, message.id)
+        rows.push(message)
+      } else {
+        const index = rows.findIndex(item => item.id === groupId)
+        const previous = rows[index]
+        if (previous.kind !== 'BET') continue
+        rows.splice(index, 1)
+        rows.push({
+          ...previous,
+          time: message.time,
+          source: message.source,
+          count: (previous.count ?? 1) + (message.count ?? 1),
+          revision: (previous.revision ?? 0) + (message.source === 'http' ? 0 : 1),
+          bet: { ...previous.bet, amount: roundAmount(previous.bet.amount + message.bet.amount) }
+        })
+      }
+    }
+    feed.messages.value = [...notice, ...rows.slice(-200), ...settlement]
+  }
+
+  function appendChat(message: HashChatMessage) {
+    if (historyLoading) pendingChat.push(message)
+    if (rawChat.some(item => item.id === message.id)) return false
+    const orderNo =
+      message.kind === 'BET'
+        ? message.bet.orderNo
+        : message.kind === 'PRIVATE' && message.privateKind === 'BET'
+          ? message.orderNo
+          : undefined
+    if (
+      orderNo &&
+      rawChat.some(item =>
+        item.kind === 'BET'
+          ? item.bet.orderNo === orderNo
+          : item.kind === 'PRIVATE' && item.privateKind === 'BET' && item.orderNo === orderNo
+      )
+    )
+      return false
+    rawChat = [...rawChat, message].slice(-200)
+    publishChat()
+    return true
   }
 
   /** 请求当前房间历史；房间切换或离开后丢弃旧请求的响应。 */
   async function loadHistory(code: string, generation: number) {
+    historyLoading = true
+    pendingChat = []
     try {
       const response = await queryHashChatHistory(code)
       if (generation !== roomGeneration || activeRoom.value !== `CHAT:${code}`) return
@@ -114,9 +302,27 @@ export function useHashGameChat(gameCode: Ref<string>) {
         .filter(item => item.gameCode === code)
         .map(normalizeHistoryMessage)
         .filter((item): item is HashChatMessage => item !== null)
-      feed.prependHistory(history)
+      const combined = [...history, ...pendingChat]
+      const seen = new Set<string>()
+      rawChat = combined
+        .filter(message => {
+          const key =
+            message.kind === 'BET' && message.bet.orderNo
+              ? `order:${message.bet.orderNo}`
+              : message.kind === 'PRIVATE' && message.privateKind === 'BET' && message.orderNo
+                ? `order:${message.orderNo}`
+                : message.id
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        .slice(-200)
+      pendingChat = []
+      publishChat()
     } catch {
       // 历史接口失败时保留本次会话已经收到的实时消息。
+    } finally {
+      if (generation === roomGeneration) historyLoading = false
     }
   }
 
@@ -149,7 +355,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
         ? `ws:${data.gameCode}:${data.id}`
         : `ws:${data.gameCode}:${data.kind}:${data.time}:${data.kind === 'USER' ? `${data.nickname}:${data.content}` : data.kind === 'BET' ? String(data.content ?? '') : data.kind === 'JOIN' || data.kind === 'LEAVE' ? data.nickname : ''}`
     if (data.kind === 'DRAW') {
-      feed.append({
+      appendChat({
         id: `draw:${data.gameCode}:${data.anchorBlockNum}`,
         kind: 'DRAW',
         source: 'ws',
@@ -159,19 +365,12 @@ export function useHashGameChat(gameCode: Ref<string>) {
       return
     }
     if (data.kind === 'BET') {
-      if (typeof data.content === 'string')
-        feed.append({
-          id: messageId,
-          kind: 'BROADCAST_BET',
-          source: 'ws',
-          time: data.time,
-          content: data.content
-        })
+      appendChat(normalizePublicBet(data, `public:${data.gameCode}:${data.id ?? messageId}`, 'ws'))
       return
     }
     if (data.kind === 'USER') {
-      feed.append({
-        id: messageId,
+      appendChat({
+        id: `public:${data.gameCode}:${data.id ?? messageId}`,
         kind: 'USER',
         source: 'ws',
         time: data.time,
@@ -180,16 +379,35 @@ export function useHashGameChat(gameCode: Ref<string>) {
         robot: data.robot
       })
     } else if (data.kind === 'JOIN' || data.kind === 'LEAVE') {
-      feed.append({
-        id: messageId,
+      appendChat({
+        id: `public:${data.gameCode}:${data.id ?? messageId}`,
         kind: data.kind,
         source: 'ws',
         time: data.time,
         nickname: data.nickname,
-        avatarUrl: data.avatarUrl
+        avatarUrl: data.avatarUrl,
+        joinBatchId: data.joinBatchId,
+        joinBatchCount: data.joinBatchCount,
+        joinBatchNickname: data.joinBatchNickname,
+        joinBatchAvatarUrl: data.joinBatchAvatarUrl
+      })
+    } else if (data.kind === 'STREAK' || data.kind === 'BIG_WIN' || data.kind === 'PAYOUT') {
+      appendChat({
+        id: `public:${data.gameCode}:${data.id ?? messageId}`,
+        kind: 'TEXT_NOTICE',
+        source: 'ws',
+        time: data.time,
+        content: typeof data.content === 'string' ? data.content : '',
+        noticeKind: data.kind,
+        betOptions: data.kind === 'BIG_WIN' ? data.betOptions : undefined
       })
     }
-    // 未支持的消息忽略。
+  }
+
+  function acceptPrivateEvent(data: Record<string, unknown>) {
+    if (!activeRoom.value || data.gameCode !== gameCode.value) return
+    const message = normalizePrivate(data, 'ws')
+    if (message) appendChat(message)
   }
 
   /** 仅在投注接口成功并返回订单号后插入本人投注消息。 */
@@ -207,29 +425,15 @@ export function useHashGameChat(gameCode: Ref<string>) {
       gameCode: request.gameCode,
       anchorBlockNum: request.anchorBlockNum
     })
-    if (betBroadcastMode.value === 'MERGED') {
-      const existing = feed.messages.value.find(
-        item =>
-          item.kind === 'BET' &&
-          item.bet.gameCode === request.gameCode &&
-          item.bet.anchorBlockNum === request.anchorBlockNum &&
-          item.bet.betOption === request.betOption &&
-          item.bet.currency === result.currency
+    if (
+      rawChat.some(item =>
+        item.kind === 'BET'
+          ? item.bet.orderNo === result.orderNo
+          : item.kind === 'PRIVATE' && item.privateKind === 'BET' && item.orderNo === result.orderNo
       )
-      if (existing?.kind === 'BET') {
-        feed.messages.value = feed.messages.value.map(item =>
-          item.id === existing.id
-            ? {
-                ...existing,
-                count: (existing.count ?? 1) + 1,
-                bet: { ...existing.bet, amount: roundAmount(existing.bet.amount + request.amount) }
-              }
-            : item
-        )
-        return true
-      }
-    }
-    return feed.append({
+    )
+      return true
+    return appendChat({
       id: `bet:${result.orderNo}`,
       kind: 'BET',
       source: 'local',
@@ -378,8 +582,11 @@ export function useHashGameChat(gameCode: Ref<string>) {
 
   /** 开启一个新的游戏房间，并清理仅属于上一游戏的页面会话状态。 */
   function openRoom(code: string) {
-    const generation = ++roomGeneration
+    roomGeneration += 1
     feed.clear()
+    rawChat = []
+    pendingChat = []
+    historyLoading = false
     welcomeText = ''
     placedOrders.clear()
     settledRounds.clear()
@@ -387,7 +594,6 @@ export function useHashGameChat(gameCode: Ref<string>) {
     onlineCount.value = undefined
     betStats.value = new Map()
     activeRoom.value = code ? `CHAT:${code}` : ''
-    if (code) void loadHistory(code, generation)
   }
 
   /** 聊天 WS 重连后重新加载当前房间的可展示消息，保留本地已成功下注的结算追踪。 */
@@ -397,6 +603,8 @@ export function useHashGameChat(gameCode: Ref<string>) {
 
     const generation = ++roomGeneration
     feed.clear()
+    rawChat = []
+    pendingChat = []
     if (welcomeText) acceptWelcomeText(welcomeText)
     betStats.value = new Map()
     void loadHistory(code, generation)
@@ -407,6 +615,8 @@ export function useHashGameChat(gameCode: Ref<string>) {
     roomGeneration += 1
     activeRoom.value = ''
     feed.clear()
+    rawChat = []
+    pendingChat = []
     welcomeText = ''
     placedOrders.clear()
     settledRounds.clear()
@@ -414,6 +624,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
   }
 
   watch(gameCode, openRoom, { immediate: true })
+  watch(betBroadcastMode, publishChat)
   onScopeDispose(closeRoom)
 
   return {
@@ -424,6 +635,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     betStats,
     currentSettlement,
     acceptWsEvent,
+    acceptPrivateEvent,
     acceptSuccessfulBet,
     acceptMockChatMessage,
     acceptWelcomeText,

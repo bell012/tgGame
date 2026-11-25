@@ -76,6 +76,7 @@ type UseHashGameSocketsOptions = {
   onDefaultEvent?: (event: HashWsDefaultEvent) => void
   /** 聊天通道重连后重置本次实时消息。 */
   onChatReconnect?: () => void
+  onChatSubscribed?: () => void
 }
 
 /** 管理 Hash 游戏默认业务通道与 hashchat 通道的两条独立 WS 连接。 */
@@ -189,6 +190,7 @@ export function useHashGameSockets(
         hasOpenedChatSocket.value = true
         subscribeCurrentRoom()
         if (isReconnect) options.onChatReconnect?.()
+        else options.onChatSubscribed?.()
       },
       onMessage: handleChatMessage
     })
@@ -210,7 +212,9 @@ export function useHashGameSockets(
 
   onScopeDispose(disconnect)
   watch(accessToken, reconnectWithLatestIdentity, { immediate: true })
-  watch([gameCode, currency], subscribeCurrentRoom)
+  watch([gameCode, currency], () => {
+    if (subscribeCurrentRoom()) options.onChatSubscribed?.()
+  })
 
   return {
     defaultSocketState: defaultSocket.state,
