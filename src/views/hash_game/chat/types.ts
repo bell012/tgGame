@@ -292,7 +292,8 @@ export type HashChatMessage =
 /** 单币种、单输赢状态的结算弹窗数据。 */
 export type HashSettlementNotice = {
   id: string
-  status: 'WIN' | 'LOSE'
+  gameCode: string
+  status: 'WIN' | 'LOSE' | 'REFUND' | 'ERROR'
   currency: string
   anchorBlockNum: number
   amount: number

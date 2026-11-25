@@ -8,19 +8,9 @@ import type {
   HashChatMessage,
   HashHttpDraw,
   HashPlaceBetRequest,
-  HashRecentBetsResponse,
   HashSettlementNotice,
-  HashSettledOrder,
   HashWsEvent
 } from './types'
-
-/** 同一币种和状态的订单金额汇总。 */
-type SettlementGroup = {
-  currency: string
-  status: 'WIN' | 'LOSE'
-  betAmount: number
-  payoutAmount: number
-}
 
 /** 模拟结算使用八位小数精度，避免浮点累加出现可见尾差。 */
 function roundAmount(value: number) {
@@ -57,7 +47,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
   const settlementQueue = shallowRef<HashSettlementNotice[]>([])
   const currentSettlement = computed(() => settlementQueue.value[0] ?? null)
   const placedOrders = new Map<string, { gameCode: string; anchorBlockNum: number }>()
-  const settledRounds = new Set<string>()
+  const settledOrders = new Set<string>()
   let rawChat: HashChatMessage[] = []
   let historyLoading = false
   let pendingChat: HashChatMessage[] = []
@@ -487,91 +477,66 @@ export function useHashGameChat(gameCode: Ref<string>) {
     })
   }
 
-  /** 按订单号去重，并只保留本次会话在目标局成功提交的订单。 */
-  function selectRoundOrders(anchorBlockNum: number, orders: HashSettledOrder[]) {
-    const unique = new Map<string, HashSettledOrder>()
-    for (const order of orders) {
-      const placed = placedOrders.get(order.orderNo)
-      if (
-        placed?.gameCode === gameCode.value &&
-        placed.anchorBlockNum === anchorBlockNum &&
-        order.gameCode === gameCode.value &&
-        order.anchorBlockNum === anchorBlockNum
-      )
-        unique.set(order.orderNo, order)
-    }
-    return [...unique.values()]
-  }
-
-  /** 按币种和 WIN / LOSE 分组，忽略 CANCEL 与未知状态。 */
-  function groupSettledOrders(orders: HashSettledOrder[]) {
-    const groups = new Map<string, SettlementGroup>()
-    for (const order of orders) {
-      if (order.status !== 'WIN' && order.status !== 'LOSE') continue
-      const key = `${order.status}:${order.currency}`
-      const group = groups.get(key) ?? {
-        currency: order.currency,
-        status: order.status,
-        betAmount: 0,
-        payoutAmount: 0
-      }
-      group.betAmount = roundAmount(group.betAmount + order.amount)
-      group.payoutAmount = roundAmount(group.payoutAmount + order.payoutAmount)
-      groups.set(key, group)
-    }
-    return [...groups.values()].sort(
-      (a, b) => Number(a.status === 'LOSE') - Number(b.status === 'LOSE')
-    )
-  }
-
-  /** 用 HTTP 结算记录生成本人中奖消息，并按赢后输排列弹窗。 */
-  function acceptRecentBets(anchorBlockNum: number, response: HashRecentBetsResponse) {
-    const roundKey = `${gameCode.value}:${anchorBlockNum}`
+  /** 以默认 WS 的结算利润为准，同局、币种和状态的订单合并展示。 */
+  function acceptSettlementEvent(data: Record<string, unknown>) {
+    const orderNo = typeof data.orderNo === 'string' ? data.orderNo : ''
+    const code = typeof data.gameCode === 'string' ? data.gameCode : ''
+    const currency = typeof data.currency === 'string' ? data.currency : ''
+    const anchorBlockNum = Number(data.anchorBlockNum)
+    const status = data.status
+    const profit = Number(data.profit)
     if (
       !activeRoom.value ||
-      !response.success ||
-      response.code !== 'C2' ||
-      !response.result ||
-      settledRounds.has(roundKey)
+      code !== gameCode.value ||
+      !orderNo ||
+      !currency ||
+      !Number.isSafeInteger(anchorBlockNum) ||
+      anchorBlockNum <= 0 ||
+      !['WIN', 'LOSE', 'REFUND', 'ERROR'].includes(String(status)) ||
+      !Number.isFinite(profit) ||
+      settledOrders.has(orderNo)
     )
       return false
 
-    const expectedOrderNos = [...placedOrders.entries()]
-      .filter(
-        ([, placed]) =>
-          placed.gameCode === gameCode.value && placed.anchorBlockNum === anchorBlockNum
+    settledOrders.add(orderNo)
+    const id = `settlement:${code}:${anchorBlockNum}:${currency}:${status}`
+    const existing = settlementQueue.value.find(item => item.id === id)
+    const drawHash = typeof data.blockHash === 'string' ? data.blockHash.slice(-6) : undefined
+    const result =
+      data.result && typeof data.result === 'object' && !Array.isArray(data.result)
+        ? (data.result as Record<string, unknown>)
+        : undefined
+    const resultLabel = result
+      ? [result.digit, result.oddEven, result.bigSmall]
+          .filter(value => value !== undefined && value !== null)
+          .join(' · ')
+      : undefined
+    if (existing) {
+      settlementQueue.value = settlementQueue.value.map(item =>
+        item.id === id
+          ? {
+              ...item,
+              amount: roundAmount(item.amount + profit),
+              drawHash: item.drawHash || drawHash,
+              resultLabel: item.resultLabel || resultLabel
+            }
+          : item
       )
-      .map(([orderNo]) => orderNo)
-    if (!expectedOrderNos.length) return false
-
-    const orders = selectRoundOrders(anchorBlockNum, response.result.list)
-    if (expectedOrderNos.some(orderNo => !orders.some(order => order.orderNo === orderNo)))
-      return false
-    if (orders.some(order => !['WIN', 'LOSE', 'CANCEL'].includes(order.status))) return false
-
-    settledRounds.add(roundKey)
-    const groups = groupSettledOrders(orders)
-    const notices: HashSettlementNotice[] = []
-    for (const group of groups) {
-      const id = `settlement:${roundKey}:${group.status}:${group.currency}`
-      const amount =
-        group.status === 'WIN' ? roundAmount(group.payoutAmount - group.betAmount) : group.betAmount
-      if (group.status === 'WIN') {
-        feed.append({
+    } else {
+      settlementQueue.value = [
+        ...settlementQueue.value,
+        {
           id,
-          kind: 'SELF_WIN',
-          source: 'http',
-          time: Date.now(),
-          currency: group.currency,
+          gameCode: code,
+          status: status as HashSettlementNotice['status'],
+          currency,
           anchorBlockNum,
-          betAmount: group.betAmount,
-          payoutAmount: group.payoutAmount,
-          profit: amount
-        })
-      }
-      notices.push({ id, status: group.status, currency: group.currency, anchorBlockNum, amount })
+          amount: profit,
+          drawHash,
+          resultLabel
+        }
+      ]
     }
-    settlementQueue.value = [...settlementQueue.value, ...notices]
     return true
   }
 
@@ -589,7 +554,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     historyLoading = false
     welcomeText = ''
     placedOrders.clear()
-    settledRounds.clear()
+    settledOrders.clear()
     settlementQueue.value = []
     onlineCount.value = undefined
     betStats.value = new Map()
@@ -619,7 +584,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     pendingChat = []
     welcomeText = ''
     placedOrders.clear()
-    settledRounds.clear()
+    settledOrders.clear()
     settlementQueue.value = []
   }
 
@@ -640,7 +605,7 @@ export function useHashGameChat(gameCode: Ref<string>) {
     acceptMockChatMessage,
     acceptWelcomeText,
     acceptHttpDraw,
-    acceptRecentBets,
+    acceptSettlementEvent,
     dismissSettlement,
     reloadChatMessages,
     closeRoom

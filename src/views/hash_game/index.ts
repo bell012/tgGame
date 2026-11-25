@@ -283,6 +283,7 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
         event.data?.currency === currency.currentCurrencyCode.value
       )
         void userStore.refreshBalance({ force: true })
+      if (event.type === 'CHAIN_LOTTERY_SETTLE') chat.acceptSettlementEvent(event.data)
     }
   })
   /** 当前阶段用本地模拟发送回包更新聊天室。 */
@@ -467,7 +468,6 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   const acceptHttpDraw = chat.acceptHttpDraw
 
   /** 对外接收 HTTP 结算结果；真实 HTTP 请求完成后还需刷新余额。 */
-  const acceptRecentBets = chat.acceptRecentBets
 
   /** 关闭当前结算提示，依次展示下一币种及下一输赢状态。 */
   const dismissSettlement = chat.dismissSettlement
@@ -832,7 +832,6 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
     currentSettlement,
     acceptWsEvent,
     acceptHttpDraw,
-    acceptRecentBets,
     dismissSettlement,
     betChips: betting.chips,
     betTotals: betting.betTotals,

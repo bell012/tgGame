@@ -1,9 +1,10 @@
 <template>
   <!-- 结算提示覆盖在开奖区域，按结算队列逐条展示。 -->
   <Transition
-    enter-active-class="transition-opacity duration-200"
+    mode="out-in"
+    enter-active-class="transition-opacity duration-[240ms]"
     enter-from-class="opacity-0"
-    leave-active-class="transition-opacity duration-200"
+    leave-active-class="transition-opacity duration-[240ms]"
     leave-to-class="opacity-0"
   >
     <section
@@ -36,14 +37,22 @@
         class="relative flex items-baseline justify-center gap-[5px] whitespace-nowrap pt-[8px] font-semibold leading-none"
       >
         <span class="text-[20px] text-text-1">{{
-          t(notice.status === 'WIN' ? 'hashGame.win' : 'hashGame.lose')
+          t(
+            notice.status === 'WIN'
+              ? 'hashGame.win'
+              : notice.status === 'LOSE'
+                ? 'hashGame.lose'
+                : notice.status === 'REFUND'
+                  ? 'hashGame.betDetailStatus.refund'
+                  : 'hashGame.betDetailStatus.error'
+          )
         }}</span>
         <span
           class="text-[35px]"
-          :class="notice.status === 'WIN' ? 'text-secondary-4' : 'text-secondary-2'"
+          :class="notice.amount > 0 ? 'text-secondary-4' : 'text-secondary-2'"
         >
-          {{ notice.status === 'WIN' ? '+' : '-' }}{{ currencySymbol
-          }}{{ formatAmount(notice.amount) }}
+          {{ notice.amount > 0 ? '+' : notice.amount < 0 ? '−' : '' }}{{ currencySymbol
+          }}{{ formatAmount(Math.abs(displayedAmount)) }}
         </span>
       </div>
 
@@ -75,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getCurrencySymbol } from '@/utils/locale'
 import type { HashSettlementNotice } from '../chat/types'
@@ -86,14 +95,22 @@ import settlementSound from '@/static/mp3/hash/zhongjiang.mp3?url'
 
 const props = defineProps<{ notice: HashSettlementNotice | null; soundEnabled?: boolean }>()
 const { t } = useI18n()
-const playedRounds = new Set<number>()
+const playedRounds = new Set<string>()
+const displayedAmount = ref(0)
+let amountFrame = 0
 let audio: HTMLAudioElement | undefined
 watch(
   () => [props.notice, props.soundEnabled] as const,
   ([notice, enabled]) => {
     if (!enabled) audio?.pause()
-    if (!notice || !enabled || playedRounds.has(notice.anchorBlockNum)) return
-    playedRounds.add(notice.anchorBlockNum)
+    if (
+      !notice ||
+      !enabled ||
+      !['WIN', 'LOSE'].includes(notice.status) ||
+      playedRounds.has(`${notice.gameCode}:${notice.anchorBlockNum}`)
+    )
+      return
+    playedRounds.add(`${notice.gameCode}:${notice.anchorBlockNum}`)
     audio ??= new Audio(settlementSound)
     audio.currentTime = 0
     void audio.play().catch(() => {})
@@ -104,17 +121,46 @@ const emit = defineEmits<{ dismiss: [] }>()
 const currencySymbol = computed(() => getCurrencySymbol(props.notice?.currency))
 let dismissTimer: ReturnType<typeof setTimeout> | undefined
 
-/** 将单币种结算金额格式化为最多八位小数。 */
+/** 同组结算追加时从当前数值滚动到新的净利润。 */
+watch(
+  () => [props.notice?.id, props.notice?.amount] as const,
+  ([id, amount], previous) => {
+    if (amountFrame) cancelAnimationFrame(amountFrame)
+    if (!id || amount === undefined) {
+      displayedAmount.value = 0
+      return
+    }
+    const from = id === previous?.[0] ? displayedAmount.value : 0
+    displayedAmount.value = from
+    if (
+      typeof window === 'undefined' ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      displayedAmount.value = amount
+      return
+    }
+    const start = performance.now()
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / 1200)
+      displayedAmount.value = from + (amount - from) * progress
+      if (progress < 1) amountFrame = requestAnimationFrame(tick)
+    }
+    amountFrame = requestAnimationFrame(tick)
+  },
+  { immediate: true }
+)
+
+/** 与参考组件一致，结算利润显示两位小数。 */
 function formatAmount(amount: number) {
-  return amount.toLocaleString('en-US', { maximumFractionDigits: 8 })
+  return amount.toFixed(2)
 }
 
-/** 当前提示显示三秒后关闭，继续展示队列中的下一条。 */
+/** 当前提示显示 3.6 秒后关闭，继续展示队列中的下一条。 */
 watch(
-  () => props.notice?.id,
-  id => {
+  () => [props.notice?.id, props.notice?.amount] as const,
+  ([id]) => {
     if (dismissTimer) clearTimeout(dismissTimer)
-    if (id) dismissTimer = setTimeout(() => emit('dismiss'), 3000)
+    if (id) dismissTimer = setTimeout(() => emit('dismiss'), 3600)
   },
   { immediate: true }
 )
@@ -122,6 +168,7 @@ watch(
 /** 组件卸载时清除自动关闭计时器。 */
 onBeforeUnmount(() => {
   audio?.pause()
+  if (amountFrame) cancelAnimationFrame(amountFrame)
   if (dismissTimer) clearTimeout(dismissTimer)
 })
 </script>
