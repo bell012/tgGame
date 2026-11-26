@@ -53,10 +53,10 @@
       </div>
     </div>
     <div
-      class="game-list-grid grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-[14px] mx-0"
-      :class="isMobile ? 'grid-col-3 md:gap-[10px]' : railClass"
+      class="game-list-grid grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-[14px]"
+      :class="isMobile ? 'grid-col-3 -mx-3 px-3 scroll-px-3 md:gap-[10px]' : ['mx-0', railClass]"
       ref="listWrap"
-      style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
+      style="--grid-gap: 0.5rem; --aspect-ratio: 0.75"
     >
       <div
         v-for="(value, index) in normalizedList"
@@ -276,7 +276,6 @@ const handleGameClick = (item: GameDataItem) => {
   grid-auto-flow: column;
   grid-auto-columns: calc((100% - (var(--grid-column) - 1) * var(--grid-gap)) / var(--grid-column));
   gap: var(--grid-gap);
-  padding-left: var(--grid-padding);
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y;
 }
