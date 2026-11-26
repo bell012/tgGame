@@ -147,15 +147,15 @@
   </div>
 </template>
 <script setup lang="ts">
+import type { FastAmountItem } from '@/api/interface/withdraw'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
-import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { FastAmountItem } from '@/api/interface/withdraw'
 import { usePresetGrid } from '@/views/wallet/deposit/components/shared/usePresetGrid'
+import { computed, nextTick, ref, type ComponentPublicInstance } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 

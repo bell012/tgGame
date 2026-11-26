@@ -141,18 +141,18 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { useWithdrawFlow } from '@/components/withdraw/shared/useWithdrawFlow'
+import AddAccountPop from '@/components/paymentMethods/addAccountPop.vue'
+import KindReminderPop from '@/components/paymentMethods/kindReminderPop.vue'
+import AccountPaymentPasswordPop from '@/components/paymentMethods/paymentPasswordPop.vue'
+import AccountSmsVerificationPop from '@/components/paymentMethods/smsVerificationPop.vue'
+import mobileAccountListPop from '@/components/withdraw/mobileAccountListPop.vue'
 import MobileCryptoPanel from '@/components/withdraw/mobileCryptoPanel.vue'
 import MobileFiatPanel from '@/components/withdraw/mobileFiatPanel.vue'
-import mobileAccountListPop from '@/components/withdraw/mobileAccountListPop.vue'
-import KindReminderPop from '@/components/paymentMethods/kindReminderPop.vue'
-import AddAccountPop from '@/components/paymentMethods/addAccountPop.vue'
-import AccountSmsVerificationPop from '@/components/paymentMethods/smsVerificationPop.vue'
-import AccountPaymentPasswordPop from '@/components/paymentMethods/paymentPasswordPop.vue'
 import orderPop from '@/components/withdraw/orderPop.vue'
-import withdrawSmsVerificationPop from '@/components/withdraw/withdrawSmsVerificationPop.vue'
+import { useWithdrawFlow } from '@/components/withdraw/shared/useWithdrawFlow'
 import withdrawPaymentPasswordPop from '@/components/withdraw/withdrawPaymentPasswordPop.vue'
+import withdrawSmsVerificationPop from '@/components/withdraw/withdrawSmsVerificationPop.vue'
+import { useI18n } from 'vue-i18n'
 import WithdrawMobileCryptoSkeleton from './components/WithdrawMobileCryptoSkeleton.vue'
 import WithdrawMobileFiatSkeleton from './components/WithdrawMobileFiatSkeleton.vue'
 

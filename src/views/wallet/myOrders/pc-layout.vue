@@ -134,7 +134,7 @@ import depositPopShell from '@/views/wallet/deposit/components/shared/depositPop
 import EmptyImg from '@/static/img/personalCenter/noData.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { globalShowToast } from '@/utils/toast'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MyOrdersTablePanel from './MyOrdersTablePanel.vue'
 import OrderDetailScrollPanel from './OrderDetailScrollPanel.vue'
@@ -326,13 +326,27 @@ watch(
   { immediate: true }
 )
 
-onMounted(() => {
-  void loadMyOrderTypeIconMap()
-    .then(result => {
-      orderTypeIconMap.value = result
+const loadedCategoryIds = new Set<number>()
+watch(
+  desktopRecords,
+  async records => {
+    const missing = records.filter(record => {
+      const id = Number(record.categoryId)
+      if (record.categoryId == null || !Number.isFinite(id) || id < 0 || loadedCategoryIds.has(id))
+        return false
+      loadedCategoryIds.add(id)
+      return true
     })
-    .catch(error => {
+    if (!missing.length) return
+    try {
+      orderTypeIconMap.value = {
+        ...orderTypeIconMap.value,
+        ...(await loadMyOrderTypeIconMap(missing))
+      }
+    } catch (error) {
       console.error('loadMyOrderTypeIconMap failed', error)
-    })
-})
+    }
+  },
+  { deep: true }
+)
 </script>

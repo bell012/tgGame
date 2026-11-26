@@ -470,7 +470,7 @@ export interface DepositCategoryOption {
 }
 
 export const resolveDepositMethodIcon = (item: QueryPaySubColumnItem) =>
-  toDepositPayImageUrl(item.platformLogo || '')
+  toDepositPayImageUrl(item.logoImg || '')
 
 // 只有一个流水档时流水 Tab 被隐藏，加赠比例改挂到充值方式上；多个流水档时由流水 Tab 展示。
 export const resolveDepositMethodBonusRatio = (item: QueryPaySubColumnItem) => {

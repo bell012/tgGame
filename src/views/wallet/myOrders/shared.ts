@@ -1,6 +1,6 @@
 import Api from '@/api'
 import type {
-  QueryPayColumnItem,
+  QueryPaySubColumnItem,
   QueryMemberPayOrderPageForm,
   QueryMemberPayOrderPageRecord
 } from '@/api/interface/wallet'
@@ -12,7 +12,7 @@ import mayaIcon from '@/static/img/payment/maya.png'
 import shopeePayIcon from '@/static/svg/coin/shopeePay.svg?url'
 import { formatTimestamp } from '@/utils/date'
 import { resolveGameImageUrl } from '@/utils/image'
-import { getCurrentCurrency, getFormattedBalance, getLanguageCode } from '@/utils/locale'
+import { getFormattedBalance } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
 export interface OrderTypeMeta {
@@ -24,12 +24,7 @@ export type OrderTypeIconMap = Record<string, OrderTypeMeta>
 export type OrderTab = 'deposits' | 'withdrawals'
 export type OrderStatus = string
 export type OrderTimeFilter =
-  | 'all'
-  | 'today'
-  | 'yesterday'
-  | 'last3days'
-  | 'last15days'
-  | 'last30days'
+  'all' | 'today' | 'yesterday' | 'last3days' | 'last15days' | 'last30days'
 export type OrderTypeFilter = 'all' | 'gcash' | 'maya' | 'grabpay' | 'shopeepay' | 'usdt'
 export type OrderStatusFilter = 'all' | 'success' | 'failed' | 'processing'
 
@@ -185,7 +180,7 @@ export const getMyOrderTypeLabel = (
   localeKey = 'eng',
   orderTypeIconMap: OrderTypeIconMap = {}
 ) => {
-  const columnLabel = orderTypeIconMap[String(record.columnCode ?? '')]?.label
+  const columnLabel = orderTypeIconMap[`${record.categoryId}:${record.columnCode}`]?.label
 
   if (String(record.orderType) === '1' && columnLabel) {
     return columnLabel
@@ -201,41 +196,51 @@ export const getMyOrderTypeIcon = (
   record: QueryMemberPayOrderPageRecord,
   localeKey = 'eng',
   orderTypeIconMap: OrderTypeIconMap = {}
-) =>
-  orderTypeIconMap[String(record.columnCode ?? '')]?.icon ||
-  TYPE_ICON_MAP[getMyOrderTypeValue(record, localeKey)]
+) => {
+  const matchedIcon = orderTypeIconMap[`${record.categoryId}:${record.columnCode}`]?.icon
+  if (matchedIcon) return matchedIcon
+
+  const methodName = parseOrderMethodName(record.subColumnName, localeKey).trim().toLowerCase()
+  const fallbackType = methodName.includes('gcash')
+    ? 'gcash'
+    : methodName.includes('maya')
+      ? 'maya'
+      : methodName.includes('grabpay') || methodName.includes('grab pay')
+        ? 'grabpay'
+        : methodName.includes('shopeepay') || methodName.includes('shopee pay')
+          ? 'shopeepay'
+          : methodName.includes('usdt')
+            ? 'usdt'
+            : null
+
+  return fallbackType ? TYPE_ICON_MAP[fallbackType] : ''
+}
 
 /**
  * 加载订单支付方式图标映射。
  */
-export const loadMyOrderTypeIconMap = async (): Promise<OrderTypeIconMap> => {
-  const response = await Api.wallet.queryPayColumnPage({
-    page: {
-      current: 1,
-      size: 9999
-    },
-    languageCode: getLanguageCode(),
-    currency: getCurrentCurrency(),
-    param: {
-      columnCode: ''
-    }
-  })
+export const loadMyOrderTypeIconMap = async (
+  records: QueryMemberPayOrderPageRecord[]
+): Promise<OrderTypeIconMap> => {
+  const categoryIds = [
+    ...new Set(
+      records.map(item => Number(item.categoryId)).filter(id => Number.isFinite(id) && id > 0)
+    )
+  ]
+  const responses = await Promise.allSettled(
+    categoryIds.map(categoryId =>
+      Api.wallet.queryPaySubColumnPage({ page: { current: 1, size: 9999 }, param: { categoryId } })
+    )
+  )
 
-  if (!response.success) {
-    throw new Error(response.message || 'queryPayColumnPage failed')
-  }
-
-  const result: QueryPayColumnItem[] = Array.isArray(response.result) ? response.result : []
-
-  return result.reduce<OrderTypeIconMap>((iconMap, item) => {
-    const iconUrl = toOrderTypeImageUrl(item.defaultOrderIcon)
-    const label = String(item.columnName ?? '').trim()
-
-    if (!iconUrl && !label) return iconMap
-
-    iconMap[String(item.columnCode)] = {
-      icon: iconUrl,
-      label
+  return responses.reduce<OrderTypeIconMap>((iconMap, response, index) => {
+    if (response.status !== 'fulfilled' || !response.value.success) return iconMap
+    const items: QueryPaySubColumnItem[] = Array.isArray(response.value.result)
+      ? response.value.result
+      : []
+    for (const item of items) {
+      const icon = toOrderTypeImageUrl(item.logoImg)
+      if (icon) iconMap[`${categoryIds[index]}:${item.columnCode}`] = { icon, label: '' }
     }
     return iconMap
   }, {})
