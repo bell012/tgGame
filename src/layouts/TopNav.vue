@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <header class="top-nav">
     <div class="top-nav-inner h-full flex items-center justify-between px-4">
       <!-- h5菜单 -->
@@ -200,7 +200,11 @@
               class="relative mr-2 flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-lg search max-[375px]:mr-1"
               @click.stop="openRewardClaimPopup"
             >
-              <GiftIcon class="h-4 w-4 fill-none" />
+              <SmartImage
+                :src="giftImage"
+                alt=""
+                class="pointer-events-none absolute inset-0 size-full"
+              />
               <!-- H5 稿 1125÷3：角标 18×12，圆角 4，字号 8，绿底黑字 -->
               <span
                 v-if="pendingClaimBadgeText"
@@ -237,7 +241,11 @@
               class="relative mr-3 flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg search"
               @click.stop="openRewardClaimPopup"
             >
-              <GiftIcon class="h-6 w-6 fill-none" />
+              <SmartImage
+                :src="giftImage"
+                alt=""
+                class="pointer-events-none absolute inset-0 size-full"
+              />
               <!-- PC 暂无独立稿：按 H5 角标比例略放大 -->
               <span
                 v-if="pendingClaimBadgeText"
@@ -371,10 +379,10 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useUserBalancePolling } from '@/composables/useUserBalancePolling'
 import bellDefaultImage from '@/static/img/bell.png'
 import bellUnreadImage from '@/static/img/bell_n.png'
+import giftImage from '@/static/img/top-nav-gift.png'
 import ChatIcon from '@/static/svg/chat.svg?component'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
-import GiftIcon from '@/static/svg/login/gift.svg?component'
 import Jia from '@/static/svg/login/jia.svg?component'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
@@ -928,7 +936,7 @@ defineExpose({
   background-color: var(--color-background-level-3);
 }
 .fold-icon-wrap {
-  display: inline-flex;
+  color: var(--color-icon-level-2);
   align-items: center;
   justify-content: center;
   transform-origin: center;

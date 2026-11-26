@@ -546,31 +546,37 @@
         :class="
           props.mode === 'pc'
             ? 'min-h-[150px] overflow-hidden rounded-[16px] p-5'
-            : 'h-[88px] overflow-visible'
+            : 'h-[88px] overflow-hidden'
         "
       >
         <!-- 邀请任务卡片主体 -->
         <div
           class="relative z-[1] flex h-full items-center"
-          :class="props.mode === 'pc' ? 'justify-between gap-3' : 'pr-[112px]'"
+          :class="props.mode === 'pc' ? 'justify-between gap-3' : 'pr-[96px]'"
         >
           <!-- 邀请任务左侧文案 -->
           <div
-            class="flex min-w-0 flex-col"
-            :class="props.mode === 'pc' ? 'gap-3' : 'justify-center gap-[10px] py-3 pl-3.5'"
+            class="flex flex-col"
+            :class="
+              props.mode === 'pc'
+                ? 'min-w-0 gap-3'
+                : 'shrink-0 justify-center gap-[10px] py-3 pl-3.5'
+            "
           >
             <!-- 邀请任务标题（H5：标题与奖励同一行） -->
             <div
-              class="flex min-w-0 items-center"
+              class="flex items-center"
               :class="
-                props.mode === 'pc' ? 'flex-wrap gap-2.5' : 'flex-nowrap gap-1 whitespace-nowrap'
+                props.mode === 'pc'
+                  ? 'min-w-0 flex-wrap gap-2.5'
+                  : 'shrink-0 flex-nowrap gap-1 whitespace-nowrap'
               "
             >
               <!-- 邀请任务前缀 -->
               <span
-                class="font-[400] text-common-100"
+                class="shrink-0 whitespace-nowrap font-[400] text-common-100"
                 :class="
-                  props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-sm leading-[17px]'
+                  props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-[13px] leading-[16px]'
                 "
               >
                 {{ props.inviteRewardPrefix }}
@@ -578,7 +584,7 @@
 
               <!-- 邀请任务人数 -->
               <span
-                class="font-[700] text-secondary-6"
+                class="shrink-0 whitespace-nowrap font-[700] text-secondary-6"
                 :class="
                   props.mode === 'pc' ? 'text-[28px] leading-[34px]' : 'text-lg leading-[22px]'
                 "
@@ -588,9 +594,9 @@
 
               <!-- 邀请任务后缀 -->
               <span
-                class="font-[400] text-common-100"
+                class="shrink-0 whitespace-nowrap font-[400] text-common-100"
                 :class="
-                  props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-sm leading-[17px]'
+                  props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-[13px] leading-[16px]'
                 "
               >
                 {{ props.inviteRewardSuffix }}
@@ -601,11 +607,13 @@
                 <img
                   :src="props.commissionCoinImage"
                   :alt="props.inviteRewardAmount"
-                  class="ml-0.5 h-[15px] w-[15px] object-contain"
+                  class="ml-0.5 h-[15px] w-[15px] shrink-0 object-contain"
                 />
 
                 <!-- 邀请任务奖励文本 -->
-                <span class="text-lg font-[700] leading-[22px] text-secondary-6">
+                <span
+                  class="shrink-0 whitespace-nowrap text-lg font-[700] leading-[22px] text-secondary-6"
+                >
                   {{ props.inviteRewardAmount }}
                 </span>
               </template>
@@ -647,9 +655,7 @@
           <div
             class="pointer-events-none absolute"
             :class="
-              props.mode === 'pc'
-                ? 'right-0 top-1/2 -translate-y-1/2'
-                : 'bottom-0 right-0 top-0 flex items-center'
+              props.mode === 'pc' ? 'right-0 top-1/2 -translate-y-1/2' : 'bottom-[-12px] right-0'
             "
           >
             <!-- 邀请任务装饰圆形 -->
@@ -666,7 +672,7 @@
               :class="
                 props.mode === 'pc'
                   ? 'relative h-[128px] w-[128px] translate-x-[-8px] opacity-95'
-                  : 'h-full w-auto max-w-none'
+                  : 'h-[140px] w-auto max-w-none'
               "
             />
           </div>

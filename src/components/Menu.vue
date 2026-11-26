@@ -1169,8 +1169,12 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   border-bottom-right-radius: 0;
 }
 
-.launch-card-active .pc-menu-icon {
+.launch-card-active :deep(.pc-menu-icon) {
   color: var(--color-theme-level-1);
+}
+
+.launch-card-active :deep(.pc-menu-icon path) {
+  fill: currentColor;
 }
 
 @screen sm {
@@ -1190,12 +1194,13 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
     color: var(--color-icon-level-1);
   }
 
-  .launch-card-active {
-    background: var(--color-hover-1);
+  .launch-card-active,
+  .launch-card-active:hover {
+    background: var(--color-background-level-2);
     color: var(--color-theme-level-1);
   }
 
-  .launch-card-active .pc-menu-icon {
+  .launch-card-active :deep(.pc-menu-icon) {
     width: 20px;
     height: 20px;
     color: var(--color-theme-level-1);
