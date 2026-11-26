@@ -2,7 +2,7 @@ import { computed, onMounted, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import type { RecordForm, RecordResult } from '@/api/interface/activity'
-import { formatTimestamp } from '@/utils/date'
+import { formatTimestamp, getHistoryTimeRange } from '@/utils/date'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { createBetHistoryTimeOptions } from '@/views/wallet/betHistory/shared'
@@ -90,39 +90,13 @@ export const normalizeVoucherHistoryFilterValues = (
   type: getSingleFilterValue(values.type)
 })
 
-const getTimeRange = (value: string) => {
-  const now = new Date()
-  const startOfDay = (date: Date) => new Date(date.setHours(0, 0, 0, 0)).getTime()
-  const endOfDay = (date: Date) => new Date(date.setHours(23, 59, 59, 999)).getTime()
-
-  if (value === 'all') return { startReceiveTime: null, endReceiveTime: null }
-  if (value === 'today')
-    return { startReceiveTime: startOfDay(new Date(now)), endReceiveTime: now.getTime() }
-  if (value === 'yesterday') {
-    const yesterday = new Date(now)
-    yesterday.setDate(yesterday.getDate() - 1)
-    return {
-      startReceiveTime: startOfDay(new Date(yesterday)),
-      endReceiveTime: endOfDay(new Date(yesterday))
-    }
-  }
-
-  const dayMap: Record<string, number> = { last3days: 3, last15days: 15, last30days: 30 }
-  const days = dayMap[value]
-  if (!days) return { startReceiveTime: null, endReceiveTime: null }
-
-  const startDate = new Date(now)
-  startDate.setDate(startDate.getDate() - (days - 1))
-  return { startReceiveTime: startOfDay(startDate), endReceiveTime: now.getTime() }
-}
-
 export const buildVoucherHistoryQueryForm = (params: {
   page: number
   pageSize: number
   filterValues: FilterInput
 }): RecordForm => {
   const normalized = normalizeVoucherHistoryFilterValues(params.filterValues)
-  const { startReceiveTime, endReceiveTime } = getTimeRange(normalized.time)
+  const { startTime, endTime } = getHistoryTimeRange(normalized.time)
   const form: RecordForm = {
     current: params.page,
     size: params.pageSize,
@@ -131,11 +105,11 @@ export const buildVoucherHistoryQueryForm = (params: {
   if (normalized.type !== 'all') {
     form.type = Number(normalized.type)
   }
-  if (startReceiveTime !== null) {
-    form.startReceiveTime = startReceiveTime
+  if (startTime !== null) {
+    form.startReceiveTime = startTime
   }
-  if (endReceiveTime !== null) {
-    form.endReceiveTime = endReceiveTime
+  if (endTime !== null) {
+    form.endReceiveTime = endTime
   }
   return form
 }

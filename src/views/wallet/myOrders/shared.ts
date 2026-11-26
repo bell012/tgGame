@@ -10,7 +10,7 @@ import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import shopeePayIcon from '@/static/svg/coin/shopeePay.svg?url'
-import { formatTimestamp } from '@/utils/date'
+import { formatTimestamp, getHistoryTimeRange } from '@/utils/date'
 import { resolveGameImageUrl } from '@/utils/image'
 import { getCurrentCurrency, getFormattedBalance, getLanguageCode } from '@/utils/locale'
 
@@ -24,12 +24,7 @@ export type OrderTypeIconMap = Record<string, OrderTypeMeta>
 export type OrderTab = 'deposits' | 'withdrawals'
 export type OrderStatus = string
 export type OrderTimeFilter =
-  | 'all'
-  | 'today'
-  | 'yesterday'
-  | 'last3days'
-  | 'last15days'
-  | 'last30days'
+  'all' | 'today' | 'yesterday' | 'last3days' | 'last15days' | 'last30days'
 export type OrderTypeFilter = 'all' | 'gcash' | 'maya' | 'grabpay' | 'shopeepay' | 'usdt'
 export type OrderStatusFilter = 'all' | 'success' | 'failed' | 'processing'
 
@@ -263,52 +258,6 @@ export const getMyOrderStatusText = (
 export const getMyOrderStatusClass = (tab: OrderTab, status: number | string | null | undefined) =>
   getOrderStatusColorClass(tab === 'deposits' ? 'deposit' : 'withdraw', status)
 
-const getStartOfDay = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0).getTime()
-
-const getEndOfDay = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999).getTime()
-
-/**
- * 根据日期筛选返回时间范围。
- */
-export const getMyOrdersTimeRange = (filter: OrderTimeFilter) => {
-  const now = new Date()
-
-  if (filter === 'all') {
-    return {
-      startTime: null,
-      endTime: null
-    }
-  }
-
-  if (filter === 'today') {
-    return {
-      startTime: getStartOfDay(now),
-      endTime: now.getTime()
-    }
-  }
-
-  if (filter === 'yesterday') {
-    const yesterday = new Date(now)
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    return {
-      startTime: getStartOfDay(yesterday),
-      endTime: getEndOfDay(yesterday)
-    }
-  }
-
-  const days = filter === 'last3days' ? 3 : filter === 'last15days' ? 15 : 30
-  const startDate = new Date(now)
-  startDate.setDate(startDate.getDate() - (days - 1))
-
-  return {
-    startTime: getStartOfDay(startDate),
-    endTime: now.getTime()
-  }
-}
-
 /**
  * 根据状态筛选返回接口状态参数。
  */
@@ -335,7 +284,7 @@ export const buildMyOrdersQueryParams = (
   current: number,
   size: number
 ): QueryMemberPayOrderPageForm => {
-  const { startTime, endTime } = getMyOrdersTimeRange(filters.time)
+  const { startTime, endTime } = getHistoryTimeRange(filters.time)
 
   return {
     page: {

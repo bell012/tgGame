@@ -177,11 +177,29 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'hash-game/bet-history',
+    name: 'hashGameBetHistory',
+    component: () => import('@/views/hash_game/bet-history.vue'),
+    props: route => ({
+      initialGameCode: typeof route.query.gameCode === 'string' ? route.query.gameCode : undefined
+    }),
+    meta: {
+      title: 'Bet History',
+      requiresAuth: true, // 需要登录后才能进入路由
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'hash-game/bet-details/:id',
     name: 'hashGameBetDetails',
     component: () => import('@/views/hash_game/bet-detail.vue'),
     meta: {
       title: 'Bet Details',
+      requiresAuth: true, // 需要登录后才能进入路由
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
