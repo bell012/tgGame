@@ -5,7 +5,7 @@
       <slot name="trigger" :toggle="togglePopup" :open="popupShow">
         <button
           type="button"
-          class="flex w-full items-center justify-between rounded-lg border border-solid border-opacity-10 sm:border-opacity-6 max-sm:bg-opacity-5 sm:bg-bg-5 px-2.5 py-[11px]"
+          class="flex w-full items-center justify-between rounded-lg border border-solid border-opacity-10 sm:border-opacity-6 max-sm:bg-bg-2 sm:bg-bg-5 px-2.5 py-[11px]"
           @click.stop="togglePopup"
         >
           <div class="flex flex-1 items-center text-xs sm:mr-2 sm:min-w-0">

@@ -1,6 +1,7 @@
 <template>
   <!-- 订单弹窗壳组件 -->
   <depositPopShell
+    :teleport-target="teleportTarget"
     :modelValue="modelValue"
     :isHidden="hiddenPop"
     :withMask="true"
@@ -8,7 +9,14 @@
     @overlay-close="handleClose"
   >
     <!-- 数字币订单面板 -->
-    <orderCryptoPanel :orderInfo="orderInfo" @close="handleClose" @hidden="handleHidden" />
+    <orderCryptoPanel
+      ref="orderPanel"
+      :embedded="embedded"
+      :teleport-target="teleportTarget"
+      :orderInfo="orderInfo"
+      @close="handleClose"
+      @hidden="handleHidden"
+    />
   </depositPopShell>
 </template>
 
@@ -21,6 +29,8 @@ import type { CryptOrderType } from '../orderType'
 import orderCryptoPanel from './orderCryptoPanel.vue'
 
 interface Props {
+  embedded?: boolean
+  teleportTarget?: HTMLElement | null
   modelValue: boolean
   orderInfo: Partial<CryptOrderType> | Partial<QueryPayOrderByOrderIdResult>
 }
@@ -57,4 +67,13 @@ const handleHidden = (value: boolean) => {
   emit('hidden', value)
   hiddenPop.value = value
 }
+
+const orderPanel = ref<InstanceType<typeof orderCryptoPanel>>()
+const back = () => {
+  if (!props.modelValue) return false
+  if (orderPanel.value?.back()) return true
+  handleClose()
+  return true
+}
+defineExpose({ back })
 </script>

@@ -32,7 +32,7 @@
               </p>
               <p v-else class="text-sm leading-[20px] text-text-1">
                 {{ t('ticketPage.taskPop.introUnlockPrefix') }}
-                <span class="font-[700] text-theme-primary">{{ voucherName }}</span>
+                <span class="text-theme-primary font-bold">{{ voucherName }}</span>
               </p>
               <p class="mt-2.5 text-[14px] leading-[20px] text-text-1">
                 {{ t('ticketPage.taskPop.introReward') }}

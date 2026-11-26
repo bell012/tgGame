@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import i18n from '@/i18n'
 import { globalShowToast } from '@/utils/toast'
 import type { HashChatHistoryResponse } from '@/views/hash_game/chat/types'
 
@@ -15,7 +16,7 @@ export async function sendHashChatMessage(data: {
 }): Promise<HashChatSendResponse> {
   const now = Date.now()
   if (now - lastChatSendAt < CHAT_SEND_INTERVAL_MS) {
-    globalShowToast({ message: FREQUENT_MESSAGE, type: 'fail' })
+    globalShowToast({ message: i18n.global.t('hashGame.chatTooFrequent'), type: 'fail' })
     return { code: 'C1', success: false, message: FREQUENT_MESSAGE }
   }
   lastChatSendAt = now
@@ -29,7 +30,13 @@ export async function sendHashChatMessage(data: {
     preserveResponseMessage: true
   }) as Promise<HashChatSendResponse>)
   if ((response.code === 'C1' || !response.success) && response.message) {
-    globalShowToast({ message: response.message, type: 'fail' })
+    globalShowToast({
+      message:
+        response.code === 'C1' && response.message === FREQUENT_MESSAGE
+          ? i18n.global.t('hashGame.chatTooFrequent')
+          : response.message,
+      type: 'fail'
+    })
   }
   return response
 }

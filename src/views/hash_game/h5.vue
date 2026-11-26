@@ -423,7 +423,9 @@
               :key="sound.type"
               type="button"
               class="grid size-[34px] place-items-center rounded-full bg-bg-4"
-              :aria-label="sound.type === 'background' ? 'Background music' : 'Music'"
+              :aria-label="
+                t(sound.type === 'background' ? 'hashGame.backgroundMusic' : 'hashGame.gameSound')
+              "
               :aria-pressed="sound.type === 'background' ? backgroundMusicEnabled : musicEnabled"
               @click="sound.type === 'background' ? toggleBackgroundMusic() : toggleMusic()"
             >
@@ -564,6 +566,7 @@
     <!-- 投注记录弹窗 -->
     <RecentBetsPopup
       v-model:visible="recentBetsOpen"
+      :game-code="selectedHashGameCode"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :bets="recentBets"
@@ -581,7 +584,7 @@
     />
 
     <!-- H5 聊天输入弹窗由 ChatIcon 打开。 -->
-    <HashChatComposerPopup
+    <HashH5ChatComposerPopup
       :visible="chatComposerOpen"
       :config="chatConfig"
       :busy="chatSendBusy"
@@ -640,7 +643,7 @@ import BetChip from './components/BetChip.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import ChipFace from './components/ChipFace.vue'
 import FlyingChip from './components/FlyingChip.vue'
-import HashChatComposerPopup from './components/HashChatComposerPopup.vue'
+import HashH5ChatComposerPopup from './components/HashH5ChatComposerPopup.vue'
 import HashGameChat from './components/HashGameChat.vue'
 import HashSettlementPopup from './components/HashSettlementPopup.vue'
 import HistoryPopup from './components/HistoryPopup.vue'

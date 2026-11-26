@@ -19,6 +19,7 @@
       :invite-reward-count="props.inviteRewardCount"
       :invite-reward-suffix="props.inviteRewardSuffix"
       :invite-reward-amount="props.inviteRewardAmount"
+      :invite-reward-currency="props.inviteRewardCurrency"
       :task-details-text="props.taskDetailsText"
       :commission-boost-loading="props.commissionBoostLoading"
       :show-commission-boost="props.showCommissionBoost"
@@ -79,6 +80,7 @@ interface Props {
   inviteRewardCount: string
   inviteRewardSuffix: string
   inviteRewardAmount: string
+  inviteRewardCurrency: string
   taskDetailsText: string
   commissionBoostLoading: boolean
   showCommissionBoost: boolean

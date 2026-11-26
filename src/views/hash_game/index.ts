@@ -268,8 +268,10 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   useHashGameSockets(gameCode, currency.currentCurrencyCode, hashGameSocketToken, {
     onChatEvent: acceptWsEvent,
     onChatReconnect: chat.reloadChatMessages,
+    onChatSubscribed: chat.reloadChatMessages,
     onDefaultEvent: event => {
       if (event.code !== 0) return
+      if (event.type === 'CHAT_PRIVATE') chat.acceptPrivateEvent(event.data)
       if (event.type === 'BLOCK_RESULT') {
         const anchor = hashGameInfo.value?.anchorBlockNum
         const block = event.data?.blockNum
@@ -281,6 +283,7 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
         event.data?.currency === currency.currentCurrencyCode.value
       )
         void userStore.refreshBalance({ force: true })
+      if (event.type === 'CHAIN_LOTTERY_SETTLE') chat.acceptSettlementEvent(event.data)
     }
   })
   /** 当前阶段用本地模拟发送回包更新聊天室。 */
@@ -288,10 +291,12 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   const chatConfig = ref<HashChatConfig | null>(null)
 
   /** 按当前游戏读取真实聊天配置及本人投注展示方式。 */
-  const refreshChatConfig = async () => {
+  const refreshChatConfig = async (preserveCurrent = false) => {
     const code = gameCode.value
-    chatConfig.value = null
-    chat.betBroadcastMode.value = 'INDIVIDUAL'
+    if (!preserveCurrent) {
+      chatConfig.value = null
+      chat.betBroadcastMode.value = 'INDIVIDUAL'
+    }
     if (!code) return
     try {
       const response = await queryHashChatConfig(code)
@@ -305,7 +310,7 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   }
 
   /** 进入游戏或切换游戏时读取当前房间的聊天配置。 */
-  watch(gameCode, refreshChatConfig, { immediate: true })
+  watch(gameCode, () => void refreshChatConfig(), { immediate: true })
   const periodsOpen = ref(false)
   const historyPopupOpen = ref(false)
   const periodTriggerRef = ref<HTMLElement | null>(null)
@@ -372,7 +377,12 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
     refreshBalance: async () => Boolean(await userStore.refreshBalance({ force: true })),
     notify: (key, type = 'fail', params) =>
       globalShowToast({ message: params ? t(key, params) : t(key), type }),
-    onPlaced: chat.acceptSuccessfulBet
+    onPlaced: chat.acceptSuccessfulBet,
+    onSuccessfulSubmit: () => {
+      if (!isMobile.value && chatConfig.value?.unlocked === false) {
+        void refreshChatConfig(true)
+      }
+    }
   })
   const selectBet = (option: BetKey) => {
     if (!marketOptions.value.some(market => BET_KEYS[market] === option)) return
@@ -458,7 +468,6 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   const acceptHttpDraw = chat.acceptHttpDraw
 
   /** 对外接收 HTTP 结算结果；真实 HTTP 请求完成后还需刷新余额。 */
-  const acceptRecentBets = chat.acceptRecentBets
 
   /** 关闭当前结算提示，依次展示下一币种及下一输赢状态。 */
   const dismissSettlement = chat.dismissSettlement
@@ -823,7 +832,6 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
     currentSettlement,
     acceptWsEvent,
     acceptHttpDraw,
-    acceptRecentBets,
     dismissSettlement,
     betChips: betting.chips,
     betTotals: betting.betTotals,

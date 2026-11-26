@@ -132,6 +132,7 @@
                       class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-bg-4"
                     >
                       <img
+                        v-if="getOrderTypeIcon(item)"
                         :src="getOrderTypeIcon(item)"
                         :alt="getOrderTypeLabel(item)"
                         class="h-full w-full object-cover"
@@ -246,7 +247,7 @@ import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import WalletLayout from '../index.vue'
 import OrderDetailScrollPanel from './OrderDetailScrollPanel.vue'
@@ -477,14 +478,31 @@ const handleCopyOrderNo = async (orderNo: string) => {
   })
 }
 
-onMounted(() => {
-  void loadMyOrderTypeIconMap()
-    .then(result => {
-      orderTypeIconMap.value = result
+const loadedCategoryIds = new Set<number>()
+watch(
+  mobileRows,
+  async records => {
+    const missing = records.filter(record => {
+      const id = Number(record.categoryId)
+      if (record.categoryId == null || !Number.isFinite(id) || id < 0 || loadedCategoryIds.has(id))
+        return false
+      loadedCategoryIds.add(id)
+      return true
     })
-    .catch(error => {
+    if (!missing.length) return
+    try {
+      orderTypeIconMap.value = {
+        ...orderTypeIconMap.value,
+        ...(await loadMyOrderTypeIconMap(missing))
+      }
+    } catch (error) {
       console.error('loadMyOrderTypeIconMap failed', error)
-    })
+    }
+  },
+  { deep: true }
+)
+
+onMounted(() => {
   isReady.value = true
 })
 </script>

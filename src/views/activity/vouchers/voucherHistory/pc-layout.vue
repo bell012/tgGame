@@ -3,14 +3,14 @@
     <!-- 筛选区 -->
     <div class="mb-5 flex items-center gap-3 flex-wrap">
       <CustomSelect
-        class="w-[240px]"
+        class="w-[230px]"
         v-model="filterValues.time"
         :options="timeOptions"
         :placeholder="$t('betHistory.filterGroups.date')"
         use-placeholder-when-all
       />
       <CustomSelect
-        class="w-[240px]"
+        class="w-[230px]"
         v-model="filterValues.type"
         :options="typeOptions"
         :placeholder="$t('vouchers.type')"

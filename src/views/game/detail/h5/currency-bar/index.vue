@@ -5,6 +5,7 @@
       class="min-w-0 flex-[190]"
       :change-currency="changeCurrency"
       :disabled="loading"
+      @deposit="emit('deposit')"
     />
     <button
       type="button"
@@ -31,7 +32,7 @@ defineProps<{
   loading: boolean
   changeCurrency: (value: string) => Promise<boolean>
 }>()
-const emit = defineEmits<{ play: [] }>()
+const emit = defineEmits<{ play: []; deposit: [] }>()
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
 const isLogin = computed(() => Boolean(userStore.userInfo?.tradeToken))

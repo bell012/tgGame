@@ -43,6 +43,7 @@ export function useHashGameBetting(options: {
   refreshBalance: () => Promise<boolean>
   notify: (key: string, type?: 'success' | 'fail', params?: { amount: number }) => void
   onPlaced: (request: HashGamePlaceBetParams, result: HashGamePlaceBetResult) => void
+  onSuccessfulSubmit?: () => void
 }) {
   const draft = ref<HashGameBetChip[]>([])
   const placed = ref<PlacedBet[]>([])
@@ -260,6 +261,7 @@ export function useHashGameBetting(options: {
       if (quick) removeDraftChips([...groups.values()].flat())
       if (sameAccount(account) && balanceNeedsRefresh) await syncBalance(account)
       busy.value = false
+      if (notified && sameRound(account, key)) options.onSuccessfulSubmit?.()
     }
   }
 

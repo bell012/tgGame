@@ -147,7 +147,9 @@
                 :key="sound.type"
                 type="button"
                 class="grid size-[30px] place-items-center rounded-[6px] bg-bg-3"
-                :aria-label="sound.type === 'background' ? 'Background music' : 'Music'"
+                :aria-label="
+                  t(sound.type === 'background' ? 'hashGame.backgroundMusic' : 'hashGame.gameSound')
+                "
                 :aria-pressed="sound.type === 'background' ? backgroundMusicEnabled : musicEnabled"
                 @click="sound.type === 'background' ? toggleBackgroundMusic() : toggleMusic()"
               >
@@ -399,6 +401,7 @@
     <RecentBetsPopup
       v-model:visible="recentBetsOpen"
       variant="pc"
+      :game-code="selectedHashGameCode"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :bets="recentBets"

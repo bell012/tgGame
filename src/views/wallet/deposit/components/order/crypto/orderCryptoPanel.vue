@@ -24,6 +24,7 @@
         <!-- 订单详情按钮 -->
         <button
           class="absolute right-3.5 top-1/2 -translate-y-1/2 w-[33px] h-[33px] bg-opacity-6 rounded-lg flex items-center justify-center z-10"
+          v-if="!embedded"
           @click="openDepositOrder"
         >
           <DetailsIcon class="w-4 h-4" />
@@ -262,6 +263,8 @@
 
   <!-- 取消订单弹窗 -->
   <cancelOrderPop
+    ref="cancelPopup"
+    :teleport-target="teleportTarget"
     v-if="cancelOrderPopShow"
     v-model="cancelOrderPopShow"
     :order-id="cryptoOrderNo"
@@ -269,6 +272,7 @@
   />
   <!-- 取消后订单结果弹窗 -->
   <depositCryptoResultPop
+    :teleport-target="teleportTarget"
     v-model:model-value="cancelResultPopShow"
     :order-info="cancelResultOrderInfo"
     :method-icon="cryptoMethodIcon"
@@ -277,6 +281,8 @@
   />
   <!-- 上传凭证弹窗 -->
   <uploadProofPop
+    ref="proofPopup"
+    :teleport-target="teleportTarget"
     v-model="uploadPopShow"
     :order-id="cryptoOrderNo"
     @close="handleUploadProofClose"
@@ -318,6 +324,8 @@ const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
 interface Props {
+  embedded?: boolean
+  teleportTarget?: HTMLElement | null
   orderInfo: Partial<CryptOrderType> | Partial<QueryPayOrderByOrderIdResult>
 }
 
@@ -648,6 +656,22 @@ watch(
   },
   { immediate: true }
 )
+
+const cancelPopup = ref<InstanceType<typeof cancelOrderPop>>()
+const proofPopup = ref<InstanceType<typeof uploadProofPop>>()
+const back = () => {
+  if (proofPopup.value?.back()) return true
+  if (cancelResultPopShow.value) {
+    handleCancelResultClose()
+    return true
+  }
+  if (cancelOrderPopShow.value) {
+    cancelPopup.value?.close()
+    return true
+  }
+  return false
+}
+defineExpose({ back })
 </script>
 
 <style scoped lang="scss">

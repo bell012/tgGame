@@ -172,11 +172,17 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
-import { BET_KEYS, type RecentBetRecord, type RecentBetSummary } from '../lotteryDisplay'
+import {
+  BET_KEYS,
+  HASH_BET_STATUS_KEYS,
+  type RecentBetRecord,
+  type RecentBetSummary
+} from '../lotteryDisplay'
 
 const props = withDefaults(
   defineProps<{
     visible: boolean
+    gameCode: string
     currencyCode: string
     currencyIcon: string
     bets: RecentBetRecord[]
@@ -193,15 +199,6 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 
-const statusKeys = {
-  CONFIRMING: 'confirming',
-  VOIDED: 'voided',
-  PENDING: 'pending',
-  REFUND: 'refund',
-  ERROR: 'error',
-  CANCEL: 'cancelled'
-} satisfies Record<Exclude<RecentBetRecord['status'], 'WIN' | 'LOSE'>, string>
-
 const currencySymbol = computed(() => getCurrencySymbol(props.currencyCode))
 
 const formatBetOption = (option: RecentBetRecord['betOption']) => {
@@ -216,13 +213,15 @@ const formatBetResult = ({ status, profitLoss }: RecentBetRecord) => {
   if (status === 'WIN' || status === 'LOSE') {
     return profitLoss == null ? '—' : formatSignedAmount(profitLoss)
   }
-  const key = statusKeys[status]
+  const key = HASH_BET_STATUS_KEYS[status]
   return typeof key === 'string' ? t(`hashGame.betDetailStatus.${key}`) : '—'
 }
 
 const openBetHistory = () => {
   emit('update:visible', false)
-  void navigateTo('/bet-history')
+  void navigateTo('/hash-game/bet-history', {
+    query: { gameCode: props.gameCode || undefined }
+  })
 }
 
 const openBetDetail = (orderNo: string) => {

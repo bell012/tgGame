@@ -8,6 +8,7 @@
       :style="topNavStyle"
       @toggle-sidebar="toggleSidebar"
       @notification-click="handleNotificationClick"
+      @return-home="handleReturnHome"
     />
 
     <!-- 侧边栏 -->
@@ -198,7 +199,13 @@ import {
   watch,
   type Component as VueComponent
 } from 'vue'
-import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router'
+import {
+  isNavigationFailure,
+  NavigationFailureType,
+  useRoute,
+  useRouter,
+  type RouteLocationNormalizedLoaded
+} from 'vue-router'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
@@ -229,20 +236,41 @@ const hasViewportModeInitialized = ref(false)
 
 const route = useRoute()
 const router = useRouter()
+const scrollMainArea = (mainTop = 0, windowTop = 0) => {
+  mainContentRef.value?.scrollTo({ top: mainTop, behavior: 'instant' })
+  window.scrollTo({ top: windowTop, behavior: 'instant' })
+}
+let returnHomePath: string | null = null
+const handleReturnHome = (path: string) => {
+  if (path === route.fullPath) {
+    scrollMainArea()
+    return
+  }
+  returnHomePath = path
+}
 const isBottomTabTransition = ref(false)
 const removeBottomTabTransitionGuard = router.beforeEach((to, from) => {
   const fromRoute = from as RouteLocationNormalizedLoaded
   const toRoute = to as RouteLocationNormalizedLoaded
   isBottomTabTransition.value =
     isMobile.value &&
+    to.fullPath !== returnHomePath &&
     (isBottomTabRoute(fromRoute) || isMobileMenuRoute(fromRoute)) &&
     (isBottomTabRoute(toRoute) || isMobileMenuRoute(toRoute)) &&
     getBottomTabIndex(fromRoute) !== getBottomTabIndex(toRoute) &&
     fromRoute.meta?.slideTransition !== true &&
     toRoute.meta?.slideTransition !== true
 })
-const removeBottomTabTransitionAfterEach = router.afterEach((_to, _from, failure) => {
+const removeBottomTabTransitionAfterEach = router.afterEach((to, _from, failure) => {
+  if (isNavigationFailure(failure, NavigationFailureType.cancelled)) return
   if (failure) isBottomTabTransition.value = false
+  if (!failure && to.fullPath === returnHomePath) {
+    mobileScrollPositions.delete(getMainRouteViewKey(to as RouteLocationNormalizedLoaded))
+    void nextTick(() => {
+      if (route.fullPath === to.fullPath) scrollMainArea()
+    })
+  }
+  returnHomePath = null
 })
 const finishBottomTabTransition = () => {
   isBottomTabTransition.value = false
@@ -434,8 +462,7 @@ watch(
 
     await nextTick()
     const position = mobileScrollPositions.get(key)
-    mainContentRef.value?.scrollTo({ top: position?.mainTop ?? 0, behavior: 'instant' })
-    window.scrollTo({ top: position?.windowTop ?? 0, behavior: 'instant' })
+    scrollMainArea(position?.mainTop, position?.windowTop)
   },
   { immediate: true }
 )

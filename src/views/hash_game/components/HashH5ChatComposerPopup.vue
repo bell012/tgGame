@@ -12,15 +12,15 @@
           class="flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-t-[24px] bg-bg-1 pt-[20px] pb-[40px] font-inter"
           role="dialog"
           aria-modal="true"
-          aria-label="Send message"
+          :aria-label="t('hashGame.chatSendMessage')"
         >
           <!-- 标题与关闭按钮。 -->
           <header class="flex shrink-0 items-center justify-between px-[12px]">
-            <h2 class="text-[16px] font-bold text-text-1">Send message</h2>
+            <h2 class="text-[16px] font-bold text-text-1">{{ t('hashGame.chatSendMessage') }}</h2>
             <button
               type="button"
               class="grid size-[28px] place-items-center rounded-[6px] bg-opacity-10 text-[24px] leading-none text-text-1"
-              aria-label="Close"
+              :aria-label="t('common.close')"
               @click="emit('close')"
             >
               ×
@@ -29,10 +29,13 @@
 
           <!-- 表情和常用语区域。 -->
           <div class="mt-[20px] min-h-0 overflow-y-auto px-[12px]">
-            <p class="text-[14px] text-text-2">expression</p>
+            <p class="text-[14px] text-text-2">{{ t('hashGame.chatEmoji') }}</p>
 
             <!-- 固定两行，超出屏幕宽度后横向滑动。 -->
-            <div class="hash-chat-emoji-scroll mt-[10px] w-full" aria-label="Emoji list">
+            <div
+              class="hash-chat-emoji-scroll mt-[10px] w-full"
+              :aria-label="t('hashGame.chatEmojiList')"
+            >
               <div class="hash-chat-emoji-grid">
                 <button
                   v-for="emoji in commonEmojis"
@@ -50,7 +53,9 @@
             </div>
 
             <!-- 常用语按聊天配置动态展示。 -->
-            <p class="mt-[20px] text-[14px] text-text-2">Common Expressions</p>
+            <p class="mt-[20px] text-[14px] text-text-2">
+              {{ t('hashGame.chatCommonExpressions') }}
+            </p>
 
             <div class="mt-[10px] flex max-h-[140px] flex-wrap gap-[10px] overflow-y-auto">
               <button
@@ -76,7 +81,7 @@
               v-model="draft"
               class="h-[42px] min-w-0 flex-1 rounded-[10px] border border-input-2 bg-bg-3 px-[12px] text-[13px] text-text-1 outline-none placeholder:text-text-3"
               :maxlength="config.lengthLimit"
-              placeholder="Say something..."
+              :placeholder="t('hashGame.chatInputPlaceholder')"
               @keydown.enter="send"
             />
 
@@ -86,7 +91,7 @@
               :disabled="busy || !draft.trim()"
               @click="send"
             >
-              Send
+              {{ t('hashGame.chatSend') }}
             </button>
           </div>
 
@@ -98,8 +103,14 @@
             <img :src="lockIcon" alt="" class="size-[24px] shrink-0" />
 
             <div class="min-w-0 flex-1 text-[12px] text-text-2">
-              <p class="text-[13px] text-text-1">Bet to send custom content.</p>
-              <p>Bet any amount to unlock emojis and phrases.</p>
+              <p class="text-[13px] text-text-1">{{ t('hashGame.chatUnlockCustom') }}</p>
+              <p>
+                {{
+                  config?.unlockMode === 'amount'
+                    ? t('hashGame.chatUnlockAmountHint', { amount: config.unlockAmount })
+                    : t('hashGame.chatUnlockHint')
+                }}
+              </p>
             </div>
 
             <button
@@ -107,7 +118,7 @@
               class="shrink-0 rounded-full bg-theme-primary px-[10px] py-[6px] text-[11px] text-text-4"
               @click="emit('bet')"
             >
-              去下注
+              {{ t('hashGame.chatBetNow') }}
             </button>
           </div>
 
@@ -125,6 +136,7 @@
 <script setup lang="ts">
 import lockIcon from '@/static/svg/hash_game/chat/lock.svg?url'
 import { getWebRuntimeEnvironment } from '@/utils/runtime-environment'
+import { useI18n } from 'vue-i18n'
 import { nextTick, ref } from 'vue'
 import type { HashChatConfig } from '../chat/config'
 
@@ -141,6 +153,7 @@ const emit = defineEmits<{
 }>()
 
 const environment = getWebRuntimeEnvironment()
+const { t } = useI18n()
 const draft = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 

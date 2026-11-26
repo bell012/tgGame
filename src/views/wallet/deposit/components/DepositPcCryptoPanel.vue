@@ -245,6 +245,9 @@
 
   <!-- 充值订单弹窗组件 -->
   <depositCryptoOrderPop
+    ref="orderPopup"
+    :embedded="embedded"
+    :teleport-target="teleportTarget"
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
@@ -274,6 +277,8 @@ const { t } = useI18n()
 
 const props = defineProps<{
   initialMethodCode?: string
+  embedded?: boolean
+  teleportTarget?: HTMLElement | null
 }>()
 
 const emit = defineEmits<{
@@ -329,6 +334,9 @@ const handleCoinWheel = (event: WheelEvent) => {
     behavior: 'auto'
   })
 }
+
+const orderPopup = ref<InstanceType<typeof depositCryptoOrderPop>>()
+defineExpose({ back: () => orderPopup.value?.back() ?? false })
 </script>
 
 <style scoped lang="scss">

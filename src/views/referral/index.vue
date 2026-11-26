@@ -34,6 +34,7 @@
           :invite-reward-count="inviteRewardCount"
           :invite-reward-suffix="t('referral.h5.inviteRewardSuffix')"
           :invite-reward-amount="inviteRewardAmount"
+          :invite-reward-currency="inviteRewardCurrency"
           :task-details-text="t('referral.h5.taskDetails')"
           :commission-boost-loading="commissionBoostLoading"
           :show-commission-boost="shouldShowCommissionBoost"
@@ -84,6 +85,7 @@
         :invite-reward-count="inviteRewardCount"
         :invite-reward-suffix="t('referral.h5.inviteRewardSuffix')"
         :invite-reward-amount="inviteRewardAmount"
+        :invite-reward-currency="inviteRewardCurrency"
         :task-details-text="t('referral.h5.taskDetails')"
         :commission-boost-loading="commissionBoostLoading"
         :show-commission-boost="shouldShowCommissionBoost"
@@ -173,7 +175,12 @@ import { useUserStore } from '@/stores/user'
 import { ApiBusinessError, ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { executeConfiguredJump } from '@/utils/contentJump'
-import { formatBalance, getCurrentCurrency, getLanguageCode } from '@/utils/locale'
+import {
+  formatBalance,
+  getCurrencySymbol,
+  getCurrentCurrency,
+  getLanguageCode
+} from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { formatLinkCode, globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -251,6 +258,11 @@ const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.rowId)
 const inviteTaskReward = computed(() => getReferralInviteTaskReward(taskRewardConfigResult.value))
 const inviteRewardCount = computed(() => inviteTaskReward.value.count)
 const inviteRewardAmount = computed(() => inviteTaskReward.value.amount)
+const inviteRewardCurrency = computed(() =>
+  getCurrencySymbol(
+    currentPeriodTaskProgress.value?.currencyCode || previousPeriodTaskProgress.value?.currencyCode
+  )
+)
 const commissionBoostPeriodMeta = computed(() =>
   createReferralCommissionBoostPeriodMeta(t, referralSettlementRule.value)
 )

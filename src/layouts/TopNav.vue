@@ -393,9 +393,9 @@ import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
-import { stripLocalePrefix, type Locale } from '@/utils/locale'
+import { stripLocalePrefix, withLocalePrefix, type Locale } from '@/utils/locale'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
-import { navigateTo } from '@/utils/router'
+import { getCurrentLocale, navigateTo } from '@/utils/router'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 // import DepositPop from '@/views/wallet/deposit/components/DepositPop.vue'
@@ -435,6 +435,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   'toggle-sidebar': []
   'notification-click': []
+  'return-home': [path: string]
 }>()
 
 const showModal = ref(false)
@@ -834,6 +835,9 @@ const handleHomeClick = () => {
   if (showExplorehModal.value) {
     showExplorehModal.value = false
   }
+  if (isMobile.value) {
+    emit('return-home', withLocalePrefix('/', getCurrentLocale()))
+  }
   navigateTo('/')
 }
 
@@ -884,13 +888,29 @@ const openRewardClaimPopup = () => {
 }
 
 const toggleH5Menu = () => {
-  runFoldIconScalePulse('h5')
-
   if (isH5MenuActive.value) {
-    router.back()
+    const { back } = router.options.history.state
+    const previousPath =
+      typeof back === 'string' && stripLocalePrefix(router.resolve(back).path) !== '/menu'
+        ? back
+        : null
+    const targetPath = withLocalePrefix(previousPath ?? '/', currentLanguage.value)
+    const targetRoute = router.resolve(targetPath)
+    if (stripLocalePrefix(targetRoute.path) === '/') {
+      emit('return-home', targetRoute.fullPath)
+    } else {
+      runFoldIconScalePulse('h5')
+    }
+
+    if (targetPath === previousPath) {
+      router.back()
+    } else {
+      void router.replace(targetPath)
+    }
     return
   }
 
+  runFoldIconScalePulse('h5')
   navigateTo('/menu')
 }
 

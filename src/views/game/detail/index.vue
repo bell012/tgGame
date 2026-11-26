@@ -25,8 +25,8 @@
         <div class="detail-loading-spinner" />
       </div>
       <!-- Currency Info -->
-      <h5-currency-info v-if="isMobile" @fullscreen-change="handleGameFullscreenChange" />
-      <desktop-currency-info v-else />
+      <h5-currency-info v-if="isMobile" />
+      <GamePlayer @fullscreen-change="handleGameFullscreenChange" />
       <!-- Game Content -->
       <recent-games />
       <!-- 推荐游戏 -->
@@ -60,7 +60,7 @@ import { useI18n } from 'vue-i18n'
 import BetsList from './common/bets-list/index.vue'
 import GameList from './common/game-list/index.vue'
 import RecentGames from './common/recent-games/index.vue'
-import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
+import GamePlayer from './common/GamePlayer.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
 import H5Header from './h5/header.vue'
 import {

@@ -25,6 +25,7 @@ export const useHashGameCatalogStore = defineStore('hashGameCatalog', () => {
   let pending: { scope: string; promise: Promise<void> } | undefined
   let generation = 0
   const games = computed(() => (snapshot.value.scope === scope.value ? snapshot.value.games : []))
+  const gamesByCode = computed(() => new Map(games.value.map(game => [game.gameCode, game])))
   const loaded = computed(() => snapshot.value.scope === scope.value && snapshot.value.loaded)
   const loading = computed(
     () =>
@@ -39,7 +40,6 @@ export const useHashGameCatalogStore = defineStore('hashGameCatalog', () => {
     if (!localeStore.isSiteDefaultsReady) return Promise.resolve()
     const requestScope = scope.value
     if (pending?.scope === requestScope) return pending.promise
-    if (!refresh && loaded.value) return Promise.resolve()
 
     const requestGeneration = ++generation
     if (snapshot.value.scope !== requestScope) {
@@ -54,6 +54,7 @@ export const useHashGameCatalogStore = defineStore('hashGameCatalog', () => {
     snapshot.value.loading = true
     snapshot.value.failed = false
     const isCurrent = () => generation === requestGeneration && scope.value === requestScope
+    // 游戏页也会刷新列表，重新读取共享请求缓存以获取最新的图片和名称。
     const promise = requestHashGames(currentCurrencyCode.value, String(i18n.global.locale.value), {
       refresh
     })
@@ -81,5 +82,5 @@ export const useHashGameCatalogStore = defineStore('hashGameCatalog', () => {
     },
     { immediate: true, flush: 'sync' }
   )
-  return { games, loaded, loading, failed, available, scope, load }
+  return { games, gamesByCode, loaded, loading, failed, available, scope, load }
 })
