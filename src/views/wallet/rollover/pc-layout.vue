@@ -4,7 +4,7 @@
       <div class="flex items-center gap-2 flex-wrap">
         <!-- 时间筛选 -->
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.time"
           :options="timeOptions"
           :placeholder="$t('betHistory.filterGroups.date')"
@@ -12,7 +12,7 @@
         />
         <!-- 状态筛选 -->
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.status"
           :options="statusOptions"
           :placeholder="$t('betHistory.filterGroups.status')"
@@ -20,7 +20,7 @@
         />
         <!-- 类型筛选 -->
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.type"
           :options="typeOptions"
           :placeholder="$t('betHistory.filterGroups.transaction')"

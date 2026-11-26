@@ -37,7 +37,7 @@
         <!-- PC 日期筛选框 -->
         <CustomSelect
           v-model="desktopFilterValues.time"
-          class="w-[240px]"
+          class="w-[230px]"
           :options="timeOptions"
           :placeholder="t('wallet.myOrdersPage.filterGroups.date')"
         />
@@ -45,7 +45,7 @@
         <!-- PC 类型筛选框 -->
         <CustomSelect
           v-model="desktopFilterValues.type"
-          class="w-[240px]"
+          class="w-[230px]"
           :options="typeOptions"
           :placeholder="t('wallet.myOrdersPage.filterGroups.type')"
         />
@@ -53,7 +53,7 @@
         <!-- PC 状态筛选框 -->
         <CustomSelect
           v-model="desktopFilterValues.status"
-          class="w-[240px]"
+          class="w-[230px]"
           :options="statusOptions"
           :placeholder="t('wallet.myOrdersPage.filterGroups.status')"
         />
