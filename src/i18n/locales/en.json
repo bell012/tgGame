@@ -1213,6 +1213,11 @@
     "liveRtp": "Live RTP",
     "realRtp": "Real RTP",
     "volatility": "Volatility",
+    "volatilityLevels": {
+      "small": "Small",
+      "middle": "Middle",
+      "big": "Big"
+    },
     "maxBonus": "Max Bonus",
     "demo": "Demo",
     "refreshBalance": "Refresh balance",
