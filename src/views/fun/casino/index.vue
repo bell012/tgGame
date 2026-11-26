@@ -770,8 +770,6 @@ html.android-app-shell .casino-page--mobile {
   padding-bottom: 12px !important;
 }
 
-.casino-tab-button:not(.casino-tab-button--active) .casino-tab-icon,
-.casino-tab-button:not(.casino-tab-button--active) .casino-tab-icon :deep(svg),
 .casino-tab-button:not(.casino-tab-button--active) .casino-tab-label {
   color: var(--color-text-level-1);
 }
@@ -820,9 +818,15 @@ html.android-app-shell .casino-page--mobile {
     0 -2px 0 0 #1dca6a inset;
 }
 
-.casino-tab-button--active .casino-tab-icon,
-.casino-tab-button--active .casino-tab-icon :deep(svg),
 .casino-tab-button--active .casino-tab-label {
   color: var(--color-text-level-4);
+}
+
+.casino-tab-button:not(.casino-tab-button--active) .casino-tab-icon :deep(svg) {
+  color: var(--color-icon-level-2);
+}
+
+.casino-tab-button--active .casino-tab-icon :deep(svg) {
+  color: var(--color-icon-level-4);
 }
 </style>
