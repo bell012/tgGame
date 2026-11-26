@@ -23,6 +23,7 @@
         <!-- 移动端详情按钮 -->
         <button
           class="absolute right-3.5 top-1/2 -translate-y-1/2 w-[33px] h-[33px] bg-opacity-6 rounded-lg flex items-center justify-center z-10"
+          v-if="!embedded"
           @click="openDepositOrder"
         >
           <DetailsIcon class="w-4 h-4" />
@@ -103,6 +104,7 @@ const { t } = useI18n()
 const isMobile = useIsMobile()
 
 interface Props {
+  embedded?: boolean
   orderInfo: Partial<FiatOrderType>
 }
 

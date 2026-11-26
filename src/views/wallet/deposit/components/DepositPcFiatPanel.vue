@@ -30,10 +30,12 @@
           type="button"
           class="flex items-center gap-1 rounded-full bg-opacity-6 py-2 pl-3 pr-2"
           @click="currencyDropdownShow = !currencyDropdownShow"
+          :disabled="embedded"
         >
           <img :src="currentCurrencyIcon" alt="" class="size-5 object-contain" />
           <span class="text-sm font-bold leading-5 text-text-2">{{ currentCurrencyCode }}</span>
           <DropdownChevron
+            v-if="!embedded"
             class="size-2.5 text-text-2 transition-transform"
             :class="{ 'rotate-180': currencyDropdownShow }"
           />
@@ -225,6 +227,9 @@
   />
   <!-- 充值订单弹窗 -->
   <depositFiatOrderPop
+    ref="orderPopup"
+    :embedded="embedded"
+    :teleport-target="teleportTarget"
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
@@ -254,6 +259,8 @@ const { t } = useI18n()
 
 const props = defineProps<{
   initialMethodCode?: string
+  embedded?: boolean
+  teleportTarget?: HTMLElement | null
 }>()
 
 const emit = defineEmits<{
@@ -319,6 +326,9 @@ const handleCurrencySelect = (code: string) => {
 
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded, canExpand } = usePresetGrid(presetsRef, presetAmounts, 6)
+
+const orderPopup = ref<InstanceType<typeof depositFiatOrderPop>>()
+defineExpose({ back: () => orderPopup.value?.back() ?? false })
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,

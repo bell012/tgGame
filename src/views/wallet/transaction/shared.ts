@@ -1,5 +1,5 @@
 import type { QueryAcctHisPageForm, QueryAcctHisPageResult } from '@/api/interface/record.interface'
-import { formatTimestamp } from '@/utils/date'
+import { formatTimestamp, getHistoryTimeRange } from '@/utils/date'
 import { getCurrentCurrency, formatBalance } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
@@ -173,34 +173,6 @@ export const normalizeTransactionFilterValues = (values: FilterInput): Transacti
   type: getSingleFilterValue(values.type)
 })
 
-export const getTimeRange = (value: string) => {
-  const now = new Date()
-  const endOfDay = (date: Date) => new Date(date.setHours(23, 59, 59, 999)).getTime()
-  const startOfDay = (date: Date) => new Date(date.setHours(0, 0, 0, 0)).getTime()
-
-  if (value === 'all') return { startTime: null, endTime: null }
-  if (value === 'today') return { startTime: startOfDay(new Date(now)), endTime: now.getTime() }
-  if (value === 'yesterday') {
-    const yesterday = new Date(now)
-    yesterday.setDate(yesterday.getDate() - 1)
-    return {
-      startTime: startOfDay(new Date(yesterday)),
-      endTime: endOfDay(new Date(yesterday))
-    }
-  }
-
-  const dayMap: Record<string, number> = { last3days: 3, last15days: 15, last30days: 30 }
-  const days = dayMap[value]
-
-  if (!days) {
-    return { startTime: null, endTime: null }
-  }
-
-  const startDate = new Date(now)
-  startDate.setDate(startDate.getDate() - (days - 1))
-  return { startTime: startOfDay(startDate), endTime: now.getTime() }
-}
-
 export const getTransactionTypeLabel = (changeType: number, t: TranslateFn) => {
   const translationKey = TRANSACTION_TYPE_KEY_MAP[changeType]
   return translationKey
@@ -261,7 +233,7 @@ export const buildTransactionQueryForm = (params: {
   currency?: string | null
 }): QueryAcctHisPageForm => {
   const normalized = normalizeTransactionFilterValues(params.filterValues)
-  const { startTime, endTime } = getTimeRange(normalized.time)
+  const { startTime, endTime } = getHistoryTimeRange(normalized.time)
   const currency = params.currency || getCurrentCurrency()
 
   return {

@@ -6,9 +6,9 @@
       class="reward-claim-panel z-[60] flex max-h-[50vh] min-h-0 flex-col overflow-hidden"
       :class="panelClass"
     >
-      <LiquidGlass v-if="!props.inline" />
+      <LiquidGlass />
       <RewardClaimPopupContent
-        :class="{ 'relative z-[1]': !props.inline }"
+        class="relative z-[1]"
         :pending-items="pendingItems"
         :pending-total-text="pendingTotalText"
         :pending-loading="rewardCenterStore.pendingLoading"
@@ -86,7 +86,7 @@ const pendingTotalText = computed(() =>
 
 const panelClass = computed(() =>
   props.inline
-    ? 'absolute inset-x-0 top-full mx-auto w-[92.5%] rounded-xl bg-mask-60-1 p-[10px] backdrop-blur-[15px]'
+    ? 'tg-glass-tokens absolute inset-x-0 top-full mx-auto w-[92.5%] rounded-xl p-[10px] [box-shadow:var(--glass-shadow)]'
     : 'tg-glass-tokens absolute right-0 top-[calc(100%+8px)] w-[480px] rounded-[15px] px-5 py-4 [box-shadow:var(--glass-shadow)]'
 )
 

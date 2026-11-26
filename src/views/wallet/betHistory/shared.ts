@@ -1,6 +1,6 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
 import { getCurrentCurrency, formatBalance } from '@/utils/locale'
-import { formatTimestamp } from '@/utils/date'
+import { formatTimestamp, getHistoryTimeRange } from '@/utils/date'
 import { getGameImage, getGameName, getGameTypeList, getPlatformList } from '@/utils/global-dic'
 import bet from '@/static/img/personalCenter/bet.png'
 
@@ -101,32 +101,6 @@ export const normalizeBetHistoryFilterValues = (values: FilterInput): BetHistory
   gameType: getSingleFilterValue(values.gameType)
 })
 
-const getTimeRange = (value: string) => {
-  const now = new Date()
-  const endOfDay = (date: Date) => new Date(date.setHours(23, 59, 59, 999)).getTime()
-  const startOfDay = (date: Date) => new Date(date.setHours(0, 0, 0, 0)).getTime()
-
-  if (value === 'all') return { secondStartTime: null, secondEndTime: null }
-  if (value === 'today')
-    return { secondStartTime: startOfDay(new Date(now)), secondEndTime: now.getTime() }
-  if (value === 'yesterday') {
-    const yesterday = new Date(now)
-    yesterday.setDate(yesterday.getDate() - 1)
-    return {
-      secondStartTime: startOfDay(new Date(yesterday)),
-      secondEndTime: endOfDay(new Date(yesterday))
-    }
-  }
-
-  const dayMap: Record<string, number> = { last3days: 3, last15days: 15, last30days: 30 }
-  const days = dayMap[value]
-  if (!days) return { secondStartTime: null, secondEndTime: null }
-
-  const startDate = new Date(now)
-  startDate.setDate(startDate.getDate() - (days - 1))
-  return { secondStartTime: startOfDay(startDate), secondEndTime: now.getTime() }
-}
-
 export const getBetHistoryGameTypeLabel = (code: string, t: TranslateFn) => {
   const matchedGameType = getGameTypeList().find(item => item.sysGameTypeCode === code)
 
@@ -208,12 +182,12 @@ export const buildBetHistoryQueryForm = (params: {
   currency?: string | null
 }): QueryOrderInfoPageForm => {
   const normalized = normalizeBetHistoryFilterValues(params.filterValues)
-  const { secondStartTime, secondEndTime } = getTimeRange(normalized.time)
+  const { startTime, endTime } = getHistoryTimeRange(normalized.time)
   const currency = params.currency || getCurrentCurrency()
 
   return {
-    secondStartTime,
-    secondEndTime,
+    secondStartTime: startTime,
+    secondEndTime: endTime,
     winlost: normalized.winlost === 'all' ? null : Number(normalized.winlost),
     page: { current: params.page, size: params.pageSize },
     param: {

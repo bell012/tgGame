@@ -1,13 +1,13 @@
 import type { RewardCenterBonusItem, RewardCenterRecord } from '@/api/interface/reward-center'
 import type { QueryAcctHisPageResult } from '@/api/interface/record.interface'
-import { getSingleFilterValue, getTimeRange } from '@/views/wallet/transaction/shared'
+import { getSingleFilterValue } from '@/views/wallet/transaction/shared'
 import {
   formatBalance,
   getCurrentCurrency,
   getFormattedBalance,
   getLanguageCode
 } from '@/utils/locale'
-import { formatDisplayTime } from '@/utils/date'
+import { formatDisplayTime, getHistoryTimeRange } from '@/utils/date'
 import { REWARD_CENTER_ACTIVITY_CODE, isSupportedPendingClaimActivityCode } from './pendingClaim'
 
 export type RewardCenterTab = 'pending' | 'claimed'
@@ -305,7 +305,7 @@ export const buildRewardCenterClaimedQuery = (params: {
   filterValues: Partial<Record<string, string | string[]>>
 }) => {
   const normalized = normalizeRewardCenterFilterValues(params.filterValues)
-  const { startTime, endTime } = getTimeRange(normalized.time)
+  const { startTime, endTime } = getHistoryTimeRange(normalized.time)
 
   return {
     startTime,

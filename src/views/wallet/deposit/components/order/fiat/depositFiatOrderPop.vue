@@ -1,6 +1,7 @@
 <template>
   <!-- 订单弹窗壳组件 -->
   <depositPopShell
+    :teleport-target="teleportTarget"
     :modelValue="modelValue"
     :isHidden="hiddenPop"
     :withMask="true"
@@ -8,7 +9,7 @@
     @overlay-close="handleClose"
   >
     <!-- 法币订单面板 -->
-    <orderFiatPanel :orderInfo="orderInfo" @close="handleClose" />
+    <orderFiatPanel :embedded="embedded" :orderInfo="orderInfo" @close="handleClose" />
   </depositPopShell>
 </template>
 
@@ -20,6 +21,8 @@ import type { FiatOrderType } from '../orderType'
 import orderFiatPanel from './orderFiatPanel.vue'
 
 interface Props {
+  embedded?: boolean
+  teleportTarget?: HTMLElement | null
   modelValue: boolean
   orderInfo: Partial<FiatOrderType>
 }
@@ -50,4 +53,11 @@ const handleClose = () => {
   emit('update:modelValue', false)
   emit('close')
 }
+
+const back = () => {
+  if (!props.modelValue) return false
+  handleClose()
+  return true
+}
+defineExpose({ back })
 </script>

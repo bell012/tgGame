@@ -50,13 +50,20 @@
 
         <div class="mt-[14px] sm:mt-6 pl-[13px] sm:pl-4 relative">
           <Uploader
+            ref="uploader"
             v-model="fileList"
             :max-count="1"
             :preview-full-image="true"
             :preview-size="uploadPreviewSize"
             :after-read="imageAfterRead"
             :before-delete="imageDelete"
-            :preview-options="{ closeable: true }"
+            :preview-options="{
+              closeable: true,
+              teleport: teleportTarget ?? 'body',
+              closeOnPopstate: !teleportTarget
+            }"
+            @click-preview="handlePreview"
+            @close-preview="previewOpen = false"
           >
             <!-- 区块：template -->
             <template #preview-delete>
@@ -89,7 +96,7 @@
       </div>
     </div>
   </div>
-  <paymentReceiptSamplePop v-model="paymentReceiptSampleShow" />
+  <paymentReceiptSamplePop :teleport-target="teleportTarget" v-model="paymentReceiptSampleShow" />
 </template>
 <script setup lang="ts">
 import Api from '@/api'
@@ -100,14 +107,16 @@ import BulletDotIcon from '@/static/svg/deposit/bullet-dot.svg?component'
 import PlusIcon from '@/static/svg/deposit/plus.svg?component'
 import { resolveUploadErrorMessage } from '@/utils/upload-error'
 import { globalShowToast } from '@/utils/toast'
-import { Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
-import { computed, ref } from 'vue'
+import { Uploader } from 'vant'
+import type { UploaderAfterRead, UploaderFileListItem, UploaderInstance } from 'vant'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import paymentReceiptSamplePop from '../paymentReceiptSample/paymentReceiptSamplePop.vue'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
 interface Props {
+  teleportTarget?: HTMLElement | null
   orderId?: string | number
 }
 
@@ -123,6 +132,18 @@ const handleClose = () => {
 }
 
 const fileList = ref<UploaderFileListItem[]>([])
+const uploader = ref<UploaderInstance>()
+const previewOpen = ref(false)
+const handlePreview = (item: UploaderFileListItem) => {
+  // Uploader 打开大图时才会把本地图片地址写入 url；上传遮罩或普通文件不算打开预览。
+  if (item.status === 'done' && item.url) previewOpen.value = true
+}
+const closePreview = () => {
+  if (!previewOpen.value) return
+  uploader.value?.closeImagePreview()
+  previewOpen.value = false
+}
+onBeforeUnmount(closePreview)
 const paymentReceiptSampleShow = ref<boolean>(false)
 const uploadedFilePath = ref('')
 const isUploadingImage = ref(false)
@@ -258,6 +279,17 @@ const handleConfirmUpload = async () => {
     isBindingRemark.value = false
   }
 }
+
+const back = () => {
+  if (previewOpen.value) {
+    closePreview()
+    return true
+  }
+  if (!paymentReceiptSampleShow.value) return false
+  paymentReceiptSampleShow.value = false
+  return true
+}
+defineExpose({ back })
 </script>
 <style scoped lang="scss">
 .upload-proof-panel :deep(.van-uploader__preview-image) {

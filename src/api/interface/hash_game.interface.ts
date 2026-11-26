@@ -121,6 +121,7 @@ export interface HashGameLotterySummary {
 
 /** 分页查询投注记录的请求参数。 */
 export interface HashGameBetPageParams {
+  gameCode?: string
   currency?: string
   status?: HashGameBetStatus[]
   betTimeStart?: number
@@ -130,10 +131,7 @@ export interface HashGameBetPageParams {
 
 /** 投注记录分页结果。 */
 export interface HashGameBetPageResult {
-  current: number
-  pages: number
-  records: HashGameLotteryBet[]
-  size: number
+  list: HashGameLotteryBet[]
   summary: HashGameLotterySummary[]
   total: number
 }

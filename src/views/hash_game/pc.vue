@@ -134,7 +134,8 @@
                 <i
                   class="grid size-[20px] place-items-center rounded-full text-[14px] not-italic text-white"
                   :style="{ background: entry.color }"
-                  >{{ entry.label }}</i>{{ entry.count }}
+                  >{{ entry.label }}</i
+                >{{ entry.count }}
               </span>
             </div>
             <div class="flex items-center">
@@ -400,6 +401,7 @@
     <RecentBetsPopup
       v-model:visible="recentBetsOpen"
       variant="pc"
+      :game-code="selectedHashGameCode"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :bets="recentBets"

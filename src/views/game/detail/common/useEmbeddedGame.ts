@@ -6,14 +6,8 @@ import { useUserStore } from '@/stores/user'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { savePlayedGameRowId } from '@/utils/played-games-cache'
 import { navigateTo } from '@/utils/router'
-import { stripLocalePrefix } from '@/utils/locale'
-import { computed, inject, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
-import {
-  onBeforeRouteLeave,
-  onBeforeRouteUpdate,
-  useRoute,
-  type RouteLocationNormalized
-} from 'vue-router'
+import { computed, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
 
 type GameSession = {
   key: string
@@ -25,16 +19,13 @@ type GameSession = {
   url: string
   horizontal: boolean
 }
-type ExitAction = 'collapse' | 'exit' | 'cancel'
-
-export function useEmbeddedGame() {
+export function useEmbeddedGame(
+  detail: ComputedRef<GameDetailForPlatformPlay>,
+  closeOverlay: () => boolean
+) {
   const userStore = useUserStore()
   const route = useRoute()
   const { currentCurrencyCode, setDisplayCurrency } = useDisplayCurrency()
-  const detail = inject<ComputedRef<GameDetailForPlatformPlay>>(
-    'game-detail-current-game',
-    computed(() => null)
-  )
   const account = computed(() =>
     userStore.userInfo?.tradeToken
       ? `${userStore.userInfo.tradeToken}:${userStore.acctInfo?.memberRowId ?? ''}`
@@ -74,14 +65,12 @@ export function useEmbeddedGame() {
   const loadError = computed(
     () => Boolean(failedTargetKey.value) && failedTargetKey.value === target.value?.key
   )
-  const showExitDialog = ref(false)
-  const isDepositExit = ref(false)
-  const canCollapseOnExit = computed(() => fullscreen.value && !isDepositExit.value)
+  const showExitProgress = ref(false)
   const leaving = ref(false)
   let active = true
   let operation: Promise<boolean> | null = null
   let leaveOperation: Promise<boolean> | null = null
-  let resolveExit: ((action: ExitAction) => void) | undefined
+  let exitTimer: ReturnType<typeof setTimeout> | undefined
   let frameTimer: ReturnType<typeof setTimeout> | undefined
 
   const clearFrameTimer = () => {
@@ -209,7 +198,7 @@ export function useEmbeddedGame() {
     fullscreen.value = true
     savePlayedGameRowId(session.value.rowId)
   }
-  const playGame = () => (loadError.value ? start(true) : enterFullscreen())
+  const playGame = () => (!session.value?.url || loadError.value ? start(true) : enterFullscreen())
   const changeCurrency = (currency: string) => {
     if (!target.value || leaving.value || operation) return Promise.resolve(false)
     const originalAccount = account.value
@@ -226,59 +215,25 @@ export function useEmbeddedGame() {
     })
   }
 
-  const finishExit = (action: ExitAction) => {
-    showExitDialog.value = false
-    isDepositExit.value = false
-    resolveExit?.(action)
-    resolveExit = undefined
-  }
-  const answerExit = async (action: ExitAction) => {
-    if (!resolveExit || busy.value) return
-    if (action === 'collapse' && !canCollapseOnExit.value) return
-    if (action === 'exit') {
-      const currentResolve = resolveExit
-      const stopped = await run(stopSession)
-      if (!stopped || currentResolve !== resolveExit) return
-    }
-    finishExit(action)
-  }
-  const confirmLeave = async () => {
-    const originalKey = target.value?.key
-    let allowed = false
+  const leave = async () => {
     leaving.value = true
-    try {
-      if (operation) await operation
-      if (!session.value) {
-        allowed = true
-        return true
-      }
-      const action = await new Promise<ExitAction>(resolve => {
-        resolveExit = resolve
-        showExitDialog.value = true
-      })
-      if (action === 'collapse') fullscreen.value = false
-      allowed = action === 'exit'
-      return allowed
-    } finally {
-      leaving.value = false
-      if (!allowed && active && originalKey !== target.value?.key) void start()
-    }
-  }
-  const leaveForDeposit = async () => {
-    leaving.value = true
+    exitTimer = setTimeout(() => {
+      showExitProgress.value = true
+    }, 250)
     try {
       if (operation) await operation
       if (!active || !session.value) return true
       return await run(stopSession)
     } finally {
+      clearTimeout(exitTimer)
+      showExitProgress.value = false
       leaving.value = false
     }
   }
-  const beforeLeave = (to: RouteLocationNormalized) => {
-    isDepositExit.value = stripLocalePrefix(to.path).replace(/\/$/, '') === '/deposit'
+  const beforeLeave = () => {
+    if (closeOverlay()) return false
     if (!leaveOperation) {
-      const leavingToDeposit = isDepositExit.value && session.value
-      leaveOperation = (leavingToDeposit ? leaveForDeposit() : confirmLeave()).finally(() => {
+      leaveOperation = leave().finally(() => {
         leaveOperation = null
       })
     }
@@ -286,24 +241,8 @@ export function useEmbeddedGame() {
   }
   const requestExit = () => {
     if (leaving.value) return
-    // 与原游戏页使用同一返回规则，由离页守卫统一确认收起或退出。
+    // 离页守卫统一结束会话，避免按钮和路由重复发送退出请求。
     return navigateTo(resolveGameSelectionPath(), { replace: true })
-  }
-  const openExitPrompt = () => {
-    if (leaving.value || showExitDialog.value || !session.value) return
-    // 出门按钮先在当前页确认，不先跳转。退出成功后再离开，避免离页守卫再弹一次。
-    isDepositExit.value = false
-    void new Promise<ExitAction>(resolve => {
-      resolveExit = resolve
-      showExitDialog.value = true
-    }).then(action => {
-      if (!active) return
-      if (action === 'collapse') {
-        fullscreen.value = false
-        return
-      }
-      if (action === 'exit') return navigateTo(resolveGameSelectionPath(), { replace: true })
-    })
   }
   const collapseGame = () => {
     if (busy.value || leaving.value) return
@@ -311,14 +250,13 @@ export function useEmbeddedGame() {
   }
   onBeforeRouteLeave(beforeLeave)
   // 详情页按 fullPath 挂载，查询参数变化也会重建页面，需要先结束旧会话。
-  onBeforeRouteUpdate((to, from) => (to.fullPath === from.fullPath ? true : beforeLeave(to)))
+  onBeforeRouteUpdate((to, from) => (to.fullPath === from.fullPath ? true : beforeLeave()))
 
   watch(
     account,
     () => {
       clearSession()
       failedTargetKey.value = undefined
-      finishExit('cancel')
     },
     { flush: 'sync' }
   )
@@ -332,7 +270,7 @@ export function useEmbeddedGame() {
   onBeforeUnmount(() => {
     active = false
     clearSession()
-    finishExit('cancel')
+    clearTimeout(exitTimer)
   })
 
   return {
@@ -343,9 +281,7 @@ export function useEmbeddedGame() {
     busy,
     frameLoading,
     loadError,
-    showExitDialog,
-    isDepositExit,
-    canCollapseOnExit,
+    showExitProgress,
     leaving,
     start,
     enterFullscreen,
@@ -353,9 +289,7 @@ export function useEmbeddedGame() {
     changeCurrency,
     finishFrameLoad,
     failFrameLoad,
-    answerExit,
     collapseGame,
-    requestExit,
-    openExitPrompt
+    requestExit
   }
 }

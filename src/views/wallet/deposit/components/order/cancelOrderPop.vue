@@ -1,6 +1,6 @@
 <template>
   <!-- 传送到 body 的弹窗容器 -->
-  <teleport v-if="modelValue" to="body">
+  <teleport v-if="modelValue" :to="teleportTarget ?? 'body'">
     <!-- 弹窗过渡动画 -->
     <transition name="modal">
       <!-- 弹窗遮罩层 -->
@@ -94,6 +94,7 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 interface Props {
+  teleportTarget?: HTMLElement | null
   modelValue: boolean
   orderId?: string | number
 }
@@ -180,6 +181,7 @@ const handleConfirmCancel = async () => {
     isSubmitting.value = false
   }
 }
+defineExpose({ close: handleClose })
 </script>
 <style scoped lang="scss">
 .modal-enter-active,
