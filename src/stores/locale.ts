@@ -130,21 +130,18 @@ export const useLocaleStore = defineStore('locale', () => {
   // 切换语言
   const setLanguage = async (code: Locale) => {
     currentLanguage.value = code
-    const i18nLocale = getLanguageCode(code) as Locale
-    i18n.global.locale.value = i18nLocale
-    localStorage.setItem('language', code)
+    const languageNavigation = switchLanguage(code)
 
     // 切换语言时同步刷新全局多语言字典缓存与游戏列表缓存。
     const gameStore = useGameStore()
     const promotionsStore = usePromotionsStore()
 
     await Promise.all([
+      languageNavigation,
       initGlobalDicCache(),
       gameStore.refreshGameData(true),
       Promise.resolve(promotionsStore.syncGroupsLanguage())
     ])
-
-    switchLanguage(code)
   }
 
   // 切换货币
