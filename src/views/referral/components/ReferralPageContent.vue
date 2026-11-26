@@ -597,32 +597,18 @@
               </span>
 
               <template v-if="props.mode !== 'pc'">
-                <!-- 邀请任务奖励图标 -->
-                <img
-                  :src="props.commissionCoinImage"
-                  :alt="props.inviteRewardAmount"
-                  class="ml-0.5 h-[15px] w-[15px] object-contain"
-                />
-
-                <!-- 邀请任务奖励文本 -->
-                <span class="text-lg font-[700] leading-[22px] text-secondary-6">
-                  {{ props.inviteRewardAmount }}
+                <!-- 邀请任务奖励币种与金额 -->
+                <span class="ml-0.5 text-lg font-[700] leading-[22px] text-secondary-6">
+                  {{ props.inviteRewardCurrency }} {{ props.inviteRewardAmount }}
                 </span>
               </template>
             </div>
 
             <!-- 邀请任务奖励区域（仅 PC） -->
-            <div v-if="props.mode === 'pc'" class="flex items-center gap-2.5">
-              <!-- 邀请任务奖励图标 -->
-              <img
-                :src="props.commissionCoinImage"
-                :alt="props.inviteRewardAmount"
-                class="h-7 w-7 object-contain"
-              />
-
-              <!-- 邀请任务奖励文本 -->
+            <div v-if="props.mode === 'pc'" class="flex items-center">
+              <!-- 邀请任务奖励币种与金额 -->
               <span class="text-[28px] font-[700] leading-[34px] text-secondary-6">
-                {{ props.inviteRewardAmount }}
+                {{ props.inviteRewardCurrency }} {{ props.inviteRewardAmount }}
               </span>
             </div>
 
@@ -1116,6 +1102,7 @@ interface Props {
   inviteRewardCount: string
   inviteRewardSuffix: string
   inviteRewardAmount: string
+  inviteRewardCurrency: string
   taskDetailsText: string
   commissionBoostLoading: boolean
   showCommissionBoost: boolean

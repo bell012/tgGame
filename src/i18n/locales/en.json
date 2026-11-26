@@ -2116,7 +2116,75 @@
     "detailTitle": "Promotion Details",
     "comprehensive": "Comprehensive",
     "empty": "No data available at the moment.",
-    "notFound": "Promotion not found"
+    "notFound": "Promotion not found",
+    "detail": {
+      "badge": {
+        "firstDeposit": "Deposit",
+        "singleDeposit": "Deposit",
+        "cumulativeDeposit": "Deposit",
+        "checkIn": "Check-in",
+        "electronic": "Slots"
+      },
+      "title": {
+        "firstDeposit": "First Deposit",
+        "singleDeposit": "Single Deposit",
+        "cumulativeDeposit": "Cumulative Deposit",
+        "checkIn": "Check in for Rewards",
+        "electronic": "Slots Stage Rewards"
+      },
+      "subtitle": {
+        "firstDeposit": "Make a qualifying first deposit during the event to get a reward",
+        "singleDeposit": "Make a qualifying single deposit during the event to get a reward",
+        "cumulativeDeposit": "Meet the total deposit requirement during the event to get a reward",
+        "checkIn": "Check in daily and meet the requirements to claim your reward",
+        "electronic": "Clear stages to win up to 9999"
+      },
+      "longTerm": "Long-term event",
+      "pendingReward": "Reward to claim:",
+      "claimNow": "Claim Now",
+      "currentRound": "Current round: {current}/{total}",
+      "unclaimedCount": "Unclaimed",
+      "depositedAmount": "Deposited",
+      "depositAmount": "Deposit",
+      "rewardAmount": "Reward",
+      "status": "Status",
+      "section": {
+        "firstDeposit": "A welcome bonus on your first deposit",
+        "singleDeposit": "Single deposit rewards are here",
+        "cumulativeDeposit": "Rewards for cumulative deposits"
+      },
+      "rules": {
+        "firstDeposit": [
+          "How to join: During the event, a first deposit that reaches a tier unlocks that reward. Each user can join once.",
+          "Auto credit: The reward is sent to your wallet after the first deposit succeeds. Manual claim: The reward unlocks after the first deposit succeeds and must be claimed with Claim Now. Expired rewards cannot be reissued.",
+          "Deposit methods: Only Alipay, WeChat, bank card, crypto, and Alipay Wallet deposits qualify. Other methods do not earn this reward.",
+          "Withdrawal: The first-deposit bonus, excluding principal, requires 1x valid turnover before withdrawal, and only on chess, fishing, and slots.",
+          "Fair play: Only normal play by the account owner is allowed. Cheats, bots, matched betting, wash trading, arbitrage, protocol abuse, exploits, or group control may void rewards, freeze the account, or lead to a blacklist.",
+          "Note: The platform reserves the final interpretation of this event."
+        ],
+        "singleDeposit": [
+          "How to join: In each cycle (daily, weekly, or monthly), every deposit that meets the amount unlocks the matching reward.",
+          "Rewards: Each qualifying deposit can be claimed in order. There is a round limit. After the maximum number of rounds, further qualifying deposits cannot be claimed.",
+          "Auto credit: The reward is sent to your wallet after each qualifying deposit. Manual claim: The reward unlocks after each qualifying deposit and must be claimed with Claim Now. Expired rewards cannot be reissued.",
+          "Deposit methods: Only Alipay, WeChat, bank card, crypto, and Alipay Wallet deposits qualify. Other methods do not earn this reward.",
+          "Fair play: Only normal play by the account owner is allowed. Cheats, bots, matched betting, wash trading, arbitrage, protocol abuse, exploits, or group control may void rewards, freeze the account, or lead to a blacklist.",
+          "Note: The platform reserves the final interpretation of this event."
+        ],
+        "cumulativeDeposit": [
+          "How to join: Deposits during the event are added together. Reaching a tier unlocks that reward and adds one unclaimed count. Claim each tier separately.",
+          "Rewards: In each cycle (daily, weekly, or monthly), reaching a higher tier also unlocks every lower unclaimed tier. Each tier can be claimed once.",
+          "Auto credit: The reward is sent to your wallet when the condition is met. Manual claim: The reward unlocks when the condition is met and must be claimed with Claim Now. Expired rewards cannot be reissued.",
+          "Deposit methods: Only Alipay, WeChat, bank card, crypto, and Alipay Wallet deposits qualify. Other methods do not earn this reward.",
+          "Fair play: Only normal play by the account owner is allowed. Cheats, bots, matched betting, wash trading, arbitrage, protocol abuse, exploits, or group control may void rewards, freeze the account, or lead to a blacklist.",
+          "Note: The platform reserves the final interpretation of this event."
+        ]
+      },
+      "matrix": {
+        "greeting": "Dear Users:",
+        "lead": "Great news! We're launching a series of exciting promotions soon! Want to be the first to know? Follow our official account.",
+        "columns": ["DAY", "VIP1-7", "VIP8-15", "VIP16-22", "VIP23-30", "VIP31-38"]
+      }
+    }
   },
   "rewardCenter": {
     "title": "Reward Center",

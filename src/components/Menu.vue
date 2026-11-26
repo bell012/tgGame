@@ -816,9 +816,9 @@ const gameCategorySubmenuIcon = (item: CasinoTabButtonItem) => {
   return item.icon
 }
 
-/** 返回娱乐城分类选中态图标 */
+/** 返回娱乐城分类选中态图标，接口分类优先用 logo */
 const gameCategorySubmenuIconSelect = (item: CasinoTabButtonItem) => {
-  return item.iconSelect
+  return item.logo?.trim() || item.iconSelect
 }
 
 /** 组装娱乐城子菜单：热门游戏和厂商为固定项，其余分类来自 gc/getGameType */

@@ -1079,8 +1079,11 @@ router.beforeEach((to, _from, next) => {
   }
 
   const requiresAuth = to.matched.some(record => record.meta?.requiresAuth === true)
+  const isPromotionMockPreview =
+    /\/promotions\/mock\/mock-[^/]+$/.test(to.path) ||
+    /\/promotions(?:\/comprehensive)?$/.test(to.path)
 
-  if (requiresAuth) {
+  if (requiresAuth && !isPromotionMockPreview) {
     const userStore = useUserStore()
     const authModalStore = useAuthModalStore()
     const { userInfo, acctInfo } = userStore.syncStoredUserData()

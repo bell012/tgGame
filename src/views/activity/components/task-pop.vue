@@ -32,7 +32,7 @@
               </p>
               <p v-else class="text-sm leading-[20px] text-text-1">
                 {{ t('ticketPage.taskPop.introUnlockPrefix') }}
-                <span class="text-theme-primary">{{ voucherName }}</span>
+                <span class="text-theme-primary font-bold">{{ voucherName }}</span>
               </p>
               <p class="mt-2.5 text-[14px] leading-[20px] text-text-1">
                 {{ t('ticketPage.taskPop.introReward') }}
@@ -42,7 +42,7 @@
                 <li
                   v-for="task in taskItems"
                   :key="task.id"
-                  class="rounded-[12px] bg-bg-1 px-3 py-3"
+                  class="rounded-[12px] bg-bg-4 px-3 py-3"
                 >
                   <div class="flex items-center justify-between gap-2">
                     <div class="min-w-0 w-[70%] text-[14px] font-[500] leading-[17px] text-text-1">
