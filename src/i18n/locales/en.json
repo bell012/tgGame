@@ -1239,10 +1239,6 @@
     "highWin": "High win",
     "luckyWin": "Lucky win",
     "review": "Review",
-    "houseEdge": "House Edge",
-    "rtpReturnToPlayer": "RTP (Return to Player)",
-    "maxWin": "Max Win",
-    "stakesRange": "Stakes Range",
     "by": "By",
     "payout": "Payout",
     "multiplierUnit": "x",
@@ -1294,8 +1290,7 @@
     "invalidGameUrl": "Invalid game url",
     "collapseGame": "Minimize game",
     "exitGame": "Exit game",
-    "exitingGame": "Exiting game…",
-    "collapseOrExitGame": "Minimize to keep your current game. Exiting will end the game session."
+    "exitingGame": "Exiting game…"
   },
   "common_footer": {
     "top": {

@@ -637,10 +637,6 @@
     "highWin": "Thắng lớn",
     "luckyWin": "Thắng may mắn",
     "review": "Bình luận",
-    "houseEdge": "Lợi thế nhà cái",
-    "rtpReturnToPlayer": "RTP（tỷ lệ hoàn trả）",
-    "maxWin": "Thưởng tối đa",
-    "stakesRange": "Khoảng cược",
     "by": "Bởi",
     "payout": "Tiền trả thưởng",
     "multiplierUnit": "lần",
@@ -692,8 +688,7 @@
     "invalidGameUrl": "Liên kết game không hợp lệ",
     "collapseGame": "Thu nhỏ game",
     "exitGame": "Thoát game",
-    "exitingGame": "Đang thoát game…",
-    "collapseOrExitGame": "Thu nhỏ để giữ game hiện tại. Thoát sẽ kết thúc phiên chơi."
+    "exitingGame": "Đang thoát game…"
   },
   "common_footer": {
     "top": {
