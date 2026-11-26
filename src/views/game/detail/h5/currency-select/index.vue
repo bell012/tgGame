@@ -1,16 +1,21 @@
 <template>
   <div
+    ref="trigger"
     class="currency-select-trigger relative flex items-center gap-2"
     :class="
       floating
-        ? 'h-[34px] rounded-[10px] border border-[var(--game-floating-border)] bg-[var(--game-floating-bg)] px-[7px]'
+        ? 'h-[34px] rounded-[10px] border border-[var(--game-floating-border)] bg-[var(--game-floating-bg)] px-[7px] sm:h-[52px] sm:rounded-xl sm:px-3'
         : 'h-[35px] rounded-lg bg-opacity-6 px-2'
     "
   >
     <button
       type="button"
       class="flex min-w-0 flex-1 items-center gap-[5px] text-[13px]"
-      :class="floating ? 'font-medium text-common-100' : 'font-semibold text-text-1'"
+      :class="
+        floating
+          ? 'font-medium text-common-100 sm:text-base sm:font-bold'
+          : 'font-semibold text-text-1'
+      "
       :aria-label="t('gameDetail.selectedCurrency')"
       :disabled="disabled"
       @click="visible = true"
@@ -20,10 +25,14 @@
         :src="selectedData.icon"
         alt=""
         class="shrink-0 object-contain"
-        :class="floating ? 'size-[15px]' : 'size-5'"
+        :class="floating ? 'size-[15px] sm:size-5' : 'size-5'"
       />
       <span class="min-w-0 truncate" :title="selectedBalanceText">{{ selectedBalanceText }}</span>
-      <DropdownIcon v-if="floating" class="size-2.5 shrink-0 text-icon-2" aria-hidden="true" />
+      <DropdownIcon
+        v-if="floating"
+        class="size-2.5 shrink-0 text-icon-2 sm:size-3"
+        aria-hidden="true"
+      />
     </button>
     <div class="flex h-full shrink-0 items-center gap-2">
       <button
@@ -54,14 +63,15 @@
       <button
         type="button"
         class="flex size-5 shrink-0 items-center justify-center bg-theme-primary text-text-4"
-        :class="floating ? 'rounded-[5px]' : 'rounded'"
+        :class="floating ? 'rounded-[5px] sm:size-8 sm:rounded-[7.2px]' : 'rounded'"
         :aria-label="t('deposit.title')"
-        @click="navigateTo('/deposit')"
+        :disabled="disabled"
+        @click="emit('deposit')"
       >
-        <DepositPlusIcon :class="floating ? 'size-2.5' : 'size-3'" aria-hidden="true" />
+        <DepositPlusIcon :class="floating ? 'size-2.5 sm:size-4' : 'size-3'" aria-hidden="true" />
       </button>
     </div>
-    <Teleport to="body" v-if="isMobile || floating">
+    <Teleport to="body" v-if="isMobile">
       <popup
         v-model:visible="visible"
         :fullscreen="floating"
@@ -69,11 +79,14 @@
         :disabled="disabled"
       />
     </Teleport>
-    <popup
+    <DesktopPopup
       v-else
-      class="absolute left-0 top-[calc(100%+10px)] w-full"
+      class="absolute right-0 w-[288px]"
+      :class="popupAbove ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+10px)]'"
+      :style="{ '--floating-popup-space': `${popupSpace}px` }"
       v-model:visible="visible"
       desktop
+      floating
       :change-currency="changeCurrency"
       :disabled="disabled"
     />
@@ -85,9 +98,9 @@ import { useUserStore } from '@/stores/user'
 import RefreshIcon from '@/static/svg/game/detail/top/refresh.svg?component'
 import DropdownIcon from '@/static/svg/game/detail/top/currency-dropdown.svg?component'
 import DepositPlusIcon from '@/static/svg/game/detail/top/deposit-plus.svg?component'
-import { navigateTo } from '@/utils/router'
-import { computed, onBeforeUnmount, onDeactivated, provide, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, onMounted, provide, ref, watch } from 'vue'
 import Popup from './popup.vue'
+import DesktopPopup from '../../desktop/currency-select/popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import SmartImage from '@/components/common/SmartImage.vue'
@@ -122,11 +135,27 @@ onBeforeUnmount(clearRefreshFeedback)
 
 const isMobile = useIsMobile()
 const visible = ref(false)
+const trigger = ref<HTMLElement>()
+const popupAbove = ref(false)
+const popupSpace = ref(294)
+const updatePopupPlacement = () => {
+  if (!visible.value || isMobile.value || !trigger.value) return
+  const rect = trigger.value.getBoundingClientRect()
+  const above = Math.max(0, rect.top - 18)
+  const below = Math.max(0, window.innerHeight - rect.bottom - 18)
+  popupAbove.value = below < 294 && above > below
+  popupSpace.value = popupAbove.value ? above : below
+}
+watch([visible, isMobile], updatePopupPlacement, { flush: 'post' })
+onMounted(() => window.addEventListener('resize', updatePopupPlacement))
+onBeforeUnmount(() => window.removeEventListener('resize', updatePopupPlacement))
 const emit = defineEmits<{
   change: [value: CurrencyOptionItem | undefined]
+  deposit: []
 }>()
 const {
   currentCompactBalanceText,
+  currentBalanceAmountText,
   currentCurrencyCode,
   currentCurrencyOption,
   currencyOptions,
@@ -146,7 +175,7 @@ const selectedData = computed(() => {
 })
 
 const selectedBalanceText = computed(() => {
-  return currentCompactBalanceText.value
+  return isMobile.value ? currentCompactBalanceText.value : currentBalanceAmountText.value
 })
 
 const handleSelect = (item: CurrencyOptionItem) => {

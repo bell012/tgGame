@@ -82,6 +82,24 @@
     "resultBlock": "开奖结果区块",
     "blockHash": "区块哈希",
     "betTime": "投注时间",
+    "betHistory": {
+      "allStatuses": "全部状态",
+      "drawn": "已开奖",
+      "pending": "等待开奖"
+    },
+    "betDetails": {
+      "gameType": "哈希彩票",
+      "selection": "投注内容",
+      "period": "游戏期号",
+      "odds": "游戏赔率",
+      "betBlock": "下注区块",
+      "result": "开奖结果",
+      "orderStatus": "注单状态",
+      "gameTypeLabel": "游戏类型",
+      "orderNo": "注单编号",
+      "placedAt": "下注时间",
+      "settledAt": "结算时间"
+    },
     "betDetailStatus": {
       "win": "中奖",
       "lose": "未中奖",
@@ -635,10 +653,6 @@
     "highWin": "高额盈利",
     "luckyWin": "幸运赢",
     "review": "评论",
-    "houseEdge": "庄家优势",
-    "rtpReturnToPlayer": "RTP（返奖率）",
-    "maxWin": "最高奖金",
-    "stakesRange": "投注范围",
     "by": "由",
     "payout": "派彩",
     "multiplierUnit": "倍",
@@ -690,7 +704,7 @@
     "invalidGameUrl": "游戏链接无效",
     "collapseGame": "收起游戏",
     "exitGame": "退出游戏",
-    "collapseOrExitGame": "收起可保留当前游戏，退出将结束游戏会话。"
+    "exitingGame": "正在退出游戏…"
   },
   "common_footer": {
     "top": {

@@ -69,7 +69,10 @@
                   <component
                     v-else-if="item?.icon"
                     :is="item.icon"
-                    class="h-full w-full fill-current [&_path]:fill-current"
+                    class="h-full w-full fill-current"
+                    :class="{
+                      '[&_path]:fill-current': item.sysGameTypeCode !== HASH_CASINO_TAB_CODE
+                    }"
                   />
                 </div>
                 <div class="casino-tab-label font-[700]">

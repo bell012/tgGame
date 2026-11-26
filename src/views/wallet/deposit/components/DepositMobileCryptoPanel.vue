@@ -208,6 +208,9 @@
 
   <!-- 数字币充值订单弹窗 -->
   <depositCryptoOrderPop
+    ref="orderPopup"
+    :embedded="embedded"
+    :teleport-target="teleportTarget"
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
@@ -235,6 +238,8 @@ const isMobile = useIsMobile()
 
 const props = defineProps<{
   initialMethodCode?: string
+  embedded?: boolean
+  teleportTarget?: HTMLElement | null
 }>()
 const emit = defineEmits<{
   hidden: [value: boolean]
@@ -334,6 +339,9 @@ const selectWagering = (rowId: number) => {
   selectDepositWagering(rowId)
   void scrollItemIntoView(wageringListRef, wageringItemRefs.value[String(rowId)])
 }
+
+const orderPopup = ref<InstanceType<typeof depositCryptoOrderPop>>()
+defineExpose({ back: () => orderPopup.value?.back() ?? false })
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,

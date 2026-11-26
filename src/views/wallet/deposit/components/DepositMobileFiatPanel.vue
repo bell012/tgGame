@@ -11,6 +11,7 @@
       type="button"
       class="flex h-9 w-full items-center justify-between rounded-[8px] bg-opacity-6 px-[10px]"
       @click="currencyPopupShow = true"
+      :disabled="embedded"
     >
       <span class="text-xs leading-[15px] text-text-1">{{ t('deposit.current_currency') }}</span>
       <span class="flex items-center gap-2">
@@ -18,7 +19,7 @@
           <img :src="currentCurrencyIcon" alt="" class="size-[17px] object-contain" />
           <span class="text-[13px] leading-4 text-text-1">{{ currentCurrencyCode }}</span>
         </span>
-        <DropdownChevron class="size-2 text-text-2" />
+        <DropdownChevron v-if="!embedded" class="size-2 text-text-2" />
       </span>
     </button>
 
@@ -220,6 +221,9 @@
 
   <!-- 充值订单弹窗 -->
   <depositFiatOrderPop
+    ref="orderPopup"
+    :embedded="embedded"
+    :teleport-target="teleportTarget"
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
@@ -250,6 +254,8 @@ const isMobile = useIsMobile()
 
 const props = defineProps<{
   initialMethodCode?: string
+  embedded?: boolean
+  teleportTarget?: HTMLElement | null
 }>()
 
 const emit = defineEmits<{
@@ -299,6 +305,9 @@ const {
 const currencyPopupShow = ref(false)
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded, canExpand } = usePresetGrid(presetsRef, presetAmounts, 3)
+
+const orderPopup = ref<InstanceType<typeof depositFiatOrderPop>>()
+defineExpose({ back: () => orderPopup.value?.back() ?? false })
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,

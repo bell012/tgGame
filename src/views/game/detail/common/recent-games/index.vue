@@ -2,68 +2,51 @@
   <div
     class="recent-games-container w-full p-[12px] bg-[var(--color-background-level-2)] rounded-[10px] mt-[14px]"
   >
-    <!-- 顶部开关 -->
-    <TopToggle v-if="isMobile" />
-    <transition name="open-fade" :css="isMobile">
-      <div v-if="isContentVisible">
-        <div v-if="isMobile && gameTypeTagList.length" class="recent-games-type-tags">
-          <div
-            v-for="(typeName, index) in gameTypeTagList"
-            :key="`${typeName}-${index}`"
-            class="recent-games-type-tag"
-          >
-            # {{ typeName }}
-          </div>
-        </div>
-        <!-- 面板信息 -->
-        <Rginfo v-if="isMobile" />
-        <!-- Tab -->
-        <div
-          class="recent-games-tabs flex h-[42px] justify-between items-center mb-[10px] p-[4px] max-w-[500px]"
-          :class="[
-            { 'recent-games-tabs-light': isLightTheme, 'recent-games-tabs-mobile': isMobile },
-            isMobile ? 'rounded-[7px] mt-[20px]' : PC_SEGMENTED_TABS_CLASS
-          ]"
-        >
-          <div
-            v-for="tab in tabList"
-            :key="tab.value"
-            class="recent-games-tab flex-1 flex items-center justify-center cursor-pointer"
-            :class="[
-              { active: tabValue === tab.value },
-              isMobile
-                ? ''
-                : [PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(tabValue === tab.value)]
-            ]"
-            @click="tabIndexClick(tab.value)"
-          >
-            {{ tab.label }}
-          </div>
-        </div>
-        <!-- 内容：KeepAlive 保持挂载，避免切换 tab 时重复加载 -->
-        <div class="recent-games-tab-content filter-slide-stage">
-          <Transition :name="slideName">
-            <KeepAlive>
-              <Winlist
-                v-if="tabValue === TAB_HIGH_WIN"
-                key="high-win"
-                class="filter-slide-pane w-full"
-                :list="rankListByType[TAB_HIGH_WIN] ?? []"
-                :loading="isRankLoading && tabValue === TAB_HIGH_WIN"
-              />
-              <Winlist
-                v-else-if="tabValue === TAB_LUCKY_WIN"
-                key="lucky-win"
-                class="filter-slide-pane w-full"
-                :list="rankListByType[TAB_LUCKY_WIN] ?? []"
-                :loading="isRankLoading && tabValue === TAB_LUCKY_WIN"
-              />
-              <Review v-else key="review" class="filter-slide-pane w-full" />
-            </KeepAlive>
-          </Transition>
-        </div>
+    <!-- Tab -->
+    <div
+      class="recent-games-tabs flex h-[42px] justify-between items-center mb-[10px] p-[4px] max-w-[500px]"
+      :class="[
+        { 'recent-games-tabs-light': isLightTheme, 'recent-games-tabs-mobile': isMobile },
+        isMobile ? 'rounded-[7px]' : PC_SEGMENTED_TABS_CLASS
+      ]"
+    >
+      <div
+        v-for="tab in tabList"
+        :key="tab.value"
+        class="recent-games-tab flex-1 flex items-center justify-center cursor-pointer"
+        :class="[
+          { active: tabValue === tab.value },
+          isMobile
+            ? ''
+            : [PC_SEGMENTED_TAB_CLASS, getPcSegmentedTabStateClass(tabValue === tab.value)]
+        ]"
+        @click="tabIndexClick(tab.value)"
+      >
+        {{ tab.label }}
       </div>
-    </transition>
+    </div>
+    <!-- 内容：KeepAlive 保持挂载，避免切换 tab 时重复加载 -->
+    <div class="recent-games-tab-content filter-slide-stage">
+      <Transition :name="slideName">
+        <KeepAlive>
+          <Winlist
+            v-if="tabValue === TAB_HIGH_WIN"
+            key="high-win"
+            class="filter-slide-pane w-full"
+            :list="rankListByType[TAB_HIGH_WIN] ?? []"
+            :loading="isRankLoading && tabValue === TAB_HIGH_WIN"
+          />
+          <Winlist
+            v-else-if="tabValue === TAB_LUCKY_WIN"
+            key="lucky-win"
+            class="filter-slide-pane w-full"
+            :list="rankListByType[TAB_LUCKY_WIN] ?? []"
+            :loading="isRankLoading && tabValue === TAB_LUCKY_WIN"
+          />
+          <Review v-else key="review" class="filter-slide-pane w-full" />
+        </KeepAlive>
+      </Transition>
+    </div>
   </div>
 </template>
 
@@ -77,17 +60,13 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 
 import '@/views/game/detail/styles/colors.css'
 import Api from '@/api'
-import type { GameRanListItem, GameTypeItem } from '@/api/interface/game'
-import { useGameStore } from '@/stores/game'
+import type { GameRanListItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { storeToRefs } from 'pinia'
-import { computed, inject, onMounted, provide, ref, watch, type ComputedRef } from 'vue'
+import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { resolveGameTypeDisplayNames } from '../../shared'
-import TopToggle from './top-toggle.vue'
 import Winlist from './winlist.vue'
-import Rginfo from './rginfo.vue'
 import Review from './review/index.vue'
 
 const isMobile = useIsMobile()
@@ -113,13 +92,9 @@ const REQUEST_OPTIONS = {
   showErrorToast: true
 } as const
 
-// 展开/收起状态通过 provide 共享给子组件
 const tabValue = ref<TabValue>(TAB_HIGH_WIN)
 const TAB_ORDER: TabValue[] = [TAB_HIGH_WIN, TAB_LUCKY_WIN, TAB_REVIEW]
 const slideName = ref<'filter-slide-left' | 'filter-slide-right'>('filter-slide-left')
-const isOpen = ref(false)
-const isContentVisible = computed(() => !isMobile.value || isOpen.value)
-provide('isRgOpen', isOpen)
 
 // 排行榜数据状态（按 tab 类型缓存，切换时不展示 loading）
 const rankListByType = ref<Partial<Record<1 | 2, GameRanListItem[]>>>({})
@@ -138,38 +113,13 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   computed(() => null)
 )
 
-const gameStore = useGameStore()
 const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
 const { actualCurrency } = storeToRefs(localeStore)
 const isLightTheme = computed(() => themeStore.theme === 'light')
-const gameTypeList = ref<GameTypeItem[]>([])
 
 // 统一做字符串标准化，避免 undefined/null 造成请求参数异常
 const normalizeValue = (value: unknown) => String(value ?? '').trim()
-
-const gameTypeTagList = computed(() => {
-  const fallbackName = normalizeValue(currentGameDetail.value?.sysGameTypeName) || t('home.Slots')
-
-  return resolveGameTypeDisplayNames(
-    currentGameDetail.value?.gameTypeCode,
-    gameTypeList.value,
-    fallbackName
-  )
-})
-
-const loadGameTypeList = async () => {
-  try {
-    gameTypeList.value = await gameStore.getGameTypeData()
-  } catch (error) {
-    console.error('loadGameTypeList failed', error)
-    gameTypeList.value = []
-  }
-}
-
-onMounted(() => {
-  void loadGameTypeList()
-})
 
 // 当前游戏请求参数
 const currentItemCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
@@ -235,12 +185,8 @@ watch([currentItemCode, currentPlatformCode, currentRequestCurrency], () => {
 })
 
 watch(
-  [tabValue, isContentVisible, currentItemCode, currentPlatformCode, currentRequestCurrency],
+  [tabValue, currentItemCode, currentPlatformCode, currentRequestCurrency],
   () => {
-    // H5 面板关闭时不触发排行榜请求，PC 始终显示。
-    if (!isContentVisible.value) {
-      return
-    }
     void fetchGameRanList()
   },
   { immediate: true }
@@ -316,35 +262,5 @@ const tabIndexClick = (next: TabValue) => {
 
 .recent-games-tab-content > :not([style*='display: none']) {
   width: 100%;
-}
-
-.recent-games-type-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.recent-games-type-tag {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 6px;
-  background: var(--color-opacity-10);
-  height: 22px;
-  padding: 0 8px;
-  color: var(--color-text-level-2);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-}
-
-.open-fade-enter-active,
-.open-fade-leave-active {
-  transition: all 0.2s ease;
-}
-.open-fade-enter-from,
-.open-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 </style>

@@ -3,30 +3,41 @@
     <transition name="popup-fade">
       <div
         v-show="visible"
-        class="tp-mask fixed z-[9999] inset-0 bg-[var(--color-mask-60)]"
+        class="tp-mask fixed inset-0 bg-[var(--color-mask-60)]"
+        :class="floating ? 'z-[10002]' : 'z-[9999]'"
         @click.self="close"
       />
     </transition>
     <transition :name="desktop ? 'desktop-up-down' : 'up-down'">
       <div
         v-show="visible"
-        class="z-[9999] left-0 bottom-0 w-full"
-        :class="
+        class="left-0 bottom-0 w-full"
+        :class="[
+          floating ? 'z-[10002]' : 'z-[9999]',
           desktop
             ? 'relative tp-desktop-wrap motion-reduce:!transition-none motion-reduce:!transform-none'
             : 'fixed'
-        "
+        ]"
       >
         <div
           ref="panelRef"
           class="tp-panel rounded-t-xl"
           :class="
             desktop
-              ? 'tp-panel-desktop tg-glass-tokens relative p-2'
+              ? [
+                  'tp-panel-desktop tg-glass-tokens relative',
+                  floating ? '!rounded-[15px] p-3' : 'p-2'
+                ]
               : 'bg-bg-2 pt-2.5 px-3.5 pb-[env(safe-area-inset-bottom)]'
           "
         >
           <LiquidGlass v-if="desktop" />
+          <div
+            v-if="floating"
+            class="relative z-[1] mb-3 text-[13px] leading-5 font-extrabold text-text-1"
+          >
+            {{ t('gameDetail.selectCurrencyTitle') }}
+          </div>
           <div class="tp-header flex items-center justify-between mb-[20px]" v-if="!desktop">
             <div></div>
             <div class="text-base font-bold text-text-1">
@@ -40,6 +51,8 @@
             </div>
           </div>
           <CurrencySelectorList
+            :disabled="disabled"
+            :change-currency="changeCurrency"
             :class="desktop ? 'relative z-[1]' : ''"
             :visible="props.visible"
             :options="listOptions"
@@ -47,7 +60,8 @@
             mode="balance"
             :list-class="desktopListClass"
             :item-class="
-              'tp-item mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left cursor-pointer' +
+              'tp-item mb-2.5 flex w-full items-center justify-between rounded-lg text-left cursor-pointer ' +
+              (floating ? 'h-10 px-3' : 'h-[42px] px-2.5') +
               (desktop ? ' last:mb-0 hover:bg-opacity-6' : '')
             "
             :selected-item-class="
@@ -78,6 +92,9 @@ type BalanceOptionItem = { code: string; icon: string; balanceText: string }
 const props = defineProps<{
   visible: boolean
   desktop?: boolean
+  floating?: boolean
+  disabled?: boolean
+  changeCurrency?: (value: string) => Promise<boolean>
 }>()
 
 const emit = defineEmits<{
@@ -107,6 +124,9 @@ const listOptions = computed(() => {
 })
 
 const desktopListClass = computed(() => {
+  if (props.floating) {
+    return 'tp-desktop-list max-h-[min(236px,max(0px,calc(var(--floating-popup-space,294px)-58px)))] overflow-y-auto'
+  }
   if (props.desktop) {
     return 'tp-desktop-list max-h-[236px] overflow-y-auto'
   }

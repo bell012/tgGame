@@ -82,6 +82,24 @@
     "resultBlock": "Khối kết quả",
     "blockHash": "Hash khối",
     "betTime": "Thời gian cược",
+    "betHistory": {
+      "allStatuses": "Tất cả trạng thái",
+      "drawn": "Đã mở thưởng",
+      "pending": "Chờ mở thưởng"
+    },
+    "betDetails": {
+      "gameType": "Xổ số Hash",
+      "selection": "Nội dung cược",
+      "period": "Số kỳ",
+      "odds": "Tỷ lệ cược",
+      "betBlock": "Khối đặt cược",
+      "result": "Kết quả mở thưởng",
+      "orderStatus": "Trạng thái cược",
+      "gameTypeLabel": "Loại trò chơi",
+      "orderNo": "Mã cược",
+      "placedAt": "Thời gian đặt cược",
+      "settledAt": "Thời gian thanh toán"
+    },
     "betDetailStatus": {
       "win": "Trúng thưởng",
       "lose": "Không trúng thưởng",
@@ -637,10 +655,6 @@
     "highWin": "Thắng lớn",
     "luckyWin": "Thắng may mắn",
     "review": "Bình luận",
-    "houseEdge": "Lợi thế nhà cái",
-    "rtpReturnToPlayer": "RTP（tỷ lệ hoàn trả）",
-    "maxWin": "Thưởng tối đa",
-    "stakesRange": "Khoảng cược",
     "by": "Bởi",
     "payout": "Tiền trả thưởng",
     "multiplierUnit": "lần",
@@ -692,7 +706,7 @@
     "invalidGameUrl": "Liên kết game không hợp lệ",
     "collapseGame": "Thu nhỏ game",
     "exitGame": "Thoát game",
-    "collapseOrExitGame": "Thu nhỏ để giữ game hiện tại. Thoát sẽ kết thúc phiên chơi."
+    "exitingGame": "Đang thoát game…"
   },
   "common_footer": {
     "top": {

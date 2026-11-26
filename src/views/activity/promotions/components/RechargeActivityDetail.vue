@@ -114,10 +114,11 @@ const props = defineProps<{
 }>()
 
 const { tm } = useI18n()
+const readMessage: (key: string) => unknown = tm
 
 const rules = computed(() => {
-  const message = tm(`activityPromotions.detail.rules.${props.kind}`)
-  return Array.isArray(message) ? message.map(item => String(item)) : []
+  const message = readMessage(`activityPromotions.detail.rules.${props.kind}`)
+  return Array.isArray(message) ? message.map((item: unknown) => String(item)) : []
 })
 
 const pendingAmountText = computed(() => formatBalance(props.summary.pendingAmount))

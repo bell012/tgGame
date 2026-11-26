@@ -21,11 +21,17 @@
       <template v-if="props.mode === 'pc'">
         <DepositPcCryptoPanel
           v-if="props.modelValue === 'Crypto'"
+          ref="activePanel"
+          :embedded="embedded"
+          :teleport-target="teleportTarget"
           :initial-method-code="props.initialMethodCode"
           @hidden="handleHidden"
         />
         <DepositPcFiatPanel
           v-else-if="props.modelValue === 'Fiat'"
+          ref="activePanel"
+          :embedded="embedded"
+          :teleport-target="teleportTarget"
           :initial-method-code="props.initialMethodCode"
           @hidden="handleHidden"
         />
@@ -34,11 +40,17 @@
       <template v-else>
         <DepositMobileCryptoPanel
           v-if="props.modelValue === 'Crypto'"
+          ref="activePanel"
+          :embedded="embedded"
+          :teleport-target="teleportTarget"
           :initial-method-code="props.initialMethodCode"
           @hidden="handleHidden"
         />
         <DepositMobileFiatPanel
           v-else-if="props.modelValue === 'Fiat'"
+          ref="activePanel"
+          :embedded="embedded"
+          :teleport-target="teleportTarget"
           :initial-method-code="props.initialMethodCode"
           @hidden="handleHidden"
         />
@@ -54,7 +66,7 @@ import {
   getPcSegmentedTabStateClass
 } from '@/components/common/pcSegmentedTabs'
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   DEPOSIT_TABS,
@@ -71,6 +83,8 @@ interface Props {
   mode: DepositPageMode
   modelValue: DepositTabType
   initialMethodCode?: string
+  embedded?: boolean
+  teleportTarget?: HTMLElement | null
 }
 
 const props = defineProps<Props>()
@@ -127,6 +141,14 @@ const setActiveTab = (tab: DepositTabType) => {
 const handleHidden = (val: boolean) => {
   emit('hidden', val)
 }
+
+const activePanel = ref<
+  | InstanceType<typeof DepositPcFiatPanel>
+  | InstanceType<typeof DepositPcCryptoPanel>
+  | InstanceType<typeof DepositMobileFiatPanel>
+  | InstanceType<typeof DepositMobileCryptoPanel>
+>()
+defineExpose({ back: () => activePanel.value?.back() ?? false })
 </script>
 
 <style scoped lang="scss">

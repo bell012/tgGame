@@ -139,6 +139,7 @@ const REWARD_MATRIX_ROWS = [
 ]
 
 const { t, tm } = useI18n()
+const readMessage: (key: string) => unknown = tm
 const { currentCurrencyCode } = useDisplayCurrency()
 const isDesktop = computed(() => props.variant === 'desktop')
 
@@ -151,8 +152,8 @@ const isRewardMatrix = computed(
 )
 const rewardMatrixRows = REWARD_MATRIX_ROWS
 const matrixColumns = computed(() => {
-  const columns = tm('activityPromotions.detail.matrix.columns')
-  return Array.isArray(columns) ? columns.map(column => String(column)) : []
+  const columns = readMessage('activityPromotions.detail.matrix.columns')
+  return Array.isArray(columns) ? columns.map((column: unknown) => String(column)) : []
 })
 const rewardSummary = computed(() =>
   getPromotionRewardSummary(props.activity, currentCurrencyCode.value)

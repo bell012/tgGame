@@ -3,7 +3,7 @@
   <div class="currency-select-trigger relative rounded-lg">
     <div
       class="text-[13px] h-[40px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px]"
-      @click="visible = true"
+      @click="!disabled && (visible = true)"
     >
       <div class="flex flex-1 gap-[10px] min-w-0">
         <div v-if="selectedData" class="flex gap-[8px] items-center min-w-0">
@@ -26,9 +26,16 @@
     </div>
     <!-- 搜索类型弹窗 -->
     <Teleport to="body" v-if="isMobile">
-      <popup v-model:visible="visible" />
+      <popup v-model:visible="visible" :disabled="disabled" :change-currency="changeCurrency" />
     </Teleport>
-    <popup v-else class="desktop-popup" v-model:visible="visible" desktop />
+    <popup
+      v-else
+      class="desktop-popup"
+      v-model:visible="visible"
+      desktop
+      :disabled="disabled"
+      :change-currency="changeCurrency"
+    />
   </div>
 </template>
 
@@ -42,6 +49,7 @@ import SmartImage from '@/components/common/SmartImage.vue'
 import type { CurrencyOptionItem } from '@/components/common/currency-selector/currency-select-options'
 
 const isMobile = useIsMobile()
+defineProps<{ disabled?: boolean; changeCurrency?: (value: string) => Promise<boolean> }>()
 const visible = ref(false)
 const {
   currentBalanceAmountText,
