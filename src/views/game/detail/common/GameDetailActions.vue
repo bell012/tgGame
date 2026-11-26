@@ -8,7 +8,7 @@
       :title="countText"
       class="flex items-center font-normal text-text-2 disabled:cursor-wait"
       :class="mobile ? 'w-[30px] flex-col' : 'min-h-9 gap-1 rounded bg-bg-2 px-2 py-1 text-xs'"
-      @click="toggleFavorite"
+      @click="emit('toggle-favorite')"
     >
       <span
         v-if="mobile"
@@ -23,7 +23,7 @@
         "
       >
         <component
-          :is="mobile ? FavoriteOutline : FavoriteIcon"
+          :is="isFavorite ? FavoriteSelected : mobile ? FavoriteOutline : FavoriteIcon"
           :class="[
             mobile ? 'size-[17.33px]' : 'size-7',
             isFavorite ? 'text-secondary-7' : 'text-icon-2'
@@ -62,16 +62,20 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, inject, ref, type Ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useGameFavorite } from '@/composables/useGameFavorite'
 import FavoriteIcon from '@/static/svg/game/detail/top/favorite.svg?component'
 import FavoriteOutline from '@/static/svg/game/detail/top/favorite-outline.svg?component'
+import FavoriteSelected from '@/static/svg/game/detail/top/favorite-selected.svg?component'
 import DemoIcon from '@/static/svg/game/detail/top/demo.svg?component'
 
-defineProps<{ mobile?: boolean }>()
+const props = defineProps<{
+  mobile?: boolean
+  count?: number | null
+  isFavorite: boolean
+  isUpdating: boolean
+}>()
+const emit = defineEmits<{ 'toggle-favorite': [] }>()
 const { t } = useI18n()
-const { isFavorite, isUpdating, toggleFavorite } = useGameFavorite()
-const count = inject<Ref<number | null>>('game-detail-collections-count', ref(null))
-const countText = computed(() => (count.value === null ? '--' : String(count.value)))
+const countText = computed(() => (props.count == null ? '--' : String(props.count)))
 </script>

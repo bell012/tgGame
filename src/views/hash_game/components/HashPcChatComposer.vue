@@ -8,15 +8,15 @@
         <form v-if="config?.unlocked" class="flex items-center gap-2" @submit.prevent="sendDraft">
           <input
             v-model="draft"
-            aria-label="Chat message"
-            placeholder="Say something..."
+            :aria-label="t('hashGame.chatInput')"
+            :placeholder="t('hashGame.chatInputPlaceholder')"
             :maxlength="config.lengthLimit"
             class="min-w-0 flex-1 bg-transparent text-[14px] text-text-1 outline-none placeholder:text-text-3"
             @keydown.enter="onEnter"
           />
           <button
             type="button"
-            aria-label="Emojis"
+            :aria-label="t('hashGame.chatEmoji')"
             :aria-expanded="panel === 'emoji'"
             @click="toggle('emoji')"
           >
@@ -27,23 +27,29 @@
             :disabled="!draft.trim() || busy"
             class="text-[12px] font-bold text-theme-primary disabled:opacity-40"
           >
-            Send
+            {{ t('hashGame.chatSend') }}
           </button>
         </form>
         <template v-else>
           <div class="flex items-center gap-[10px] pr-[20px]">
             <img :src="lockIcon" alt="" class="size-[36px] shrink-0" />
             <div class="min-w-0">
-              <p class="m-0 text-[14px] font-bold text-text-1">Bet to send custom content.</p>
+              <p class="m-0 text-[14px] font-bold text-text-1">
+                {{ t('hashGame.chatUnlockCustom') }}
+              </p>
               <p class="m-0 mt-1 text-[12px] leading-[15px] text-text-2">
-                Bet to unlock custom messages.
+                {{
+                  config?.unlockMode === 'amount'
+                    ? t('hashGame.chatUnlockAmountHint', { amount: config.unlockAmount })
+                    : t('hashGame.chatUnlockHint')
+                }}
               </p>
             </div>
           </div>
           <button
             type="button"
             class="absolute bottom-[10px] right-[12px]"
-            aria-label="Emojis"
+            :aria-label="t('hashGame.chatEmoji')"
             :aria-expanded="panel === 'emoji'"
             @click="toggle('emoji')"
           >
@@ -54,7 +60,7 @@
       <button
         type="button"
         class="grid size-[44px] shrink-0 place-items-center rounded-[10px] bg-bg-3"
-        aria-label="Common Expressions"
+        :aria-label="t('hashGame.chatCommonExpressions')"
         :aria-expanded="panel === 'phrases'"
         @click="toggle('phrases')"
       >
@@ -65,9 +71,9 @@
       <section
         v-if="panel === 'phrases'"
         class="mt-[12px] h-[288px] overflow-hidden rounded-[10px] bg-bg-3 px-[12px] pt-[12px]"
-        aria-label="Common Expressions"
+        :aria-label="t('hashGame.chatCommonExpressions')"
       >
-        <p class="m-0 text-[12px] text-text-2">Common Expressions</p>
+        <p class="m-0 text-[12px] text-text-2">{{ t('hashGame.chatCommonExpressions') }}</p>
         <div
           class="mt-[12px] flex h-[249px] flex-col items-start gap-[12px] overflow-y-auto pb-[12px]"
         >
@@ -82,7 +88,7 @@
             {{ phrase }}
           </button>
           <p v-if="!config?.phrases.length" class="text-[12px] text-text-2">
-            No expressions available.
+            {{ t('hashGame.chatNoExpressions') }}
           </p>
         </div>
       </section>
@@ -109,11 +115,13 @@ import { useUserStore } from '@/stores/user'
 import { globalShowToast } from '@/utils/toast'
 import EmojiPanel from '@/views/chat/chat-public/components/emoji-panel.vue'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { HashChatConfig } from '../chat/config'
 
 const props = defineProps<{ gameCode: string; config: HashChatConfig | null }>()
 const auth = useAuthModalStore()
 const user = useUserStore()
+const { t } = useI18n()
 const root = ref<HTMLElement | null>(null)
 const draft = ref('')
 const panel = ref<'emoji' | 'phrases' | null>(null)
@@ -126,7 +134,7 @@ async function send(content: string, custom: boolean) {
   content = content.trim()
   if (!content || !props.gameCode) return false
   if (busy.value) {
-    globalShowToast({ message: '发言过于频繁', type: 'fail' })
+    globalShowToast({ message: t('hashGame.chatTooFrequent'), type: 'fail' })
     return false
   }
   if (!user.userInfo?.tradeToken && !user.acctInfo?.memberId) {

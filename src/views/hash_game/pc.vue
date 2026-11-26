@@ -134,8 +134,7 @@
                 <i
                   class="grid size-[20px] place-items-center rounded-full text-[14px] not-italic text-white"
                   :style="{ background: entry.color }"
-                  >{{ entry.label }}</i
-                >{{ entry.count }}
+                  >{{ entry.label }}</i>{{ entry.count }}
               </span>
             </div>
             <div class="flex items-center">
@@ -147,7 +146,9 @@
                 :key="sound.type"
                 type="button"
                 class="grid size-[30px] place-items-center rounded-[6px] bg-bg-3"
-                :aria-label="sound.type === 'background' ? 'Background music' : 'Music'"
+                :aria-label="
+                  t(sound.type === 'background' ? 'hashGame.backgroundMusic' : 'hashGame.gameSound')
+                "
                 :aria-pressed="sound.type === 'background' ? backgroundMusicEnabled : musicEnabled"
                 @click="sound.type === 'background' ? toggleBackgroundMusic() : toggleMusic()"
               >

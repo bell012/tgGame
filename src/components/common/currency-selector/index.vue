@@ -15,6 +15,7 @@
         :key="option.value"
         type="button"
         :class="[itemClass, isSelected(option) ? selectedItemClass : '']"
+        :disabled="disabled"
         @click="chageCurrency(option.value)"
       >
         <div class="flex min-w-0 items-center gap-[10px]">
@@ -71,9 +72,12 @@ const props = withDefaults(
     searchWrapperClass?: string
     searchInputClass?: string
     searchIconClass?: string
+    changeCurrency?: (value: string) => Promise<boolean>
+    disabled?: boolean
   }>(),
   {
     visible: false,
+    disabled: false,
     mode: 'balance',
     showSearch: false,
     searchPlaceholder: '',
@@ -133,11 +137,15 @@ const isSelected = (option: CurrencySelectorOption) => {
 }
 
 const chageCurrency = async (value: string) => {
-  if (!value || value === props.selectedValue || isChangingCurrency.value) {
+  if (!value || value === props.selectedValue || isChangingCurrency.value || props.disabled) {
     return
   }
   isChangingCurrency.value = true
   try {
+    if (props.changeCurrency) {
+      if (await props.changeCurrency(value)) emit('select', value)
+      return
+    }
     await Api.user.changeWallet({ currency: value })
     emit('select', value)
     void userStore.refreshBalance({ force: true })

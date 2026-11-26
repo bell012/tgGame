@@ -50,6 +50,10 @@ export interface GameDataItem {
   initScoreStar?: number
   itemCode?: string
   itemName?: string
+  /** 波动性 */
+  volatility?: string | number | null
+  /** 最高倍数 */
+  maxMultiple?: string | number | null
   maxWin?: string | number | null
   maxWinMax?: string | number | null
   maxWinMin?: string | number | null

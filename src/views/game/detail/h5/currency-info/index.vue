@@ -42,13 +42,27 @@
               >{{ displayProviderName }}</span
             >
           </div>
-          <GameDetailActions mobile />
+          <GameDetailActions
+            mobile
+            :count="collectionsCount"
+            :is-favorite="isFavorite"
+            :is-updating="isUpdating"
+            @toggle-favorite="toggleFavorite"
+          />
         </div>
-        <GameDetailStats mobile />
+        <GameDetailStats
+          mobile
+          :rtp="rtp"
+          :volatility="currentGameDetail?.volatility"
+          :max-multiple="currentGameDetail?.maxMultiple"
+        />
       </div>
     </div>
-    <GameDetailPreview class="mt-[10px] aspect-[1041/592] rounded-t-[10px]" />
-    <CurrencyBar />
+    <GamePlayer
+      :preview-name="currentGameDetail?.itemName"
+      :preview-image="currentGameDetail?.icon2 ?? currentGameDetail?.conUrl"
+      @fullscreen-change="emit('fullscreenChange', $event)"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -59,9 +73,9 @@ import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
 import GameDetailActions from '../../common/GameDetailActions.vue'
 import GameDetailStats from '../../common/GameDetailStats.vue'
-import GameDetailPreview from '../../common/GameDetailPreview.vue'
-import CurrencyBar from '../currency-bar/index.vue'
-import { computed, onMounted, reactive, watch } from 'vue'
+import GamePlayer from '../GamePlayer.vue'
+import { computed, inject, onMounted, reactive, ref, watch, type Ref } from 'vue'
+import { useGameFavorite } from '@/composables/useGameFavorite'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 import { useGameStore } from '@/stores/game'
 import { useSiteConfigStore } from '@/stores/siteConfig'
@@ -70,7 +84,11 @@ import { useUserStore } from '@/stores/user'
 import { resolveGameImageUrl } from '@/utils/image'
 import { storeToRefs } from 'pinia'
 
+const emit = defineEmits<{ fullscreenChange: [value: boolean] }>()
 const { currentGameDetail } = useGamePlatformPlay()
+const { isFavorite, isUpdating, toggleFavorite } = useGameFavorite()
+const collectionsCount = inject<Ref<number | null>>('game-detail-collections-count', ref(null))
+const rtp = inject<Ref<number | null>>('game-detail-rtp', ref(null))
 const gameStore = useGameStore()
 const siteConfigStore = useSiteConfigStore()
 const themeStore = useThemeStore()

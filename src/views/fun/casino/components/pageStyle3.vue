@@ -33,7 +33,7 @@
         class="aspect-[330/438]"
         :class="{ 'min-w-0': !isMobile }"
       >
-        <CasinoGameCard responsive-pc :game="game" @click="handleClick(game.rowId)" />
+        <CasinoGameCard responsive-pc :game="game" @click="handleClick(game.rowId, $event)" />
       </div>
     </div>
     <div
@@ -99,7 +99,7 @@
 <script setup lang="ts">
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { navigateToName } from '@/utils/router'
+import { openGameFromCard } from '@/utils/gameCardTransition'
 import { useGameStore } from '@/stores/game'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePcGameCardLayout } from '@/composables/usePcGameCardLayout'
@@ -354,13 +354,13 @@ const closeDesktopModal = () => {
   }
 }
 
-const handleClick = (rowId?: string | number) => {
+const handleClick = (rowId: string | number | undefined, event: MouseEvent) => {
   if (!rowId) {
     return
   }
 
   closeDesktopModal()
-  navigateToName('gameDetail', { params: { rowId } })
+  void openGameFromCard(rowId, event)
 }
 
 const getGameData = async () => {

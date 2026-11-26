@@ -54,12 +54,26 @@ async function syncMessagesScroll() {
   if (shouldFollow) scrollToBottom()
 }
 
-/** 初次显示时定位到最新消息。 */
+/** 初次进入从列表顶部展示公告和历史消息。 */
 async function initializeScroll() {
   await nextTick()
-  scrollToBottom()
+  if (messageList.value) messageList.value.scrollTop = 0
+  updateScrollPosition()
 }
 
-watch(() => props.messages, syncMessagesScroll)
+watch(
+  () => props.messages,
+  async (messages, previousMessages) => {
+    const newest = messages[messages.length - 1]
+    const previousNewest = previousMessages?.[previousMessages.length - 1]
+    // 公告前插或历史补入不改变当前阅读位置；实时消息才按需跟随底部。
+    if (!previousNewest || !newest || newest.id === previousNewest.id || newest.source === 'http') {
+      await nextTick()
+      updateScrollPosition()
+      return
+    }
+    await syncMessagesScroll()
+  }
+)
 onMounted(initializeScroll)
 </script>
