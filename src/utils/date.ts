@@ -54,6 +54,34 @@ export const getTodayKey = () => {
   return `${year}-${month}-${day}`
 }
 
+const HISTORY_FILTER_DAY_COUNTS = new Map([
+  ['today', 1],
+  ['last3days', 3],
+  ['last15days', 15],
+  ['last30days', 30]
+])
+
+/** 按本地日期计算历史记录筛选范围，返回毫秒时间戳。 */
+export const getHistoryTimeRange = (value: string) => {
+  const now = new Date()
+
+  if (value === 'yesterday') {
+    const yesterday = new Date(now)
+    yesterday.setDate(yesterday.getDate() - 1)
+    return {
+      startTime: new Date(yesterday).setHours(0, 0, 0, 0),
+      endTime: yesterday.setHours(23, 59, 59, 999)
+    }
+  }
+
+  const days = HISTORY_FILTER_DAY_COUNTS.get(value)
+  if (days === undefined) return { startTime: null, endTime: null }
+
+  const startDate = new Date(now)
+  startDate.setDate(startDate.getDate() - (days - 1))
+  return { startTime: startDate.setHours(0, 0, 0, 0), endTime: now.getTime() }
+}
+
 const isChineseLanguage = (languageCode: string) => languageCode === 'zh'
 
 const isSameDay = (left: Date, right: Date) =>

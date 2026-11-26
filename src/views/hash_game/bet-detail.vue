@@ -9,12 +9,11 @@
             : 'fixed inset-0 flex min-h-0 flex-col overflow-hidden bg-bg-1'
         "
         @click.self="close"
-        @keydown.esc.stop.prevent="close"
       >
         <section
           :class="
             variant === 'pc'
-              ? 'bottom-sheet-panel flex max-h-[75vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[8px] bg-bg-1'
+              ? 'bottom-sheet-panel flex max-h-[85vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[8px] bg-bg-1'
               : 'flex min-h-0 flex-1 flex-col overflow-hidden bg-bg-1'
           "
           :role="variant === 'pc' ? 'dialog' : undefined"
@@ -41,20 +40,34 @@
           <H5Header
             v-else
             :title="t('betDetails.title')"
-            :show-sort="true"
+            :fixed-top="false"
             :right-icon="KefuIcon"
-            @sort="openKefuPopup"
+            show-sort
+            @sort="openOnlineCustomer()"
           />
 
           <main
-            v-if="bet"
             :class="
               variant === 'pc'
                 ? 'min-h-0 flex-1 overflow-y-auto overscroll-contain p-[16px]'
                 : 'min-h-0 flex-1 overflow-y-auto overscroll-contain p-[14px]'
             "
           >
+            <!-- 加载中 -->
+            <p v-if="loading" role="status" class="py-8 text-center text-sm text-text-2">
+              {{ t('common.loading') }}
+            </p>
+            <!-- 请求错误 -->
+            <button
+              v-else-if="loadFailed"
+              type="button"
+              class="w-full py-8 text-sm text-secondary-4"
+              @click="retryCount++"
+            >
+              {{ t('common.requestError') }}
+            </button>
             <section
+              v-else-if="bet"
               :class="
                 variant === 'pc'
                   ? 'rounded-[8px] bg-bg-2 px-[16px] pb-[16px] pt-[32px]'
@@ -64,214 +77,106 @@
               <div
                 :class="
                   variant === 'pc'
-                    ? 'mb-[32px] flex flex-col items-center'
-                    : 'mb-[30px] flex flex-col items-center'
+                    ? 'mb-[32px] flex flex-col items-center text-text-1'
+                    : 'mb-[30px] flex flex-col items-center text-text-1'
                 "
               >
-                <img
-                  :src="bet.currencyIcon"
-                  :alt="bet.currencyCode"
+                <SmartImage
+                  :src="bet.gameIcon"
                   :class="
                     variant === 'pc'
-                      ? 'mb-[12px] size-[64px] object-contain'
-                      : 'mb-[10px] size-[50px] object-contain'
+                      ? 'mb-[12px] h-[97px] w-[73px] rounded-[7px] object-cover'
+                      : 'mb-[8px] h-[65px] w-[49px] rounded-[7px] object-cover'
                   "
                 />
-                <strong
-                  :class="[
-                    variant === 'pc' ? 'text-[24px] font-bold' : 'text-[25px] font-bold',
-                    bet.profitLoss == null
-                      ? ''
-                      : bet.profitLoss >= 0
-                        ? 'text-theme-primary'
-                        : 'text-secondary-2'
-                  ]"
-                >
-                  {{ bet.profitLossText }}
-                </strong>
-                <span
+                <h2
                   :class="
                     variant === 'pc'
-                      ? 'mt-[8px] text-[16px] text-text-1'
-                      : 'mt-[5px] text-[14px] text-text-1'
+                      ? 'mb-[5px] text-[18px] font-[700] text-text-1'
+                      : 'mb-[5px] text-[18px] font-[700] text-text-1'
                   "
                 >
-                  {{ bet.statusText }}
-                </span>
+                  {{ t('hashGame.betDetails.gameType') }}
+                </h2>
+                <p
+                  :class="
+                    variant === 'pc'
+                      ? 'text-[14px] font-[400] text-text-1'
+                      : 'text-[14px] font-[400] text-text-1'
+                  "
+                >
+                  {{ bet.gameName }}
+                </p>
               </div>
 
               <div
+                :class="[
+                  variant === 'pc'
+                    ? 'mb-[12px] flex items-center justify-between rounded-[8px] bg-bg-4 p-[16px]'
+                    : 'mb-[10px] flex items-center justify-between rounded-[8px] bg-bg-4 p-[14px]',
+                  bet.resultColor
+                ]"
+              >
+                <span
+                  :class="variant === 'pc' ? 'text-[14px] font-[400]' : 'text-[14px] font-[400]'"
+                  >{{ bet.resultLabel }}</span
+                >
+                <strong
+                  v-if="bet.profitText"
+                  :class="variant === 'pc' ? 'text-[16px] font-[700]' : 'text-[16px] font-[700]'"
+                  >{{ bet.profitText }}</strong
+                >
+              </div>
+
+              <dl
                 :class="
                   variant === 'pc'
-                    ? 'space-y-[16px] rounded-[8px] bg-bg-4 px-[20px] py-[16px]'
-                    : 'space-y-[20px] rounded-[8px] bg-bg-4 p-[14px]'
+                    ? 'space-y-[16px] rounded-[8px] bg-bg-4 py-[16px] px-[20px] text-[16px]'
+                    : 'space-y-[20px] rounded-[8px] bg-bg-4 p-[14px] text-[14px]'
                 "
               >
-                <div class="flex items-center justify-between gap-3">
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'shrink-0 text-[16px] text-text-3'
-                        : 'shrink-0 text-[14px] text-text-3'
-                    "
-                    >{{ t('hashGame.game') }}</span
+                <div v-for="row in bet.fields" :key="row.label" class="flex justify-between gap-3">
+                  <dt class="shrink-0 text-text-3">{{ row.label }}</dt>
+                  <dd
+                    :class="[
+                      'flex min-w-0 items-baseline gap-1.5 text-right',
+                      row.color || 'text-text-1'
+                    ]"
                   >
-                  <span
-                    :class="
-                      variant === 'pc' ? 'text-[16px] text-text-1' : 'text-[14px] text-text-1'
-                    "
-                    >{{ bet.gameName }}</span
-                  >
-                </div>
-                <div class="flex items-center justify-between gap-3">
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'shrink-0 text-[16px] text-text-3'
-                        : 'shrink-0 text-[14px] text-text-3'
-                    "
-                    >{{ t('hashGame.betId') }}</span
-                  >
-                  <div
-                    :class="
-                      variant === 'pc'
-                        ? 'flex min-w-0 items-center gap-1 text-[14px] text-text-1'
-                        : 'flex min-w-0 items-center gap-1 text-[12px] text-text-1'
-                    "
-                  >
-                    <span class="min-w-0 truncate">{{ bet.id }}</span>
-                    <button type="button" class="shrink-0" @click="copyValue(bet.id)">
-                      <CopyIcon
-                        :class="
-                          variant === 'pc' ? 'size-[22px] text-icon-2' : 'size-[16px] text-icon-2'
-                        "
-                      />
-                    </button>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between gap-3">
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'shrink-0 text-[16px] text-text-3'
-                        : 'shrink-0 text-[14px] text-text-3'
-                    "
-                  >
-                    {{ t('hashGame.betSelection') }}
-                  </span>
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'flex size-[20px] items-center justify-center rounded-full bg-[#22A89A] text-[12px] text-text-1'
-                        : 'flex size-[20px] items-center justify-center rounded-full bg-[#22A89A] text-[12px] text-text-1'
-                    "
-                  >
-                    {{ bet.selection ? t(`hashGame.${bet.selection}Mark`) : '—' }}
-                  </span>
-                </div>
-                <div class="flex items-center justify-between gap-3">
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'shrink-0 text-[16px] text-text-3'
-                        : 'shrink-0 text-[14px] text-text-3'
-                    "
-                  >
-                    {{ t('hashGame.betAmount') }}
-                  </span>
-                  <span
-                    :class="
-                      variant === 'pc' ? 'text-[16px] text-text-1' : 'text-[14px] text-text-1'
-                    "
-                    >{{ bet.amountText }}</span
-                  >
-                </div>
-                <div class="flex items-center justify-between gap-3">
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'shrink-0 text-[16px] text-text-3'
-                        : 'shrink-0 text-[14px] text-text-3'
-                    "
-                  >
-                    {{ t('hashGame.resultBlock') }}
-                  </span>
-                  <div
-                    :class="
-                      variant === 'pc'
-                        ? 'flex min-w-0 items-center gap-1 text-[16px] text-text-1'
-                        : 'flex min-w-0 items-center gap-1 text-[14px] text-text-1'
-                    "
-                  >
-                    <span class="min-w-0 truncate">{{ bet.block }}</span>
-                    <button type="button" class="shrink-0" @click="copyValue(bet.block)">
-                      <CopyIcon
-                        :class="
-                          variant === 'pc' ? 'size-[22px] text-icon-2' : 'size-[16px] text-icon-2'
-                        "
-                      />
-                    </button>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between gap-3">
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'shrink-0 text-[16px] text-text-3'
-                        : 'shrink-0 text-[14px] text-text-3'
-                    "
-                  >
-                    {{ t('hashGame.blockHash') }}
-                  </span>
-                  <div
-                    :class="
-                      variant === 'pc'
-                        ? 'flex min-w-0 items-center gap-1 text-[14px]'
-                        : 'flex min-w-0 items-center gap-1 text-[12px]'
-                    "
-                  >
-                    <span class="min-w-0 truncate text-text-1">{{ bet.blockHash || '—' }}</span>
+                    <span
+                      :class="row.copy ? 'min-w-0 truncate' : 'break-words'"
+                      :title="row.copy ? row.value : undefined"
+                    >
+                      {{ row.value }}
+                    </span>
+                    <span v-if="row.outcomes" class="shrink-0 text-theme-primary">{{
+                      row.outcomes
+                    }}</span>
                     <button
-                      v-if="bet.blockHash"
+                      v-if="row.copy"
                       type="button"
-                      class="shrink-0"
-                      @click="copyValue(bet.blockHash)"
+                      class="flex shrink-0 self-center"
+                      :aria-label="`${t('common.copy')} ${row.label}`"
+                      @click="copyValue(row.value)"
                     >
                       <CopyIcon
                         :class="
-                          variant === 'pc' ? 'size-[22px] text-icon-2' : 'size-[16px] text-icon-2'
+                          variant === 'pc' ? 'size-[24px] text-icon-2' : 'size-[16px] text-icon-2'
                         "
                       />
                     </button>
-                    <button
-                      type="button"
+                    <a
+                      v-if="row.href"
+                      :href="row.href"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       class="shrink-0 text-theme-primary"
-                      :disabled="!bet.explorerUrl"
-                      @click="verifyBlock(bet.explorerUrl)"
                     >
                       {{ t('hashGame.verify') }}
-                    </button>
-                  </div>
+                    </a>
+                  </dd>
                 </div>
-                <div class="flex items-center justify-between gap-3">
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'shrink-0 text-[16px] text-text-3'
-                        : 'shrink-0 text-[14px] text-text-3'
-                    "
-                    >{{ t('hashGame.betTime') }}</span
-                  >
-                  <span
-                    :class="
-                      variant === 'pc'
-                        ? 'text-right text-[16px] text-text-1'
-                        : 'text-right text-[14px] text-text-1'
-                    "
-                    >{{ bet.betTime }}</span
-                  >
-                </div>
-              </div>
+              </dl>
             </section>
           </main>
         </section>
@@ -284,50 +189,51 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import type {
-  HashGameBetStatus,
-  HashGameLotteryBetDetail
-} from '@/api/interface/hash_game.interface'
+import type { HashGameLotteryBetDetail } from '@/api/interface/hash_game.interface'
 import { getHashGameBetDetail } from '@/api/modules/hash_game'
 import H5Header from '@/components/common/H5Header.vue'
-import KefuIcon from '@/static/svg/vip/kefu.svg?component'
-import CopyIcon from '@/static/svg/copy.svg?component'
-import CloseIcon from '@/static/svg/close.svg?component'
+import SmartImage from '@/components/common/SmartImage.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
+import fallbackGameIcon from '@/static/img/personalCenter/bet.png'
+import CloseIcon from '@/static/svg/close.svg?component'
+import CopyIcon from '@/static/svg/copy.svg?component'
+import KefuIcon from '@/static/svg/vip/kefu.svg?component'
+import { useHashGameCatalogStore } from '@/stores/hashGameCatalog'
 import { useUserStore } from '@/stores/user'
 import { isApiBusinessSuccess } from '@/utils/apiBusiness'
-import { getCurrencyImageByCode } from '@/utils/currencyIcon'
-import { formatUsDateTime12h } from '@/utils/date'
+import { copyTextWithFallback } from '@/utils/clipboard'
+import { formatTimestamp } from '@/utils/date'
+import { resolveGameImageUrl } from '@/utils/image'
 import { globalShowToast } from '@/utils/toast'
-import { BET_KEYS, issueExplorerUrl } from './lotteryDisplay'
+import {
+  BET_KEYS,
+  formatOdds,
+  formatStakeAmount,
+  getHashBetProfit,
+  HASH_BET_STATUS_KEYS,
+  issueExplorerUrl,
+  issueOutcome
+} from './lotteryDisplay'
 
-const statusKeys: Record<HashGameBetStatus, string> = {
-  CONFIRMING: 'betHistory.filterOptions.unsettled',
-  VOIDED: 'hashGame.betDetailStatus.voided',
-  PENDING: 'betHistory.filterOptions.unsettled',
-  WIN: 'hashGame.betDetailStatus.win',
-  LOSE: 'hashGame.betDetailStatus.lose',
-  REFUND: 'betHistory.filterOptions.settled',
-  ERROR: 'hashGame.betDetailStatus.error',
-  CANCEL: 'hashGame.betDetailStatus.cancelled'
-}
-
-const props = withDefaults(
-  defineProps<{
-    variant?: 'h5' | 'pc'
-    orderNo?: string
-  }>(),
-  { variant: 'h5' }
-)
+const props = withDefaults(defineProps<{ variant?: 'h5' | 'pc'; orderNo?: string }>(), {
+  variant: 'h5'
+})
 const visible = defineModel<boolean>('visible', { default: false })
 
 const { t } = useI18n()
 const route = useRoute()
 const userStore = useUserStore()
+const catalog = useHashGameCatalogStore()
 const { open: openOnlineCustomer } = useOnlineCustomerService()
+const mobile = useIsMobile()
+usePageScrollLock(() => props.variant === 'h5' && mobile.value)
+
 const detail = shallowRef<HashGameLotteryBetDetail>()
 const loading = ref(false)
 const loadFailed = ref(false)
+const retryCount = ref(0)
 const orderNo = computed(() => {
   if (props.variant === 'pc') return visible.value ? props.orderNo : undefined
   return typeof route.params.id === 'string' ? route.params.id : undefined
@@ -337,7 +243,8 @@ watch(
   [
     orderNo,
     () => userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId,
-    () => userStore.userInfo?.tradeToken
+    () => userStore.userInfo?.tradeToken,
+    retryCount
   ],
   async ([id], _, onCleanup) => {
     detail.value = undefined
@@ -345,6 +252,7 @@ watch(
     loadFailed.value = false
     if (!id) return
 
+    void catalog.load()
     let active = true
     onCleanup(() => {
       active = false
@@ -366,44 +274,89 @@ watch(
   { immediate: true }
 )
 
+type DetailField = {
+  label: string
+  value: string
+  copy?: boolean
+  href?: string
+  outcomes?: string
+  color?: string
+}
+
 const bet = computed(() => {
-  if (!orderNo.value) return null
   const value = detail.value
-  const currencyCode = value?.currency ?? ''
-  const statusKey = value && statusKeys[value.status]
-  const isWinOrLoss = value?.status === 'WIN' || value?.status === 'LOSE'
-  const amount = Number(value?.betAmount ?? NaN)
-  const profit = Number(value?.payoutAmount ?? NaN) - amount
-  const profitLoss = isWinOrLoss && Number.isFinite(profit) ? profit : null
-  const anchor = value?.anchorBlockNum
-  const hasAnchor = typeof anchor === 'number' && Number.isSafeInteger(anchor) && anchor > 0
+  if (!value) return null
+
+  const game = catalog.gamesByCode.get(value.gameCode)
+  const won = value.status === 'WIN'
+  const lost = value.status === 'LOSE'
+  const settled = won || lost || value.status === 'REFUND'
+  const status = t(`hashGame.betDetailStatus.${HASH_BET_STATUS_KEYS[value.status]}`)
+  const profit = getHashBetProfit(value.status, value.betAmount, value.payoutAmount)
+  const option = BET_KEYS[value.betOption]
+  const odds = formatOdds(value.appliedOdds, value.betOption)
+  const block =
+    Number.isSafeInteger(value.anchorBlockNum) && value.anchorBlockNum > 0
+      ? value.anchorBlockNum
+      : undefined
+  const hash = value.blockHash
+  const result = value.result
+  const outcomes = result
+    ? (['size', 'parity', 'winner'] as const).flatMap(mode => {
+        const outcome = issueOutcome(result, mode)
+        return outcome ? [t(`hashGame.${outcome}`)] : []
+      })
+    : []
+  const drawHash =
+    result && hash
+      ? hash.length > 11
+        ? `${hash.slice(0, 3)}...${hash.slice(-5)}`
+        : hash
+      : undefined
+  const digit = result?.sum ?? result?.digit ?? result?.lastTwo
+  const fieldLabel = (key: string) => t(`hashGame.betDetails.${key}`)
+
+  const fields: DetailField[] = [
+    { label: fieldLabel('selection'), value: option ? t(`hashGame.${option}`) : '—' },
+    {
+      label: t('betHistory.betAmount'),
+      value: value.betAmount == null ? '—' : formatStakeAmount(value.betAmount)
+    },
+    { label: fieldLabel('period'), value: String(block ?? '—') },
+    { label: fieldLabel('odds'), value: odds === '—' ? odds : `@${odds}` },
+    {
+      label: fieldLabel('betBlock'),
+      value: hash || String(block ?? '—'),
+      copy: Boolean(hash || block),
+      href: block ? issueExplorerUrl(value.explorerUrl, block) : undefined
+    },
+    {
+      label: fieldLabel('result'),
+      value: drawHash ?? (digit == null ? (outcomes.length ? '' : '—') : String(digit)),
+      outcomes: outcomes.length ? `（${outcomes.join('、')}）` : undefined
+    },
+    {
+      label: fieldLabel('orderStatus'),
+      value: settled ? t('betHistory.filterOptions.settled') : status,
+      color: settled ? 'text-secondary-7' : undefined
+    },
+    { label: t('betDetails.currency'), value: value.currency || '—' },
+    { label: fieldLabel('gameTypeLabel'), value: fieldLabel('gameType') },
+    { label: fieldLabel('orderNo'), value: value.orderNo, copy: true },
+    { label: fieldLabel('placedAt'), value: formatTimestamp(value.betTime) },
+    { label: fieldLabel('settledAt'), value: formatTimestamp(value.settleTime) }
+  ]
+
   return {
-    id: value?.orderNo ?? orderNo.value,
-    gameName: value?.gameName || '—',
-    selection: value && BET_KEYS[value.betOption],
-    currencyCode,
-    currencyIcon: getCurrencyImageByCode(currencyCode === 'TYJ' ? 'CNY' : currencyCode),
-    statusText: statusKey
-      ? t(statusKey)
-      : loading.value
-        ? t('common.loading')
-        : loadFailed.value
-          ? t('common.requestError')
-          : '—',
-    amountText: Number.isFinite(amount)
-      ? `${amount.toFixed(2)} ${currencyCode === 'TYJ' ? '¥' : currencyCode}`.trimEnd()
-      : '—',
-    profitLoss,
-    profitLossText:
-      profitLoss != null
-        ? `${profitLoss > 0 ? '+' : ''}${profitLoss.toFixed(2)}`
-        : value && !isWinOrLoss
-          ? '0.00'
-          : '—',
-    block: hasAnchor ? String(anchor) : '—',
-    blockHash: value?.blockHash,
-    explorerUrl: hasAnchor ? issueExplorerUrl(value?.explorerUrl, anchor) : undefined,
-    betTime: formatUsDateTime12h(value?.betTime)
+    gameIcon: resolveGameImageUrl(game?.imageUrl) || fallbackGameIcon,
+    gameName: value.gameName || game?.gameName || value.gameCode,
+    resultLabel: won || lost ? t(won ? 'betHistory.win' : 'betHistory.loss') : status,
+    resultColor: won ? 'text-secondary-2' : lost ? 'text-secondary-4' : 'text-text-2',
+    profitText:
+      profit == null
+        ? undefined
+        : `${profit > 0 ? '+' : ''}${profit.toLocaleString('en-US', { maximumFractionDigits: 8 })}`,
+    fields
   }
 })
 
@@ -418,15 +371,8 @@ const handleDocumentKeydown = (event: KeyboardEvent) => {
 onMounted(() => document.addEventListener('keydown', handleDocumentKeydown))
 onBeforeUnmount(() => document.removeEventListener('keydown', handleDocumentKeydown))
 
-const openKefuPopup = () => openOnlineCustomer()
-
 const copyValue = async (value: string) => {
-  if (!value || value === '—') return
-  await navigator.clipboard.writeText(value)
-  globalShowToast(t('betDetails.copy'))
-}
-
-const verifyBlock = (url?: string) => {
-  if (url) window.open(url, '_blank', 'noopener,noreferrer')
+  const copied = await copyTextWithFallback(value)
+  globalShowToast(t(copied ? 'betDetails.copy' : 'common.copyFailedRetry'))
 }
 </script>

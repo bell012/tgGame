@@ -1,6 +1,7 @@
 import type {
   HashGameAlgorithm,
   HashGameBetOption,
+  HashGameBetStatus,
   HashGameLotteryBet,
   HashGameLotteryInfo,
   HashGameLotteryResult
@@ -8,6 +9,17 @@ import type {
 
 export type BetKey = Lowercase<HashGameBetOption>
 export type RoadmapMode = 'size' | 'parity' | 'winner'
+
+export const HASH_BET_STATUS_KEYS: Record<HashGameBetStatus, string> = {
+  CONFIRMING: 'confirming',
+  VOIDED: 'voided',
+  PENDING: 'pending',
+  WIN: 'win',
+  LOSE: 'lose',
+  REFUND: 'refund',
+  ERROR: 'error',
+  CANCEL: 'cancelled'
+}
 
 export type RecentBetRecord = Pick<
   HashGameLotteryBet,
@@ -29,7 +41,18 @@ const readBetAmount = (value: HashGameLotteryBet['amount']) => {
   return Number.isFinite(amount) && amount >= 0 ? amount : null
 }
 
-/** 按本地日期筛选当前玩法和币种，列表和今日汇总使用同一批记录。 */
+export function getHashBetProfit(
+  status: HashGameBetStatus,
+  amount: HashGameLotteryBet['amount'],
+  payout: HashGameLotteryBet['payoutAmount']
+) {
+  if (status !== 'WIN' && status !== 'LOSE') return null
+  const stake = readBetAmount(amount)
+  const returned = readBetAmount(payout)
+  return stake != null && returned != null ? returned - stake : null
+}
+
+/** 展示当前玩法和币种的近期投注，汇总仅统计本地当天的记录。 */
 export function recentGameBets(
   bets: readonly HashGameLotteryBet[],
   gameCode: string,
@@ -45,13 +68,9 @@ export function recentGameBets(
   const summary: RecentBetSummary = { count: 0, totalBetAmount: 0, profitLoss: 0 }
   for (const bet of bets) {
     if (bet.gameCode !== gameCode || bet.currency !== currency) continue
-    const time = new Date(timestampMillis(bet.betTime) || bet.betTime)
-    if (!(time >= start && time < end)) continue
 
     const amount = readBetAmount(bet.amount)
-    const payout = readBetAmount(bet.payoutAmount)
-    const settled = bet.status === 'WIN' || bet.status === 'LOSE'
-    const profitLoss = settled && amount != null && payout != null ? payout - amount : null
+    const profitLoss = getHashBetProfit(bet.status, bet.amount, bet.payoutAmount)
     records.push({
       orderNo: bet.orderNo,
       anchorBlockNum: bet.anchorBlockNum,
@@ -60,7 +79,8 @@ export function recentGameBets(
       amount,
       profitLoss
     })
-    if (bet.status !== 'CANCEL') {
+    const time = new Date(timestampMillis(bet.betTime) || bet.betTime)
+    if (bet.status !== 'CANCEL' && time >= start && time < end) {
       summary.count++
       summary.totalBetAmount += amount ?? 0
       summary.profitLoss += profitLoss ?? 0

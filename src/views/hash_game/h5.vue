@@ -282,7 +282,8 @@
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full text-[11px] not-italic text-text-1"
                       :style="{ background: entry.color }"
-                      >{{ entry.label }}</i>{{ entry.count }}
+                      >{{ entry.label }}</i
+                    >{{ entry.count }}
                   </span>
                 </div>
                 <span class="ml-auto min-w-0 whitespace-nowrap text-[11px] text-secondary-8">{{
@@ -565,6 +566,7 @@
     <!-- 投注记录弹窗 -->
     <RecentBetsPopup
       v-model:visible="recentBetsOpen"
+      :game-code="selectedHashGameCode"
       :currency-code="currentCurrencyCode"
       :currency-icon="currentCurrencyIcon"
       :bets="recentBets"
