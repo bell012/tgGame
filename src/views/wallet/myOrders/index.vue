@@ -484,7 +484,8 @@ watch(
   async records => {
     const missing = records.filter(record => {
       const id = Number(record.categoryId)
-      if (!Number.isFinite(id) || id <= 0 || loadedCategoryIds.has(id)) return false
+      if (record.categoryId == null || !Number.isFinite(id) || id < 0 || loadedCategoryIds.has(id))
+        return false
       loadedCategoryIds.add(id)
       return true
     })

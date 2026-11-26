@@ -224,7 +224,10 @@ export const loadMyOrderTypeIconMap = async (
 ): Promise<OrderTypeIconMap> => {
   const categoryIds = [
     ...new Set(
-      records.map(item => Number(item.categoryId)).filter(id => Number.isFinite(id) && id > 0)
+      records
+        .filter(item => item.categoryId !== null && item.categoryId !== undefined)
+        .map(item => Number(item.categoryId))
+        .filter(id => Number.isFinite(id) && id >= 0)
     )
   ]
   const responses = await Promise.allSettled(
