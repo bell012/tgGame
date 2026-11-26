@@ -1294,6 +1294,7 @@
     "invalidGameUrl": "Invalid game url",
     "collapseGame": "Minimize game",
     "exitGame": "Exit game",
+    "exitingGame": "Exiting game…",
     "collapseOrExitGame": "Minimize to keep your current game. Exiting will end the game session."
   },
   "common_footer": {

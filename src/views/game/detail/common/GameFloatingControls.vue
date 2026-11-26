@@ -2,11 +2,11 @@
   <div
     v-show="active"
     class="pointer-events-none fixed inset-0 z-[1]"
-    style="
-      --game-floating-bg: rgba(27, 29, 30, 0.8);
-      --game-floating-border: rgba(255, 255, 255, 0.18);
-      --game-floating-orb: rgba(0, 0, 0, 0.5);
-    "
+    style="--game-floating-orb: rgba(0, 0, 0, 0.5)"
+    :style="{
+      '--game-floating-bg': isMobile ? 'rgba(27,29,30,.8)' : 'rgba(0,0,0,.6)',
+      '--game-floating-border': isMobile ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.15)'
+    }"
   >
     <button
       v-if="expanded"
@@ -17,11 +17,11 @@
     />
     <div
       ref="bounds"
-      class="absolute bottom-[calc(env(safe-area-inset-bottom)+12px)] left-[calc(env(safe-area-inset-left)+12px)] right-[calc(env(safe-area-inset-right)+12px)] top-[calc(env(safe-area-inset-top)+12px)]"
+      class="absolute bottom-[calc(env(safe-area-inset-bottom)+12px)] left-[calc(env(safe-area-inset-left)+12px)] right-[calc(env(safe-area-inset-right)+12px)] top-[calc(env(safe-area-inset-top)+12px)] sm:inset-8"
     >
       <div
         ref="control"
-        class="absolute size-[50px]"
+        class="absolute size-[50px] sm:size-[72px]"
         :style="{ left: `${position.x}px`, top: `${position.y}px` }"
       >
         <Transition
@@ -32,33 +32,38 @@
         >
           <div
             v-if="expanded"
-            class="pointer-events-auto absolute top-2 flex h-[34px] w-[227px] max-w-[calc(100vw-env(safe-area-inset-left)-env(safe-area-inset-right)-86px)] items-center gap-[15px]"
-            :class="side === 'right' ? 'right-[62px] origin-right' : 'left-[62px] origin-left'"
+            class="pointer-events-auto absolute top-2 flex h-[34px] w-[227px] max-w-[calc(100vw-env(safe-area-inset-left)-env(safe-area-inset-right)-86px)] items-center gap-[15px] sm:top-2.5 sm:h-[52px] sm:w-[334px] sm:gap-5"
+            :class="
+              side === 'right'
+                ? 'right-[62px] sm:right-[92px] origin-right'
+                : 'left-[62px] sm:left-[92px] origin-left'
+            "
           >
             <CurrencySelect
               floating
               class="min-w-0 flex-1"
               :disabled="disabled || frameLoading"
               :change-currency="changeCurrency"
+              @deposit="emit('deposit')"
             />
-            <div class="flex shrink-0 gap-[7px]">
+            <div class="flex shrink-0 gap-[7px] sm:gap-3">
               <button
                 type="button"
-                class="flex size-[34px] items-center justify-center rounded-[10px] border border-[var(--game-floating-border)] bg-[var(--game-floating-bg)] disabled:opacity-50"
+                class="flex size-[34px] items-center justify-center rounded-[10px] border border-[var(--game-floating-border)] bg-[var(--game-floating-bg)] disabled:opacity-50 sm:size-[52px] sm:rounded-xl"
                 :aria-label="t('gameDetail.exitGame')"
                 :disabled="disabled"
                 @click="activate('exit')"
               >
-                <img :src="exitIcon" alt="" class="size-3.5" />
+                <img :src="exitIcon" alt="" class="size-3.5 sm:size-[21.41px]" />
               </button>
               <button
                 type="button"
-                class="flex size-[34px] items-center justify-center rounded-[10px] border border-[var(--game-floating-border)] bg-[var(--game-floating-bg)] disabled:opacity-50"
+                class="flex size-[34px] items-center justify-center rounded-[10px] border border-[var(--game-floating-border)] bg-[var(--game-floating-bg)] disabled:opacity-50 sm:size-[52px] sm:rounded-xl"
                 :aria-label="t('gameDetail.collapseGame')"
                 :disabled="disabled"
                 @click="activate('collapse')"
               >
-                <img :src="collapseIcon" alt="" class="size-[18px]" />
+                <img :src="collapseIcon" alt="" class="size-[18px] sm:size-[27.53px]" />
               </button>
             </div>
           </div>
@@ -66,7 +71,7 @@
         <button
           ref="toggle"
           type="button"
-          class="pointer-events-auto relative flex size-[50px] touch-none select-none items-center justify-center rounded-full transition-opacity duration-300 motion-reduce:transition-none"
+          class="pointer-events-auto relative flex size-[50px] touch-none select-none items-center justify-center rounded-full transition-opacity duration-300 motion-reduce:transition-none sm:size-[72px]"
           :class="[
             expanded
               ? 'border border-[var(--game-floating-border)] bg-[var(--game-floating-bg)]'
@@ -86,16 +91,16 @@
           @focus="wake"
           @blur="scheduleIdle"
         >
-          <CloseIcon v-if="expanded" class="size-3.5 text-common-100" />
+          <CloseIcon v-if="expanded" class="size-3.5 text-common-100 sm:size-9" />
           <template v-else>
             <span
-              class="pointer-events-none absolute size-[35.67px] rounded-full bg-common-100 opacity-[0.18]"
+              class="pointer-events-none absolute size-[35.67px] rounded-full bg-common-100 opacity-[0.18] sm:size-[51.36px]"
             />
             <span
-              class="pointer-events-none absolute size-[28.33px] rounded-full bg-common-100 opacity-[0.24]"
+              class="pointer-events-none absolute size-[28.33px] rounded-full bg-common-100 opacity-[0.24] sm:size-[40.8px]"
             />
             <span
-              class="pointer-events-none absolute size-[21px] rounded-full bg-common-100 opacity-50"
+              class="pointer-events-none absolute size-[21px] rounded-full bg-common-100 opacity-50 sm:size-[30.24px]"
             />
           </template>
         </button>
@@ -110,7 +115,8 @@ import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
 import exitIcon from '@/static/svg/game/detail/top/floating-exit.svg?url'
 import collapseIcon from '@/static/svg/game/detail/top/floating-collapse.svg?url'
-import CurrencySelect from './currency-select/index.vue'
+import CurrencySelect from '../h5/currency-select/index.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 
 const props = defineProps<{
   active: boolean
@@ -118,7 +124,8 @@ const props = defineProps<{
   frameLoading: boolean
   changeCurrency: (value: string) => Promise<boolean>
 }>()
-const emit = defineEmits<{ exit: []; collapse: [] }>()
+const emit = defineEmits<{ exit: []; collapse: []; deposit: [] }>()
+const isMobile = useIsMobile()
 const { t } = useI18n()
 const bounds = ref<HTMLElement>()
 const control = ref<HTMLElement>()
@@ -126,7 +133,7 @@ const toggle = ref<HTMLButtonElement>()
 const expanded = ref(false)
 const idle = ref(false)
 const side = ref<'left' | 'right'>('right')
-const position = ref({ x: 0, y: 8 })
+const position = ref({ x: 0, y: isMobile.value ? 8 : 0 })
 const menuHiddenClass = computed(() =>
   side.value === 'right' ? 'translate-x-2 scale-95 opacity-0' : '-translate-x-2 scale-95 opacity-0'
 )
@@ -150,8 +157,8 @@ const scheduleIdle = () => {
     }, 5000)
 }
 const limits = () => ({
-  x: Math.max(0, (bounds.value?.clientWidth ?? 50) - 50),
-  y: Math.max(0, (bounds.value?.clientHeight ?? 50) - 50)
+  x: Math.max(0, (bounds.value?.clientWidth ?? 0) - (control.value?.offsetWidth ?? 50)),
+  y: Math.max(0, (bounds.value?.clientHeight ?? 0) - (control.value?.offsetHeight ?? 50))
 })
 const clamp = (value: number, max: number) => Math.max(0, Math.min(value, max))
 const releaseDrag = () => {
@@ -227,13 +234,9 @@ const toggleMenu = (event: MouseEvent) => {
   expanded.value = !expanded.value
 }
 const activate = (action: 'exit' | 'collapse') => {
-  if (action === 'exit') {
-    // 温馨提示打开时保留已展开的悬浮菜单，不要收成小球。
-    emit('exit')
-    return
-  }
   expanded.value = false
-  emit('collapse')
+  if (action === 'exit') emit('exit')
+  else emit('collapse')
 }
 watch(expanded, scheduleIdle)
 watch(

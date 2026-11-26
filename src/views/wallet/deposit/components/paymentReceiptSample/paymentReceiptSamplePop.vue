@@ -1,5 +1,10 @@
 <template>
-  <depositPopShell :modelValue="modelValue" :withMask="false" @overlay-close="handleClose">
+  <depositPopShell
+    :teleport-target="teleportTarget"
+    :modelValue="modelValue"
+    :withMask="false"
+    @overlay-close="handleClose"
+  >
     <paymentReceiptSamplePanel @close="handleClose" />
   </depositPopShell>
 </template>
@@ -7,6 +12,7 @@
 import paymentReceiptSamplePanel from './paymentReceiptSamplePanel.vue'
 import depositPopShell from '../shared/depositPopShell.vue'
 interface Props {
+  teleportTarget?: HTMLElement | null
   modelValue: boolean
 }
 

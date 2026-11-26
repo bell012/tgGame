@@ -58,11 +58,6 @@
         />
       </div>
     </div>
-    <GamePlayer
-      :preview-name="currentGameDetail?.itemName"
-      :preview-image="currentGameDetail?.icon2 ?? currentGameDetail?.conUrl"
-      @fullscreen-change="emit('fullscreenChange', $event)"
-    />
   </div>
 </template>
 <script setup lang="ts">
@@ -73,10 +68,9 @@ import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
 import GameDetailActions from '../../common/GameDetailActions.vue'
 import GameDetailStats from '../../common/GameDetailStats.vue'
-import GamePlayer from '../GamePlayer.vue'
-import { computed, inject, onMounted, reactive, ref, watch, type Ref } from 'vue'
+import { computed, inject, onMounted, reactive, ref, watch, type Ref, type ComputedRef } from 'vue'
 import { useGameFavorite } from '@/composables/useGameFavorite'
-import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
+import type { GameDetailForPlatformPlay } from '@/composables/useGamePlatformPlay'
 import { useGameStore } from '@/stores/game'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
@@ -84,8 +78,10 @@ import { useUserStore } from '@/stores/user'
 import { resolveGameImageUrl } from '@/utils/image'
 import { storeToRefs } from 'pinia'
 
-const emit = defineEmits<{ fullscreenChange: [value: boolean] }>()
-const { currentGameDetail } = useGamePlatformPlay()
+const currentGameDetail = inject<ComputedRef<GameDetailForPlatformPlay>>(
+  'game-detail-current-game',
+  computed(() => null)
+)
 const { isFavorite, isUpdating, toggleFavorite } = useGameFavorite()
 const collectionsCount = inject<Ref<number | null>>('game-detail-collections-count', ref(null))
 const rtp = inject<Ref<number | null>>('game-detail-rtp', ref(null))

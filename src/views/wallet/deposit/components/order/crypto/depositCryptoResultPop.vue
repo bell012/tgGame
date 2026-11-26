@@ -1,6 +1,7 @@
 <template>
   <!-- 数字币订单结果弹窗壳组件 -->
   <depositPopShell
+    :teleport-target="teleportTarget"
     :modelValue="modelValue"
     :withMask="true"
     :transitionType="isMobile ? 'drawer-slide' : 'modal'"
@@ -23,6 +24,7 @@ import depositPopShell from '../../shared/depositPopShell.vue'
 import orderCryptoResultPanel from './orderCryptoResultPanel.vue'
 
 interface Props {
+  teleportTarget?: HTMLElement | null
   modelValue: boolean
   orderInfo: Partial<QueryPayOrderByOrderIdResult>
   methodIcon?: string

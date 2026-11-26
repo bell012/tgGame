@@ -692,6 +692,7 @@
     "invalidGameUrl": "Liên kết game không hợp lệ",
     "collapseGame": "Thu nhỏ game",
     "exitGame": "Thoát game",
+    "exitingGame": "Đang thoát game…",
     "collapseOrExitGame": "Thu nhỏ để giữ game hiện tại. Thoát sẽ kết thúc phiên chơi."
   },
   "common_footer": {

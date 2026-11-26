@@ -690,6 +690,7 @@
     "invalidGameUrl": "游戏链接无效",
     "collapseGame": "收起游戏",
     "exitGame": "退出游戏",
+    "exitingGame": "正在退出游戏…",
     "collapseOrExitGame": "收起可保留当前游戏，退出将结束游戏会话。"
   },
   "common_footer": {

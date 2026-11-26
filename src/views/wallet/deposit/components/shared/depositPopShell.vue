@@ -1,5 +1,5 @@
 <template>
-  <teleport to="body">
+  <teleport :to="teleportTarget ?? 'body'">
     <transition :name="props.transitionType">
       <div
         v-if="modelValue"
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 interface Props {
+  teleportTarget?: HTMLElement | null
   modelValue: boolean
   isHidden?: boolean
   withMask?: boolean
