@@ -2068,7 +2068,75 @@
     "detailTitle": "Chi tiết hoạt động",
     "comprehensive": "Tổng hợp",
     "empty": "Hiện chưa có dữ liệu",
-    "notFound": "Không tìm thấy sự kiện"
+    "notFound": "Không tìm thấy sự kiện",
+    "detail": {
+      "badge": {
+        "firstDeposit": "Nạp tiền",
+        "singleDeposit": "Nạp tiền",
+        "cumulativeDeposit": "Nạp tiền",
+        "checkIn": "Điểm danh",
+        "electronic": "Nổ hũ"
+      },
+      "title": {
+        "firstDeposit": "Nạp lần đầu",
+        "singleDeposit": "Nạp một lần",
+        "cumulativeDeposit": "Nạp tích lũy",
+        "checkIn": "Điểm danh nhận thưởng",
+        "electronic": "Nổ hũ vượt ải"
+      },
+      "subtitle": {
+        "firstDeposit": "Nạp lần đầu đủ điều kiện trong thời gian sự kiện để nhận thưởng",
+        "singleDeposit": "Mỗi lần nạp đủ điều kiện trong thời gian sự kiện đều nhận thưởng",
+        "cumulativeDeposit": "Đạt tổng nạp yêu cầu trong thời gian sự kiện để nhận thưởng",
+        "checkIn": "Điểm danh mỗi ngày và hoàn thành điều kiện để nhận thưởng",
+        "electronic": "Vượt ải nhận thưởng lên đến 9999"
+      },
+      "longTerm": "Sự kiện dài hạn",
+      "pendingReward": "Thưởng chờ nhận:",
+      "claimNow": "Nhận ngay",
+      "currentRound": "Lượt hiện tại: {current}/{total}",
+      "unclaimedCount": "Chưa nhận",
+      "depositedAmount": "Đã nạp",
+      "depositAmount": "Số tiền nạp",
+      "rewardAmount": "Tiền thưởng",
+      "status": "Trạng thái",
+      "section": {
+        "firstDeposit": "Thưởng chào mừng cho lần nạp đầu",
+        "singleDeposit": "Thưởng cho từng lần nạp",
+        "cumulativeDeposit": "Thưởng nạp tích lũy"
+      },
+      "rules": {
+        "firstDeposit": [
+          "Cách tham gia: Trong thời gian sự kiện, lần nạp đầu đạt mức tương ứng sẽ mở thưởng của mức đó. Mỗi người chỉ tham gia một lần.",
+          "Tự động phát: Thưởng được chuyển vào ví sau khi nạp lần đầu thành công. Nhận thủ công: Thưởng được mở khóa sau khi nạp thành công và cần bấm Nhận ngay. Thưởng quá hạn không được cấp lại.",
+          "Phương thức nạp: Chỉ tính Alipay, WeChat, thẻ ngân hàng, tiền mã hóa và ví Alipay. Cách nạp khác không nhận thưởng.",
+          "Rút tiền: Thưởng nạp đầu, không gồm vốn, cần hoàn thành 1 lần cược hợp lệ, chỉ tính cờ bài, bắn cá và nổ hũ.",
+          "Công bằng: Chỉ chủ tài khoản chơi bình thường. Gian lận, bot, đối đầu, tự đánh, trục lợi, lợi dụng lỗ hổng hoặc điều khiển hàng loạt có thể bị hủy thưởng, đóng băng hoặc đưa vào danh sách đen.",
+          "Lưu ý: Nền tảng giữ quyền giải thích cuối cùng về sự kiện này."
+        ],
+        "singleDeposit": [
+          "Cách tham gia: Trong mỗi chu kỳ (ngày, tuần hoặc tháng), mỗi lần nạp đạt mức sẽ mở thưởng tương ứng.",
+          "Cơ chế thưởng: Mỗi lần đủ điều kiện có thể nhận theo thứ tự nạp. Có giới hạn số lượt. Hết lượt thì không nhận thêm dù vẫn đủ điều kiện.",
+          "Tự động phát: Thưởng được chuyển vào ví sau mỗi lần nạp đủ điều kiện. Nhận thủ công: Thưởng được mở khóa và cần bấm Nhận ngay. Thưởng quá hạn không được cấp lại.",
+          "Phương thức nạp: Chỉ tính Alipay, WeChat, thẻ ngân hàng, tiền mã hóa và ví Alipay. Cách nạp khác không nhận thưởng.",
+          "Công bằng: Chỉ chủ tài khoản chơi bình thường. Gian lận, bot, đối đầu, tự đánh, trục lợi, lợi dụng lỗ hổng hoặc điều khiển hàng loạt có thể bị hủy thưởng, đóng băng hoặc đưa vào danh sách đen.",
+          "Lưu ý: Nền tảng giữ quyền giải thích cuối cùng về sự kiện này."
+        ],
+        "cumulativeDeposit": [
+          "Cách tham gia: Số tiền nạp trong sự kiện được cộng dồn. Đạt một mức sẽ mở thưởng và tính một lần chưa nhận. Cần nhận từng mức.",
+          "Cơ chế thưởng: Trong mỗi chu kỳ, đạt mức cao hơn có thể nhận mức đó và mọi mức thấp hơn chưa nhận. Mỗi mức chỉ nhận một lần.",
+          "Tự động phát: Thưởng được chuyển vào ví khi đủ điều kiện. Nhận thủ công: Thưởng được mở khóa và cần bấm Nhận ngay. Thưởng quá hạn không được cấp lại.",
+          "Phương thức nạp: Chỉ tính Alipay, WeChat, thẻ ngân hàng, tiền mã hóa và ví Alipay. Cách nạp khác không nhận thưởng.",
+          "Công bằng: Chỉ chủ tài khoản chơi bình thường. Gian lận, bot, đối đầu, tự đánh, trục lợi, lợi dụng lỗ hổng hoặc điều khiển hàng loạt có thể bị hủy thưởng, đóng băng hoặc đưa vào danh sách đen.",
+          "Lưu ý: Nền tảng giữ quyền giải thích cuối cùng về sự kiện này."
+        ]
+      },
+      "matrix": {
+        "greeting": "Kính gửi người dùng:",
+        "lead": "Tin vui! Chúng tôi sắp ra mắt hàng loạt khuyến mãi hấp dẫn. Muốn biết sớm nhất, hãy theo dõi tài khoản chính thức.",
+        "columns": ["NGÀY", "VIP1-7", "VIP8-15", "VIP16-22", "VIP23-30", "VIP31-38"]
+      }
+    }
   },
   "rewardCenter": {
     "title": "Trung tâm phần thưởng",

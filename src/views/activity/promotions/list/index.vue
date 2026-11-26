@@ -73,8 +73,8 @@
           >
             <div class="aspect-[347/150] w-full overflow-hidden bg-bg-3">
               <img
-                v-if="toPromotionImageUrl(item.preImage)"
-                :src="toPromotionImageUrl(item.preImage)"
+                v-if="getPromotionCardCover(item)"
+                :src="getPromotionCardCover(item)"
                 :alt="getActivityTitle(item)"
                 class="h-full w-full object-cover"
               />
@@ -116,7 +116,7 @@
             >
               <img
                 v-if="hasPromotionCover(item)"
-                :src="toPromotionImageUrl(item.preImage)"
+                :src="getPromotionCardCover(item)"
                 :alt="getActivityTitle(item)"
                 class="block h-auto w-full"
                 @error="markPromotionImageFailed(item.rowId)"
@@ -160,11 +160,17 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { usePromotionsStore } from '@/stores/promotions'
+import { useUserStore } from '@/stores/user'
 import comprehensiveIcon from '@/static/img/explore/comprehensive.svg?url'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import PromotionRecordIcon from '@/static/svg/deposit/record.svg?component'
 import { navigateTo } from '@/utils/router'
+import {
+  getPromotionCardCover,
+  PROMOTION_DETAIL_MOCK_LIST,
+  type PromotionDetailMockItem
+} from '../detail-mock'
 import PromotionsLayout from '../layout.vue'
 import PromotionGroupIcon from '../components/PromotionGroupIcon.vue'
 import PromotionsListSkeleton from './PromotionsListSkeleton.vue'
@@ -184,8 +190,7 @@ import {
   replacePromotionsListUrl,
   resolveActivityListGroupCode,
   shouldOpenDetailPage,
-  sortActivityList,
-  toPromotionImageUrl
+  sortActivityList
 } from '../shared'
 
 const ACTIVITY_LIST_PAGE_SIZE = 15
@@ -199,6 +204,12 @@ const handlePromotionRecordClick = () => {
 }
 const isReady = ref(false)
 const promotionsStore = usePromotionsStore()
+const userStore = useUserStore()
+
+const canQueryPromotionList = () => {
+  const { userInfo, acctInfo } = userStore.syncStoredUserData()
+  return Boolean(userInfo?.tradeToken || acctInfo?.memberId)
+}
 
 const groups = computed(() => getVisiblePromotionGroups(promotionsStore.groups))
 const routeActiveGroupCode = computed(() => {
@@ -240,7 +251,7 @@ usePageScrollLock(() => isMobile.value)
 
 const hasPromotionCover = (item: ActivityListItem) => {
   const imageId = String(item.rowId ?? '')
-  return Boolean(toPromotionImageUrl(item.preImage)) && !failedPromotionImageIds.value[imageId]
+  return Boolean(getPromotionCardCover(item)) && !failedPromotionImageIds.value[imageId]
 }
 
 const markPromotionImageFailed = (rowId?: number) => {
@@ -294,6 +305,13 @@ const loadList = async (page: number, append: boolean) => {
     return
   }
 
+  if (!canQueryPromotionList()) {
+    list.value = isComprehensive ? [...PROMOTION_DETAIL_MOCK_LIST] : []
+    loading.value = false
+    loadingMore.value = false
+    return
+  }
+
   requestId += 1
   const currentRequestId = requestId
 
@@ -325,11 +343,11 @@ const loadList = async (page: number, append: boolean) => {
     if (append) {
       list.value = list.value.concat(records)
     } else {
-      list.value = records
+      list.value = isComprehensive ? [...PROMOTION_DETAIL_MOCK_LIST, ...records] : records
     }
   } catch {
     if (currentRequestId === requestId && !append) {
-      list.value = []
+      list.value = isComprehensive ? [...PROMOTION_DETAIL_MOCK_LIST] : []
     }
   } finally {
     if (currentRequestId === requestId) {
@@ -402,6 +420,13 @@ const onMobileScroll = () => {
 
 const openActivity = async (item: ActivityListItem) => {
   if (!item.rowId) {
+    return
+  }
+
+  const mockRouteId = String((item as PromotionDetailMockItem).mockRouteId || '')
+  if (mockRouteId) {
+    promotionsStore.saveActivityItem(item)
+    navigateTo(`/promotions/mock/${mockRouteId}`)
     return
   }
 
@@ -543,7 +568,9 @@ onMounted(async () => {
     promotionsStore.setH5ListGroupCode(PROMOTION_COMPREHENSIVE_GROUP_CODE)
   }
 
-  await promotionsStore.loadGroups()
+  if (canQueryPromotionList()) {
+    await promotionsStore.loadGroups()
+  }
 
   const resolvedCode = isPromotionComprehensiveActive(codeFromRoute)
     ? PROMOTION_COMPREHENSIVE_GROUP_CODE

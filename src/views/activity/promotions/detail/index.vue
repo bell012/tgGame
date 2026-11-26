@@ -13,7 +13,7 @@
   </section>
 
   <PromotionsLayout v-else-if="isReady" :groups="menuGroups" :active-group-code="groupCode">
-    <div class="bg-bg-2 rounded-xl overflow-hidden min-h-[520px]">
+    <div class="min-h-[520px]">
       <PromotionDetailContent :activity="activeActivity" variant="desktop" />
     </div>
   </PromotionsLayout>
@@ -32,6 +32,7 @@ import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { usePromotionsStore } from '@/stores/promotions'
 import { navigateTo } from '@/utils/router'
 import PromotionDetailContent from '../components/PromotionDetailContent.vue'
+import { getPromotionDetailMock } from '../detail-mock'
 import PromotionsLayout from '../layout.vue'
 import {
   getVisiblePromotionGroups,
@@ -70,6 +71,12 @@ usePageScrollLock(() => isMobile.value)
 
 const loadActivity = async () => {
   const id = activityId.value
+  const mockedActivity = getPromotionDetailMock(id)
+  if (mockedActivity) {
+    activeActivity.value = mockedActivity
+    return
+  }
+
   if (!id) {
     activeActivity.value = null
     return
@@ -126,6 +133,12 @@ watch(activityId, () => {
 })
 
 onMounted(async () => {
+  if (getPromotionDetailMock(activityId.value)) {
+    activeActivity.value = getPromotionDetailMock(activityId.value)
+    isReady.value = true
+    return
+  }
+
   await promotionsStore.loadGroups()
 
   const codeFromRoute = groupCode.value
