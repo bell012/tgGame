@@ -119,7 +119,7 @@
         v-for="group in filterGroups"
         :key="group.key"
         v-model="filterValues[group.key]"
-        class="w-[240px]"
+        class="w-[230px]"
         :options="group.options"
         :placeholder="group.title"
         use-placeholder-when-all
