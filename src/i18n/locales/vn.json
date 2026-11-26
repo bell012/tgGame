@@ -82,6 +82,24 @@
     "resultBlock": "Khối kết quả",
     "blockHash": "Hash khối",
     "betTime": "Thời gian cược",
+    "betHistory": {
+      "allStatuses": "Tất cả trạng thái",
+      "drawn": "Đã mở thưởng",
+      "pending": "Chờ mở thưởng"
+    },
+    "betDetails": {
+      "gameType": "Xổ số Hash",
+      "selection": "Nội dung cược",
+      "period": "Số kỳ",
+      "odds": "Tỷ lệ cược",
+      "betBlock": "Khối đặt cược",
+      "result": "Kết quả mở thưởng",
+      "orderStatus": "Trạng thái cược",
+      "gameTypeLabel": "Loại trò chơi",
+      "orderNo": "Mã cược",
+      "placedAt": "Thời gian đặt cược",
+      "settledAt": "Thời gian thanh toán"
+    },
     "betDetailStatus": {
       "win": "Trúng thưởng",
       "lose": "Không trúng thưởng",

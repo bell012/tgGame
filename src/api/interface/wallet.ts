@@ -244,6 +244,7 @@ export interface QueryMemberPayOrderPageForm {
 export interface QueryMemberPayOrderPageRecord {
   accountAmount: number
   busiAmount: number
+  categoryId?: number
   cardType?: number
   columnCode: number
   createTime: number

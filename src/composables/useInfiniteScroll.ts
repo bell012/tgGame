@@ -147,6 +147,7 @@ export function useInfiniteScroll<TItem, TResponse>(
   function abortCurrentRequest() {
     abortController.value?.abort()
     abortController.value = null
+    loading.value = false
   }
 
   function resetState() {
@@ -183,6 +184,7 @@ export function useInfiniteScroll<TItem, TResponse>(
         pageSize: currentPageSize,
         signal: controller.signal
       })
+      if (controller.signal.aborted) return
 
       const incomingItems = options.getItems(response) ?? []
       const merged = mergeItems(list.value, incomingItems)
@@ -216,14 +218,16 @@ export function useInfiniteScroll<TItem, TResponse>(
     } catch (err) {
       const isAbortError = err instanceof DOMException && err.name === 'AbortError'
 
-      if (!isAbortError) {
+      if (!controller.signal.aborted && !isAbortError) {
         error.value = err
         pausedByError.value = options.pauseOnError !== false
         options.onError?.(err)
       }
     } finally {
-      loading.value = false
-      abortController.value = null
+      if (abortController.value === controller) {
+        loading.value = false
+        abortController.value = null
+      }
     }
   }
 

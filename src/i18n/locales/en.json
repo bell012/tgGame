@@ -82,6 +82,24 @@
     "resultBlock": "Result Block",
     "blockHash": "Block Hash",
     "betTime": "Bet Time",
+    "betHistory": {
+      "allStatuses": "All statuses",
+      "drawn": "Drawn",
+      "pending": "Awaiting draw"
+    },
+    "betDetails": {
+      "gameType": "Hash Lottery",
+      "selection": "Bet selection",
+      "period": "Round number",
+      "odds": "Game odds",
+      "betBlock": "Bet block",
+      "result": "Draw result",
+      "orderStatus": "Bet status",
+      "gameTypeLabel": "Game type",
+      "orderNo": "Bet ID",
+      "placedAt": "Bet time",
+      "settledAt": "Settlement time"
+    },
     "betDetailStatus": {
       "win": "Won",
       "lose": "Did not win",

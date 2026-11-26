@@ -219,7 +219,12 @@
             <!-- H5 详情方式内容区 -->
             <div class="flex items-center" :class="props.mode === 'pc' ? 'gap-2' : 'gap-[5px]'">
               <div class="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full">
-                <img :src="methodIcon" :alt="methodName" class="h-full w-full object-cover" />
+                <img
+                  v-if="methodIcon"
+                  :src="methodIcon"
+                  :alt="methodName"
+                  class="h-full w-full object-cover"
+                />
               </div>
               <span
                 class="text-text-1"

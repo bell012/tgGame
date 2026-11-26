@@ -1,6 +1,6 @@
 <template>
   <!-- pc端公共下拉框组件 -->
-  <div class="relative w-[240px]" v-click-outside="closeDropdown">
+  <div class="relative w-[230px]" v-click-outside="closeDropdown">
     <div
       class="select-box text-text-1 rounded-lg bg-input-3 border border-input-2 h-[48px] text-sm px-3 flex items-center justify-between"
       :class="props.disabled ? 'cursor-default opacity-70' : 'cursor-pointer'"

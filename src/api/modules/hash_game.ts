@@ -114,12 +114,14 @@ export function getHashGameRecentBets(
 
 /** 分页查询投注记录。 */
 export function getHashGameBetPage(
-  data: HashGameBetPageParams
+  data: HashGameBetPageParams,
+  signal?: AbortSignal
 ): Promise<HashGameApiResponse<HashGameBetPageResult>> {
   return request({
     url: `/chain-lottery/bet/page`,
     method: 'post',
     data,
+    signal,
     showSuccessToast: false,
     showErrorToast: true
   })
