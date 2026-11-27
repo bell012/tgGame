@@ -893,7 +893,7 @@
   },
   "wallet": {
     "title": "钱包",
-    "betHistory": "投注历史",
+    "betHistory": "投注记录",
     "deposit": "充值",
     "withdraw": "提现",
     "myOrders": "我的订单",
@@ -927,7 +927,7 @@
     "security": "安全设置"
   },
   "betHistory": {
-    "title": "投注历史",
+    "title": "投注记录",
     "noBetHistoryYet": "暂无投注历史",
     "startPlaying": "开始游戏",
     "betAmount": "投注金额",
@@ -1502,7 +1502,7 @@
     "transactionDetails": "交易详情",
     "remarks": "备注",
     "rollover": "流水稽查",
-    "betHistory": "投注历史",
+    "betHistory": "投注记录",
     "notification": "通知",
     "referEarn": "推荐并赚取",
     "myVouchers": "我的票卷",
