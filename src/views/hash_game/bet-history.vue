@@ -185,7 +185,7 @@
       </div>
     </Transition>
     <HashGameBetDetailPopup
-      v-if="variant === 'pc' && isVisible && selectedOrderNo"
+      v-if="variant === 'pc'"
       v-model:visible="betDetailOpen"
       variant="pc"
       :order-no="selectedOrderNo"
