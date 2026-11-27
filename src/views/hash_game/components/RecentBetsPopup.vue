@@ -142,8 +142,8 @@
                       bet.profitLoss == null
                         ? ''
                         : bet.profitLoss >= 0
-                          ? 'text-theme-primary'
-                          : 'text-secondary-2'
+                          ? 'text-secondary-2'
+                          : 'text-theme-primary'
                     "
                   >
                     <span
