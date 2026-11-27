@@ -1,5 +1,5 @@
 <template>
-  <!-- 投注记录 -->
+  <!-- 最近投注 -->
   <Teleport to="body">
     <Transition name="bottom-sheet">
       <div
@@ -195,6 +195,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   'update:visible': [visible: boolean]
+  'open-history': []
   'select-bet': [orderNo: string]
 }>()
 const { t } = useI18n()
@@ -219,6 +220,11 @@ const formatBetResult = ({ status, profitLoss }: RecentBetRecord) => {
 
 const openBetHistory = () => {
   emit('update:visible', false)
+  if (props.variant === 'pc') {
+    emit('open-history')
+    return
+  }
+
   void navigateTo('/hash-game/bet-history', {
     query: { gameCode: props.gameCode || undefined }
   })
