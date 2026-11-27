@@ -221,6 +221,7 @@
                 },
                 { 'rounded-none': menuIndex > 0 && menuIndex < menuGroup.length - 1 },
                 { 'launch-card-active': isMenuGroupActive(menu) },
+                { 'launch-card-has-children': hasChildren(menu) },
                 {
                   'launch-card-dropdown-active':
                     hasChildren(menu) && expandedMenus.includes(menu.id) && isMenuGroupActive(menu)
@@ -277,7 +278,8 @@
                   :key="item.id"
                   :class="[
                     'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 sm:bg-bg-3 rounded-lg cursor-pointer',
-                    { 'launch-card-active': isSubmenuBranchActive(item) }
+                    { 'launch-card-active': isSubmenuBranchActive(item) },
+                    { 'launch-card-has-children': item.children && item.children.length > 0 }
                   ]"
                   @click="handleMenuItemClick(item)"
                   @mouseenter="
@@ -1213,11 +1215,13 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
     flex-shrink: 0;
   }
 
-  .sidebar-menu-pc-expanded .launch-card:hover:not(.launch-card-active) {
+  .sidebar-menu-pc-expanded
+    .launch-card:not(.launch-card-has-children):is(:hover, .launch-card-active) {
     background: transparent;
   }
 
-  .sidebar-menu-pc-expanded .launch-card:hover:not(.launch-card-active)::before {
+  .sidebar-menu-pc-expanded
+    .launch-card:not(.launch-card-has-children):is(:hover, .launch-card-active)::before {
     content: '';
     position: absolute;
     top: 0;
