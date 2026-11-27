@@ -162,7 +162,7 @@
             />
           </LazySection>
         </template>
-        <LazySection v-if="isGameDataLoading || sportsEventList.length">
+        <LazySection>
           <template #placeholder>
             <div class="mt-2">
               <div class="mt-2 flex h-8 items-center sm:mt-6">
@@ -173,16 +173,14 @@
                 <div
                   v-for="index in 3"
                   :key="`event-skeleton-${index}`"
-                  class="rounded-[12px] bg-[var(--color-background-level-2)] p-1"
-                >
-                  <div class="aspect-[2.12] rounded-xl bg-bg-2 animate-pulse"></div>
-                </div>
+                  class="h-[174px] rounded-xl bg-bg-2 animate-pulse sm:h-[200px]"
+                ></div>
               </div>
             </div>
           </template>
           <Suspense>
             <template #default>
-              <AsyncEventList :list="sportsEventList" :loading="isGameDataLoading" />
+              <AsyncEventList />
             </template>
             <template #fallback>
               <div class="mt-2">
@@ -194,10 +192,8 @@
                   <div
                     v-for="index in 3"
                     :key="`event-fallback-${index}`"
-                    class="rounded-[12px] bg-[var(--color-background-level-2)] p-1"
-                  >
-                    <div class="aspect-[2.12] rounded-xl bg-bg-2 animate-pulse"></div>
-                  </div>
+                    class="h-[174px] rounded-xl bg-bg-2 animate-pulse sm:h-[200px]"
+                  ></div>
                 </div>
               </div>
             </template>
@@ -337,7 +333,6 @@ import { useLayoutStore } from '@/stores/layout'
 import { useCasinoTabsStore } from '@/stores/casinoTabs'
 import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
-import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
@@ -377,7 +372,6 @@ import USDT from '@/static/svg/coin/USDT.black.svg?url'
 import VISA from '@/static/svg/coin/VISA.svg?url'
 import XRP from '@/static/svg/coin/XRP.black.svg?url'
 
-import placeholderImg from '@/static/img/home/errimg1.png'
 import casinoCardImg from '@/static/img/home/casino.png'
 import sportsCardImg from '@/static/img/home/sports.png'
 import slotsCardImg from '@/static/img/home/slots.png'
@@ -420,11 +414,6 @@ import fishingCardH5Img from '@/static/img/home/h5/lottery.png'
 import liveCardH5Img from '@/static/img/home/h5/fishing.png'
 import lotteryCardH5Img from '@/static/img/home/h5/live.png'
 
-interface EventListItem {
-  image: string
-  rowId: number
-}
-
 interface HomeGameSection {
   sysGameTypeCode: string
   list: GameDataItem[]
@@ -464,7 +453,6 @@ const shouldShowH5HomePop = computed(
   () => isMobile.value && homePopVisitState.isHome && showH5HomePop.value
 )
 const gameData = ref<HomeGameSection[]>([])
-const rawGameData = ref<GameDataItem[]>([])
 const querySlideshowList = ref<QuerySlideshowItem[]>([])
 const isGameDataLoading = ref(false)
 const isSlideshowLoading = ref(false)
@@ -600,13 +588,6 @@ const getCardBgStyle = (card: { img: string; h5Img: string; mdImg: string; xlImg
 
 const homeGameSkeletonCount = computed(() => (isMobile.value ? 2 : 3))
 
-const toGameImageUrl = (value: string) => {
-  if (!value) {
-    return placeholderImg
-  }
-  return resolveGameImageUrl(value)
-}
-
 const HOME_LOBBY_EXCLUDED_CODES = new Set(['', 'hot_games', 'providers'])
 
 const isHomeCollectionDisplayItem = (
@@ -632,20 +613,6 @@ const mapLobbyButtonsToHomeSections = (buttons: CasinoLobbyButtonItem[]): HomeGa
     .filter(section => section.list.length > 0)
 }
 
-const sportsProviders = computed<GameDataItem[]>(() => {
-  const sportsSection = rawGameData.value.find(
-    (item: GameDataItem) => item?.sysGameTypeCode === 'TY'
-  )
-
-  return sportsSection?.subGame ?? []
-})
-
-const sportsEventList = computed<EventListItem[]>(() => {
-  return sportsProviders.value.map(item => ({
-    rowId: item.rowId,
-    image: toGameImageUrl(item?.subGame?.[0]?.gameItemHotVo?.defaultImage ?? '')
-  }))
-})
 const firstGameSection = computed<HomeGameSection | null>(() => gameData.value[0] ?? null)
 const deferredGameSections = computed<HomeGameSection[]>(() => gameData.value.slice(1))
 const favoriteHomeGames = computed(() => {
@@ -668,11 +635,7 @@ const fetchHomeFavoritesModule = async () => {
 const fetchGameData = async () => {
   isGameDataLoading.value = true
   try {
-    const [rawResult] = await Promise.all([
-      gameStore.ensureGameData(),
-      casinoTabsStore.loadCasinoLobbyButtons()
-    ])
-    rawGameData.value = rawResult as GameDataItem[]
+    await Promise.all([gameStore.ensureGameData(), casinoTabsStore.loadCasinoLobbyButtons()])
     gameData.value = mapLobbyButtonsToHomeSections(casinoTabsStore.lobbyButtons)
   } catch (error) {
     console.error('getGameData failed', error)
