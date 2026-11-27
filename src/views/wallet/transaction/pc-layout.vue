@@ -3,7 +3,7 @@
     <div class="mb-4">
       <div class="flex items-center gap-2 flex-wrap">
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.time"
           :options="timeOptions"
           :placeholder="$t('betHistory.filterGroups.date')"
@@ -11,7 +11,7 @@
         />
 
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.type"
           :options="typeOptions"
           :placeholder="$t('betHistory.filterGroups.transaction')"

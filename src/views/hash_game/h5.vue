@@ -6,7 +6,7 @@
   >
     <div class="relative w-full h-full flex flex-col">
       <header
-        class="relative w-full h-[49px] z-[22] flex items-center justify-between bg-bg-2 px-[14px]"
+        class="relative w-full h-[49px] z-[22] flex items-center justify-between bg-bg-2 px-[14px] gap-[10px]"
       >
         <button
           type="button"

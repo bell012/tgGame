@@ -406,7 +406,13 @@
       :currency-icon="currentCurrencyIcon"
       :bets="recentBets"
       :summary="recentBetSummary"
+      @open-history="openBetHistory"
       @select-bet="openBetDetailPopup"
+    />
+    <HashGameBetHistory
+      v-model:visible="betHistoryOpen"
+      variant="pc"
+      :initial-game-code="selectedHashGameCode"
     />
     <!-- 投注记录详情弹窗 -->
     <HashGameBetDetailPopup
@@ -467,7 +473,10 @@ import musicOffIcon from '@/static/svg/hash_game/yinyue_guan.svg?url'
 import musicOnIcon from '@/static/svg/hash_game/yinyue_kai.svg?url'
 import ResultArrowIcon2 from '@/static/svg/hash_game/zhixiang2.svg?component'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useAuthModalStore } from '@/stores/authModal'
+import { useUserStore } from '@/stores/user'
 import HashGameBetDetailPopup from './bet-detail.vue'
+import HashGameBetHistory from './bet-history.vue'
 import BetChip from './components/BetChip.vue'
 import ChipEditorPopup from './components/ChipEditorPopup.vue'
 import ChipFace from './components/ChipFace.vue'
@@ -536,6 +545,19 @@ const {
 } = props.page
 
 const recentBetsOpen = ref(false)
+const betHistoryOpen = ref(false)
+const userStore = useUserStore()
+const authModalStore = useAuthModalStore()
+
+const openBetHistory = () => {
+  const { userInfo, acctInfo } = userStore.syncStoredUserData()
+  if (!userInfo?.tradeToken && !acctInfo?.memberId) {
+    authModalStore.openLoginModal()
+    return
+  }
+  betHistoryOpen.value = true
+}
+
 /** 打开弹窗时刷新当前玩法的近期投注。 */
 const openRecentBets = () => {
   recentBetsOpen.value = true

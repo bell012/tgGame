@@ -4,7 +4,7 @@
       <div class="flex items-center gap-2 flex-wrap">
         <!-- 游戏类型 -->
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.gameType"
           :options="gameTypeOptions"
           :placeholder="$t('betHistory.filterGroups.gameType')"
@@ -12,7 +12,7 @@
         />
         <!-- 输赢 -->
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.winlost"
           :options="winlostOptions"
           :placeholder="$t('betHistory.filterGroups.winLoss')"
@@ -20,7 +20,7 @@
         />
         <!-- 状态 -->
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.status"
           :options="statusOptions"
           :placeholder="$t('betHistory.filterGroups.status')"
@@ -28,7 +28,7 @@
         />
         <!-- 日期 -->
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.time"
           :options="timeOptions"
           :placeholder="$t('betHistory.filterGroups.date')"
@@ -36,7 +36,7 @@
         />
         <!-- 平台 -->
         <CustomSelect
-          class="w-[240px]"
+          class="w-[230px]"
           v-model="filterValues.platform"
           :options="platformOptions"
           :placeholder="$t('betHistory.filterGroups.platform')"
