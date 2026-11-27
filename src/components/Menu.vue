@@ -1156,7 +1156,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 }
 
 .launch-card-active {
-  background: var(--color-background-level-2);
+  background: var(--color-hover-1);
   border-radius: 8px;
 }
 
@@ -1187,10 +1187,11 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   }
 
   .launch-card:hover:not(.launch-card-active) :deep(.pc-menu-icon) {
-    color: var(--color-icon-level-1);
+    color: var(--color-icon-level-2);
   }
 
-  .launch-card-active {
+  .launch-card-active,
+  .launch-card-active:hover {
     background: var(--color-hover-1);
     color: var(--color-theme-level-1);
   }
