@@ -76,10 +76,11 @@
     <div
       v-else
       ref="listWrap"
+      @scroll.passive="updateButtons"
       class="grid-col-1 hide-scroll relative mx-0 mt-3 grid snap-x snap-mandatory grid-flow-col gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth"
     >
       <div v-for="card in cards" :key="card.id" class="col-item">
-        <button type="button" class="match-card" @click="goSports">
+        <button type="button" class="match-card" @click="openEvent(card.id)">
           <div class="flex items-center gap-2">
             <p class="min-w-0 flex-1 truncate text-left text-sm font-extrabold" :title="card.title">
               {{ card.title }}
@@ -164,43 +165,51 @@
 </template>
 
 <script setup lang="ts">
-import Api from '@/api'
 import type {
   SportEvent,
-  SportHotEvent,
   SportMarketLine,
   SportWagerSelection,
-  SportsLanguageCode,
   SportsOddsType
 } from '@/api/interface/sport'
 import TeamLogo from '@/views/sports/components/team-logo/index.vue'
 import { findSportItemBySportId } from '@/views/sports/components/sports-navigation/sport-items'
-import { getGamePlayingName } from '@/views/sports/shared/match'
+import {
+  getGamePlayingName,
+  getSportsLanguageCode,
+  getTeamLogoUrl,
+  mapSportsMatches
+} from '@/views/sports/shared/match'
+import { useHotEvents } from '@/views/sports/composables/useHotEvents'
+import { createSportsRefreshLine } from '@/views/sports/composables/refreshScheduler'
+import { goToEventDetails } from '@/views/sports/shared/event-details-navigation'
+import { getSportsPath } from '@/views/sports/shared/navigation'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
+import { useSportsStore } from '@/stores/sports'
 import { formatOdds, resolveSelectionOdds } from '@/views/sports/shared/odds'
 import PlayIcon from '@/static/svg/casino/play_fill.svg?component'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useLocaleStore } from '@/stores/locale'
-import { isApiBusinessSuccess } from '@/utils/apiBusiness'
 import { formatSportsKickoff } from '@/utils/date'
 import { navigateTo } from '@/utils/router'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  onActivated,
+  onDeactivated,
+  ref,
+  watch
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const HOME_SPORT_ID = 1
 const HOME_MARKET = 2
 const EUROPEAN_ODDS: SportsOddsType = 3
-const DETAIL_BATCH_SIZE = 5
 const MONEYLINE_BET_TYPE = 3
 const ODDS_SLOT_COUNT = 3
 const skeletonCount = 3
-
-const languageKeys: Partial<Record<string, SportsLanguageCode>> = {
-  eng: 'ENG',
-  zh: 'CHS',
-  vn: 'VN',
-  hi: 'HI',
-  pt_BR: 'PT'
-}
 
 interface CardOdds {
   key: string
@@ -218,7 +227,6 @@ interface LiveSportsCard {
   homeLogo: string
   awayLogo: string
   score: string
-  scoreLarge: boolean
   period: string
   odds: CardOdds[]
   extraCount: number
@@ -227,41 +235,44 @@ interface LiveSportsCard {
 const oddsSlots = (odds: CardOdds[]) =>
   Array.from({ length: ODDS_SLOT_COUNT }, (_, index) => odds[index] ?? null)
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const localeStore = useLocaleStore()
 const siteConfigStore = useSiteConfigStore()
-
-const records = ref<SportHotEvent[]>([])
-const details = ref(new Map<number, SportEvent>())
-const loading = ref(true)
+const { requireLogin } = useRequireLoginAction()
+const isMobile = useIsMobile()
 const listWrap = ref<HTMLElement | null>(null)
-const isMobile = ref(false)
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)
-
-let requestId = 0
-let activeController: AbortController | undefined
-
-const getLanguage = (): SportsLanguageCode => languageKeys[localeStore.currentLanguage] ?? 'CHS'
-
-const getTeamLogoUrl = (id: number) => {
-  if (!Number.isFinite(id) || id <= 0) return ''
-  const baseUrl = siteConfigStore.getConfigString('IM.sport_team_logo').replace(/\/+$/, '')
-  return baseUrl ? `${baseUrl}/${encodeURIComponent(String(id))}.png` : ''
-}
-
-const isHotEvent = (value: SportHotEvent) => {
-  const teams = value?.eventList
-  return (
-    !!value &&
-    Number.isSafeInteger(value.eventId) &&
-    value.eventId > 0 &&
-    Number.isSafeInteger(value.sportId) &&
-    value.sportId > 0 &&
-    typeof teams?.homeTeam === 'string' &&
-    typeof teams?.awayTeam === 'string'
-  )
-}
+const pageActive = ref(false)
+const loading = ref(true)
+const getBaseUrl = () => siteConfigStore.getConfigString('IM.im_app_url').replace(/\/+$/, '')
+const language = computed(() => getSportsLanguageCode(localeStore.currentLanguage))
+const context = computed(() => JSON.stringify([getBaseUrl(), language.value]))
+const isActive = () => pageActive.value && !document.hidden
+const hot = useHotEvents({
+  getContext: () => context.value,
+  isActive,
+  getBaseUrl,
+  getSportId: () => HOME_SPORT_ID,
+  getListParams: () => ({ param: { sportId: HOME_SPORT_ID, market: HOME_MARKET } }),
+  getDetailParams: (_sportId, eventIds) => ({
+    SportId: HOME_SPORT_ID,
+    EventIds: eventIds,
+    OddsType: EUROPEAN_ODDS,
+    IsCombo: false,
+    IncludeGroupEvents: false,
+    LanguageCode: language.value,
+    PeriodIds: [1]
+  })
+})
+const refresh = createSportsRefreshLine(async () => {
+  const current = context.value
+  try {
+    await hot.refresh()
+  } finally {
+    if (isActive() && current === context.value) loading.value = false
+  }
+}, hot.cancel)
 
 const readScore = (value: unknown) => {
   const text =
@@ -271,11 +282,6 @@ const readScore = (value: unknown) => {
         ? String(value)
         : ''
   return /^\d+$/.test(text) ? text : ''
-}
-
-const teamName = (detailName: unknown, fallback: string) => {
-  const text = typeof detailName === 'string' ? detailName.trim() : ''
-  return text || fallback
 }
 
 const formatCardOdds = (odds: number | null) => {
@@ -309,16 +315,17 @@ const extraMarketCount = (event: SportEvent) => {
   return count > 1 ? count - 1 : 0
 }
 
-const toCard = (record: SportHotEvent, event: SportEvent | undefined): LiveSportsCard => {
+const toCard = (event: SportEvent): LiveSportsCard => {
+  const record = recordsById.value.get(event.EventId)
   const sportName = t(
-    findSportItemBySportId(record.sportId)?.i18nKey ?? 'sidebar_menu.sports.children.soccer'
+    findSportItemBySportId(HOME_SPORT_ID)?.i18nKey ?? 'sidebar_menu.sports.children.soccer'
   )
-  const competitionName = record.competitionName?.trim() ?? ''
+  const competitionName = record?.competitionName?.trim() || event.Competition.CompetitionName || ''
   const live = event?.Market === 3
   const homeScore = readScore(event?.HomeScore)
   const awayScore = readScore(event?.AwayScore)
   const hasScore = live && !!homeScore && !!awayScore
-  const kickoff = formatSportsKickoff(event?.EventDate ?? record.eventDate)
+  const kickoff = formatSportsKickoff(event?.EventDate ?? record?.eventDate)
   const line = event ? pickMoneyLine(event) : undefined
   const odds = line
     ? [
@@ -332,108 +339,46 @@ const toCard = (record: SportHotEvent, event: SportEvent | undefined): LiveSport
     : []
 
   return {
-    id: record.eventId,
-    sportId: record.sportId,
+    id: event.EventId,
+    sportId: HOME_SPORT_ID,
     title: competitionName ? `${sportName} · ${competitionName}` : sportName,
     live,
-    homeName: teamName(event?.HomeTeam, record.eventList.homeTeam),
-    awayName: teamName(event?.AwayTeam, record.eventList.awayTeam),
-    homeLogo: getTeamLogoUrl(event?.HomeTeamId || record.eventList.homeTeamId),
-    awayLogo: getTeamLogoUrl(event?.AwayTeamId || record.eventList.awayTeamId),
+    homeName: event.HomeTeam?.trim() || record?.eventList?.homeTeam || '',
+    awayName: event.AwayTeam?.trim() || record?.eventList?.awayTeam || '',
+    homeLogo: getTeamLogoUrl(event.HomeTeamId || record?.eventList?.homeTeamId),
+    awayLogo: getTeamLogoUrl(event.AwayTeamId || record?.eventList?.awayTeamId),
     score: hasScore ? `${homeScore} : ${awayScore}` : kickoff === '--' ? '' : kickoff,
-    scoreLarge: hasScore,
-    period: live ? getGamePlayingName(record.sportId, event?.RBTime) : '',
+    period: live ? getGamePlayingName(HOME_SPORT_ID, event.RBTime) : '',
     odds,
     extraCount: event && odds.length ? extraMarketCount(event) : 0
   }
 }
 
-const cards = computed(() =>
-  records.value.map(record => toCard(record, details.value.get(record.eventId)))
+const recordsById = computed(
+  () => new Map(hot.records.value.map(record => [record.eventId, record]))
 )
-
+const cards = computed(() => hot.events.value.map(toCard))
+const matches = computed(() =>
+  mapSportsMatches(
+    hot.events.value.map(event => ({ ...event.Competition, competitionCount: 1, Sports: [event] })),
+    HOME_SPORT_ID,
+    getTeamLogoUrl,
+    undefined,
+    hot.getClockUpdatedAt
+  )
+)
+const openEvent = (eventId: number) => {
+  if (!requireLogin()) return
+  const match = matches.value.find(item => item.EventId === eventId)
+  if (match) goToEventDetails(match, { combo: false })
+}
 const goSports = () => {
-  void navigateTo('/sports')
-}
-
-const loadDetails = async (list: SportHotEvent[], signal: AbortSignal, id: number) => {
-  const baseUrl = siteConfigStore.getConfigString('IM.im_app_url').replace(/\/+$/, '')
-  if (!baseUrl) {
-    details.value = new Map()
-    return
-  }
-  const groups = new Map<number, number[]>()
-  for (const item of list) {
-    const ids = groups.get(item.sportId) ?? []
-    if (!ids.includes(item.eventId)) ids.push(item.eventId)
-    groups.set(item.sportId, ids)
-  }
-  const next = new Map<number, SportEvent>()
-  for (const [sportId, ids] of groups) {
-    for (let offset = 0; offset < ids.length; offset += DETAIL_BATCH_SIZE) {
-      if (signal.aborted || id !== requestId) return
-      const batch = ids.slice(offset, offset + DETAIL_BATCH_SIZE)
-      try {
-        const response = await Api.sport.getSelectedEventInfo(
-          baseUrl,
-          {
-            SportId: sportId,
-            EventIds: batch,
-            OddsType: EUROPEAN_ODDS,
-            IsCombo: false,
-            IncludeGroupEvents: false,
-            LanguageCode: getLanguage(),
-            PeriodIds: [1]
-          },
-          { signal }
-        )
-        if (id !== requestId) return
-        if ((response.stc === 100 || response.stc === '100') && Array.isArray(response.e)) {
-          for (const event of response.e) {
-            if (event && batch.includes(event.EventId)) next.set(event.EventId, event)
-          }
-        }
-      } catch {
-        if (signal.aborted || id !== requestId) return
-      }
-    }
-  }
-  if (id === requestId) details.value = next
-}
-
-const loadEvents = async () => {
-  const id = ++requestId
-  activeController?.abort()
-  const controller = new AbortController()
-  activeController = controller
-  if (!records.value.length) loading.value = true
-  try {
-    const response = await Api.sport.getCompetitionList(
-      { param: { sportId: HOME_SPORT_ID, market: HOME_MARKET } },
-      { signal: controller.signal }
-    )
-    if (id !== requestId) return
-    if (!isApiBusinessSuccess(response) || !Array.isArray(response.result)) {
-      records.value = []
-      details.value = new Map()
-      return
-    }
-    const next = response.result.filter(isHotEvent)
-    records.value = next
-    if (!next.length) {
-      details.value = new Map()
-      return
-    }
-    await loadDetails(next, controller.signal, id)
-  } catch {
-    if (id !== requestId) return
-    if (!controller.signal.aborted) {
-      records.value = []
-      details.value = new Map()
-    }
-  } finally {
-    if (id === requestId) loading.value = false
-  }
+  const sport = findSportItemBySportId(HOME_SPORT_ID)
+  if (!sport) return
+  const sportsStore = useSportsStore()
+  sportsStore.selectedSportId = HOME_SPORT_ID
+  sportsStore.selectedFilterKey = 'today'
+  void navigateTo(getSportsPath(sport))
 }
 
 const updateButtons = () => {
@@ -451,49 +396,54 @@ const scrollNext = () => {
   const el = listWrap.value
   if (!el || nextDisabled.value) return
   el.scrollBy({ left: getScrollUnit(el), behavior: 'smooth' })
-  setTimeout(updateButtons, 350)
 }
 
 const scrollPrev = () => {
   const el = listWrap.value
   if (!el || prevDisabled.value) return
   el.scrollBy({ left: -getScrollUnit(el), behavior: 'smooth' })
-  setTimeout(updateButtons, 350)
 }
 
-onMounted(async () => {
-  isMobile.value = window.matchMedia('(max-width: 640px)').matches
-  await nextTick()
-  updateButtons()
+const syncRefresh = () => {
+  if (isActive()) refresh.start(true)
+  else refresh.stop()
+}
+const activate = () => {
+  pageActive.value = true
+  syncRefresh()
+  void nextTick(updateButtons)
+}
+const deactivate = () => {
+  pageActive.value = false
+  refresh.stop()
+}
+onMounted(() => {
+  document.addEventListener('visibilitychange', syncRefresh)
   window.addEventListener('resize', updateButtons)
+  activate()
 })
-
+onActivated(activate)
+onDeactivated(deactivate)
 onBeforeUnmount(() => {
-  requestId += 1
-  activeController?.abort()
-  listWrap.value?.removeEventListener('scroll', updateButtons)
+  deactivate()
+  document.removeEventListener('visibilitychange', syncRefresh)
   window.removeEventListener('resize', updateButtons)
 })
-
 watch(
-  [locale, () => siteConfigStore.getConfigString('IM.im_app_url')],
+  context,
   () => {
-    void loadEvents()
+    refresh.stop()
+    loading.value = true
+    syncRefresh()
   },
-  { immediate: true }
+  { flush: 'post' }
 )
-
 watch(
-  () => cards.value.length,
-  async () => {
-    await nextTick()
-    updateButtons()
-    const el = listWrap.value
-    if (el && !el.dataset.scrollBound) {
-      el.dataset.scrollBound = '1'
-      el.addEventListener('scroll', updateButtons, { passive: true })
-    }
-  }
+  [listWrap, () => cards.value.length],
+  () => {
+    void nextTick(updateButtons)
+  },
+  { flush: 'post' }
 )
 </script>
 
