@@ -31,7 +31,7 @@
         />
         <!-- 图片消息的时间与已读状态，只放在最后一张上。 -->
         <div
-          v-if="index === imageUrls.length - 1"
+          v-if="props.showTime && index === imageUrls.length - 1"
           class="absolute flex items-center gap-[4px] rounded-full text-common-100"
           :class="
             props.displayMode === 'pc'
@@ -72,9 +72,13 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatMessage } from '../types'
 
-const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {
-  displayMode: 'h5'
-})
+const props = withDefaults(
+  defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc'; showTime?: boolean }>(),
+  {
+    displayMode: 'h5',
+    showTime: true
+  }
+)
 const { t } = useI18n()
 const emit = defineEmits<{
   view: [message: ChatMessage]

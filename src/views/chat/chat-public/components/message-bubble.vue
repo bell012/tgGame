@@ -169,9 +169,11 @@ const messageHighlightParts = computed(() =>
 const shouldRenderRichText = computed(
   () => props.message.direction === 'incoming' && !props.highlightKeyword.trim()
 )
-const richText = computed(() =>
-  sanitizeChatRichText(props.message.socketContent ?? props.message.text ?? '')
-)
+const richText = computed(() => {
+  const sanitized = sanitizeChatRichText(props.message.socketContent ?? props.message.text ?? '')
+  if (!props.message.imageList?.some(image => image.imgUrl)) return sanitized
+  return sanitized.replace(/<img\b[^>]*>/gi, '')
+})
 
 /** 生成引用摘要的关键词高亮片段。 */
 const replyHighlightParts = computed(() =>

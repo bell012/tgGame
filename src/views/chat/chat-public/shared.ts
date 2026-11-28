@@ -165,7 +165,7 @@ export const sanitizeChatRichText = (value: unknown) => {
 
     if (element.tagName === 'IMG') {
       if (!(target instanceof HTMLImageElement)) return
-      const src = element.getAttribute('src') || ''
+      const src = resolveChatMediaUrl(element.getAttribute('src') || '')
       try {
         const url = new URL(src, window.location.origin)
         if (url.protocol !== 'https:' && url.protocol !== 'http:') return

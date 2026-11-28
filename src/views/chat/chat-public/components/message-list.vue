@@ -52,21 +52,32 @@
             @retry="$emit('retry', $event)"
             @view="$emit('view-video', $event)"
           />
-          <!-- 回复消息 -->
-          <MessageBubble
-            v-else-if="
-              message.type !== 'auto-reply' ||
-              Boolean(message.text) ||
-              (!message.imageList?.length && !message.autoReplyType?.includes('video'))
-            "
-            :display-mode="props.displayMode"
-            :highlight-keyword="
-              message.id === props.highlightMessageId ? props.highlightKeyword : ''
-            "
-            :message="message"
-            @focus="handleFocus"
-            @retry="$emit('retry', $event)"
-          />
+          <div v-else class="flex flex-col gap-[10px]">
+            <!-- 群发等图文消息：图片在上，文字气泡在下。已拆成独立图片消息的不再重复画。 -->
+            <ImageMessage
+              v-if="hasAttachedImages(message)"
+              :display-mode="props.displayMode"
+              :message="message"
+              :show-time="!message.text"
+              @focus="handleFocus"
+              @retry="$emit('retry', $event)"
+              @view="$emit('view-image', $event)"
+            />
+            <MessageBubble
+              v-if="
+                message.type !== 'auto-reply' ||
+                Boolean(message.text) ||
+                (!message.imageList?.length && !message.autoReplyType?.includes('video'))
+              "
+              :display-mode="props.displayMode"
+              :highlight-keyword="
+                message.id === props.highlightMessageId ? props.highlightKeyword : ''
+              "
+              :message="message"
+              @focus="handleFocus"
+              @retry="$emit('retry', $event)"
+            />
+          </div>
         </div>
       </template>
     </div>
@@ -241,6 +252,12 @@ const handleFocus = async (
     left: `${left}px`,
     top: `${top}px`
   }
+}
+
+/** 图文消息附带的图片。自动回复已经拆成独立图片消息时不再重复展示。 */
+const hasAttachedImages = (message: ChatMessage) => {
+  if (!message.imageList?.some(image => image.imgUrl)) return false
+  return !props.messages.some(item => item.id.startsWith(`${message.id}:image:`))
 }
 
 /** 将当前聚焦消息转换为引用回复目标，并关闭操作浮层。 */

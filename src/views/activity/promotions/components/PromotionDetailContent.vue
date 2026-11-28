@@ -56,8 +56,11 @@
           <p class="font-[700]">{{ $t('activityPromotions.detail.matrix.greeting') }}</p>
           <p class="mt-2">{{ $t('activityPromotions.detail.matrix.lead') }}</p>
         </section>
-        <div class="overflow-x-auto">
-          <table class="promotion-reward-table">
+        <div :class="isDesktop ? 'overflow-x-auto' : ''">
+          <table
+            class="promotion-reward-table"
+            :class="{ 'promotion-reward-table-h5': !isDesktop }"
+          >
             <thead>
               <tr>
                 <th v-for="column in matrixColumns" :key="column">{{ column }}</th>
@@ -257,5 +260,32 @@ const descriptionText = computed(() => (isHtmlDescription.value ? '' : descripti
 .promotion-detail-html :deep(td) {
   background: var(--color-background-level-4);
   color: var(--color-text-level-1);
+}
+
+.promotion-reward-table-h5 {
+  margin: 0;
+  border-radius: 14px;
+  table-layout: fixed;
+}
+
+.promotion-reward-table-h5 th {
+  height: 40px;
+  padding: 8px 2px;
+  background: var(--color-theme-level-3);
+  color: var(--color-theme-level-1);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.2;
+  border-right-color: var(--color-opacity-10);
+  border-bottom-color: var(--color-opacity-10);
+}
+
+.promotion-reward-table-h5 td {
+  padding: 12px 2px;
+  color: var(--color-text-level-1);
+  font-size: 11px;
+  font-weight: 400;
+  border-right-color: var(--color-opacity-10);
+  border-bottom-color: var(--color-opacity-10);
 }
 </style>
