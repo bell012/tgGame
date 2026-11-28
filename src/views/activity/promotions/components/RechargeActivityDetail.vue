@@ -1,6 +1,45 @@
 <template>
   <div class="flex flex-col" :class="isDesktop ? 'gap-4' : 'gap-3'">
-    <section class="rounded-[20px] bg-bg-2" :class="isDesktop ? 'px-5 py-4' : 'px-3.5 py-3.5'">
+    <section v-if="!isDesktop && kind === 'cumulativeDeposit'" class="flex flex-col gap-3">
+      <div class="flex items-center justify-center gap-1">
+        <span class="text-sm text-text-1">{{ $t('activityPromotions.detail.pendingReward') }}</span>
+        <span class="text-xl font-[700] leading-none text-theme-primary">{{
+          pendingAmountText
+        }}</span>
+        <span v-if="summary.currency" class="text-sm font-[700] text-theme-primary">
+          ({{ summary.currency }})
+        </span>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="flex flex-col items-center justify-center rounded-xl bg-bg-2 px-3 py-3.5">
+          <span class="text-lg font-[700] leading-none text-text-1">{{
+            summary.unclaimedCount
+          }}</span>
+          <span class="mt-2 text-xs text-text-2">{{
+            $t('activityPromotions.detail.unclaimedCount')
+          }}</span>
+        </div>
+        <div class="flex flex-col items-center justify-center rounded-xl bg-bg-2 px-3 py-3.5">
+          <span class="text-lg font-[700] leading-none text-text-1">{{ depositedAmountText }}</span>
+          <span class="mt-2 text-xs text-text-2">{{
+            $t('activityPromotions.detail.depositedAmount')
+          }}</span>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="h-11 w-full rounded-lg bg-theme-primary text-base font-[700] text-text-4 disabled:cursor-not-allowed disabled:opacity-100"
+        :disabled="!canClaim"
+      >
+        {{ $t('activityPromotions.detail.claimNow') }}
+      </button>
+    </section>
+
+    <section
+      v-else
+      class="rounded-[20px] bg-bg-2"
+      :class="isDesktop ? 'px-5 py-4' : 'px-3.5 py-3.5'"
+    >
       <div :class="isDesktop ? 'flex items-center gap-4' : 'flex flex-col gap-3'">
         <div class="flex min-w-0 flex-1 items-center gap-2">
           <svg class="h-7 w-7 shrink-0" viewBox="0 0 28 28" aria-hidden="true">
