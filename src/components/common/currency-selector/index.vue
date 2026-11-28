@@ -42,6 +42,7 @@ import SearchIcon from '@/static/svg/search-icon.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
 import SmartImage from '@/components/common/SmartImage.vue'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 
 export type CurrencySelectorMode = 'balance' | 'radio'
 
@@ -137,7 +138,11 @@ const isSelected = (option: CurrencySelectorOption) => {
 }
 
 const chageCurrency = async (value: string) => {
-  if (!value || value === props.selectedValue || isChangingCurrency.value || props.disabled) {
+  if (!value || isChangingCurrency.value || props.disabled) {
+    return
+  }
+  if (value === props.selectedValue) {
+    emit('select', value)
     return
   }
   isChangingCurrency.value = true
@@ -146,7 +151,7 @@ const chageCurrency = async (value: string) => {
       if (await props.changeCurrency(value)) emit('select', value)
       return
     }
-    await Api.user.changeWallet({ currency: value })
+    ensureApiBusinessSuccess(await Api.user.changeWallet({ currency: value }))
     emit('select', value)
     void userStore.refreshBalance({ force: true })
   } catch (error) {

@@ -25,7 +25,7 @@ export function useEmbeddedGame(
 ) {
   const userStore = useUserStore()
   const route = useRoute()
-  const { currentCurrencyCode, setDisplayCurrency } = useDisplayCurrency()
+  const { currentCurrencyCode } = useDisplayCurrency()
   const account = computed(() =>
     userStore.userInfo?.tradeToken
       ? `${userStore.userInfo.tradeToken}:${userStore.acctInfo?.memberRowId ?? ''}`
@@ -207,7 +207,6 @@ export function useEmbeddedGame(
       if (!active || originalAccount !== account.value) return
       ensureApiBusinessSuccess(await Api.user.changeWallet({ currency }))
       if (!active || originalAccount !== account.value) return
-      setDisplayCurrency(currency)
       await userStore.refreshBalance({ force: true })
       if (!active || originalAccount !== account.value) return
       if (currentCurrencyCode.value !== currency) throw new Error('Currency not synchronized')
