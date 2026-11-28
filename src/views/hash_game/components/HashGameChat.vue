@@ -31,7 +31,9 @@
       </p>
 
       <!-- WS 用户进入或离开提示。 -->
-      <p v-else-if="message.kind === 'BROADCAST_BET'" class="m-0">{{ message.content }}</p>
+      <p v-else-if="message.kind === 'BROADCAST_BET'" class="m-0">
+        <HashChatFormattedContent :content="message.content" />
+      </p>
       <p
         v-else-if="message.kind === 'TEXT_NOTICE'"
         class="m-0"
@@ -39,10 +41,38 @@
           message.noticeKind === 'BIG_WIN' ? 'rounded-[5px] bg-hash-chat-win-frame px-2 py-1' : ''
         "
       >
-        {{ message.content }}
+        <HashChatFormattedContent
+          v-if="message.noticeKind === 'BIG_WIN'"
+          :content="message.content"
+        />
+        <template v-else>{{ message.content }}</template>
       </p>
-      <p v-else-if="message.kind === 'PRIVATE'" class="m-0">
-        {{ message.content }}
+      <HashChatPayoutMessage
+        v-else-if="message.kind === 'PRIVATE' && message.privateKind === 'PAYOUT'"
+        :content="message.content"
+      />
+      <p
+        v-else-if="message.kind === 'PRIVATE'"
+        class="m-0 flex flex-wrap items-center gap-x-[5px] gap-y-0.5"
+      >
+        <span
+          v-if="message.privateKind === 'BET'"
+          class="shrink-0 font-inter text-[13px] font-normal leading-[16px] text-[#2AEE88]"
+          >{{ t('hashGame.chatMe') }}：</span
+        >
+        <template v-if="privateBetParts(message.content)">
+          <span>{{ t('hashGame.chatBet') }}</span>
+          <strong class="font-semibold">{{ privateBetParts(message.content)?.amount }}</strong>
+          <span>{{ t('hashGame.chatOn') }}</span>
+          <i
+            class="inline-grid min-w-4 h-4 shrink-0 place-items-center rounded px-0.5 leading-none text-white not-italic"
+            :style="{
+              backgroundColor: chatOptionColor(privateBetParts(message.content)?.option ?? '')
+            }"
+            >{{ optionShortLabel(privateBetParts(message.content)?.option ?? '') }}</i
+          >
+        </template>
+        <HashChatFormattedContent v-else :content="ownBetText(message.content)" />
       </p>
       <p v-else-if="message.kind === 'JOIN' || message.kind === 'LEAVE'" class="m-0 text-text-3">
         {{ message.nickname }}
@@ -55,43 +85,39 @@
         class="m-0 flex flex-wrap items-center gap-x-[5px] gap-y-0.5"
       >
         <span
-          v-if="!message.privateText || message.revision || message.count !== undefined"
-          :class="message.mergeKey ? 'text-text-3' : 'text-theme-primary'"
+          :class="
+            message.mergeKey
+              ? 'text-text-3'
+              : 'shrink-0 font-inter text-[13px] font-normal leading-[16px] text-[#2AEE88]'
+          "
           >{{ message.mergeKey ? message.nickname : t('hashGame.chatMe') }}：</span
         >
-        <span v-if="message.privateText && !message.revision && message.count === undefined">{{
-          message.privateText
-        }}</span>
-        <template v-else>
-          <span
-            >{{ t('hashGame.chatBet') }}
-            <strong
-              :key="`${message.id}:${message.revision ?? 0}`"
-              class="font-semibold"
-              :class="
-                message.revision && !message.history
-                  ? 'animate-[hash-bet-amount_400ms_ease-out]'
-                  : ''
-              "
-              >{{ formatAmount(message.bet.amount, message.bet.currency) }}</strong
-            >
-            {{ t('hashGame.chatOn') }}</span
-          >
-          <span
-            class="inline-grid min-w-4 h-4 shrink-0 place-items-center rounded px-0.5 leading-none text-white"
-            :class="optionColor(message.bet.betOption)"
-            >{{ optionShortLabel(message.bet.betOption) }}</span
-          >
-          <span
-            v-if="(message.count ?? 1) > 1"
-            :key="`${message.id}:count:${message.revision ?? 0}`"
-            class="rounded-full border border-secondary-7 px-[7px] text-[11px] text-secondary-7"
+        <span
+          >{{ t('hashGame.chatBet') }}
+          <strong
+            :key="`${message.id}:${message.revision ?? 0}`"
+            class="font-semibold"
             :class="
-              message.revision && !message.history ? 'animate-[hash-bet-count_400ms_ease-out]' : ''
+              message.revision && !message.history ? 'animate-[hash-bet-amount_400ms_ease-out]' : ''
             "
-            >x{{ message.count }}</span
+            >{{ formatBetAmount(message.bet.amount, message.bet.currency) }}</strong
           >
-        </template>
+          {{ t('hashGame.chatOn') }}</span
+        >
+        <span
+          class="inline-grid min-w-4 h-4 shrink-0 place-items-center rounded px-0.5 leading-none text-white"
+          :style="{ backgroundColor: chatOptionColor(message.bet.betOption) }"
+          >{{ optionShortLabel(message.bet.betOption) }}</span
+        >
+        <span
+          v-if="(message.count ?? 1) > 1"
+          :key="`${message.id}:count:${message.revision ?? 0}`"
+          class="rounded-full border border-secondary-7 px-[7px] text-[11px] text-secondary-7"
+          :class="
+            message.revision && !message.history ? 'animate-[hash-bet-count_400ms_ease-out]' : ''
+          "
+          >x{{ message.count }}</span
+        >
       </p>
 
       <!-- 历史与实时开奖采用同一张结果卡片。 -->
@@ -111,7 +137,7 @@
             v-for="option in resultBadges(message.draw)"
             :key="option"
             class="inline-grid min-w-4 h-4 place-items-center rounded px-0.5 leading-none text-white"
-            :class="optionColor(option)"
+            :style="{ backgroundColor: chatOptionColor(option) }"
             >{{ optionShortLabel(option) }}</span
           >
         </p>
@@ -129,18 +155,11 @@
       </div>
 
       <!-- 仅 WIN 会生成的本人派彩消息。 -->
-      <p
+      <HashChatPayoutMessage
         v-else-if="message.kind === 'SELF_WIN'"
-        class="m-0 flex flex-wrap items-center gap-[5px] rounded-[5px] bg-hash-chat-win-frame px-2 py-1"
-      >
-        <span>🎉</span><span class="text-theme-primary">{{ t('hashGame.chatMe') }}</span>
-        <span
-          >{{ t('hashGame.chatRoundPayout') }}：
-          <strong class="font-semibold text-theme-primary">{{
-            formatAmount(message.payoutAmount, message.currency)
-          }}</strong></span
-        >
-      </p>
+        :payout-amount="message.payoutAmount"
+        :currency="message.currency"
+      />
     </template>
     <template #overlay="{ scrollToBottom }">
       <div
@@ -188,6 +207,10 @@
 
 <script setup lang="ts">
 import GameChatList from '@/components/game-chat/GameChatList.vue'
+import HashChatFormattedContent from './HashChatFormattedContent.vue'
+import HashChatPayoutMessage from './HashChatPayoutMessage.vue'
+import { chatOptionCode, chatOptionColor, chatOptionMarkKey } from '../betOptions'
+import { getCurrencySymbol } from '@/utils/locale'
 import joinAvatar from '@/static/img/hash_game/join-avatar.png'
 import scrollBottomIcon from '@/static/svg/hash_game/chat/scroll-bottom.svg?url'
 import topFadeIcon from '@/static/svg/hash_game/chat/top-fade.svg?url'
@@ -264,22 +287,31 @@ function formatAmount(amount: number, currency?: string) {
   return currency ? `${number} ${currency}` : number
 }
 
-/** 将哈希游戏投注选项缩写为聊天里的标记。 */
-function optionShortLabel(option: string) {
-  const key = (
-    { ODD: 'oddMark', EVEN: 'evenMark', BIG: 'bigMark', SMALL: 'smallMark' } as Record<
-      string,
-      string
-    >
-  )[option]
-  return key ? t(`hashGame.${key}`) : option
+function formatBetAmount(amount: number, currency: string) {
+  const symbol = getCurrencySymbol(currency).trim()
+  return `${symbol} ${amount.toLocaleString('en-US', { maximumFractionDigits: 8 })}`
 }
 
-/** 按当前投注选项选择大小或单双标记色。 */
-function optionColor(option: string) {
-  return option === 'ODD' || option === 'SMALL'
-    ? 'bg-[var(--hash-chat-odd)]'
-    : 'bg-[var(--hash-chat-even)]'
+function privateBetParts(content: string) {
+  const match =
+    /押\s*(单|双|大|小|赢|输|庄|闲|和|ODD|EVEN|BIG|SMALL|WIN|LOSE|BANKER|PLAYER|TIE)\s*([\d,.]+)\s*([A-Za-z]{2,8})/iu.exec(
+      content
+    )
+  const option = match && chatOptionCode(match[1])
+  const amount = match ? Number(match[2].replace(/,/g, '')) : NaN
+  if (!option || !Number.isFinite(amount)) return null
+  return { option, amount: formatBetAmount(amount, match[3]) }
+}
+
+/** 服务端私信文案可能自带“我”，展示前去掉以免和固定前缀重复。 */
+function ownBetText(content: string) {
+  return content.replace(/^\s*(?:我|Me)(?=\s|[:：])\s*[:：]?\s*/iu, '')
+}
+
+/** 将哈希游戏投注选项缩写为聊天里的标记。 */
+function optionShortLabel(option: string) {
+  const key = chatOptionMarkKey(option)
+  return key ? t(`hashGame.${key}`) : option
 }
 </script>
 

@@ -6,8 +6,11 @@ import type {
   HashGameLotteryInfo,
   HashGameLotteryResult
 } from '@/api/interface/hash_game.interface'
+import { BET_KEYS } from './betOptions'
+export { BET_KEYS, BET_COLORS } from './betOptions'
+export type { BetKey } from './betOptions'
+import type { BetKey } from './betOptions'
 
-export type BetKey = Lowercase<HashGameBetOption>
 export type RoadmapMode = 'size' | 'parity' | 'winner'
 
 export const HASH_BET_STATUS_KEYS: Record<HashGameBetStatus, string> = {
@@ -87,30 +90,6 @@ export function recentGameBets(
     }
   }
   return { records, summary }
-}
-
-export const BET_KEYS = {
-  BIG: 'big',
-  SMALL: 'small',
-  ODD: 'odd',
-  EVEN: 'even',
-  WIN: 'win',
-  LOSE: 'lose',
-  BANKER: 'banker',
-  PLAYER: 'player',
-  TIE: 'tie'
-} as const satisfies Record<HashGameBetOption, BetKey>
-
-export const BET_COLORS: Record<BetKey, string> = {
-  big: '#FF5350',
-  small: '#407FFF',
-  odd: '#34D8C7',
-  even: '#FF9822',
-  win: '#34D8C7',
-  lose: '#FF5350',
-  banker: '#FF5350',
-  player: '#407FFF',
-  tie: '#34D8C7'
 }
 
 export const MARKET_OPTIONS: Record<HashGameAlgorithm, readonly HashGameBetOption[]> = {

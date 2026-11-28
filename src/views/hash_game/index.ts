@@ -293,14 +293,21 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   /** 按当前游戏读取真实聊天配置及本人投注展示方式。 */
   const refreshChatConfig = async (preserveCurrent = false) => {
     const code = gameCode.value
+    const currencyCode = currency.currentCurrencyCode.value
     if (!preserveCurrent) {
       chatConfig.value = null
       chat.betBroadcastMode.value = 'INDIVIDUAL'
     }
-    if (!code) return
+    if (!code || !currencyCode) return
     try {
-      const response = await queryHashChatConfig(code)
-      if (code !== gameCode.value || !response.success || !response.result) return
+      const response = await queryHashChatConfig(code, currencyCode)
+      if (
+        code !== gameCode.value ||
+        currencyCode !== currency.currentCurrencyCode.value ||
+        !response.success ||
+        !response.result
+      )
+        return
       chatConfig.value = response.result
       chat.betBroadcastMode.value = response.result.betBroadcastMode || 'INDIVIDUAL'
       chat.acceptWelcomeText(response.result.welcomeText)
@@ -309,8 +316,10 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
     }
   }
 
-  /** 进入游戏或切换游戏时读取当前房间的聊天配置。 */
-  watch(gameCode, () => void refreshChatConfig(), { immediate: true })
+  /** 进入游戏、切换玩法或币种时读取对应的聊天配置。 */
+  watch([gameCode, currency.currentCurrencyCode], () => void refreshChatConfig(), {
+    immediate: true
+  })
   const periodsOpen = ref(false)
   const historyPopupOpen = ref(false)
   const periodTriggerRef = ref<HTMLElement | null>(null)
