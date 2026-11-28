@@ -289,30 +289,55 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   /** 当前阶段用本地模拟发送回包更新聊天室。 */
   const sendMockChatMessage = chat.acceptMockChatMessage
   const chatConfig = ref<HashChatConfig | null>(null)
+  const chatConfigError = ref('')
+  let chatConfigRequestId = 0
 
   /** 按当前游戏读取真实聊天配置及本人投注展示方式。 */
   const refreshChatConfig = async (preserveCurrent = false) => {
     const code = gameCode.value
     const currencyCode = currency.currentCurrencyCode.value
+    const requestId = ++chatConfigRequestId
     if (!preserveCurrent) {
       chatConfig.value = null
       chat.betBroadcastMode.value = 'INDIVIDUAL'
     }
+    chatConfigError.value = ''
     if (!code || !currencyCode) return
     try {
       const response = await queryHashChatConfig(code, currencyCode)
       if (
+        requestId !== chatConfigRequestId ||
         code !== gameCode.value ||
-        currencyCode !== currency.currentCurrencyCode.value ||
-        !response.success ||
-        !response.result
+        currencyCode !== currency.currentCurrencyCode.value
       )
         return
+      if (!response.success || !response.result) {
+        chatConfig.value = null
+        chatConfigError.value = response.message || t('common.requestError')
+        globalShowToast({ message: chatConfigError.value, type: 'fail' })
+        return
+      }
       chatConfig.value = response.result
       chat.betBroadcastMode.value = response.result.betBroadcastMode || 'INDIVIDUAL'
       chat.acceptWelcomeText(response.result.welcomeText)
-    } catch {
-      /* 下一次配置刷新时重试。 */
+    } catch (error) {
+      if (
+        requestId !== chatConfigRequestId ||
+        code !== gameCode.value ||
+        currencyCode !== currency.currentCurrencyCode.value
+      )
+        return
+      const failure = error as {
+        response?: { data?: { message?: unknown } }
+        data?: { message?: unknown }
+        message?: unknown
+      } | null
+      chatConfig.value = null
+      chatConfigError.value =
+        [failure?.response?.data?.message, failure?.data?.message, failure?.message].find(
+          (value): value is string => typeof value === 'string' && !!value.trim()
+        ) || t('common.requestError')
+      globalShowToast({ message: chatConfigError.value, type: 'fail' })
     }
   }
 
@@ -836,6 +861,7 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
     chatVisible,
     chatMessages,
     chatConfig,
+    chatConfigError,
     refreshChatConfig,
     sendMockChatMessage,
     currentSettlement,

@@ -3,9 +3,26 @@
     <div class="flex items-end gap-[10px]">
       <div
         class="relative min-w-0 flex-1 rounded-[10px] bg-bg-3 px-[12px] py-[10px]"
-        :class="config?.unlocked ? 'min-h-[44px]' : 'min-h-[89px]'"
+        :class="config?.unlocked && !errorMessage ? 'min-h-[44px]' : 'min-h-[89px]'"
       >
-        <form v-if="config?.unlocked" class="flex items-center gap-2" @submit.prevent="sendDraft">
+        <div v-if="errorMessage" class="flex min-h-[69px] items-center gap-[10px]">
+          <p class="m-0 min-w-0 flex-1 text-[13px] leading-[18px] text-text-2">
+            {{ errorMessage }}
+          </p>
+          <button
+            type="button"
+            class="shrink-0 text-[12px] font-bold text-text-3"
+            :aria-disabled="true"
+            @click="showConfigError"
+          >
+            {{ t('hashGame.chatSend') }}
+          </button>
+        </div>
+        <form
+          v-else-if="config?.unlocked"
+          class="flex items-center gap-2"
+          @submit.prevent="sendDraft"
+        >
           <input
             v-model="draft"
             :aria-label="t('hashGame.chatInput')"
@@ -16,8 +33,10 @@
           />
           <button
             type="button"
+            class="disabled:cursor-not-allowed disabled:opacity-40"
             :aria-label="t('hashGame.chatEmoji')"
             :aria-expanded="panel === 'emoji'"
+            :disabled="!config || !!errorMessage"
             @click="toggle('emoji')"
           >
             <img :src="emojiIcon" alt="" class="size-[24px]" />
@@ -48,9 +67,10 @@
           </div>
           <button
             type="button"
-            class="absolute bottom-[10px] right-[12px]"
+            class="absolute bottom-[10px] right-[12px] disabled:cursor-not-allowed disabled:opacity-40"
             :aria-label="t('hashGame.chatEmoji')"
             :aria-expanded="panel === 'emoji'"
+            :disabled="!config || !!errorMessage"
             @click="toggle('emoji')"
           >
             <img :src="emojiIcon" alt="" class="size-[24px]" />
@@ -59,9 +79,10 @@
       </div>
       <button
         type="button"
-        class="grid size-[44px] shrink-0 place-items-center rounded-[10px] bg-bg-3"
+        class="grid size-[44px] shrink-0 place-items-center rounded-[10px] bg-bg-3 disabled:cursor-not-allowed disabled:opacity-40"
         :aria-label="t('hashGame.chatCommonExpressions')"
         :aria-expanded="panel === 'phrases'"
+        :disabled="!config || !!errorMessage"
         @click="toggle('phrases')"
       >
         <img :src="phrasesIcon" alt="" class="size-[22px]" />
@@ -118,7 +139,11 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { HashChatConfig } from '../chat/config'
 
-const props = defineProps<{ gameCode: string; config: HashChatConfig | null }>()
+const props = defineProps<{
+  gameCode: string
+  config: HashChatConfig | null
+  errorMessage: string
+}>()
 const auth = useAuthModalStore()
 const user = useUserStore()
 const { t } = useI18n()
@@ -128,9 +153,15 @@ const panel = ref<'emoji' | 'phrases' | null>(null)
 const busy = ref(false)
 let roomGeneration = 0
 function toggle(value: 'emoji' | 'phrases') {
+  if (props.errorMessage || !props.config) return
   panel.value = panel.value === value ? null : value
 }
 async function send(content: string, custom: boolean) {
+  if (props.errorMessage) {
+    showConfigError()
+    return false
+  }
+  if (!props.config) return false
   content = content.trim()
   if (!content || !props.gameCode) return false
   if (busy.value) {
@@ -153,6 +184,9 @@ async function send(content: string, custom: boolean) {
     busy.value = false
   }
 }
+function showConfigError() {
+  if (props.errorMessage) globalShowToast({ message: props.errorMessage, type: 'fail' })
+}
 async function sendDraft() {
   const content = draft.value
   if (await send(content, true)) {
@@ -171,6 +205,12 @@ watch(
     roomGeneration++
     draft.value = ''
     panel.value = null
+  }
+)
+watch(
+  () => props.errorMessage,
+  error => {
+    if (error) panel.value = null
   }
 )
 onMounted(() => document.addEventListener('pointerdown', closeOutside))

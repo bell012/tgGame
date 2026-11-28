@@ -55,12 +55,18 @@ export function queryHashChatHistory(gameCode: string): Promise<HashChatHistoryR
 export function queryHashChatConfig(
   gameCode: string,
   currency: string
-): Promise<{ success: boolean; result?: import('@/views/hash_game/chat/config').HashChatConfig }> {
+): Promise<{
+  code?: string
+  success: boolean
+  message?: string
+  result?: import('@/views/hash_game/chat/config').HashChatConfig
+}> {
   return request({
     url: '/chain-lottery/chat/config',
     method: 'post',
     data: { gameCode, currency },
     showSuccessToast: false,
-    showErrorToast: false
+    showErrorToast: false,
+    preserveResponseMessage: true
   })
 }

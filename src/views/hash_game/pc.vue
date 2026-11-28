@@ -134,8 +134,7 @@
                 <i
                   class="grid size-[20px] place-items-center rounded-full text-[14px] not-italic text-white"
                   :style="{ background: entry.color }"
-                  >{{ entry.label }}</i
-                >{{ entry.count }}
+                  >{{ entry.label }}</i>{{ entry.count }}
               </span>
             </div>
             <div class="flex items-center">
@@ -393,6 +392,7 @@
         <HashPcChatComposer
           :game-code="selectedHashGameCode"
           :config="props.page.chatConfig.value"
+          :error-message="props.page.chatConfigError.value"
         />
       </aside>
     </div>

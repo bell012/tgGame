@@ -41,9 +41,9 @@
                   v-for="emoji in commonEmojis"
                   :key="emoji"
                   type="button"
-                  class="grid size-[40px] place-items-center rounded-[8px] bg-transparent p-0 text-[30px] leading-none active:bg-bg-2"
+                  class="grid size-[40px] place-items-center rounded-[8px] bg-transparent p-0 text-[30px] leading-none active:bg-bg-2 disabled:cursor-not-allowed disabled:opacity-40"
                   :aria-label="emoji"
-                  :disabled="busy"
+                  :disabled="busy || !config || !!errorMessage"
                   @mousedown.prevent
                   @click="selectEmoji(emoji)"
                 >
@@ -62,8 +62,8 @@
                 v-for="phrase in config?.phrases ?? []"
                 :key="phrase"
                 type="button"
-                class="rounded-full bg-bg-2 px-[10px] py-[8px] text-left text-[12px] text-text-2"
-                :disabled="busy"
+                class="rounded-full bg-bg-2 px-[10px] py-[8px] text-left text-[12px] text-text-2 disabled:cursor-not-allowed disabled:opacity-40"
+                :disabled="busy || !config || !!errorMessage"
                 @click="selectPhrase(phrase)"
               >
                 {{ phrase }}
@@ -73,7 +73,21 @@
 
           <!-- 解锁后输入消息。 -->
           <div
-            v-if="config?.unlocked"
+            v-if="errorMessage"
+            class="mx-[12px] mt-[24px] flex shrink-0 items-center gap-[12px] rounded-[10px] border border-dashed border-bg-3 px-[12px] py-[10px] text-[12px] text-text-2"
+          >
+            <p class="m-0 min-w-0 flex-1">{{ errorMessage }}</p>
+            <button
+              type="button"
+              class="shrink-0 rounded-[8px] bg-bg-3 px-[12px] py-[8px] text-text-3"
+              :aria-disabled="true"
+              @click="showConfigError"
+            >
+              {{ t('hashGame.chatSend') }}
+            </button>
+          </div>
+          <div
+            v-else-if="config?.unlocked"
             class="mt-[24px] flex shrink-0 gap-[9px] px-[12px] py-[11px]"
           >
             <input
@@ -136,6 +150,7 @@
 <script setup lang="ts">
 import lockIcon from '@/static/svg/hash_game/chat/lock.svg?url'
 import { getWebRuntimeEnvironment } from '@/utils/runtime-environment'
+import { globalShowToast } from '@/utils/toast'
 import { useI18n } from 'vue-i18n'
 import { nextTick, ref } from 'vue'
 import type { HashChatConfig } from '../chat/config'
@@ -143,6 +158,7 @@ import type { HashChatConfig } from '../chat/config'
 const props = defineProps<{
   visible: boolean
   config: HashChatConfig | null
+  errorMessage: string
   busy: boolean
 }>()
 
@@ -158,6 +174,7 @@ const draft = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 
 function selectEmoji(emoji: string) {
+  if (props.errorMessage || !props.config) return
   if (props.busy) return
   if (props.config?.unlocked) {
     void appendEmoji(emoji)
@@ -168,6 +185,7 @@ function selectEmoji(emoji: string) {
 }
 
 function selectPhrase(phrase: string) {
+  if (props.errorMessage || !props.config) return
   if (props.busy) return
   if (props.config?.unlocked) {
     appendText(phrase)
@@ -269,6 +287,10 @@ function appendText(value: string) {
 
 /** 提交非空内容并收起输入弹窗。 */
 function send() {
+  if (props.errorMessage) {
+    showConfigError()
+    return
+  }
   if (props.busy) return
   const text = draft.value.trim()
 
@@ -277,6 +299,10 @@ function send() {
   emit('send', text, true)
   draft.value = ''
   emit('close')
+}
+
+function showConfigError() {
+  if (props.errorMessage) globalShowToast({ message: props.errorMessage, type: 'fail' })
 }
 </script>
 

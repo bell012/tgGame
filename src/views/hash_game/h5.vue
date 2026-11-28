@@ -282,8 +282,7 @@
                     <i
                       class="flex size-[18px] shrink-0 items-center justify-center rounded-full text-[11px] not-italic text-text-1"
                       :style="{ background: entry.color }"
-                      >{{ entry.label }}</i
-                    >{{ entry.count }}
+                      >{{ entry.label }}</i>{{ entry.count }}
                   </span>
                 </div>
                 <span class="ml-auto min-w-0 whitespace-nowrap text-[11px] text-secondary-8">{{
@@ -587,6 +586,7 @@
     <HashH5ChatComposerPopup
       :visible="chatComposerOpen"
       :config="chatConfig"
+      :error-message="chatConfigError"
       :busy="chatSendBusy"
       @close="chatComposerOpen = false"
       @send="sendChatMessage"
@@ -613,6 +613,7 @@
 
 <script setup lang="ts">
 import { sendHashChatMessage } from '@/api/modules/hash-game-chat'
+import { globalShowToast } from '@/utils/toast'
 import { useHorizontalScroll } from '@/composables/useHorizontalScroll'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import backgroundMusicOffIcon from '@/static/svg/hash_game/beijing_guan.svg?url'
@@ -657,6 +658,11 @@ const chatComposerOpen = ref(false)
 const chatSendBusy = ref(false)
 const sendChatMessage = async (content: string, custom: boolean) => {
   const gameCode = props.page.selectedHashGameCode.value
+  if (props.page.chatConfigError.value) {
+    globalShowToast({ message: props.page.chatConfigError.value, type: 'fail' })
+    return
+  }
+  if (!props.page.chatConfig.value) return
   if (!gameCode || chatSendBusy.value) return
   chatSendBusy.value = true
   try {
@@ -706,6 +712,7 @@ const {
   chatVisible,
   chatMessages,
   chatConfig,
+  chatConfigError,
   refreshChatConfig,
   currentSettlement,
   dismissSettlement,
