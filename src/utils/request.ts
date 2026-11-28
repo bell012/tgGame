@@ -6,7 +6,10 @@ import { getLanguageCode as getLocaleLanguageCode } from './locale'
 import { globalShowToast } from './toast.ts'
 import i18n from '@/i18n'
 import CryptoJS from 'crypto-js'
-import { API_ERROR_CODE_MESSAGES } from '@/constants/api-error-code-messages'
+import {
+  API_ERROR_CODE_MESSAGES,
+  API_ERROR_CODE_MESSAGES_VN
+} from '@/constants/api-error-code-messages'
 import { isMobileViewport, isPwaAppViewport } from '@/composables/useMediaQuery'
 
 const normalizeApiBasePath = (value: string) => {
@@ -231,10 +234,6 @@ function translateToastMessage(key: string) {
   return i18n.global.t(key)
 }
 
-function resolveApiMessageLocale() {
-  return getLanguageCode() === 'zh' ? 'zh' : 'eng'
-}
-
 export function translateApiMessageByCode(code: unknown, fallbackMessage = '') {
   if (typeof code !== 'string') {
     return fallbackMessage
@@ -246,7 +245,11 @@ export function translateApiMessageByCode(code: unknown, fallbackMessage = '') {
     return fallbackMessage
   }
 
-  return resolveApiMessageLocale() === 'zh' ? localizedMessages[1] : localizedMessages[0]
+  const locale = i18n.global.locale.value
+  if (locale === 'zh') return localizedMessages[1]
+  if (locale === 'vn')
+    return API_ERROR_CODE_MESSAGES_VN[code as keyof typeof API_ERROR_CODE_MESSAGES]
+  return localizedMessages[0]
 }
 
 export function normalizeApiResponseMessage<T extends ApiResponsePayload>(payload: T): T {

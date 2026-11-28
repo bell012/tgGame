@@ -1,0 +1,20 @@
+/* PC 登录页模块颜色。随主题变的写在 :root 和 :root.light。 */
+:root {
+  --color-login-card-bg: rgba(23, 30, 27, 0.22);
+  --color-login-card-border: rgba(167, 223, 195, 0.08);
+  --color-login-card-shadow: 0 14px 36px rgba(0, 0, 0, 0.05);
+
+  --login-hero-distance-filter: brightness(0.81) saturate(0.9);
+  --login-hero-demon-filter: brightness(0.39) saturate(0.8);
+  --login-hero-sparks-opacity: 0.37;
+}
+
+:root.light {
+  --color-login-card-bg: rgba(255, 255, 255, 0.72);
+  --color-login-card-border: rgba(17, 17, 17, 0.06);
+  --color-login-card-shadow: 0 14px 36px rgba(24, 38, 64, 0.08);
+
+  --login-hero-distance-filter: brightness(0.92) saturate(0.95);
+  --login-hero-demon-filter: brightness(0.5) saturate(0.85);
+  --login-hero-sparks-opacity: 0.3;
+}
