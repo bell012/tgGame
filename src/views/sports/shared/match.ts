@@ -1,9 +1,11 @@
 import type {
+  SportsLanguageCode,
   SportCompetitionGroup,
   SportEventExtraInfo,
   SportRelatedScore
 } from '@/api/interface/sport'
 import i18n from '@/i18n'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { formatSportsKickoff } from '@/utils/date'
 import { sportItems } from '../components/sports-navigation/sport-items'
 import type { SportsMatch } from './types'
@@ -244,4 +246,26 @@ export const mapSportsMatches = (
     }
   }
   return [...matches.values()]
+}
+
+const SPORTS_LANGUAGE_CODES: Partial<Record<string, SportsLanguageCode>> = {
+  eng: 'ENG',
+  zh: 'CHS',
+  vn: 'VN',
+  hi: 'HI',
+  pt_BR: 'PT',
+  fil: 'ENG'
+}
+export const getSportsLanguageCode = (language: string): SportsLanguageCode =>
+  Object.prototype.hasOwnProperty.call(SPORTS_LANGUAGE_CODES, language)
+    ? (SPORTS_LANGUAGE_CODES[language] ?? 'CHS')
+    : 'CHS'
+
+/** 配置已包含队标目录，只追加图片文件名。 */
+export const getTeamLogoUrl = (id: string | number | null | undefined): string => {
+  if (typeof id === 'number' && !Number.isFinite(id)) return ''
+  const teamId = String(id ?? '').trim()
+  if (!teamId) return ''
+  const baseUrl = useSiteConfigStore().getConfigString('IM.sport_team_logo').replace(/\/+$/, '')
+  return baseUrl ? `${baseUrl}/${encodeURIComponent(teamId)}.png` : ''
 }

@@ -15,13 +15,13 @@ export const persistEventDetailsMatch = (match: SportsMatch) => {
 }
 
 /** 普通及热门赛事卡片使用同一详情入口。 */
-export const goToEventDetails = (match: SportsMatch) => {
+export const goToEventDetails = (match: SportsMatch, options?: { combo: boolean }) => {
   persistEventDetailsMatch(match)
   navigateTo('/sports/event-details', {
     query: {
       sportId: match.sportId,
       eventId: match.EventId,
-      combo: useSportsStore().market === 4 ? '1' : undefined
+      combo: (options?.combo ?? useSportsStore().market === 4) ? '1' : undefined
     }
   })
 }

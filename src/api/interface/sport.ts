@@ -806,20 +806,20 @@ export interface GetPopularSportsParams {
 /** 热门赛事响应目前只确认公共外层；业务数据结构待确认，不预设字段。 */
 export type GetPopularSportsResponse = SportsResponse
 
-/** 本站热门赛事请求体，分页与筛选条件均放在 param 中，不使用体育网关基础地址。 */
+/** 本站热门赛事请求体，筛选条件放在 param 中，不使用体育网关基础地址。 */
 export interface GetCompetitionListParams {
-  /** 热门赛事页码、球种、分类及时间范围。 */
+  /** 球种、分类，以及体育页可选的页码和时间范围。 */
   param: {
-    /** 页码，从 1 开始。 */
-    page: number
-    /** 当前选中的球种 ID，首页默认为 1（足球）。 */
+    /** 页码，从 1 开始；首页即时赛事不传。 */
+    page?: number
+    /** 球种 ID。首页即时赛事固定为 1（足球）。 */
     sportId: number
-    /** 当前赛事分类，首页默认为 3（滚球）。 */
+    /** 1 早盘、2 今日、3 滚球、4 串关。首页即时赛事固定为 2。 */
     market: SportsMarket
-    /** 查询开始时间，当前时间前一天的 13 位毫秒时间戳。 */
-    startTime: number
-    /** 查询结束时间，当前时间的 13 位毫秒时间戳。 */
-    endTime: number
+    /** 查询开始时间，13 位毫秒时间戳；首页即时赛事不传。 */
+    startTime?: number
+    /** 查询结束时间，13 位毫秒时间戳；首页即时赛事不传。 */
+    endTime?: number
   }
 }
 

@@ -41,6 +41,7 @@ import {
   type RoadmapMode
 } from './lotteryDisplay'
 import backgroundMusicUrl from '@/static/mp3/hash/beijing.mp3?url'
+import betSoundUrl from '@/static/mp3/hash/xiazhu.mp3?url'
 
 type ChipDraft = ChipOption & { enabled: boolean }
 type CustomChipDraft = { id: number; value: number | undefined }
@@ -378,6 +379,14 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
     notify: (key, type = 'fail', params) =>
       globalShowToast({ message: params ? t(key, params) : t(key), type }),
     onPlaced: chat.acceptSuccessfulBet,
+    onFirstSuccessfulBet: () => {
+      if (!musicEnabled.value || typeof Audio === 'undefined') return
+      try {
+        void new Audio(betSoundUrl).play().catch(() => {})
+      } catch {
+        // 音效播放失败不影响下注结果。
+      }
+    },
     onSuccessfulSubmit: () => {
       if (!isMobile.value && chatConfig.value?.unlocked === false) {
         void refreshChatConfig(true)

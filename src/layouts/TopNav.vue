@@ -846,7 +846,7 @@ const handleLanguageChange = (code: Locale) => {
 }
 
 const handleCurrencyChange = (code: string) => {
-  localeStore.setCurrency(code)
+  localeStore.selectCurrency(code)
 }
 
 const { refreshDepositPage } = useDepositPageRefresh()

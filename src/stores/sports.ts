@@ -2,11 +2,11 @@ import { defineStore, storeToRefs } from 'pinia'
 import { computed, nextTick, onScopeDispose, reactive, ref, shallowReactive, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import Api from '@/api'
+import { useHotEvents } from '@/views/sports/composables/useHotEvents'
+import { getSportsLanguageCode } from '@/views/sports/shared/match'
 import type {
   GetBetInfoParams,
   GetBetInfoResponse,
-  GetCompetitionListParams,
-  GetCompetitionListResponse,
   GetCompetitionPageParams,
   GetCompetitionPageResponse,
   GetSelectedEventInfoParams,
@@ -32,7 +32,6 @@ import { useSportsOddsStore } from '@/stores/sportsOdds'
 import { useSportsAuthStore } from '@/stores/sportsAuth'
 import { useSportsBalanceStore } from '@/stores/sportsBalance'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
-import { isApiBusinessSuccess } from '@/utils/apiBusiness'
 import { decimalOdds } from '@/views/sports/components/bet-slip/bet-info'
 import { isAcceptedPlaceBetResult } from '@/views/sports/components/bet-slip/shared'
 import i18n from '@/i18n'
@@ -427,21 +426,7 @@ export const useSportsStore = defineStore('sports', () => {
     4: '印尼盘',
     6: '美式盘'
   })
-  const languageKeys: Readonly<Partial<Record<string, SportsLanguageCode>>> = Object.freeze({
-    eng: 'ENG',
-    zh: 'CHS',
-    vn: 'VN',
-    hi: 'HI',
-    pt_BR: 'PT',
-    fil: 'ENG'
-  })
-  /** 沿用体育语言映射；未知语言回退中文，不扩展全站语言配置。 */
-  const getLanguage = (): SportsLanguageCode => {
-    const lang = localeStore.currentLanguage
-    return Object.prototype.hasOwnProperty.call(languageKeys, lang)
-      ? (languageKeys[lang] ?? 'CHS')
-      : 'CHS'
-  }
+  const getLanguage = (): SportsLanguageCode => getSportsLanguageCode(localeStore.currentLanguage)
   const languageCode = computed(getLanguage)
   const getBaseUrl = () => siteConfigStore.getConfigString('IM.im_app_url')
   const sportsSessionVersion = ref(0)
@@ -1672,302 +1657,50 @@ export const useSportsStore = defineStore('sports', () => {
     return allSportsPending
   }
 
-  // 热门名单独立管理，首次与普通查询并行，后续最多每60秒刷新一次。
-  const competitionListState = shallowReactive<
-    SportsRequestState<GetCompetitionListParams, GetCompetitionListResponse>
-  >({ params: null, response: null, data: null, loading: false, error: null })
-  let competitionListController: AbortController | undefined
-  const competitionListContext = ref('')
-  const getCompetitionListContext = () => getAllSportsContext()
-  const cancelCompetitionList = () => {
-    competitionListController?.abort()
-    competitionListController = undefined
-    competitionListState.loading = false
-  }
-  const requestCompetitionList = async () => {
-    cancelCompetitionList()
-    cancelHotDetails()
-    const controller = new AbortController()
-    competitionListController = controller
-    const endTime = Date.now()
-    const params: GetCompetitionListParams = {
-      param: {
-        page: 1,
-        sportId: selectedSportId.value,
-        market: market.value,
-        startTime: endTime - 24 * 60 * 60 * 1000,
-        endTime
-      }
-    }
-    const context = getCompetitionListContext()
-    const isCurrent = () =>
-      competitionListController === controller &&
-      !controller.signal.aborted &&
-      context === getCompetitionListContext()
-    if (context !== competitionListContext.value) competitionListState.data = null
-    competitionListContext.value = context
-    competitionListState.params = params
-    competitionListState.response = null
-    competitionListState.error = null
-    competitionListState.loading = true
-    try {
-      const response = await Api.sport.getCompetitionList(params, { signal: controller.signal })
-      if (!isCurrent()) return null
-      competitionListState.response = response
-      if (isApiBusinessSuccess(response)) {
-        if (
-          Array.isArray(response.result) &&
-          response.result.every(
-            record =>
-              record &&
-              Number.isSafeInteger(record.sportId) &&
-              record.sportId > 0 &&
-              Number.isSafeInteger(record.eventId) &&
-              record.eventId > 0
-          )
-        ) {
-          applyHotEventList(response)
-        } else {
-          competitionListState.error = { kind: 'response', message: 'Invalid hot events response' }
-        }
-      } else {
-        competitionListState.error = {
-          kind: 'business',
-          code: response.code,
-          message: response.message
-        }
-      }
-      return response
-    } catch {
-      if (isCurrent()) {
-        competitionListState.error = { kind: 'network', message: 'Hot events request failed' }
-      }
-      return null
-    } finally {
-      if (competitionListController === controller) {
-        competitionListController = undefined
-        competitionListState.loading = false
-        hotListCheckedAt = Date.now()
-      }
-    }
-  }
-
-  const fetchCompetitionList = (): Promise<GetCompetitionListResponse | null> => {
-    if (hotListPending) return hotListPending
-    const pending = requestCompetitionList().finally(() => {
-      if (hotListPending === pending) hotListPending = null
-    })
-    hotListPending = pending
-    return pending
-  }
-
-  // 热门使用独立详情缓存和缺失记录，不参与普通赛事的更新及下架判定。
-  const hotDetailsState = shallowReactive<{
-    params: GetSelectedEventInfoParams | null
-    response: GetSelectedEventInfoResponse | null
-    data: SportEvent[]
-    loading: boolean
-    error: SportsRequestError | null
-  }>({ params: null, response: null, data: [], loading: false, error: null })
-  const hotDetailsContext = ref('')
-  const publishedHotEvents = ref<{ context: string; ids: number[] }>({ context: '', ids: [] })
-  let hotDetailsController: AbortController | undefined
-  let hotDetailsPending: Promise<SportEvent[] | null> | null = null
-  const missingHotRounds = new Map<number, number>()
-  const hotEventCache = new Map<
-    number,
-    { event: SportEvent; clockUpdatedAt: number; revision: number }
-  >()
-  let hotListCheckedAt = 0
-  let hotListPending: Promise<GetCompetitionListResponse | null> | null = null
-  let hotRoundPending: Promise<unknown> | null = null
-  let hotGeneration = 0
-  const cancelHotDetails = () => {
-    hotDetailsController?.abort()
-    hotDetailsController = undefined
-    hotDetailsPending = null
-    hotDetailsState.loading = false
-  }
-  watch(
-    getAllSportsContext,
-    () => {
-      cancelCompetitionList()
-      cancelHotDetails()
-      hotListPending = null
-      hotRoundPending = null
-      hotGeneration += 1
-      missingHotRounds.clear()
-      hotEventCache.clear()
-      hotListCheckedAt = 0
-      competitionListState.data = null
-      competitionListState.response = null
-      competitionListState.error = null
-      competitionListContext.value = ''
-      hotDetailsState.params = null
-      hotDetailsState.response = null
-      hotDetailsState.data = []
-      hotDetailsState.error = null
-      hotDetailsContext.value = ''
-      publishedHotEvents.value = { context: '', ids: [] }
-    },
-    { flush: 'sync' }
-  )
-  const getHotEventIds = () => [
-    ...new Set(
-      (competitionListState.data?.result ?? [])
-        .filter(
-          record =>
-            record.sportId === selectedSportId.value &&
-            Number.isSafeInteger(record.eventId) &&
-            record.eventId > 0
-        )
-        .map(record => record.eventId)
-    )
-  ]
-  const publishHotEvents = () => {
-    publishedHotEvents.value = {
-      context: getAllSportsContext(),
-      ids: getHotEventIds().filter(id => (missingHotRounds.get(id) ?? 0) < 2)
-    }
-  }
-  const applyHotEventList = (response: GetCompetitionListResponse) => {
-    const previousIds = getHotEventIds()
-    competitionListState.data = response
-    competitionListContext.value = getCompetitionListContext()
-    const nextIds = new Set(getHotEventIds())
-    const membershipChanged =
-      previousIds.length !== nextIds.size || previousIds.some(id => !nextIds.has(id))
-    if (membershipChanged) {
-      // 防止上一轮详情迟到后重新发布已移出热门名单的赛事。
-      cancelHotDetails()
-    }
-    // 首次进入、重进和定时刷新共用删除规则，不等待新增赛事的详情。
-    if (publishedHotEvents.value.context === getAllSportsContext()) {
-      publishedHotEvents.value = {
-        context: getAllSportsContext(),
-        ids: publishedHotEvents.value.ids.filter(id => nextIds.has(id))
-      }
-    }
-    for (const id of hotEventCache.keys()) if (!nextIds.has(id)) hotEventCache.delete(id)
-    for (const id of missingHotRounds.keys()) if (!nextIds.has(id)) missingHotRounds.delete(id)
-    hotDetailsState.data = hotDetailsState.data.filter(event => nextIds.has(event.EventId))
-  }
   const getHomepageOddsType = (): SportsOddsType =>
     market.value === 4 ? 3 : oddsPreference.preference
-  const getHotEventClockUpdatedAt = (_sportId: number, eventId: number) =>
-    hotEventCache.get(eventId)?.clockUpdatedAt ?? Date.now()
-  /** 每轮查询全部热门 ID；连续两次有效缺失隐藏卡片，但仍保留 ID 复核。 */
-  const fetchMissingHotEvents = (): Promise<SportEvent[] | null> => {
-    if (hotDetailsPending) return hotDetailsPending
-    if (
-      !homepageActive ||
-      !getBaseUrl() ||
-      competitionListContext.value !== getCompetitionListContext() ||
-      !competitionListState.data
-    )
-      return Promise.resolve(null)
-    const context = getAllSportsContext()
-    const sportId = selectedSportId.value
-    const controller = new AbortController()
-    hotDetailsController = controller
-    hotDetailsContext.value = context
-    hotDetailsState.loading = true
-    hotDetailsState.error = null
-    const isCurrent = () =>
-      !controller.signal.aborted &&
-      homepageActive &&
-      context === getAllSportsContext() &&
-      hotDetailsController === controller
-    const ids = getHotEventIds()
-    const pending = Promise.resolve().then(async () => {
-      try {
-        for (let offset = 0; offset < ids.length; offset += SELECTED_EVENT_BATCH_SIZE) {
-          if (!isCurrent()) return null
-          const batch = ids.slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
-          const params: GetSelectedEventInfoParams = {
-            SportId: sportId,
-            EventIds: batch,
-            OddsType: getHomepageOddsType(),
-            IsCombo: market.value === 4,
-            IncludeGroupEvents: false,
-            LanguageCode: languageCode.value,
-            PeriodIds: [1]
-          }
-          hotDetailsState.params = params
-          const revision = ++eventReadRevision
-          try {
-            const response = await sportsApi.getSelectedEventInfo(getBaseUrl(), params, {
-              signal: controller.signal
-            })
-            if (!isCurrent()) return null
-            hotDetailsState.response = response
-            if (
-              !isSportsSuccess(response) ||
-              !Array.isArray(response.e) ||
-              response.e.some(
-                event => !event || !Number.isSafeInteger(event.EventId) || event.EventId <= 0
-              )
-            ) {
-              hotDetailsState.error = {
-                kind: 'business',
-                code: response.stc,
-                message: response.std
-              }
-              continue
-            }
-            const targets = response.e.filter(event => batch.includes(event.EventId))
-            if (
-              targets.some(
-                event =>
-                  !Array.isArray(event.MarketLines) ||
-                  !Number.isSafeInteger(event.Competition?.CompetitionId)
-              )
-            ) {
-              hotDetailsState.error = { kind: 'response', message: 'Invalid hot event details' }
-              continue
-            }
-            const returned = new Map(targets.map(event => [event.EventId, event]))
-            for (const id of batch) {
-              const event = returned.get(id)
-              if (event) {
-                const previous = hotEventCache.get(id)
-                const clockChanged =
-                  !previous ||
-                  previous.event.RBTime !== event.RBTime ||
-                  previous.event.RBTimeStatus !== event.RBTimeStatus
-                hotEventCache.set(id, {
-                  event: previous ? reuseEqual(previous.event, event) : event,
-                  clockUpdatedAt: clockChanged ? Date.now() : previous.clockUpdatedAt,
-                  revision
-                })
-                missingHotRounds.delete(id)
-              } else missingHotRounds.set(id, Math.min(2, (missingHotRounds.get(id) ?? 0) + 1))
-            }
-          } catch {
-            if (!isCurrent()) return null
-            hotDetailsState.error = { kind: 'network', message: 'Selected events request failed' }
-          }
-        }
-        if (!isCurrent()) return null
-        hotDetailsState.data = ids
-          .filter(id => (missingHotRounds.get(id) ?? 0) < 2)
-          .flatMap(id => {
-            const event = hotEventCache.get(id)?.event
-            return event ? [event] : []
-          })
-        publishHotEvents()
-        return hotDetailsState.data
-      } finally {
-        if (hotDetailsController === controller) {
-          hotDetailsState.loading = false
-          hotDetailsController = undefined
-          hotDetailsPending = null
+  const hot = useHotEvents({
+    getContext: getAllSportsContext,
+    isActive: () => homepageActive,
+    getBaseUrl,
+    getSportId: () => selectedSportId.value,
+    getVisit: () => sportsVisitGeneration,
+    getListParams: () => {
+      const endTime = Date.now()
+      return {
+        param: {
+          page: 1,
+          sportId: selectedSportId.value,
+          market: market.value,
+          startTime: endTime - 24 * 60 * 60 * 1000,
+          endTime
         }
       }
-    })
-    hotDetailsPending = pending
-    return pending
-  }
+    },
+    getDetailParams: (sportId, eventIds) => ({
+      SportId: sportId,
+      EventIds: eventIds,
+      OddsType: getHomepageOddsType(),
+      IsCombo: market.value === 4,
+      IncludeGroupEvents: false,
+      LanguageCode: languageCode.value,
+      PeriodIds: [1]
+    }),
+    nextRevision: () => ++eventReadRevision,
+    reuseEvent: reuseEqual
+  })
+  const {
+    listState: competitionListState,
+    detailsState: hotDetailsState,
+    records: hotEventRecords,
+    loading: hotEventsLoading,
+    error: hotEventsError,
+    fetchList: fetchCompetitionList,
+    fetchDetails: fetchMissingHotEvents,
+    getClockUpdatedAt: getHotEventClockUpdatedAt,
+    refresh: refreshHomepageHot,
+    cancel: cancelHomepageHot
+  } = hot
 
   // 保留服务端字段与嵌套结构，页面负责展示转换，Store 不裁剪盘口。
   const requests = shallowReactive({
@@ -2022,11 +1755,6 @@ export const useSportsStore = defineStore('sports', () => {
     ])
   // 联赛候选只来自默认列表的逐页缓存，不随搜索或指定联赛的查询结果缩减。
   const leagueGroups = computed(() => allLeagueGroups.value)
-  const hotEventRecords = computed(() =>
-    competitionListContext.value === getCompetitionListContext()
-      ? (competitionListState.data?.result ?? [])
-      : []
-  )
   const allEventsById = computed(
     () =>
       new Map(
@@ -2036,27 +1764,15 @@ export const useSportsStore = defineStore('sports', () => {
       )
   )
   const hotDetailsById = computed(
-    () =>
-      new Map(
-        hotDetailsContext.value === getAllSportsContext()
-          ? hotDetailsState.data.map(event => [event.EventId, event] as const)
-          : []
-      )
+    () => new Map(hot.events.value.map(event => [event.EventId, event]))
   )
-  const hotEvents = computed<SportEvent[]>(() => {
-    if (publishedHotEvents.value.context !== getAllSportsContext()) return []
-    return publishedHotEvents.value.ids.flatMap(id => {
-      const event = hotDetailsById.value.get(id)
-      return event ? [withMemberFavourite(event)] : []
-    })
-  })
+  const hotEvents = computed<SportEvent[]>(() => hot.events.value.map(withMemberFavourite))
   // 热门只为当前仍展示的同一盘口提供有效性证据，不清除普通列表的下架记录。
   const getHotBetSelectionEvent = (selection: SportsBetSelectionTarget) => {
     if (
       !selection.fromHot ||
       selection.sportId !== selectedSportId.value ||
-      publishedHotEvents.value.context !== getAllSportsContext() ||
-      !publishedHotEvents.value.ids.includes(selection.eventId)
+      !hotDetailsById.value.has(selection.eventId)
     )
       return undefined
     const event = hotDetailsById.value.get(selection.eventId)
@@ -2076,14 +1792,11 @@ export const useSportsStore = defineStore('sports', () => {
     if (
       !selection.fromHot ||
       selection.sportId !== selectedSportId.value ||
-      hotDetailsContext.value !== getAllSportsContext() ||
-      competitionListContext.value !== getCompetitionListContext() ||
-      !getHotEventIds().includes(selection.eventId) ||
-      (missingHotRounds.get(selection.eventId) ?? 0) >= 2
+      !hot.getCurrentEntry(selection.eventId)
     )
       return 0
     // 每批响应已确认的选项即可作证，不必等待其他批次发布卡片。
-    const cached = hotEventCache.get(selection.eventId)
+    const cached = hot.getCurrentEntry(selection.eventId)
     return cached?.event.MarketLines.some(
       line =>
         line.MarketlineId === selection.MarketlineId &&
@@ -2092,19 +1805,6 @@ export const useSportsStore = defineStore('sports', () => {
       ? cached.revision
       : 0
   }
-  const hotEventsLoading = computed(
-    () =>
-      (competitionListContext.value === getCompetitionListContext() &&
-        competitionListState.loading) ||
-      (hotDetailsContext.value === getAllSportsContext() && hotDetailsState.loading)
-  )
-  const hotEventsError = computed(
-    () =>
-      (competitionListContext.value === getCompetitionListContext()
-        ? competitionListState.error
-        : null) ??
-      (hotDetailsContext.value === getAllSportsContext() ? hotDetailsState.error : null)
-  )
   const unmatchedHotEventIds = computed(() =>
     [
       ...new Set(
@@ -2701,39 +2401,6 @@ export const useSportsStore = defineStore('sports', () => {
     return pending
   }
 
-  const cancelHomepageHot = () => {
-    hotGeneration += 1
-    cancelCompetitionList()
-    hotListPending = null
-    cancelHotDetails()
-    hotRoundPending = null
-  }
-  const refreshHomepageHot = (): Promise<unknown> => {
-    if (hotRoundPending) return hotRoundPending
-    const context = getAllSportsContext()
-    const visit = sportsVisitGeneration
-    const generation = hotGeneration
-    const pending = Promise.resolve()
-      .then(async () => {
-        if (!homepageActive || !getBaseUrl() || generation !== hotGeneration) return
-        if (hotListPending) await hotListPending
-        else if (Date.now() - hotListCheckedAt >= 60_000) await fetchCompetitionList()
-        if (
-          !homepageActive ||
-          generation !== hotGeneration ||
-          context !== getAllSportsContext() ||
-          visit !== sportsVisitGeneration
-        )
-          return
-        await fetchMissingHotEvents()
-      })
-      .finally(() => {
-        if (hotRoundPending === pending) hotRoundPending = null
-      })
-    hotRoundPending = pending
-    return pending
-  }
-
   // 保留每次条件变化的失效记录；同一批更新切走再切回也必须重新接续查询。
   const homepageQueryVersion = ref(0)
   watch(
@@ -3032,9 +2699,7 @@ export const useSportsStore = defineStore('sports', () => {
     homepageGeneration += 1
     resources.forEach(resource => resource.cancel())
     cancelAllSports()
-    cancelHotDetails()
     cancelLeagueRequests()
-    cancelCompetitionList()
     homepageLoading.value = false
   }
   const pruneEventCache = (getProtectedTargets: () => readonly SportsRefreshTarget[]) => {
@@ -3047,7 +2712,7 @@ export const useSportsStore = defineStore('sports', () => {
         key => key !== 'counts' && key !== 'event-checks' && !key.startsWith('events:')
       ) ||
       allSportsPending ||
-      hotDetailsPending ||
+      hotDetailsState.loading ||
       leagueJobs.size ||
       events.state.loading
     )
@@ -3088,18 +2753,7 @@ export const useSportsStore = defineStore('sports', () => {
     allSportsDataScope.value = ''
     allSportsRequestContext.value = ''
     allSportsRequestScope.value = ''
-    competitionListContext.value = ''
-    competitionListState.params = null
-    competitionListState.response = null
-    competitionListState.data = null
-    competitionListState.error = null
-    hotDetailsState.params = null
-    hotDetailsState.response = null
-    hotDetailsState.data = []
-    hotDetailsState.error = null
-    hotDetailsContext.value = ''
-    missingHotRounds.clear()
-    hotEventCache.clear()
+    hot.reset()
     loadedHomepageContext = ''
     leagueDetails.clear()
     eventsDataContext.value = ''

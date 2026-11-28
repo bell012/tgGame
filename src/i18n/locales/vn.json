@@ -629,6 +629,11 @@
     "liveRtp": "Live RTP",
     "realRtp": "Real RTP",
     "volatility": "Biến động",
+    "volatilityLevels": {
+      "small": "Nhỏ",
+      "middle": "vừa",
+      "big": "lớn"
+    },
     "maxBonus": "Thưởng max",
     "demo": "Demo",
     "refreshBalance": "Làm mới số dư",

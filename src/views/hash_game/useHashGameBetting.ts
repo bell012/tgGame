@@ -43,6 +43,7 @@ export function useHashGameBetting(options: {
   refreshBalance: () => Promise<boolean>
   notify: (key: string, type?: 'success' | 'fail', params?: { amount: number }) => void
   onPlaced: (request: HashGamePlaceBetParams, result: HashGamePlaceBetResult) => void
+  onFirstSuccessfulBet?: () => void
   onSuccessfulSubmit?: () => void
 }) {
   const draft = ref<HashGameBetChip[]>([])
@@ -246,6 +247,7 @@ export function useHashGameBetting(options: {
           if (!notified) {
             notified = true
             options.notify('hashGame.betSuccess', 'success')
+            options.onFirstSuccessfulBet?.()
           }
           if (orderNo && sameRound(account, key)) options.onPlaced(request, result)
         } catch {

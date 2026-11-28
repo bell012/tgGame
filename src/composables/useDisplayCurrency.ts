@@ -192,7 +192,7 @@ export const useDisplayCurrency = (currencyOverride?: Readonly<Ref<string | unde
       return
     }
 
-    localeStore.setCurrency(selectedCode)
+    localeStore.selectCurrency(selectedCode)
   }
 
   return {

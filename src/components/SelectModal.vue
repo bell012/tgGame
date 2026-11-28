@@ -8,8 +8,10 @@
             class="flex w-full h-12 rounded-lg px-4 items-center justify-end"
             @click="handleClose"
           >
-            <div class="w-8 h-8 bg-[#464f50] rounded-md flex items-center justify-center">
-              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
+            <div
+              class="w-[24px] h-[24px] bg-opacity-10 rounded-[4px] flex items-center justify-center"
+            >
+              <CloseIcon class="h-[10px] w-[10px] text-icon-1" />
             </div>
           </button>
 

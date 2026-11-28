@@ -231,7 +231,7 @@ export const queryGameDetailRecommendedItems = async () => {
   const params: QueryGameItemPageParams = {
     languageCode: getLanguageCode(),
     site: 'gifphcb9',
-    param: { recommend: 1, syncChildGames: 0, syncBrandChildGames: 0, homeRecommend: 0 },
+    param: { hot: 1, syncChildGames: 0, syncBrandChildGames: 0, homeRecommend: 0 },
     page: { records: [], total: 0, size: 1000, current: 1 }
   }
 

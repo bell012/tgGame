@@ -50,14 +50,21 @@ const props = defineProps<{
   maxMultiple?: GameDataItem['maxMultiple']
 }>()
 const { t } = useI18n()
+const VOLATILITY_LABEL_KEYS = {
+  1: 'gameDetail.volatilityLevels.small',
+  2: 'gameDetail.volatilityLevels.middle',
+  3: 'gameDetail.volatilityLevels.big'
+} as const
+
 const stats = computed(() => {
   const rtp = props.rtp ?? null
-  const volatility = String(props.volatility ?? '').trim()
+  const volatilityKey =
+    props.volatility == null ? undefined : VOLATILITY_LABEL_KEYS[props.volatility]
   const maxMultiple = String(props.maxMultiple ?? '').trim()
   return [
     { key: 'liveRtp', value: rtp === null ? '-' : (100 - rtp).toFixed(2) + '%' },
     { key: 'realRtp', value: rtp === null ? '-' : rtp.toFixed(2) + '%' },
-    { key: 'volatility', value: volatility || '-' },
+    { key: 'volatility', value: volatilityKey ? t(volatilityKey) : '-' },
     { key: 'maxBonus', value: maxMultiple ? `${maxMultiple}X` : '-' }
   ]
 })

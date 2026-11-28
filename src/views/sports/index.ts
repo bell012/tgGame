@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { isMobileViewport } from '@/composables/useMediaQuery'
-import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { navigateTo } from '@/utils/router'
 import { stripLocalePrefix, withLocalePrefix, getLocaleFromRouteParam } from '@/utils/locale'
@@ -22,22 +21,9 @@ import type { SportsMatch } from './shared/types'
 import { findRouteSport, getSportsPath, isSportsHomepageRoute } from './shared/navigation'
 
 export type { SportsMatch, SportsBetMode, SportsBetSelection, SportsParlay } from './shared/types'
-export { mapSportsMatches } from './shared/match'
+import { getTeamLogoUrl } from './shared/match'
+export { mapSportsMatches, getTeamLogoUrl } from './shared/match'
 export { parseSportsStake } from './components/bet-slip/shared'
-
-/** 配置已包含队标目录，只追加图片文件名。 */
-export const getTeamLogoUrl = (id: string | number | null | undefined): string => {
-  if (typeof id === 'number' && !Number.isFinite(id)) return ''
-
-  const teamId = String(id ?? '').trim()
-  if (!teamId) return ''
-
-  const siteConfigStore = useSiteConfigStore()
-  const baseUrl = siteConfigStore.getConfigString('IM.sport_team_logo').replace(/\/+$/, '')
-  if (!baseUrl) return ''
-
-  return `${baseUrl}/${encodeURIComponent(teamId)}.png`
-}
 
 export const useSportsPage = () => {
   const sportsStore = useSportsStore()

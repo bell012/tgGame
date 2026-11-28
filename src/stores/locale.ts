@@ -16,6 +16,9 @@ import { initGlobalDicCache } from '@/utils/global-dic'
 import { useGameStore } from '@/stores/game'
 import { usePromotionsStore } from '@/stores/promotions'
 import type { SiteConfig } from '@/stores/siteConfig'
+import { useUserStore } from '@/stores/user'
+import Api from '@/api'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
@@ -127,8 +130,9 @@ export const useLocaleStore = defineStore('locale', () => {
     }
   }
 
-  // 切换语言
-  const setLanguage = async (code: Locale) => {
+  // 更新语言及其相关缓存；币种联动只在用户主动选择时触发。
+  const applyLanguage = async (code: Locale) => {
+    if (currentLanguage.value === code) return
     currentLanguage.value = code
     const languageNavigation = switchLanguage(code)
 
@@ -150,6 +154,41 @@ export const useLocaleStore = defineStore('locale', () => {
     localStorage.setItem('currency', code)
   }
 
+  // 目前英语和PHP币种没有绑定关系，保留另一项的当前选择。
+  // 中文和CNY  越南语和VND 联动
+  const setLanguage = async (code: Locale) => {
+    const currency = code === 'zh' ? 'CNY' : code === 'vn' ? 'VND' : undefined
+    if (currency) {
+      const userStore = useUserStore()
+      const accountCurrency = String(
+        userStore.acctInfo?.currency || userStore.userInfo?.currency || ''
+      )
+        .trim()
+        .toUpperCase()
+      if (
+        (userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId) &&
+        accountCurrency !== currency
+      ) {
+        try {
+          ensureApiBusinessSuccess(await Api.user.changeWallet({ currency }))
+          await userStore.refreshBalance({ force: true })
+        } catch (error) {
+          console.error('changeWallet failed', error)
+          return
+        }
+      }
+      setCurrency(currency)
+    }
+    await applyLanguage(code)
+  }
+
+  const selectCurrency = (code: string) => {
+    setCurrency(code)
+    const normalized = code.trim().toUpperCase()
+    const language = normalized === 'CNY' ? 'zh' : normalized === 'VND' ? 'vn' : undefined
+    if (language) void applyLanguage(language)
+  }
+
   return {
     currentLanguage,
     isSiteDefaultsReady,
@@ -158,6 +197,7 @@ export const useLocaleStore = defineStore('locale', () => {
     initLanguage,
     applySiteDefaults,
     setLanguage,
-    setCurrency
+    setCurrency,
+    selectCurrency
   }
 })
