@@ -1039,6 +1039,24 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/login/index.vue'),
+    meta: {
+      title: '登录',
+      description: '登录注册'
+    }
+  },
+  {
+    path: '/:locale/login',
+    name: 'LocaleLogin',
+    component: () => import('@/views/login/index.vue'),
+    meta: {
+      title: '登录',
+      description: '登录注册'
+    }
+  },
+  {
     path: '/',
     component: MainLayout,
     children: defaultChildren
