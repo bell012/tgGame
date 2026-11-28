@@ -2187,7 +2187,7 @@
       "matrix": {
         "greeting": "Kính gửi người dùng:",
         "lead": "Tin vui! Chúng tôi sắp ra mắt hàng loạt khuyến mãi hấp dẫn. Muốn biết sớm nhất, hãy theo dõi tài khoản chính thức.",
-        "columns": ["NGÀY", "VIP1-7", "VIP8-15", "VIP16-22", "VIP23-30", "VIP31-38"]
+        "columns": ["NGÀY", "VIP1-7", "VIP8-15", "VIP16-22", "VIP23-30", "VIP31-36"]
       }
     }
   },

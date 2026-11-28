@@ -71,6 +71,8 @@ export const resolvePromotionDetailKind = (
 export interface PromotionRewardTier {
   deposit: number
   reward: number
+  /** 接口明确给出完成状态时使用；没有该字段则按已充值金额判断。 */
+  completed?: boolean
 }
 
 export interface PromotionRewardSummary {
@@ -98,6 +100,19 @@ const readNumber = (source: Record<string, unknown> | undefined, keys: string[])
   return undefined
 }
 
+const readTierCompleted = (item: CheckInActivitySignConfigItem) => {
+  const raw = item as Record<string, unknown>
+  const value = raw.finishStatus ?? raw.completeStatus ?? raw.status
+  if (value === undefined || value === null || value === '') {
+    return undefined
+  }
+  if (typeof value === 'boolean') {
+    return value
+  }
+  const number = Number(value)
+  return Number.isFinite(number) ? number === 1 : undefined
+}
+
 const toTiers = (sign?: CheckInActivitySignConfigItem[]) => {
   if (!Array.isArray(sign)) {
     return []
@@ -106,7 +121,8 @@ const toTiers = (sign?: CheckInActivitySignConfigItem[]) => {
   return sign
     .map(item => ({
       deposit: Number(item.rechargeAmount ?? 0),
-      reward: Number(item.rewardAmount ?? 0)
+      reward: Number(item.rewardAmount ?? 0),
+      completed: readTierCompleted(item)
     }))
     .filter(item => item.deposit > 0 || item.reward > 0)
 }

@@ -50,11 +50,49 @@
       </div>
     </section>
 
-    <section class="rounded-[20px] bg-bg-2 p-6">
-      <h3 class="mb-6 text-sm font-[700] text-text-1">
+    <section :class="isDesktop ? 'rounded-[20px] bg-bg-2 p-6' : ''">
+      <h3
+        class="font-[700] text-text-1"
+        :class="isDesktop ? 'mb-6 text-sm' : 'mb-3 text-[15px] leading-snug'"
+      >
         {{ $t(`activityPromotions.detail.section.${kind}`) }}
       </h3>
-      <div class="overflow-x-auto overflow-y-hidden rounded-xl">
+
+      <div v-if="!isDesktop" class="overflow-hidden rounded-[14px] bg-bg-4">
+        <div
+          class="grid h-11 grid-cols-3 border-b border-opacity-10 bg-theme-3 text-[11px] font-[400] text-text-1"
+        >
+          <div class="flex items-center justify-center border-r border-opacity-10">
+            {{ $t('activityPromotions.detail.depositAmount') }}
+          </div>
+          <div class="flex items-center justify-center border-r border-opacity-10">
+            {{ $t('activityPromotions.detail.rewardAmount') }}
+          </div>
+          <div class="flex items-center justify-center">
+            {{ $t('activityPromotions.detail.status') }}
+          </div>
+        </div>
+        <div
+          v-for="(tier, index) in summary.tiers"
+          :key="`${tier.deposit}-${index}`"
+          class="grid h-12 grid-cols-3 border-b border-opacity-10 text-[12px] font-[700] text-text-1 last:border-b-0"
+        >
+          <div class="flex items-center justify-center border-r border-opacity-10">
+            {{ formatTierAmount(tier.deposit) }}
+          </div>
+          <div class="flex items-center justify-center gap-1 border-r border-opacity-10">
+            <span>{{ formatTierAmount(tier.reward) }}</span>
+            <span v-if="summary.currency" class="text-[10px] font-[400]">{{
+              summary.currency
+            }}</span>
+          </div>
+          <div class="flex items-center justify-center">
+            <img :src="tierCheckIcon(index)" alt="" class="h-5 w-5 object-contain" />
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="overflow-x-auto overflow-y-hidden rounded-xl">
         <table class="w-full min-w-[520px] border-collapse text-center text-sm">
           <thead>
             <tr class="bg-theme-3 text-text-1">
@@ -79,22 +117,13 @@
                 <span v-if="summary.currency">({{ summary.currency }})</span>
               </td>
               <td class="border border-white/10 px-3 py-3 text-text-1">
-                <svg class="mx-auto h-4 w-4" viewBox="0 0 16 16" aria-hidden="true">
-                  <path
-                    d="M3 8.2 6.4 11.5 13 4.8"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.8"
-                  />
-                </svg>
+                <img :src="tierCheckIcon(index)" alt="" class="mx-auto h-4 w-4 object-contain" />
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <ul class="mt-6 space-y-2 text-xs leading-5 text-text-2">
+      <ul class="space-y-2 text-xs leading-5 text-text-2" :class="isDesktop ? 'mt-6' : 'mt-4'">
         <li v-for="(rule, index) in rules" :key="index">• {{ rule }}</li>
       </ul>
     </section>
@@ -104,6 +133,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import checkDoneIcon from '@/static/svg/promotions/check1.png'
+import checkIcon from '@/static/svg/promotions/check.svg?url'
 import { formatBalance } from '@/utils/locale'
 import type { PromotionRewardSummary, RechargePromotionDetailKind } from '../detail-presentation'
 
@@ -128,4 +159,27 @@ const canClaim = computed(() => props.summary.pendingAmount > 0)
 const formatTierAmount = (value: number) => {
   return Number.isInteger(value) ? String(value) : formatBalance(value)
 }
+
+const isTierCompleted = (index: number) => {
+  const tier = props.summary.tiers[index]
+  if (!tier) {
+    return false
+  }
+  if (typeof tier.completed === 'boolean') {
+    return tier.completed
+  }
+
+  const amount = props.summary.depositedAmount
+  if (!(amount > 0) || amount < tier.deposit) {
+    return false
+  }
+  if (props.kind === 'cumulativeDeposit') {
+    return true
+  }
+
+  const nextTier = props.summary.tiers[index + 1]
+  return !nextTier || amount < nextTier.deposit
+}
+
+const tierCheckIcon = (index: number) => (isTierCompleted(index) ? checkDoneIcon : checkIcon)
 </script>
