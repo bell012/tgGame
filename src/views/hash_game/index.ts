@@ -95,9 +95,17 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   let recentBetsRequestId = 0
   let clockOffset = 0
   const now = ref(Date.now())
+  let clockFrame = 0
+  let lastSocketBlock = 0
+  let socketClockAnchor = 0
   let countdownInterval: ReturnType<typeof setInterval> | undefined
   let roundRefreshPending = false
   let lastRoundRefreshAt = 0
+
+  const runClockFrame = () => {
+    now.value = Date.now()
+    clockFrame = requestAnimationFrame(runClockFrame)
+  }
 
   const clearRecentBets = () => {
     recentBetsRequestId++
@@ -109,6 +117,8 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
   /** 清空上一玩法的详情、走势和投注记录。 */
   const clearHashGameDisplay = () => {
     hashGameInfo.value = null
+    lastSocketBlock = 0
+    socketClockAnchor = 0
     hashGameInfoCurrency.value = ''
     roadmapIssues.value = []
     roadmapStatus.value = 'idle'
@@ -153,7 +163,26 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
           now.value = Date.now()
           const serverTime = timestampMillis(result.serverTime)
           clockOffset = serverTime ? serverTime - (startedAt + now.value) / 2 : 0
-          hashGameInfo.value = result
+          const current = hashGameInfo.value
+          // 迟到的详情响应不能把 WS 已推进的期号和截止时间退回去。
+          hashGameInfo.value =
+            current?.gameCode === gameCode &&
+            current.anchorBlockNum !== undefined &&
+            result.anchorBlockNum !== undefined &&
+            current.anchorBlockNum >= result.anchorBlockNum &&
+            socketClockAnchor >= result.anchorBlockNum
+              ? {
+                  ...result,
+                  currentBlockNum: Math.max(
+                    result.currentBlockNum ?? 0,
+                    current.currentBlockNum ?? 0
+                  ),
+                  anchorBlockNum: current.anchorBlockNum,
+                  nextAnchorBlockNum: current.nextAnchorBlockNum,
+                  nextAnchorEstimatedTime: current.nextAnchorEstimatedTime,
+                  sealed: current.sealed
+                }
+              : result
           hashGameInfoCurrency.value = currencyCode
           if (refreshRoundOnly && roundChanged) await loadHashGameRoadmap(gameCode, requestId)
         }),
@@ -240,8 +269,8 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
 
   /** 页面挂载后加载玩法，并按服务端时间更新倒计时显示。 */
   onMounted(() => {
+    clockFrame = requestAnimationFrame(runClockFrame)
     countdownInterval = setInterval(() => {
-      now.value = Date.now()
       const deadline = timestampMillis(hashGameInfo.value?.nextAnchorEstimatedTime)
       if (deadline && now.value + clockOffset >= deadline) void refreshHashGameRound()
     }, 1000)
@@ -274,10 +303,44 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
       if (event.code !== 0) return
       if (event.type === 'CHAT_PRIVATE') chat.acceptPrivateEvent(event.data)
       if (event.type === 'BLOCK_RESULT') {
-        const anchor = hashGameInfo.value?.anchorBlockNum
-        const block = event.data?.blockNum
-        if (typeof anchor === 'number' && typeof block === 'number' && block >= anchor)
-          void refreshHashGameRound()
+        const info = hashGameInfo.value
+        const data = event.data
+        const block = data?.blockNum
+        if (
+          info &&
+          typeof block === 'number' &&
+          Number.isSafeInteger(block) &&
+          block >= (info.currentBlockNum ?? 0) &&
+          block > lastSocketBlock
+        ) {
+          lastSocketBlock = block
+          info.currentBlockNum = block
+          const period = data.periods?.[info.gameCode] as
+            | {
+                anchorBlockNum?: number
+                nextAnchorBlockNum?: number
+                nextAnchorEstimatedTime?: number | string
+              }
+            | undefined
+          if (
+            period?.anchorBlockNum === block &&
+            typeof period.nextAnchorBlockNum === 'number' &&
+            period.nextAnchorBlockNum > block &&
+            period.nextAnchorBlockNum >= (info.anchorBlockNum ?? 0)
+          ) {
+            info.anchorBlockNum = period.nextAnchorBlockNum
+            info.nextAnchorBlockNum = period.nextAnchorBlockNum + info.periodBlocks
+            info.nextAnchorEstimatedTime = period.nextAnchorEstimatedTime
+            info.sealed = false
+            socketClockAnchor = period.nextAnchorBlockNum
+          } else {
+            const blockTime = timestampMillis(data.blockTimestamp)
+            if (blockTime && typeof info.anchorBlockNum === 'number') {
+              info.nextAnchorEstimatedTime = blockTime + (info.anchorBlockNum - block) * 3000
+              socketClockAnchor = info.anchorBlockNum
+            }
+          }
+        }
       }
       if (
         event.type === 'CHAIN_LOTTERY_SETTLE' &&
@@ -682,6 +745,7 @@ const createHashGamePageState = (requestedGameCode: () => string | undefined) =>
     gameInfoRequestId++
     recentBetsRequestId++
     if (countdownInterval) clearInterval(countdownInterval)
+    if (clockFrame) cancelAnimationFrame(clockFrame)
     backgroundAudio?.pause()
     if (backgroundAudio) backgroundAudio.currentTime = 0
   })
