@@ -152,33 +152,91 @@ const getChatVisitorId = () => {
   return visitorId
 }
 
+/** 群发图片字段不统一，兼容字符串、对象和常见地址字段。 */
+const readChatImageSource = (image: unknown) => {
+  if (typeof image === 'string') return image.trim()
+  if (!image || typeof image !== 'object') return ''
+
+  const record = image as Record<string, unknown>
+  return String(
+    record.imgUrl ??
+      record.url ??
+      record.src ??
+      record.path ??
+      record.imageUrl ??
+      record.fileUrl ??
+      ''
+  ).trim()
+}
+
+/** 将服务端图片字段补全为页面与 Socket 共用的图片结构。 */
+const mapChatImage = (image: Partial<ChatImageItem> | string): ChatImageItem => {
+  const source = typeof image === 'string' ? { imgUrl: image } : image
+  return {
+    imgUrl: resolveChatMediaUrl(readChatImageSource(source)),
+    fileName: String(source.fileName ?? ''),
+    fileFormat: String(source.fileFormat ?? ''),
+    imgSize: String(source.imgSize ?? ''),
+    imageWidth: Number(source.imageWidth) || 0,
+    imageHeight: Number(source.imageHeight) || 0
+  }
+}
+
+/** imageList 可能是数组、单对象，或后端序列化后的 JSON 字符串。 */
+const parseChatImageList = (value: unknown): ChatImageItem[] => {
+  let source = value
+  if (typeof source === 'string') {
+    const trimmed = source.trim()
+    if (!trimmed) return []
+    try {
+      source = JSON.parse(trimmed) as unknown
+    } catch {
+      return [mapChatImage(trimmed)].filter(image => image.imgUrl)
+    }
+  }
+
+  const items = Array.isArray(source)
+    ? source
+    : source && typeof source === 'object'
+      ? [source]
+      : []
+  return items
+    .map(item => mapChatImage(item as Partial<ChatImageItem> | string))
+    .filter(image => image.imgUrl)
+}
+
+const uniqueChatImages = (images: ChatImageItem[]) => {
+  const seen = new Set<string>()
+  return images.filter(image => {
+    if (seen.has(image.imgUrl)) return false
+    seen.add(image.imgUrl)
+    return true
+  })
+}
+
 /** 图片消息没有 imageList 时，从正文里的地址或 img 标签补齐。 */
 const collectContentImageItems = (content: string): ChatImageItem[] => {
   const source = content.trim()
   if (!source) return []
 
+  const decodedSource =
+    /&(?:lt|#0*60);/i.test(source) && typeof DOMParser !== 'undefined'
+      ? new DOMParser().parseFromString(source, 'text/html').body.textContent || source
+      : source
   const imageFilePattern = /\.(?:avif|bmp|gif|jpe?g|png|webp)(?:[?#].*)?$/i
-  if (/^(?:https?:\/\/|\/)/i.test(source) && imageFilePattern.test(source)) {
-    return [mapChatImage({ imgUrl: source })]
+  if (/^(?:https?:\/\/|\/)/i.test(decodedSource) && imageFilePattern.test(decodedSource)) {
+    return [mapChatImage(decodedSource)].filter(image => image.imgUrl)
   }
 
   if (typeof DOMParser === 'undefined') return []
 
-  const documentNode = new DOMParser().parseFromString(source, 'text/html')
-  return Array.from(documentNode.querySelectorAll('img'))
-    .map(image => mapChatImage({ imgUrl: image.getAttribute('src') || '' }))
-    .filter(image => image.imgUrl)
+  const documentNode = new DOMParser().parseFromString(decodedSource, 'text/html')
+  return uniqueChatImages(
+    Array.from(documentNode.querySelectorAll('img'))
+      .map(image => mapChatImage(image.getAttribute('src') || ''))
+      .filter(image => image.imgUrl)
+  )
 }
-
-/** 将服务端图片字段补全为页面与 Socket 共用的图片结构。 */
-const mapChatImage = (image: Partial<ChatImageItem>): ChatImageItem => ({
-  imgUrl: resolveChatMediaUrl(image.imgUrl),
-  fileName: String(image.fileName ?? ''),
-  fileFormat: String(image.fileFormat ?? ''),
-  imgSize: String(image.imgSize ?? ''),
-  imageWidth: Number(image.imageWidth) || 0,
-  imageHeight: Number(image.imageHeight) || 0
-})
 
 /** 将服务端可扩展的引用类型收敛为页面支持的内容类型。 */
 const getReplyContentType = (value: unknown): ChatReplyContentType => {
@@ -209,8 +267,7 @@ const getReplyPreview = (replyInfo: ChatReplyInfo, replyToType: ChatReplyContent
 }
 
 /** 将自动回复附带的图片统一转换成聊天消息使用的媒体结构。 */
-const getAutoReplyImages = (item: AutoReplyItem) =>
-  toArray<Partial<ChatImageItem>>(item.imageList).map(mapChatImage)
+const getAutoReplyImages = (item: AutoReplyItem) => parseChatImageList(item.imageList)
 
 /** 兼容后台后续扩展的视频自动回复字段。 */
 const getAutoReplyVideoUrl = (item: AutoReplyItem) => {
@@ -556,37 +613,46 @@ export function useChatRuntime() {
   const mapSocketMessage = (payload: ChatSocketMessage): ChatMessage => {
     const timestamp = Number(payload.timestamp) || Date.now()
     const isOutgoing = payload.mine?.type === 'member'
-    const isImage = payload.contentType === 'image'
     const isVideo = payload.contentType === 'video'
     const isAutoReply =
       payload.contentType === 'autoReplyReq' || payload.contentType === 'autoReplyResp'
     const redPacket = payload.contentType === 'redPack' ? parseChatRedPacket(payload.content) : null
     const isRedPacket = Boolean(redPacket)
     const isReply = payload.contentType === 'reply' || Boolean(payload.replyInfo)
-    const listedImages = toArray<Partial<ChatImageItem>>(payload.imageList).map(mapChatImage)
-    const imageList =
-      isImage && !listedImages.some(image => image.imgUrl)
-        ? collectContentImageItems(String(payload.content ?? ''))
-        : listedImages
+    const payloadRecord = payload as ChatSocketMessage & Record<string, unknown>
+    const listedImages = uniqueChatImages([
+      ...parseChatImageList(payloadRecord.imageList),
+      ...parseChatImageList(payloadRecord.images),
+      ...parseChatImageList(payloadRecord.imgs),
+      ...parseChatImageList(payloadRecord.imgList),
+      ...parseChatImageList(payloadRecord.picList)
+    ])
+    const imageList = listedImages.length
+      ? listedImages
+      : collectContentImageItems(String(payload.content ?? ''))
+    const plainText = isRedPacket ? '' : getChatPlainText(payload.content)
+    const hasImages = imageList.some(image => image.imgUrl)
+    const caption =
+      hasImages && imageList.some(image => image.imgUrl === plainText) ? '' : plainText
     const replyInfo = payload.replyInfo
     const replyToType = replyInfo ? getReplyContentType(replyInfo.replyToType) : 'text'
 
     return {
       id: String(payload.messageId),
       direction: isOutgoing ? 'outgoing' : 'incoming',
-      type: isImage
-        ? 'image'
-        : isVideo
-          ? 'video'
-          : isAutoReply
-            ? 'auto-reply'
-            : isRedPacket
-              ? 'red-pack'
-              : isReply
-                ? 'reply'
+      type: isVideo
+        ? 'video'
+        : isAutoReply
+          ? 'auto-reply'
+          : isRedPacket
+            ? 'red-pack'
+            : isReply
+              ? 'reply'
+              : hasImages && !caption
+                ? 'image'
                 : 'text',
-      text: isRedPacket ? '' : getChatPlainText(payload.content),
-      image: isImage ? imageList[0]?.imgUrl : undefined,
+      text: caption,
+      image: hasImages ? imageList[0]?.imgUrl : undefined,
       video: isVideo ? resolveChatMediaUrl(payload.content) : undefined,
       imageList,
       time: formatChatMessageTime(timestamp),
@@ -680,6 +746,9 @@ export function useChatRuntime() {
         messageId,
         content: String(socketPayload.content ?? record.content ?? ''),
         contentType,
+        imageList:
+          socketPayload.imageList ??
+          (record as ChatHistoryRecord & { imageList?: ChatSocketMessage['imageList'] }).imageList,
         timestamp
       })
     ]
