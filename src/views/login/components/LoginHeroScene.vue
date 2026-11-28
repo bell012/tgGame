@@ -669,6 +669,17 @@ onBeforeUnmount(() => {
 <style scoped>
 .login-hero {
   --login-hero-green: #24e88e;
+  animation: hero-appear 0.9s 0.3s both;
+}
+
+@keyframes hero-appear {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .hero-distance {
@@ -907,6 +918,7 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .login-hero,
   .hero-move,
   .hero-blade-travel,
   .hero-blade-tip {
